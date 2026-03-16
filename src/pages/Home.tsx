@@ -49,7 +49,7 @@ const itemVariants: Variants = {
 };
 
 export default function HomePage() {
-  const { navigate } = useOutletContext<AppContextType>();
+  const { navigate, userData } = useOutletContext<AppContextType>();
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-8 py-12">
       <motion.div
@@ -59,11 +59,11 @@ export default function HomePage() {
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
-          Welcome back
+          Welcome back, {userData.username}!
         </p>
         <h1 className="text-2xl font-extrabold tracking-tight text-char">
-          What would you like to{" "}
-          <span className="text-primary">explore?</span>
+          How can I{" "}
+          <span className="text-primary">help</span>?
         </h1>
       </motion.div>
 

@@ -28,3 +28,23 @@ export type RankedQuery = {
   }[],
   currentDivisionId: string, // usually "WORLD"
 }
+
+export type SelfQuery = {
+  username: string,
+  playerId: string,
+  emoticonId: string,
+  nameplateId: string,
+  titleId: string,
+  tags: string[],
+  masteryLevel: number,
+  playerStatus: string,
+  displayNameStatus: string,
+  matchmakingRegion: string,
+  gameLiftRegionUrls: {
+    region: string,
+    url: string,
+  }[],
+  discordConnection?: {
+    discordId: string
+  }
+}
