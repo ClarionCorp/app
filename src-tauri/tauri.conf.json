@@ -15,7 +15,9 @@
         "title": "AiMi App",
         "width": 800,
         "height": 900,
-        "devtools": true
+        "devtools": true,
+        "minHeight": 600,
+        "minWidth": 600
       }
     ],
     "security": {

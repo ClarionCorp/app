@@ -11,8 +11,6 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@heroui/react": "3.0.0-beta.3",
-    "@heroui/styles": "3.0.0-beta.3",
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/vite": "^4.2.1",
@@ -24,7 +22,8 @@
     "framer-motion": "^12.36.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.1"
+    "react-router-dom": "^7.13.1",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",
