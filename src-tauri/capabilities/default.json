@@ -12,22 +12,15 @@
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [
-        { "path": "$HOME/.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/OmegaStrikers/identity.json" },
-        { "path": "$HOME/Library/Application Support/CrossOver/Bottles/Omega Strikers/drive_c/users/crossover/AppData/Local/OmegaStrikers/identity.json" },
-        { "path": "$APPLOCALDATA/OmegaStrikers/identity.json" },
-        { "path": "$HOME/.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" },
-        { "path": "$HOME/Library/Application Support/CrossOver/Bottles/Omega Strikers/drive_c/users/crossover/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" },
-        { "path": "$APPLOCALDATA/OmegaStrikers/Saved/Logs/OmegaStrikers.log" },
-        { "path": "$HOME/**" },
-        { "path": "/mnt/**" }
+        { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
+        { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" }
       ]
     },
     {
       "identifier": "fs:allow-exists",
       "allow": [
-        { "path": "$HOME/.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/OmegaStrikers/identity.json" },
-        { "path": "$HOME/Library/Application Support/CrossOver/Bottles/Omega Strikers/drive_c/users/crossover/AppData/Local/OmegaStrikers/identity.json" },
-        { "path": "$APPLOCALDATA/OmegaStrikers/identity.json" }
+        { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
+        { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" }
       ]
     },
     "os:default",

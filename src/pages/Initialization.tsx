@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { AppContextType } from "../App";
 import { useOutletContext } from "react-router-dom";
+import { AppContextType } from "../App";
+import { verifyClientFiles } from "../core/init";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -12,29 +13,50 @@ const STEPS = [
   "Preparing your dashboard...",    // Doesn't do anything
   "Ready!",                         // Doesn't do anything
 ];
-
+ 
 const STEP_PCTS = [15, 35, 55, 75, 92, 100];
-const STEP_DURATION = 55000;
-
+ 
 export default function InitializationPage() {
   const { navigate } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-
+  const [error, setError] = useState<string | null>(null);
+ 
   useEffect(() => {
-    const advance = (i: number) => {
-      if (i >= STEPS.length) {
+    let cancelled = false;
+ 
+    async function run() {
+      try {
+        // 1) Grab identity.json & OS Log Files
+        setStepIndex(0);
+        setProgress(STEP_PCTS[0]);
+        await verifyClientFiles();
+ 
+        if (cancelled) return;
+ 
+        // Remaining steps are placeholders for now
+        for (let i = 1; i < STEPS.length; i++) {
+          setStepIndex(i);
+          setProgress(STEP_PCTS[i]);
+          await new Promise((res) => setTimeout(res, 500));
+          if (cancelled) return;
+        }
+ 
         navigate('/home');
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : String(err));
+        }
       }
-      setStepIndex(i);
-      setProgress(STEP_PCTS[i]);
-      setTimeout(() => advance(i + 1), i === STEPS.length - 1 ? 400 : STEP_DURATION);
+    }
+ 
+    const timeout = setTimeout(run, 600);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
     };
-
-    const timeout = setTimeout(() => advance(0), 600);
-    return () => clearTimeout(timeout);
-  });
-
+  }, []);
+ 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-10 px-6">
       <motion.div
@@ -50,38 +72,50 @@ export default function InitializationPage() {
           The Omega Strikers Companion App
         </span>
       </motion.div>
-
-      <motion.div
-        className="flex flex-col items-center gap-5 w-64"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
-      >
-        <div className="w-10 h-10 rounded-full border-[3px] border-surface-overlay border-t-primary animate-spin" />
-
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={stepIndex}
-            className="text-sm text-char-secondary text-center"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2 }}
-          >
-            {STEPS[stepIndex]}
-          </motion.p>
-        </AnimatePresence>
-
-        <div className="w-full h-1 rounded-full bg-surface-overlay overflow-hidden">
-          <motion.div
-            className="h-full rounded-full bg-primary"
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-          />
-        </div>
-
-        <span className="text-xs text-char-subtle">{progress}%</span>
-      </motion.div>
+ 
+      {error ? (
+        <motion.div
+          className="flex flex-col items-center gap-3 w-80 text-center"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <p className="text-sm font-semibold text-error">Initialization Failed</p>
+          <p className="text-xs text-char-secondary whitespace-pre-wrap">{error}</p>
+        </motion.div>
+      ) : (
+        <motion.div
+          className="flex flex-col items-center gap-5 w-64"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+        >
+          <div className="w-10 h-10 rounded-full border-[3px] border-surface-overlay border-t-primary animate-spin" />
+ 
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={stepIndex}
+              className="text-sm text-char-secondary text-center"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2 }}
+            >
+              {STEPS[stepIndex]}
+            </motion.p>
+          </AnimatePresence>
+ 
+          <div className="w-full h-1 rounded-full bg-surface-overlay overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-primary"
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            />
+          </div>
+ 
+          <span className="text-xs text-char-subtle">{progress}%</span>
+        </motion.div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { platform } from "@tauri-apps/plugin-os";
 import { homeDir, join } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api/core";
-import { windows_log, linux_log, macos_log } from "../constants";
+import { windows_log } from "../constants";
 import { logger } from "../logger";
 
 export type MatchPhase =
@@ -32,8 +32,6 @@ export async function getLogPath(): Promise<string> {
   let suffix = '';
   switch (os) {
     case 'windows': suffix = windows_log; break;
-    case 'linux':   suffix = linux_log;   break;
-    case 'macos':   suffix = macos_log;   break;
     default:        suffix = windows_log;
   }
   // Absolute paths (like WSL /mnt/c/...) are used as is
