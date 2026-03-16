@@ -6,13 +6,13 @@ import App from "./App";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createHashRouter } from "react-router-dom";
-import { MatchPage } from "./pages/Match";
 import { ThemeProvider } from './components/Theme/ThemeProvider';
 import { ToastProvider } from './components/UI/Toast';
 // import { themeScript } from './core/styles/theme';
 import InitializationPage from './pages/Initialization';
 import HomePage from './pages/Home';
 import ErrorBoundary from './components/ErrorBoundry';
+import RankCheckerPage from './pages/RankChecker';
 
 const router = createHashRouter([
   {
@@ -22,7 +22,7 @@ const router = createHashRouter([
     children: [
       { index: true, path: '/',   element: <InitializationPage /> },
       { path: "home",             element: <HomePage /> },
-      { path: "match",            element: <MatchPage /> },
+      { path: "rankchecker",      element: <RankCheckerPage /> },
     ],
   },
 ]);

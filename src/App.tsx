@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { RankedQuery, SelfQuery } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
-import { MatchPhase, PHASE_COLORS, PHASE_LABELS } from './core/logMonitor';
+import { MatchPhase } from './core/logMonitor';
+import Sidebar from './components/Sidebar';
+import TopBar from './components/TopBar';
 
 export interface AppContextType {
   playerData: RankedQuery[];
@@ -29,35 +31,28 @@ function App() {
   const [registeredPlayers, setRegisteredPlayers] = useState<string[]>([]);
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const showSidebar = !['/', '/home'].includes(location.pathname);
+
   return (
-    <div className="min-h-screen bg-surface text-white">
-      {/* Topbar */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-6 bg-surface-subtle border-b border-background-border">
-        {/* Left */}
-        <div className="flex items-center gap-4">
-          <p className="text-xs text-char-subtle">0 Online</p>
-        </div>
-
-        {/* Right */}
-        <div className="flex items-center gap-4">
-          <p className="text-xs text-char-subtle">
-            Game State:{" "}
-            <b className={matchPhase ? (PHASE_COLORS[matchPhase] ?? 'text-char-subtle') : 'text-char-subtle'}>
-              {matchPhase ? (PHASE_LABELS[matchPhase] ?? 'Loading') : 'Loading'}
-            </b>
-          </p>
-        </div>
+    <div className="min-h-screen bg-surface text-white pt-12">
+      <TopBar matchPhase={matchPhase} />
+ 
+      <div className="flex">
+        {showSidebar && <Sidebar navigate={navigate} />}
+        <main className={showSidebar ? "flex-1 pl-13" : "flex-1"}>
+          <Outlet context={{
+            playerData, setPlayerData,
+            collectedPlayers, setCollectedPlayers,
+            navigate,
+            userData, setUserData,
+            matchPhase, setMatchPhase,
+            registeredPlayers, setRegisteredPlayers,
+            }}
+          />
+        </main>
       </div>
-
-      <Outlet context={{
-        playerData, setPlayerData,
-        collectedPlayers, setCollectedPlayers,
-        navigate,
-        userData, setUserData,
-        matchPhase, setMatchPhase,
-        registeredPlayers, setRegisteredPlayers,
-        }}
-      />
+ 
       <DebugConsole />
     </div>
   );

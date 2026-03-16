@@ -1,45 +1,7 @@
 import { motion, type Variants } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
-
-const NAV_ITEMS = [
-  {
-    label: "My Account",
-    desc: "See stats and make advanced changes",
-    slug: 'player',
-    image: "/backgrounds/Strikers.webp"
-  },
-  {
-    label: "Rank Checker",
-    desc: "Auto fetch the ranks of everyone in game",
-    slug: 'rankchecker',
-    image: "/backgrounds/Temple.webp"
-  },
-  {
-    label: "Custom Games Manager",
-    desc: "Tweak every aspect of Custom Games",
-    slug: 'cgm',
-    image: "/backgrounds/MusicShow.webp"
-  },
-  {
-    label: "Queue Manager",
-    desc: "Queue into some weird game modes",
-    slug: 'cqm',
-    image: "/backgrounds/MusicStage.webp"
-  },
-  {
-    label: "Mod Manager",
-    desc: "Download and Install Mods",
-    slug: 'mods',
-    image: "/backgrounds/Campfire.jpg"
-  },
-  {
-    label: "Settings",
-    desc: "Adjust the app's settings",
-    slug: 'settings',
-    image: "/backgrounds/Bedroom.jpg"
-  },
-];
+import { NAV_ITEMS } from "../core/objects";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -63,7 +25,7 @@ const itemVariants: Variants = {
 export default function HomePage() {
   const { navigate, userData } = useOutletContext<AppContextType>();
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background px-8 py-12">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background px-8 pb-24">
       <motion.div
         className="mb-10 text-center"
         initial={{ opacity: 0, y: -10 }}
@@ -94,7 +56,7 @@ export default function HomePage() {
       >
         {NAV_ITEMS.map((item) => (
           <motion.div key={item.slug} variants={itemVariants}>
-            <NavButton item={item} onClick={() => navigate(item.label)} />
+            <NavButton item={item} onClick={() => navigate(item.slug)} />
           </motion.div>
         ))}
       </motion.div>
