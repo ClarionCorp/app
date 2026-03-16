@@ -25,7 +25,7 @@ function App() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-surface text-white">
       {/* Topbar */}
       <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-6 bg-surface-subtle border-b border-background-border">
         {/* Left */}

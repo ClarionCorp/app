@@ -52,11 +52,11 @@
 
 /* Dark (default) */
 :root {
-  --theme-background: #0E0E0E;
+  --theme-background: #080108;
   --theme-background-border: #191a1b;
   --theme-slate: #0A0A0A;
-  --theme-surface: #0E0E0E;
-  --theme-surface-subtle: #161616;
+  --theme-surface: #0e0e0e;
+  --theme-surface-subtle: #09010a;
   --theme-surface-raised: #1a1a1a;
   --theme-surface-overlay: #202020;
   --theme-surface-active: #272727;

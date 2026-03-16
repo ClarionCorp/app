@@ -4,8 +4,8 @@ import { AppContextType } from "../App";
 
 const NAV_ITEMS = [
   {
-    label: "Player Lookup",
-    desc: "Search for Stats about a Player",
+    label: "My Account",
+    desc: "See stats and make advanced changes",
     slug: 'player',
     image: "/backgrounds/Strikers.webp"
   },
@@ -13,13 +13,25 @@ const NAV_ITEMS = [
     label: "Rank Checker",
     desc: "Auto fetch the ranks of everyone in game",
     slug: 'rankchecker',
-    image: "/backgrounds/MusicShow.webp"
+    image: "/backgrounds/Temple.webp"
   },
   {
     label: "Custom Games Manager",
     desc: "Tweak every aspect of Custom Games",
     slug: 'cgm',
-    image: "/backgrounds/GatesOfObscura.webp"
+    image: "/backgrounds/MusicShow.webp"
+  },
+  {
+    label: "Queue Manager",
+    desc: "Queue into some weird game modes",
+    slug: 'cqm',
+    image: "/backgrounds/MusicStage.webp"
+  },
+  {
+    label: "Mod Manager",
+    desc: "Download and Install Mods",
+    slug: 'mods',
+    image: "/backgrounds/Campfire.jpg"
   },
   {
     label: "Settings",
@@ -61,7 +73,7 @@ export default function HomePage() {
         <div className="relative flex flex-col items-center">
           <img
             src={'/aimi/Yapping.gif'}
-            className="w-40 aspect-square rounded-xl object-cover absolute -top-48"
+            className="w-40 aspect-square rounded-xl object-cover mb-12"
           />
           <div className="text-center">
             <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
