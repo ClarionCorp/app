@@ -2,32 +2,6 @@ import { exists, readTextFile } from '@tauri-apps/plugin-fs';
 import { homeDir, join } from '@tauri-apps/api/path';
 import { windows_identity, windows_log, OdyAPI } from './constants';
 import { SelfQuery } from '../types/odyssey';
-import { invoke } from '@tauri-apps/api/core';
-
-export type MatchPhase =
-  | 'EMatchPhase::None'
-  | 'EMatchPhase::BanSelect'
-  | 'EMatchPhase::LoadoutSelect'
-  | 'EMatchPhase::CharacterSelect'
-  | 'EMatchPhase::VersusScreen'
-  | 'EMatchPhase::FaceOffIntro'
-  | 'EMatchPhase::InGame'
-  | 'EMatchPhase::GoalScore'
-  | 'EMatchPhase::Intermission'
-  | 'EMatchPhase::PostGameCelebration';
-
-export const PHASE_LABELS: Record<MatchPhase, string> = {
-  'EMatchPhase::None':                'Idle',
-  'EMatchPhase::BanSelect':           'Ban Phase',
-  'EMatchPhase::LoadoutSelect':       'Loadout Select',
-  'EMatchPhase::CharacterSelect':     'Character Select',
-  'EMatchPhase::VersusScreen':        'Versus Screen',
-  'EMatchPhase::FaceOffIntro':        'Face-Off Intro',
-  'EMatchPhase::InGame':              'In Game',
-  'EMatchPhase::GoalScore':           'Goal Scored',
-  'EMatchPhase::Intermission':        'Intermission',
-  'EMatchPhase::PostGameCelebration': 'Post Game',
-};
 
 
 async function readIdentity(): Promise<{ jwt: string; refreshToken: string }> {
@@ -104,35 +78,4 @@ export async function fetchSelfQuery(): Promise<SelfQuery> {
   }
 
   return res.json() as Promise<SelfQuery>;
-}
-
-// 3) Read the log from the beginning and find the most recent match phase
-export async function readInitialMatchPhase(): Promise<MatchPhase | null> {
-  const home = await homeDir();
-  const logPath = await join(home, windows_log);
- 
-  const [content] = await invoke<[string, number]>('read_log_from', {
-    path: logPath,
-    offset: 0,
-  });
- 
-  if (!content) {
-    console.warn('[init] Log file was empty, could not determine initial match phase.');
-    return null;
-  }
- 
-  const PHASE_REGEX = /LogPMPerfStatsSubsystem: Game context: MatchPhase: '(EMatchPhase::\w+)'/;
- 
-  let lastPhase: MatchPhase | null = null;
-  for (const line of content.split('\n')) {
-    const match = line.match(PHASE_REGEX);
-    if (match) lastPhase = match[1] as MatchPhase;
-  }
- 
-  if (!lastPhase) {
-    console.warn('[init] No match phase found in log. Game may not have been launched yet.');
-    return null;
-  }
- 
-  return lastPhase;
 }

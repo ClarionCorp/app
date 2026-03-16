@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { RankedQuery, SelfQuery } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
+import { MatchPhase, PHASE_COLORS, PHASE_LABELS } from './core/logMonitor';
 
 export interface AppContextType {
   playerData: RankedQuery[];
@@ -13,15 +14,19 @@ export interface AppContextType {
   userData: SelfQuery;
   setUserData: (self: SelfQuery) => void;
 
-  matchPhase: string | null;
-  setMatchPhase: (phase: string | null) => void;
+  matchPhase: MatchPhase | null;
+  setMatchPhase: (phase: MatchPhase | null) => void;
+
+  registeredPlayers: string[];
+  setRegisteredPlayers: (players: string[]) => void;
 }
 
 function App() {
   const [playerData, setPlayerData] = useState<RankedQuery[]>([]);
   const [userData, setUserData] = useState<SelfQuery>();
-  const [matchPhase, setMatchPhase] = useState<string>('Unknown');
+  const [matchPhase, setMatchPhase] = useState<MatchPhase>('EMatchPhase::Unknown');
   const [collectedPlayers, setCollectedPlayers] = useState<string[]>([]);
+  const [registeredPlayers, setRegisteredPlayers] = useState<string[]>([]);
   const navigate = useNavigate();
 
   return (
@@ -35,7 +40,12 @@ function App() {
 
         {/* Right */}
         <div className="flex items-center gap-4">
-          <p className="text-xs text-char-subtle">Game State: <b>{matchPhase ?? 'Loading'}</b></p>
+          <p className="text-xs text-char-subtle">
+            Game State:{" "}
+            <b className={matchPhase ? (PHASE_COLORS[matchPhase] ?? 'text-char-subtle') : 'text-char-subtle'}>
+              {matchPhase ? (PHASE_LABELS[matchPhase] ?? 'Loading') : 'Loading'}
+            </b>
+          </p>
         </div>
       </div>
 
@@ -45,6 +55,7 @@ function App() {
         navigate,
         userData, setUserData,
         matchPhase, setMatchPhase,
+        registeredPlayers, setRegisteredPlayers,
         }}
       />
       <DebugConsole />

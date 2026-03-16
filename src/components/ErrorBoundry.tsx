@@ -1,10 +1,16 @@
 import { useNavigate, useRouteError } from "react-router-dom";
 import { Button } from "./UI/Button";
 import { ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
+import { invoke } from "@tauri-apps/api/core";
 
 export default function ErrorBoundary() {
   const error = useRouteError() as Error;
   const navigate = useNavigate();
+
+  const handleRestart = async () => {
+    await invoke('stop_log_monitor');
+    navigate('/');
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-2 px-6 text-center">
@@ -17,7 +23,7 @@ export default function ErrorBoundary() {
       <Button
         variant="danger"
         size="md"
-        onClick={() => navigate('/')}
+        onClick={handleRestart}
         iconLeft={<ArrowCounterClockwiseIcon size={15} />}
       >
         Restart App

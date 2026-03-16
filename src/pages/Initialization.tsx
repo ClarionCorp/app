@@ -2,7 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
-import { fetchSelfQuery, PHASE_LABELS, readInitialMatchPhase, verifyClientFiles } from "../core/init";
+import { fetchSelfQuery, verifyClientFiles } from "../core/init";
+import { startLogMonitor } from "../core/logMonitor";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -17,7 +18,7 @@ const STEPS = [
 const STEP_PCTS = [15, 35, 55, 75, 92, 100];
  
 export default function InitializationPage() {
-  const { navigate, setUserData, setMatchPhase } = useOutletContext<AppContextType>();
+  const { navigate, setUserData, setMatchPhase, setRegisteredPlayers, registeredPlayers } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -43,9 +44,19 @@ export default function InitializationPage() {
         // 3) Read log and fetch current game status
         setStepIndex(2);
         setProgress(STEP_PCTS[2]);
-        const matchPhase = await readInitialMatchPhase();
-        if (cancelled) return;
-        if (matchPhase) { setMatchPhase(PHASE_LABELS[matchPhase]); }
+        await startLogMonitor(0, {
+          onMatchPhase: (phase) => {
+            setMatchPhase(phase);
+            if (phase != 'EMatchPhase::None') {
+              setRegisteredPlayers([]);
+            }
+          },
+          onPlayerRegistered: (username) => {
+            if (!registeredPlayers.includes(username)) {
+              setRegisteredPlayers([...registeredPlayers, username]);
+            }
+          },
+        });
  
         // Remaining steps are placeholders for now
         for (let i = 2; i < STEPS.length; i++) {
