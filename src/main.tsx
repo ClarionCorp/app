@@ -12,15 +12,17 @@ import { ToastProvider } from './components/UI/Toast';
 import { themeScript } from './core/styles/theme';
 import InitializationPage from './pages/Initialization';
 import HomePage from './pages/Home';
+import ErrorBoundary from './components/ErrorBoundry';
 
 const router = createHashRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorBoundary />,
     children: [
-      { index: true,          element: <InitializationPage /> },
-      { path: "home",         element: <HomePage /> },
-      { path: "match",        element: <MatchPage /> },
+      { index: true, path: '/',   element: <InitializationPage /> },
+      { path: "home",             element: <HomePage /> },
+      { path: "match",            element: <MatchPage /> },
     ],
   },
 ]);

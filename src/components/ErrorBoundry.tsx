@@ -1,0 +1,23 @@
+import { useNavigate, useRouteError } from "react-router-dom";
+import { Button } from "./UI/Button";
+import { ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
+
+export default function ErrorBoundary() {
+  const error = useRouteError() as Error;
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-2 px-6 text-center">
+      <p className="text-3xl font-bold text-error">Oops! We've crashed!</p>
+      <p className="text-xs text-char-secondary whitespace-pre-wrap mb-4">{error?.message ?? String(error)}</p>
+      <Button
+        variant="danger"
+        size="md"
+        onClick={() => navigate('/')}
+        iconLeft={<ArrowCounterClockwiseIcon size={15} />}
+      >
+        Restart App
+      </Button>
+    </div>
+  );
+}
