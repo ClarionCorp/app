@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
-import { fetchSelfQuery, verifyClientFiles } from "../core/init";
+import { fetchSelfQuery, PHASE_LABELS, readInitialMatchPhase, verifyClientFiles } from "../core/init";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -17,7 +17,7 @@ const STEPS = [
 const STEP_PCTS = [15, 35, 55, 75, 92, 100];
  
 export default function InitializationPage() {
-  const { navigate, setUserData } = useOutletContext<AppContextType>();
+  const { navigate, setUserData, setMatchPhase } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -27,18 +27,25 @@ export default function InitializationPage() {
  
     async function run() {
       try {
-        // Step 0: Fetching client files
+        // 1) Grab identity.json & OS Log Files
         setStepIndex(0);
         setProgress(STEP_PCTS[0]);
         await verifyClientFiles();
         if (cancelled) return;
  
-        // Step 1: Fetch account info
+        // 2) Fetch account info from Ody using identity.json
         setStepIndex(1);
         setProgress(STEP_PCTS[1]);
         const selfQuery = await fetchSelfQuery();
         if (cancelled) return;
         setUserData(selfQuery);
+ 
+        // 3) Read log and fetch current game status
+        setStepIndex(2);
+        setProgress(STEP_PCTS[2]);
+        const matchPhase = await readInitialMatchPhase();
+        if (cancelled) return;
+        if (matchPhase) { setMatchPhase(PHASE_LABELS[matchPhase]); }
  
         // Remaining steps are placeholders for now
         for (let i = 2; i < STEPS.length; i++) {
