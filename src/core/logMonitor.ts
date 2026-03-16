@@ -31,20 +31,50 @@ export const PHASE_LABELS: Partial<Record<MatchPhase, string>> = {
   'EMatchPhase::PostGameCelebration':  'Post Game',
 };
 
-export const PHASE_COLORS: Partial<Record<string, string>> = {
-  'EMatchPhase::Unknown':              'text-char-subtle',
-  'EMatchPhase::None':                 'text-char-subtle',
-  'EMatchPhase::BanSelect':            'text-yellow-400',
-  'EMatchPhase::LoadoutSelect':        'text-yellow-400',
-  'EMatchPhase::CharacterSelect':      'text-yellow-400',
-  'EMatchPhase::VersusScreen':         'text-yellow-400',
-  'EMatchPhase::FaceOffIntro':         'text-green-400',
-  'EMatchPhase::FaceOffCountdown':     'text-green-400',
-  'EMatchPhase::InGame':               'text-green-400',
-  'EMatchPhase::GoalScore':            'text-green-400',
-  'EMatchPhase::Intermission':         'text-green-400',
-  'EMatchPhase::PostGameCelebration':  'text-blue-400',
+export const PHASE_GROUPS = {
+  out_of_game: [
+    'EMatchPhase::Unknown',
+    'EMatchPhase::None',
+    'EMatchPhase::PostGameCelebration'
+  ],
+  starting: [
+    'EMatchPhase::BanSelect',
+    'EMatchPhase::LoadoutSelect',
+    'EMatchPhase::CharacterSelect',
+    'EMatchPhase::VersusScreen',
+    'EMatchPhase::FaceOffIntro',
+    'EMatchPhase::FaceOffCountdown'
+  ],
+  in_game: [
+    'EMatchPhase::InGame',
+    'EMatchPhase::GoalScore',
+    'EMatchPhase::Intermission'
+  ],
+} as const;
+
+export type PhaseGroup = keyof typeof PHASE_GROUPS;
+
+const PHASE_GROUP_COLORS: Record<PhaseGroup, string> = {
+  out_of_game: 'text-char-subtle',
+  starting: 'text-yellow-400',
+  in_game: 'text-green-400',
 };
+
+export function getPhaseGroup(phase: string): PhaseGroup {
+  for (const [group, phases] of Object.entries(PHASE_GROUPS)) {
+    if ((phases as readonly string[]).includes(phase)) return group as PhaseGroup;
+  }
+  return 'out_of_game';
+}
+
+export const PHASE_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(PHASE_GROUPS).flatMap(([group, phases]) =>
+    phases.map((phase) => [phase, PHASE_GROUP_COLORS[group as PhaseGroup]])
+  )
+);
+
+
+
 
 export type LogMonitorCallbacks = {
   onMatchPhase?: (phase: MatchPhase) => void;
