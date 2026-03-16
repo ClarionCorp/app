@@ -58,13 +58,20 @@ export default function HomePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
-          Welcome back, {userData.username}!
-        </p>
-        <h1 className="text-2xl font-extrabold tracking-tight text-char">
-          How can I{" "}
-          <span className="text-primary">help</span>?
-        </h1>
+        <div className="relative flex flex-col items-center">
+          <img
+            src={'/aimi/Yapping.gif'}
+            className="w-40 aspect-square rounded-xl object-cover absolute -top-48"
+          />
+          <div className="text-center">
+            <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
+              Welcome back, {userData.username}!
+            </p>
+            <h1 className="text-2xl font-extrabold tracking-tight text-char">
+              How can I <span className="text-primary">help</span>?
+            </h1>
+          </div>
+        </div>
       </motion.div>
 
       <motion.div
@@ -74,7 +81,7 @@ export default function HomePage() {
         animate="show"
       >
         {NAV_ITEMS.map((item) => (
-          <motion.div key={item.label} variants={itemVariants}>
+          <motion.div key={item.slug} variants={itemVariants}>
             <NavButton item={item} onClick={() => navigate(item.label)} />
           </motion.div>
         ))}

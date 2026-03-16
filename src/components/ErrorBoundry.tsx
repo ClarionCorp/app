@@ -8,6 +8,10 @@ export default function ErrorBoundary() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-2 px-6 text-center">
+      <img
+        src={'/aimi/Shock.png'}
+        className="w-40 aspect-square rounded-xl object-cover absolute top-48"
+      />
       <p className="text-3xl font-bold text-error">Oops! We've crashed!</p>
       <p className="text-xs text-char-secondary whitespace-pre-wrap mb-4">{error?.message ?? String(error)}</p>
       <Button

@@ -63,7 +63,7 @@ export default function InitializationPage() {
       }
     }
  
-    const timeout = setTimeout(run, 600);
+    const timeout = setTimeout(run, 1000); // wait for app before starting
     return () => {
       cancelled = true;
       clearTimeout(timeout);
@@ -73,11 +73,15 @@ export default function InitializationPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-10 px-6">
       <motion.div
-        className="flex flex-col items-center gap-2"
+        className="flex flex-col relative items-center gap-2"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
+        <img
+          src={'/aimi/Sweat.gif'}
+          className="w-40 aspect-square rounded-xl object-cover absolute -top-56"
+        />
         <span className="text-3xl font-extrabold tracking-tight text-char">
           Loading Ai.Mi App...
         </span>

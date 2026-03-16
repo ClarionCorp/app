@@ -39,6 +39,7 @@ export type SelfQuery = {
   masteryLevel: number,
   playerStatus: string,
   displayNameStatus: string,
+  lastDisplayNameChangeTimestamp?: Date,
   matchmakingRegion: string,
   gameLiftRegionUrls: {
     region: string,
