@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { RankedQuery, SelfQuery } from './types/odyssey';
+import { OdyAuth, SelfQuery } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import { MatchPhase } from './core/logMonitor';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 
 export interface AppContextType {
-  playerData: RankedQuery[];
-  setPlayerData: (data: RankedQuery[]) => void;
-  collectedPlayers: string[];
-  setCollectedPlayers: (players: string[]) => void;
   navigate: ReturnType<typeof useNavigate>;
+
+  odyAuth: OdyAuth;
+  setOdyAuth: (auth: OdyAuth) => void;
 
   userData: SelfQuery;
   setUserData: (self: SelfQuery) => void;
@@ -24,10 +23,9 @@ export interface AppContextType {
 }
 
 function App() {
-  const [playerData, setPlayerData] = useState<RankedQuery[]>([]);
+  const [odyAuth, setOdyAuth] = useState<OdyAuth>();
   const [userData, setUserData] = useState<SelfQuery>();
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('EMatchPhase::Unknown');
-  const [collectedPlayers, setCollectedPlayers] = useState<string[]>([]);
   const [registeredPlayers, setRegisteredPlayers] = useState<string[]>([]);
   const navigate = useNavigate();
 
@@ -42,9 +40,8 @@ function App() {
         {showSidebar && <Sidebar navigate={navigate} />}
         <main className={showSidebar ? "flex-1 pl-13" : "flex-1"}>
           <Outlet context={{
-            playerData, setPlayerData,
-            collectedPlayers, setCollectedPlayers,
             navigate,
+            odyAuth, setOdyAuth,
             userData, setUserData,
             matchPhase, setMatchPhase,
             registeredPlayers, setRegisteredPlayers,

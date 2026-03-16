@@ -1,6 +1,5 @@
-import { RankedQuery, UserQuery } from "../../types/odyssey";
+import { OdyAuth, RankedQuery, UserQuery } from "../../types/odyssey";
 import { OdyAPI } from "../constants";
-import { fetchAuth } from "./auth";
 
 type QueryJSON ={
   matches: UserQuery[]
@@ -10,20 +9,15 @@ type RankedJSON ={
   players: RankedQuery[]
 }
 
-export async function usernameQuery(username: string): Promise<UserQuery | null> {
-  const identity = await fetchAuth();
-  if (!identity) return null;
-  
+export async function usernameQuery(username: string, auth: OdyAuth): Promise<UserQuery | null> {
   try {
     const res = await fetch(`${OdyAPI}/v1/players?usernameQuery=${username}`, {
       method: 'GET',
       headers: {
-        'X-Authorization': `Bearer ${identity.accessTokens.jwt}`,
-        'X-Refresh-Token': `${identity.accessTokens.refreshToken}`
+        'X-Authorization': `Bearer ${auth.jwt}`,
+        'X-Refresh-Token': `${auth.rft}`
       }
     });
-
-    console.debug(JSON.stringify(identity.accessTokens, null, 1));
 
     const data: QueryJSON = await res.json();
     if (!res.ok || data.matches.length == 0 || !data.matches[0].playerId) { throw new Error(`API Unreachable or Player not found (${res.status})`) };
@@ -37,17 +31,13 @@ export async function usernameQuery(username: string): Promise<UserQuery | null>
   }
 }
 
-export async function rankQuery(playerId: string | undefined): Promise<RankedQuery | null> {
-  const identity = await fetchAuth();
-  if (!identity) return null;
-  if (!playerId) return null;
-  
+export async function rankQuery(playerId: string, auth: OdyAuth): Promise<RankedQuery | null> {
   try {
     const res = await fetch(`${OdyAPI}/v1/ranked/leaderboard/search/${playerId}?entriesBefore=0&entriesAfter=0`, {
       method: 'GET',
       headers: {
-        'X-Authorization': `Bearer ${identity.accessTokens.jwt}`,
-        'X-Refresh-Token': `${identity.accessTokens.refreshToken}`
+        'X-Authorization': `Bearer ${auth.jwt}`,
+        'X-Refresh-Token': `${auth.rft}`
       }
     });
 

@@ -10,4 +10,6 @@ export const OdyAPI = 'https://prometheus-proxy.odysseyinteractive.gg/api'
 export const windows_identity = 'AppData\\Local\\OmegaStrikers\\identity.json';
 
 // Log File Paths (after user home folder)
-export const windows_log = 'AppData\\Local\\OmegaStrikers\\Saved\\Logs\\OmegaStrikers.log';
+// export const windows_log = 'AppData\\Local\\OmegaStrikers\\Saved\\Logs\\OmegaStrikers.log';
+
+export const windows_log = 'Desktop\\dicks\\Test\\OmegaStrikers.log';

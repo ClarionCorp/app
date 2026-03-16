@@ -1,10 +1,10 @@
 import { exists, readTextFile } from '@tauri-apps/plugin-fs';
 import { homeDir, join } from '@tauri-apps/api/path';
 import { windows_identity, windows_log, OdyAPI } from './constants';
-import { SelfQuery } from '../types/odyssey';
+import { OdyAuth, SelfQuery } from '../types/odyssey';
 
 
-async function readIdentity(): Promise<{ jwt: string; refreshToken: string }> {
+async function readIdentity(): Promise<OdyAuth> {
   const home = await homeDir();
   const fullIdentityPath = await join(home, windows_identity);
   const raw = await readTextFile(fullIdentityPath);
@@ -33,11 +33,14 @@ async function readIdentity(): Promise<{ jwt: string; refreshToken: string }> {
     );
   }
 
-  return accessTokens as { jwt: string; refreshToken: string };
+  return {
+    jwt: accessTokens.jwt as string,
+    rft: accessTokens.refreshToken as string
+  };
 }
 
 // 1) Verify identity.json and OmegaStrikers.log exist, and identity has required keys
-export async function verifyClientFiles(): Promise<void> {
+export async function verifyClientFiles(): Promise<OdyAuth> {
   const home = await homeDir();
 
   const fullIdentityPath = await join(home, windows_identity);
@@ -57,17 +60,17 @@ export async function verifyClientFiles(): Promise<void> {
     );
   }
 
-  await readIdentity();
+  return await readIdentity();
 }
 
 // 2) Fetch the player's account info from the Ody API
 export async function fetchSelfQuery(): Promise<SelfQuery> {
-  const { jwt, refreshToken } = await readIdentity();
+  const { jwt, rft } = await readIdentity();
 
   const res = await fetch(`${OdyAPI}/v1/me`, {
     headers: {
       'X-Authorization': `Bearer ${jwt}`,
-      'x-Refresh-Token': refreshToken,
+      'x-Refresh-Token': rft,
     },
   });
 

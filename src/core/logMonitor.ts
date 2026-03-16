@@ -96,7 +96,7 @@ export async function startLogMonitor(
 
   if (callbacks.onMatchPhase) {
     const unlisten = await listen<string>('log://match-phase', (event) => {
-      console.log(`Changing GameState to ${event.payload}.`);
+      console.debug(`Changing GameState to ${event.payload}.`);
       callbacks.onMatchPhase?.(event.payload as MatchPhase);
     });
     unlisteners.push(unlisten);
@@ -104,7 +104,7 @@ export async function startLogMonitor(
 
   if (callbacks.onPlayerRegistered) {
     const unlisten = await listen<string>('log://player-registered', (event) => {
-      console.log(`Player Registered: ${event.payload}.`);
+      console.debug(`Player Registered: ${event.payload}.`);
       callbacks.onPlayerRegistered?.(event.payload);
     });
     unlisteners.push(unlisten);

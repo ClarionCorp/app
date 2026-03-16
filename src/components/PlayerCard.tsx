@@ -25,7 +25,8 @@ export function PlayerCard({ player, index }: PlayerCardProps) {
     >
       <button
         onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
-        className="w-full text-left bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl p-4 transition-colors cursor-pointer group"
+        title='Click to open profile on ClarionCorp'
+        className="w-full text-left bg-surface border border-background-border hover:border-primary/20 rounded-xl p-4 transition-colors cursor-pointer group shadow-xl"
       >
         <div className="flex items-center gap-4">
           {/* Rank icon */}
@@ -36,7 +37,7 @@ export function PlayerCard({ player, index }: PlayerCardProps) {
           {/* Info */}
           <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold text-white truncate group-hover:text-violet-300 transition-colors">
+              <span className="text-base font-semibold text-white truncate">
                 {player.username}
               </span>
               <span

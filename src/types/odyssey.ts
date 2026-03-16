@@ -49,3 +49,8 @@ export type SelfQuery = {
     discordId: string
   }
 }
+
+export type OdyAuth = {
+  jwt: string,
+  rft: string,
+}

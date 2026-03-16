@@ -18,7 +18,7 @@ const STEPS = [
 const STEP_PCTS = [15, 35, 55, 75, 92, 100];
  
 export default function InitializationPage() {
-  const { navigate, setUserData, setMatchPhase, setRegisteredPlayers, registeredPlayers } = useOutletContext<AppContextType>();
+  const { navigate, setUserData, setMatchPhase, setRegisteredPlayers, registeredPlayers, setOdyAuth } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,8 @@ export default function InitializationPage() {
         // 1) Grab identity.json & OS Log Files
         setStepIndex(0);
         setProgress(STEP_PCTS[0]);
-        await verifyClientFiles();
+        const auth = await verifyClientFiles();
+        setOdyAuth(auth);
         if (cancelled) return;
  
         // 2) Fetch account info from Ody using identity.json

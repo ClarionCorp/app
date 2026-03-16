@@ -12,6 +12,7 @@
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [
+        { "path": "$HOME/Desktop/dicks/**" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" }
       ]
@@ -19,6 +20,7 @@
     {
       "identifier": "fs:allow-exists",
       "allow": [
+        { "path": "$HOME/Desktop/dicks/**" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" }
       ]

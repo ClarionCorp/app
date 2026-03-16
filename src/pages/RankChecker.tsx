@@ -1,26 +1,27 @@
 import { useEffect, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { useOutletContext } from 'react-router-dom';
-import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { AppContextType } from '../App';
 import { PlayerCard } from '../components/PlayerCard';
-import { RankedQuery } from '../types/odyssey';
-import { OdyAPI } from '../core/constants';
+import { OdyAuth, RankedQuery } from '../types/odyssey';
 import { getPhaseGroup } from '../core/logMonitor';
+import { rankQuery, usernameQuery } from '../core/utilities/odyssey';
 
 const containerVariants: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
 };
 
-async function fetchPlayerData(usernames: string[]): Promise<RankedQuery[]> {
+async function fetchPlayerData(usernames: string[], auth: OdyAuth): Promise<RankedQuery[]> {
+  console.debug(`Fetching ${usernames.length} users...`);
   const results = await Promise.allSettled(
-    usernames.map((username) =>
-      fetch(`${OdyAPI}/v1/players/${username}/ranked`).then((r) => {
-        if (!r.ok) throw new Error(`Failed to fetch ${username}`);
-        return r.json() as Promise<RankedQuery>;
-      })
-    )
+    usernames.map(async (username) => {
+      const user = await usernameQuery(username, auth);
+      if (!user) return;
+      const ranked = await rankQuery(user.playerId, auth);
+      if (!ranked) return;
+      return ranked;
+    })
   );
 
   return results
@@ -29,7 +30,7 @@ async function fetchPlayerData(usernames: string[]): Promise<RankedQuery[]> {
 }
 
 export default function RankCheckerPage() {
-  const { navigate, matchPhase, registeredPlayers } = useOutletContext<AppContextType>();
+  const { matchPhase, registeredPlayers, odyAuth } = useOutletContext<AppContextType>();
   const [players, setPlayers] = useState<RankedQuery[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +48,7 @@ export default function RankCheckerPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchPlayerData(registeredPlayers);
+        const data = await fetchPlayerData(registeredPlayers, odyAuth);
         if (!cancelled) setPlayers(data);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
@@ -116,18 +117,6 @@ export default function RankCheckerPage() {
           </motion.div>
         )}
       </div>
-
-      {/* Footer */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="flex items-center justify-center px-6 py-4 border-t border-background-border"
-      >
-        <span className="text-xs text-char-subtle">
-          {inLobby ? 'Waiting for game to end...' : 'Join a lobby to see player ranks'}
-        </span>
-      </motion.div>
     </div>
   );
 }
