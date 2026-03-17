@@ -5,6 +5,9 @@ import { AppContextType } from "../App";
 import { fetchSelfQuery, verifyClientFiles } from "../core/init";
 import { DEFAULT_ACTIVITY } from "../core/discord";
 import { initMonitorCallbacks } from "../core/monitorCallbacks";
+import { homeDir, join } from "@tauri-apps/api/path";
+import { windows_log } from "../core/constants";
+import { invoke } from "@tauri-apps/api/core";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -78,12 +81,16 @@ export default function InitializationPage() {
         // 4) Read log and fetch current game status
         setStepIndex(3);
         setProgress(STEP_PCTS[3]);
+        const home = await homeDir();
+        const logPath = await join(home, windows_log);
+        const sessionOffset = await invoke<number>('find_session_start', { path: logPath });
         await initMonitorCallbacks({ // Moved to its own file for organization sake
           updateActivity,
           setMatchPhase, setRegisteredPlayers, setCurrentLevel, setMyCharacter,
           setTeamOnePoints, setTeamTwoPoints, setTeamOneSets, setTeamTwoSets,
           teamOneSets, teamTwoSets,
           myCharacterRef, currentLevelRef, lastPhaseGroupRef,
+          sessionOffset,
         });
 
         // 5) <Connect to CC> (unused rn)

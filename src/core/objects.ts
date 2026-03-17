@@ -50,7 +50,7 @@ const CHARACTER_DEV_NAMES: Record<string, string> = {
   'Finii': 'GravityMage',
   'Nao': 'Healer',
   'X': 'HulkingBeast',
-  'Ai.Mi': 'MagicalPlaymaker',      // check in game
+  'Aimi': 'MagicalPlaymaker',      // check in game
   'Rune': 'ManipulatingMastermind',
   'Drekar': 'NimbleBlaster',    // check in game
   'Vyce': 'RockOni',

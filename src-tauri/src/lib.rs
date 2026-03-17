@@ -1,4 +1,4 @@
-use std::io::{Read, Seek, SeekFrom};
+use std::io::{Read, Seek, SeekFrom, BufRead, BufReader};
 use std::fs::OpenOptions;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -62,6 +62,44 @@ fn read_log_from_offset(path: &str, offset: u64) -> Result<(String, u64), String
     Ok((content, file_size))
 }
 
+/// Scans the entire log file and returns the byte offset of the start of the
+/// last line containing "MainMenuMap". The monitor should start from this offset
+/// so it only sees events from the most recent session.
+/// Returns 0 if no MainMenuMap line is found (fresh log or game never reached menu).
+#[tauri::command]
+fn find_session_start(path: String) -> Result<u64, String> {
+    let mut opts = OpenOptions::new();
+    opts.read(true);
+
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::fs::OpenOptionsExt;
+        opts.share_mode(7);
+    }
+
+    let file = opts.open(&path).map_err(|e| e.to_string())?;
+    let mut reader = BufReader::new(file);
+
+    let mut last_offset: u64 = 0;
+    let mut current_offset: u64 = 0;
+    let mut line = String::new();
+
+    loop {
+        line.clear();
+        let bytes_read = reader.read_line(&mut line).map_err(|e| e.to_string())?;
+        if bytes_read == 0 { break; }
+
+        if line.contains("MainMenuMap") {
+            last_offset = current_offset;
+        }
+
+        current_offset += bytes_read as u64;
+    }
+
+    println!("[log_monitor] Session start offset: {} bytes", last_offset);
+    Ok(last_offset)
+}
+
 #[tauri::command]
 fn start_log_monitor(app: AppHandle, path: String, offset: u64) {
     let state = app.state::<MonitorFlag>();
@@ -103,7 +141,10 @@ fn start_log_monitor(app: AppHandle, path: String, offset: u64) {
                                 let _ = app.emit("log://player-registered", player);
                             }
                             if let Some(level) = regex_level(line) {
-                                let _ = app.emit("log://level", level);
+                                let _ = app.emit("log://level", &level);
+                                if level == "MainMenuMap" {
+                                    let _ = app.emit("log://match-phase", "EMatchPhase::None");
+                                }
                             }
                             if let Some(character) = regex_my_character(line) {
                                 let _ = app.emit("log://my-character", character);
@@ -146,18 +187,6 @@ fn regex_match_phase(line: &str) -> Option<String> {
             let after_cur = &rest[cur_start + current_prefix.len()..];
             if let Some(end) = after_cur.find(']') {
                 return Some(after_cur[..end].to_string());
-            }
-        }
-    }
-
-    // Old pattern (Only used to detect main menu (EMatchPhase::None))
-    let old_prefix = "LogPMPerfStatsSubsystem: Game context: MatchPhase: '";
-    if let Some(start) = line.find(old_prefix) {
-        let rest = &line[start + old_prefix.len()..];
-        if let Some(end) = rest.find('\'') {
-            let phase = &rest[..end];
-            if phase == "EMatchPhase::None" {
-                return Some(phase.to_string());
             }
         }
     }
@@ -242,7 +271,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_drpc::init())
-        .invoke_handler(tauri::generate_handler![read_log_from, start_log_monitor, stop_log_monitor])
+        .invoke_handler(tauri::generate_handler![read_log_from, find_session_start, start_log_monitor, stop_log_monitor])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

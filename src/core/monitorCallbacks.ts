@@ -20,6 +20,7 @@ type MonitorContext = Pick<AppContextType,
   currentLevelRef: RefObject<string | null>;
   myCharacterRef: RefObject<string | null>;
   lastPhaseGroupRef: RefObject<string | null>;
+  sessionOffset: number;
 };
 
 export async function initMonitorCallbacks(ctx: MonitorContext) {
@@ -38,6 +39,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     currentLevelRef,
     myCharacterRef,
     lastPhaseGroupRef,
+    sessionOffset,
   } = ctx;
 
   let rpcDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -48,7 +50,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     }, 5000); // wait 5s before actually sending
   }
 
-  return startLogMonitor(0, {
+  return startLogMonitor(sessionOffset, {
     onMatchPhase: async (phase) => {
       setMatchPhase(phase);
 
@@ -80,17 +82,18 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
               smallImage: 'platinum_high', // placeholder
               smallText: 'High Platinum', // placeholder
               startTimestamp: new Date().getTime(),
+              buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/download" }],
             })
             break;
           case 'starting':
-            await updateActivity({
-              details: `Ranked - ${currentLevelRef.current}`,
-              state: `Voting on Game Settings...`,
-              startTimestamp: new Date().getTime(),
-            })
+            // await updateActivity({
+            //   details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
+            //   state: `Voting on Game Settings...`,
+            //   startTimestamp: new Date().getTime(),
+            // })
             break;
           default: // includes out_of_game
-            debouncedUpdateActivity(DEFAULT_ACTIVITY)
+            await updateActivity(DEFAULT_ACTIVITY)
             break;
         }
       }
