@@ -18,7 +18,7 @@ const STEPS = [
 const STEP_PCTS = [15, 35, 55, 75, 92, 100];
  
 export default function InitializationPage() {
-  const { navigate, setUserData, setMatchPhase, setRegisteredPlayers, registeredPlayers, setOdyAuth } = useOutletContext<AppContextType>();
+  const { navigate, setUserData, setMatchPhase, setRegisteredPlayers, setOdyAuth } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -53,9 +53,7 @@ export default function InitializationPage() {
             }
           },
           onPlayerRegistered: (username) => {
-            if (!registeredPlayers.includes(username)) {
-              setRegisteredPlayers([...registeredPlayers, username]);
-            }
+            setRegisteredPlayers(prev => prev.includes(username) ? prev : [...prev, username]);
           },
         });
  

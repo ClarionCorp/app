@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { OdyAuth, SelfQuery } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
@@ -19,7 +19,7 @@ export interface AppContextType {
   setMatchPhase: (phase: MatchPhase | null) => void;
 
   registeredPlayers: string[];
-  setRegisteredPlayers: (players: string[]) => void;
+  setRegisteredPlayers: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 function App() {

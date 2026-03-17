@@ -35,12 +35,15 @@ export default function RankCheckerPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  console.info(`Pre-Registered Players:`, registeredPlayers.join(', '))
+
   const inLobby = matchPhase
     ? ['starting', 'in_game'].includes(getPhaseGroup(matchPhase))
     : false;
 
   useEffect(() => {
     if (!inLobby || registeredPlayers.length === 0) return;
+    console.info(`Registered Players:`, registeredPlayers.join(', '))
 
     let cancelled = false;
 

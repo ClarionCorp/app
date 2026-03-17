@@ -1,14 +1,13 @@
 use std::io::{Read, Seek, SeekFrom};
 use std::fs::OpenOptions;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
 
-/// Read new content from a log file starting at `offset` bytes.
-/// Returns (new_content, new_offset). Uses FILE_SHARE_WRITE on Windows so the
-/// file can be read while the game has it open for writing.
+type MonitorFlag = Arc<Mutex<Option<Arc<AtomicBool>>>>;
+
 #[tauri::command]
 fn read_log_from(path: String, offset: u64) -> Result<(String, u64), String> {
     let mut opts = OpenOptions::new();
@@ -17,7 +16,6 @@ fn read_log_from(path: String, offset: u64) -> Result<(String, u64), String> {
     #[cfg(target_os = "windows")]
     {
         use std::os::windows::fs::OpenOptionsExt;
-        // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
         opts.share_mode(7);
     }
 
@@ -63,18 +61,23 @@ fn read_log_from_offset(path: &str, offset: u64) -> Result<(String, u64), String
     Ok((content, file_size))
 }
 
-/// Starts a background thread that polls the log file every 10 seconds.
-/// Emits `log://match-phase` and `log://player-registered` events to the frontend.
-/// Calling this again while a monitor is already running will stop the old one first.
 #[tauri::command]
 fn start_log_monitor(app: AppHandle, path: String, offset: u64) {
-    // If a monitor is already running, signal it to stop
-    if let Some(flag) = app.try_state::<Arc<AtomicBool>>() {
-        flag.store(false, Ordering::Relaxed);
+    let state = app.state::<MonitorFlag>();
+    let mut lock = state.lock().unwrap();
+
+    // Stop old thread if running
+    if let Some(old_flag) = lock.as_ref() {
+        old_flag.store(false, Ordering::Relaxed);
+        println!("[log_monitor] Stopping old process..");
     }
 
+    // Store new flag
     let running = Arc::new(AtomicBool::new(true));
-    app.manage(running.clone());
+    *lock = Some(running.clone());
+    drop(lock);
+
+    println!("[log_monitor] Start signal sent.");
 
     thread::spawn(move || {
         let mut current_offset = offset;
@@ -89,17 +92,14 @@ fn start_log_monitor(app: AppHandle, path: String, offset: u64) {
                         let text = format!("{}{}", partial, content);
                         let mut parts: Vec<&str> = text.split('\n').collect();
 
-                        // Last element may be an incomplete line — save for next poll
                         partial = parts.pop().unwrap_or("").to_string();
 
                         for line in parts {
-                            // Match phase
-                            if let Some(caps) = regex_match_phase(line) {
-                                let _ = app.emit("log://match-phase", caps);
+                            if let Some(phase) = regex_match_phase(line) {
+                                let _ = app.emit("log://match-phase", phase);
                             }
-                            // Player registration
-                            if let Some(caps) = regex_player_registered(line) {
-                                let _ = app.emit("log://player-registered", caps);
+                            if let Some(player) = regex_player_registered(line) {
+                                let _ = app.emit("log://player-registered", player);
                             }
                         }
                     }
@@ -109,11 +109,21 @@ fn start_log_monitor(app: AppHandle, path: String, offset: u64) {
                 }
             }
 
-            thread::sleep(Duration::from_secs(5));
+            thread::sleep(Duration::from_secs(1));
         }
 
         println!("[log_monitor] Monitor stopped.");
     });
+}
+
+#[tauri::command]
+fn stop_log_monitor(app: AppHandle) {
+    let state = app.state::<MonitorFlag>();
+    let lock = state.lock().unwrap();
+    if let Some(flag) = lock.as_ref() {
+        flag.store(false, Ordering::Relaxed);
+        println!("[log_monitor] Stop signal sent.");
+    }
 }
 
 fn regex_match_phase(line: &str) -> Option<String> {
@@ -140,7 +150,10 @@ fn regex_player_registered(line: &str) -> Option<String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let monitor_flag: MonitorFlag = Arc::new(Mutex::new(None));
+
     tauri::Builder::default()
+        .manage(monitor_flag)
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
@@ -148,12 +161,4 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![read_log_from, start_log_monitor, stop_log_monitor])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}
-
-#[tauri::command]
-fn stop_log_monitor(app: AppHandle) {
-    if let Some(flag) = app.try_state::<Arc<AtomicBool>>() {
-        flag.store(false, Ordering::Relaxed);
-        println!("[log_monitor] Stop signal sent.");
-    }
 }

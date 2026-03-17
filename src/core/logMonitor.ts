@@ -96,7 +96,7 @@ export async function startLogMonitor(
 
   if (callbacks.onMatchPhase) {
     const unlisten = await listen<string>('log://match-phase', (event) => {
-      console.debug(`Changing GameState to ${event.payload}.`);
+      console.info(`Changing GameState to ${event.payload}.`);
       callbacks.onMatchPhase?.(event.payload as MatchPhase);
     });
     unlisteners.push(unlisten);
