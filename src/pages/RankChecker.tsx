@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { useOutletContext } from 'react-router-dom';
 import { AppContextType } from '../App';
@@ -13,7 +13,8 @@ const containerVariants: Variants = {
 };
 
 async function fetchPlayerData(usernames: string[], auth: OdyAuth): Promise<RankedQuery[]> {
-  console.debug(`Fetching ${usernames.length} users...`);
+  console.log(`Fetching ${usernames.length} users...`);
+  console.debug(`Fetching ranks for ${usernames.join(', ')}...`)
   const results = await Promise.allSettled(
     usernames.map(async (username) => {
       const user = await usernameQuery(username, auth);
@@ -34,7 +35,8 @@ export default function RankCheckerPage() {
   const [players, setPlayers] = useState<RankedQuery[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fetchedForGame, setFetchedForGame] = useState(false);
+  const fetchedUsernames = useRef(new Set<string>());
+  const unmounted = useRef(false);
 
   const phaseGroup = matchPhase ? getPhaseGroup(matchPhase) : 'out_of_game';
   const inLobby = phaseGroup === 'starting' || phaseGroup === 'in_game';
@@ -43,38 +45,38 @@ export default function RankCheckerPage() {
   useEffect(() => {
     if (!inLobby) {
       setPlayers([]);
+      fetchedUsernames.current = new Set();
       setError(null);
-      setFetchedForGame(false);
     }
   }, [inLobby]);
 
   useEffect(() => {
-    // In starting: fetch freely as players register
-    // In in_game: fetch once more, then lock
-    if (!inLobby || registeredPlayers.length === 0) return;
-    if (phaseGroup === 'in_game' && fetchedForGame) return;
+    const unfetched = registeredPlayers.filter(u => !fetchedUsernames.current.has(u));
+    if (!inLobby || unfetched.length === 0) return;
 
-    let cancelled = false;
+    // Mark synchronously so concurrent effect runs don't double-fetch
+    unfetched.forEach(u => fetchedUsernames.current.add(u));
 
     async function load() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchPlayerData(registeredPlayers, odyAuth);
-        if (!cancelled) {
-          setPlayers(data);
-          if (phaseGroup === 'in_game') setFetchedForGame(true);
-        }
+        const data = await fetchPlayerData(unfetched, odyAuth);
+        if (!unmounted.current) setPlayers(prev => [...prev, ...data]);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+        if (!unmounted.current) setError(e instanceof Error ? e.message : String(e));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!unmounted.current) setLoading(false);
       }
     }
 
     load();
-    return () => { cancelled = true; };
-  }, [inLobby, phaseGroup, registeredPlayers, fetchedForGame]);
+  }, [inLobby, registeredPlayers]);
+
+  useEffect(() => {
+    unmounted.current = false;
+    return () => { unmounted.current = true; };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

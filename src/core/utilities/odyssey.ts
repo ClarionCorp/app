@@ -22,7 +22,6 @@ export async function usernameQuery(username: string, auth: OdyAuth): Promise<Us
     const data: QueryJSON = await res.json();
     if (!res.ok || data.matches.length == 0 || !data.matches[0].playerId) { throw new Error(`API Unreachable or Player not found (${res.status})`) };
 
-    console.debug(JSON.stringify(data, null, 1));
     return data.matches[0];
   } catch (error) {
     console.debug(error);
@@ -44,7 +43,6 @@ export async function rankQuery(playerId: string, auth: OdyAuth): Promise<Ranked
     const data: RankedJSON = await res.json();
     if (!res.ok || data.players.length == 0 || !data.players[0] ) { throw new Error(`API Unreachable or Player not found (${res.status})`) };
 
-    console.debug(JSON.stringify(data, null, 1));
     return data.players[0];
   } catch (error) {
     console.debug(error);
