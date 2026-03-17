@@ -28,6 +28,7 @@ export function useDiscordRpc() {
 
   async function startRpc() {
     try {
+      console.log(`Starting new Discord RPC...`);
       await start(APP_ID);
       started.current = true;
     } catch (err) {
@@ -38,6 +39,7 @@ export function useDiscordRpc() {
 
   async function stopRpc() {
     try {
+      console.log(`Stopping current Discord RPC...`);
       await stop();
       started.current = false;
     } catch (err) {
@@ -47,46 +49,52 @@ export function useDiscordRpc() {
   }
 
   async function updateActivity(options: RpcActivityOptions) {
-    if (!started.current) return;
+    if (!started.current) { console.warn(`[DRPC] Current state is not set yet! Ignoring Command...`); return; };
+    console.warn(`Received request to change rich presence...`);
+    console.warn(`Options: ${JSON.stringify(options, null, 1)}`);
 
-    const {
-      details,
-      state,
-      largeImage = "aimiapp_logo",
-      largeText = "Ai.Mi App",
-      smallImage,
-      smallText,
-      startTimestamp,
-      buttons,
-    } = options;
+    try {
+      const {
+        details,
+        state,
+        largeImage = "aimiapp_logo",
+        largeText = "Ai.Mi App",
+        smallImage,
+        smallText,
+        startTimestamp,
+        endTimestamp,
+        buttons,
+      } = options;
 
-    let activity = new Activity();
+      let activity = new Activity();
 
-    if (details) activity = activity.setDetails(details);
-    if (state) activity = activity.setState(state);
+      if (details) activity = activity.setDetails(details);
+      if (state) activity = activity.setState(state);
 
-    const assets = new Assets()
-      .setLargeImage(largeImage)
-      .setLargeText(largeText);
-    if (smallImage) assets.setSmallImage(smallImage);
-    if (smallText) assets.setSmallText(smallText);
-    activity = activity.setAssets(assets);
+      const assets = new Assets()
+        .setLargeImage(largeImage)
+        .setLargeText(largeText);
+      if (smallImage) assets.setSmallImage(smallImage);
+      if (smallText) assets.setSmallText(smallText);
+      activity = activity.setAssets(assets);
 
-    if (startTimestamp !== undefined) {
-      activity = activity.setTimestamps(
-        new Timestamps(startTimestamp ?? Date.now())
-      );
+      if (startTimestamp !== undefined) {
+        activity = activity.setTimestamps(
+          new Timestamps(startTimestamp ?? Date.now(), endTimestamp)
+        );
+      }
+
+      if (buttons?.length) {
+        activity = activity.setButton(
+          buttons.map((b) => new Button(b.label, b.url))
+        );
+      }
+
+      console.debug(activity);
+      await setActivity(activity);
+    } catch (e) {
+      console.error(`[DRPC] Failed to update activity!`, e);
     }
-
-    if (buttons?.length) {
-      activity = activity.setButton(
-        buttons.map((b) => new Button(b.label, b.url))
-      );
-    }
-
-    console.debug(activity);
-
-    await setActivity(activity);
   }
 
   async function clear() {

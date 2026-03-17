@@ -16,16 +16,17 @@ type MonitorContext = Pick<AppContextType,
   | 'setTeamTwoSets'
   | 'teamOneSets'
   | 'teamTwoSets'
+  | 'setMyTeam'
 > & {
   currentLevelRef: RefObject<string | null>;
   myCharacterRef: RefObject<string | null>;
   lastPhaseGroupRef: RefObject<string | null>;
+  updateActivityRef: RefObject<(options: RpcActivityOptions) => Promise<void>>;
   sessionOffset: number;
 };
 
 export async function initMonitorCallbacks(ctx: MonitorContext) {
   const {
-    updateActivity,
     setMatchPhase,
     setRegisteredPlayers,
     setCurrentLevel,
@@ -34,21 +35,15 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     setTeamTwoPoints,
     setTeamOneSets,
     setTeamTwoSets,
+    setMyTeam,
     teamOneSets,
     teamTwoSets,
     currentLevelRef,
     myCharacterRef,
     lastPhaseGroupRef,
+    updateActivityRef,
     sessionOffset,
   } = ctx;
-
-  let rpcDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  function debouncedUpdateActivity(options: RpcActivityOptions) {
-    if (rpcDebounceTimer) clearTimeout(rpcDebounceTimer);
-    rpcDebounceTimer = setTimeout(() => {
-      updateActivity(options).catch(console.error);
-    }, 5000); // wait 5s before actually sending
-  }
 
   return startLogMonitor(sessionOffset, {
     onMatchPhase: async (phase) => {
@@ -62,6 +57,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
         setTeamTwoPoints(0);
         setTeamOneSets(0);
         setTeamTwoSets(0);
+        setMyTeam(null);
       }
 
       // Discord RPC updates
@@ -74,14 +70,13 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
 
         switch (phaseGroup) {
           case 'in_game':
-            await updateActivity({
+            await updateActivityRef.current({
               details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
               state: `⬛⬛🟦 2 | 2 🟥🟥⬛`, // test placeholder (idk how to format this shit properly to make sense lol)
               largeImage: getCharDevName(myCharacterRef.current ?? 'aimiapp_logo').toLowerCase(),
               largeText: `${myCharacterRef.current ? `Playing ${myCharacterRef.current}` : 'AiMi App'}`,
               smallImage: 'platinum_high', // placeholder
               smallText: 'High Platinum', // placeholder
-              startTimestamp: new Date().getTime(),
               buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/download" }],
             })
             break;
@@ -93,7 +88,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
             // })
             break;
           default: // includes out_of_game
-            await updateActivity(DEFAULT_ACTIVITY)
+            // await updateActivity(DEFAULT_ACTIVITY)
             break;
         }
       }
@@ -118,5 +113,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
         setTeamTwoPoints(to);
       }
     },
+
+    onMyTeam: (team) => setMyTeam(team),
   });
 }

@@ -152,6 +152,10 @@ fn start_log_monitor(app: AppHandle, path: String, offset: u64) {
                             if let Some(score) = regex_score(line) {
                                 let _ = app.emit("log://score", score);
                             }
+
+                            if let Some(team) = regex_my_team(line) {
+                                let _ = app.emit("log://my-team", team);
+                            }
                         }
                     }
                 }
@@ -259,6 +263,20 @@ fn regex_score(line: &str) -> Option<String> {
     }
     None
 }
+
+// Extracts what team the player is placed on
+fn regex_my_team(line: &str) -> Option<String> {
+    let prefix = "LogPMPlayerState: Player Player changed to team EAssignedTeam::";
+    if let Some(start) = line.find(prefix) {
+        let rest = &line[start + prefix.len()..];
+        let team = rest.trim();
+        if team == "TeamOne" || team == "TeamTwo" {
+            return Some(team.to_string());
+        }
+    }
+    None
+}
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

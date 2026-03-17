@@ -39,6 +39,8 @@ export interface AppContextType {
   setTeamOneSets: (v: number) => void;
   teamTwoSets: number;
   setTeamTwoSets: (v: number) => void;
+  myTeam: string | null;
+  setMyTeam: (v: string | null) => void;
 }
 
 function App() {
@@ -52,6 +54,7 @@ function App() {
   const [teamTwoPoints, setTeamTwoPoints] = useState<number>(0);
   const [teamOneSets, setTeamOneSets] = useState<number>(0);
   const [teamTwoSets, setTeamTwoSets] = useState<number>(0);
+  const [myTeam, setMyTeam] = useState<string | null>(null);
   const navigate = useNavigate();
   const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
 
@@ -86,6 +89,7 @@ function App() {
             teamTwoPoints, setTeamTwoPoints,
             teamOneSets, setTeamOneSets,
             teamTwoSets, setTeamTwoSets,
+            myTeam, setMyTeam
             }}
           />
         </main>

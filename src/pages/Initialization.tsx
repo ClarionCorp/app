@@ -37,6 +37,7 @@ export default function InitializationPage() {
     setOdyAuth,
     startRpc,
     stopRpc,
+    setMyTeam,
     teamOneSets,
     teamTwoSets,
     myCharacter,
@@ -48,9 +49,11 @@ export default function InitializationPage() {
   const currentLevelRef = useRef(currentLevel);
   const myCharacterRef = useRef(myCharacter);
   const lastPhaseGroupRef = useRef<string | null>(null);
+  const updateActivityRef = useRef(updateActivity);
 
   useEffect(() => { currentLevelRef.current = currentLevel; }, [currentLevel]);
   useEffect(() => { myCharacterRef.current = myCharacter; }, [myCharacter]);
+  useEffect(() => { updateActivityRef.current = updateActivity; }, [updateActivity]);
  
   useEffect(() => {
     let cancelled = false;
@@ -85,8 +88,8 @@ export default function InitializationPage() {
         const logPath = await join(home, windows_log);
         const sessionOffset = await invoke<number>('find_session_start', { path: logPath });
         await initMonitorCallbacks({ // Moved to its own file for organization sake
-          updateActivity,
-          setMatchPhase, setRegisteredPlayers, setCurrentLevel, setMyCharacter,
+          updateActivity, updateActivityRef,
+          setMatchPhase, setRegisteredPlayers, setCurrentLevel, setMyCharacter, setMyTeam,
           setTeamOnePoints, setTeamTwoPoints, setTeamOneSets, setTeamTwoSets,
           teamOneSets, teamTwoSets,
           myCharacterRef, currentLevelRef, lastPhaseGroupRef,

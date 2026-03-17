@@ -35,6 +35,7 @@ export default function DebugPage() {
     teamTwoPoints,
     teamOneSets,
     teamTwoSets,
+    myTeam,
   } = useOutletContext<AppContextType>();
 
   const inGame = matchPhase ? getPhaseGroup(matchPhase) !== 'out_of_game' : false;
@@ -61,6 +62,7 @@ export default function DebugPage() {
           <DebugRow label="Raw Phase" value={matchPhase ?? '—'} />
           <DebugRow label="Level" value={inGame ? (currentLevel ?? '—') : '—'} />
           <DebugRow label="My Character" value={inGame ? (myCharacter ?? '—') : '—'} />
+          <DebugRow label="My Team" value={inGame ? (myTeam ?? '—') : '—'} />
         </div>
 
         {/* Score */}

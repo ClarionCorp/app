@@ -57,10 +57,10 @@ export const PHASE_GROUPS = {
     'EMatchPhase::LoadoutSelect',
     'EMatchPhase::CharacterSelect',
     'EMatchPhase::VersusScreen',
+    'EMatchPhase::FaceOffIntro',        // unfortunately too early to call map assets and stuff, may move back later if stable
   ],
   in_game: [
     'EMatchPhase::InGame',
-    'EMatchPhase::FaceOffIntro',
     'EMatchPhase::FaceOffCountdown',
     'EMatchPhase::GoalScore',
     'EMatchPhase::GoalCelebration',
@@ -104,6 +104,7 @@ export type LogMonitorCallbacks = {
   onLevel?: (level: string) => void | Promise<void>;
   onMyCharacter?: (character: string) => void | Promise<void>;
   onScore?: (event: ScoreEvent) => void | Promise<void>;
+  onMyTeam?: (team: 'TeamOne' | 'TeamTwo') => void;
 };
  
 export async function startLogMonitor(
@@ -154,6 +155,13 @@ export async function startLogMonitor(
       } catch {
         console.warn('[monitor] Failed to parse score event:', e.payload);
       }
+    }));
+  }
+
+  if (callbacks.onMyTeam) {
+    unlisteners.push(await listen<string>('log://my-team', (e) => {
+      console.log(`[monitor] My team -> ${e.payload}`);
+      callbacks.onMyTeam?.(e.payload as 'TeamOne' | 'TeamTwo');
     }));
   }
  
