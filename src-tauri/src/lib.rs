@@ -137,13 +137,31 @@ fn stop_log_monitor(app: AppHandle) {
 }
 
 fn regex_match_phase(line: &str) -> Option<String> {
-    let prefix = "LogPMPerfStatsSubsystem: Game context: MatchPhase: '";
+    // New pattern (Faster, used for all in-game phases)
+    let prefix = "LogPMGameState: Display: APMGameState::PerformCurrentMatchPhaseEvents - Previous[";
+    let current_prefix = "] Current[";
     if let Some(start) = line.find(prefix) {
         let rest = &line[start + prefix.len()..];
-        if let Some(end) = rest.find('\'') {
-            return Some(rest[..end].to_string());
+        if let Some(cur_start) = rest.find(current_prefix) {
+            let after_cur = &rest[cur_start + current_prefix.len()..];
+            if let Some(end) = after_cur.find(']') {
+                return Some(after_cur[..end].to_string());
+            }
         }
     }
+
+    // Old pattern (Only used to detect main menu (EMatchPhase::None))
+    let old_prefix = "LogPMPerfStatsSubsystem: Game context: MatchPhase: '";
+    if let Some(start) = line.find(old_prefix) {
+        let rest = &line[start + old_prefix.len()..];
+        if let Some(end) = rest.find('\'') {
+            let phase = &rest[..end];
+            if phase == "EMatchPhase::None" {
+                return Some(phase.to_string());
+            }
+        }
+    }
+
     None
 }
 

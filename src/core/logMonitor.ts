@@ -14,8 +14,12 @@ export type MatchPhase =
   | 'EMatchPhase::FaceOffCountdown'
   | 'EMatchPhase::InGame'
   | 'EMatchPhase::GoalScore'
+  | 'EMatchPhase::GoalCelebration'
   | 'EMatchPhase::Intermission'
-  | 'EMatchPhase::PostGameCelebration';
+  | 'EMatchPhase::IntermissionMvp'
+  | 'EMatchPhase::IntermissionIntro'
+  | 'EMatchPhase::PostGameCelebration'
+  | 'EMatchPhase::PostGameSummary';
 
 export const PHASE_LABELS: Partial<Record<MatchPhase, string>> = {
   'EMatchPhase::None':                 'Idle',
@@ -27,27 +31,35 @@ export const PHASE_LABELS: Partial<Record<MatchPhase, string>> = {
   'EMatchPhase::FaceOffCountdown':     'Face-Off',
   'EMatchPhase::InGame':               'In Game',
   'EMatchPhase::GoalScore':            'Goal Scored',
+  'EMatchPhase::GoalCelebration':      'Goal Celebration',
   'EMatchPhase::Intermission':         'Intermission',
+  'EMatchPhase::IntermissionMvp':      'Intermission',
+  'EMatchPhase::IntermissionIntro':    'Intermission',
   'EMatchPhase::PostGameCelebration':  'Post Game',
+  'EMatchPhase::PostGameSummary':      'Post Game',
 };
 
 export const PHASE_GROUPS = {
   out_of_game: [
     'EMatchPhase::Unknown',
     'EMatchPhase::None',
-    'EMatchPhase::PostGameCelebration'
+    'EMatchPhase::PostGameCelebration',
+    'EMatchPhase::PostGameSummary'
   ],
   starting: [
     'EMatchPhase::BanSelect',
     'EMatchPhase::LoadoutSelect',
     'EMatchPhase::CharacterSelect',
     'EMatchPhase::VersusScreen',
-    'EMatchPhase::FaceOffIntro',
-    'EMatchPhase::FaceOffCountdown'
   ],
   in_game: [
     'EMatchPhase::InGame',
+    'EMatchPhase::FaceOffIntro',
+    'EMatchPhase::FaceOffCountdown',
     'EMatchPhase::GoalScore',
+    'EMatchPhase::GoalCelebration',
+    'EMatchPhase::IntermissionMvp',
+    'EMatchPhase::IntermissionIntro',
     'EMatchPhase::Intermission'
   ],
 } as const;
