@@ -5,6 +5,7 @@ import { DebugConsole } from './components/DebugConsole';
 import { MatchPhase } from './core/logMonitor';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
+import { useDiscordRpc } from './core/discord';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -28,6 +29,7 @@ function App() {
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('EMatchPhase::Unknown');
   const [registeredPlayers, setRegisteredPlayers] = useState<string[]>([]);
   const navigate = useNavigate();
+  useDiscordRpc(); // init once
 
   const location = useLocation(); // Remove these when they are no longer 'coming soon'.
   const showSidebar = !['/', '/home', '/cgm', '/cqm', '/account', '/mods'].includes(location.pathname);

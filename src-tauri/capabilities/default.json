@@ -26,6 +26,9 @@
       ]
     },
     "os:default",
-    "process:default"
+    "process:default",
+    "drpc:default",
+    "drpc:allow-is-running",
+    "drpc:allow-set-activity"
   ]
 }

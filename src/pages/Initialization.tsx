@@ -4,6 +4,7 @@ import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { fetchSelfQuery, verifyClientFiles } from "../core/init";
 import { startLogMonitor } from "../core/logMonitor";
+import { DEFAULT_ACTIVITY, useDiscordRpc } from "../core/discord";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -11,7 +12,7 @@ const STEPS = [
   "Connecting to servers...",       // Fetch account info from Ody using identity.json
   "Loading monitor service...",     // Read log and fetch current game status
   "Connecting to ClarionCorp...",   // CC API Handshake for Online Status
-  "Preparing your dashboard...",    // Doesn't do anything
+  "Connecting to Discord...",       // Start Discord RPC
   "Ready!",                         // Doesn't do anything
 ];
  
@@ -22,6 +23,7 @@ export default function InitializationPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const { updateActivity } = useDiscordRpc();
  
   useEffect(() => {
     let cancelled = false;
@@ -56,14 +58,16 @@ export default function InitializationPage() {
             setRegisteredPlayers(prev => prev.includes(username) ? prev : [...prev, username]);
           },
         });
- 
-        // Remaining steps are placeholders for now
-        for (let i = 2; i < STEPS.length; i++) {
-          setStepIndex(i);
-          setProgress(STEP_PCTS[i]);
-          await new Promise((res) => setTimeout(res, 500));
-          if (cancelled) return;
-        }
+
+        // 4) <Connect to CC> (unused rn)
+        setStepIndex(3);
+        setProgress(STEP_PCTS[3]);
+        await new Promise((res) => setTimeout(res, 500));
+
+        // 5) Connect to Discord RPC
+        setStepIndex(4);
+        setProgress(STEP_PCTS[4]);
+        await updateActivity(DEFAULT_ACTIVITY);
  
         navigate('/home');
       } catch (err) {
