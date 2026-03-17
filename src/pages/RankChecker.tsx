@@ -34,16 +34,25 @@ export default function RankCheckerPage() {
   const [players, setPlayers] = useState<RankedQuery[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fetchedForGame, setFetchedForGame] = useState(false);
 
-  console.info(`Pre-Registered Players:`, registeredPlayers.join(', '))
+  const phaseGroup = matchPhase ? getPhaseGroup(matchPhase) : 'out_of_game';
+  const inLobby = phaseGroup === 'starting' || phaseGroup === 'in_game';
 
-  const inLobby = matchPhase
-    ? ['starting', 'in_game'].includes(getPhaseGroup(matchPhase))
-    : false;
+  // Reset when leaving the lobby so the next game starts fresh
+  useEffect(() => {
+    if (!inLobby) {
+      setPlayers([]);
+      setError(null);
+      setFetchedForGame(false);
+    }
+  }, [inLobby]);
 
   useEffect(() => {
+    // In starting: fetch freely as players register
+    // In in_game: fetch once more, then lock
     if (!inLobby || registeredPlayers.length === 0) return;
-    console.info(`Registered Players:`, registeredPlayers.join(', '))
+    if (phaseGroup === 'in_game' && fetchedForGame) return;
 
     let cancelled = false;
 
@@ -52,7 +61,10 @@ export default function RankCheckerPage() {
       setError(null);
       try {
         const data = await fetchPlayerData(registeredPlayers, odyAuth);
-        if (!cancelled) setPlayers(data);
+        if (!cancelled) {
+          setPlayers(data);
+          if (phaseGroup === 'in_game') setFetchedForGame(true);
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       } finally {
@@ -62,7 +74,7 @@ export default function RankCheckerPage() {
 
     load();
     return () => { cancelled = true; };
-  }, [inLobby, registeredPlayers]);
+  }, [inLobby, phaseGroup, registeredPlayers, fetchedForGame]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -74,9 +86,9 @@ export default function RankCheckerPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <p className="text-sm font-semibold text-char">Not in a game</p>
+            <p className="text-sm font-semibold text-char">Not in a match</p>
             <p className="text-xs text-char-subtle">
-              Waiting for you to join a lobby...
+              Waiting for you to queue into a game...
             </p>
           </motion.div>
         ) : loading ? (

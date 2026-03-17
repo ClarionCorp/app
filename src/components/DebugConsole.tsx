@@ -72,10 +72,10 @@ export function DebugConsole() {
         {open && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 320 }}
+            animate={{ opacity: 1, height: 240 }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="w-200 bg-zinc-950/95 backdrop-blur border border-zinc-800 border-b-0 rounded-tl-xl overflow-hidden flex flex-col pointer-events-auto"
+            className="w-screen bg-zinc-950/95 backdrop-blur border border-zinc-800 border-b-0 rounded-tl-xl overflow-hidden flex flex-col pointer-events-auto"
           >
             {/* Header */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-zinc-800 bg-zinc-900/60 shrink-0">
