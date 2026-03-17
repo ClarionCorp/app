@@ -29,8 +29,8 @@ function App() {
   const [registeredPlayers, setRegisteredPlayers] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  const location = useLocation();
-  const showSidebar = !['/', '/home'].includes(location.pathname);
+  const location = useLocation(); // Remove these when they are no longer 'coming soon'.
+  const showSidebar = !['/', '/home', '/cgm', '/cqm', '/account', '/mods'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-surface text-white pt-12">

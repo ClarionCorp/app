@@ -24,6 +24,11 @@ const itemVariants: Variants = {
 
 export default function HomePage() {
   const { navigate, userData } = useOutletContext<AppContextType>();
+
+  if (!userData || !userData?.username) {
+    throw new Error(`App doesn't currently support forced refresh. Please Restart.`)
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-8 pb-24">
       <motion.div
@@ -39,7 +44,7 @@ export default function HomePage() {
           />
           <div className="text-center">
             <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
-              Welcome back, {userData.username}!
+              Welcome back, {userData?.username}!
             </p>
             <h1 className="text-2xl font-extrabold tracking-tight text-char">
               How can I <span className="text-primary">help</span>?

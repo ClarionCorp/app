@@ -13,6 +13,7 @@ import InitializationPage from './pages/Initialization';
 import HomePage from './pages/Home';
 import ErrorBoundary from './components/ErrorBoundry';
 import RankCheckerPage from './pages/RankChecker';
+import ComingSoonPage from './pages/ComingSoon';
 
 const router = createHashRouter([
   {
@@ -23,6 +24,10 @@ const router = createHashRouter([
       { index: true, path: '/',   element: <InitializationPage /> },
       { path: "home",             element: <HomePage /> },
       { path: "rankchecker",      element: <RankCheckerPage /> },
+      { path: "account",          element: <ComingSoonPage /> },
+      { path: "cgm",              element: <ComingSoonPage /> },
+      { path: "cqm",              element: <ComingSoonPage /> },
+      { path: "mods",             element: <ComingSoonPage /> },
     ],
   },
 ]);

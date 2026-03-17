@@ -91,7 +91,7 @@ export default function InitializationPage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <img
-          src={'/aimi/Sweat.gif'}
+          src={'/aimi/Noted.gif'}
           className="w-40 aspect-square rounded-xl object-cover absolute -top-56"
         />
         <span className="text-3xl font-extrabold tracking-tight text-char">

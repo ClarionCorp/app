@@ -2,7 +2,7 @@ export const NAV_ITEMS = [
   {
     label: "My Account",
     desc: "See stats and make advanced changes",
-    slug: 'player',
+    slug: 'account',
     image: "/backgrounds/Strikers.webp"
   },
   {
