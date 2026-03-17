@@ -93,11 +93,11 @@ export type ScoreEvent = {
 };
  
 export type LogMonitorCallbacks = {
-  onMatchPhase?: (phase: MatchPhase) => void;
-  onPlayerRegistered?: (username: string) => void;
-  onLevel?: (level: string) => void;
-  onMyCharacter?: (character: string) => void;
-  onScore?: (event: ScoreEvent) => void;
+  onMatchPhase?: (phase: MatchPhase) => void | Promise<void>;
+  onPlayerRegistered?: (username: string) => void | Promise<void>;
+  onLevel?: (level: string) => void | Promise<void>;
+  onMyCharacter?: (character: string) => void | Promise<void>;
+  onScore?: (event: ScoreEvent) => void | Promise<void>;
 };
  
 export async function startLogMonitor(
@@ -114,7 +114,7 @@ export async function startLogMonitor(
   if (callbacks.onMatchPhase) {
     unlisteners.push(await listen<string>('log://match-phase', (e) => {
       console.log(`[monitor] Phase -> ${e.payload}`);
-      callbacks.onMatchPhase?.(e.payload as MatchPhase);
+      void callbacks.onMatchPhase?.(e.payload as MatchPhase);
     }));
   }
  

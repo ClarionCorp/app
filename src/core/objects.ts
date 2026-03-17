@@ -36,3 +36,32 @@ export const NAV_ITEMS = [
     image: "/backgrounds/Bedroom.jpg"
   },
 ];
+
+
+const CHARACTER_DEV_NAMES: Record<string, string> = {
+  'Atlas': 'AngelicSupport',
+  'Luna': 'ChaoticRocketeer',
+  'Juno': 'CleverSummoner',
+  'Mako': 'DrumOni',
+  'Octavia': 'EDMOni',
+  'Era': 'EmpoweringEnchanter',
+  'Zentaro': 'FlashySwordsman',
+  'Juliette': 'FlexibleBrawler',
+  'Finii': 'GravityMage',
+  'Nao': 'Healer',
+  'X': 'HulkingBeast',
+  'Ai.Mi': 'MagicalPlaymaker',      // check in game
+  'Rune': 'ManipulatingMastermind',
+  "Drek'ar": 'NimbleBlaster',    // check in game
+  'Vyce': 'RockOni',
+  'Asher': 'ShieldUser',
+  'Kai': 'SpeedySkirmisher',
+  'Dubu': 'StalwartProtector',
+  'Estelle': 'TempoSniper',
+  'Kazan': 'UmbrellaUser',
+  'Rasmus': 'WhipFighter',
+}
+
+export function getCharDevName(character: string): string {
+  return CHARACTER_DEV_NAMES[character];
+}

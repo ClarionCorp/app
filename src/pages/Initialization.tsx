@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { fetchSelfQuery, verifyClientFiles } from "../core/init";
-import { startLogMonitor } from "../core/logMonitor";
 import { DEFAULT_ACTIVITY, useDiscordRpc } from "../core/discord";
+import { initMonitorCallbacks } from "../core/monitorCallbacks";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -33,6 +33,8 @@ export default function InitializationPage() {
     setOdyAuth,
     teamOneSets,
     teamTwoSets,
+    myCharacter,
+    currentLevel,
   } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -61,33 +63,11 @@ export default function InitializationPage() {
         // 3) Read log and fetch current game status
         setStepIndex(2);
         setProgress(STEP_PCTS[2]);
-        await startLogMonitor(0, {
-          onMatchPhase: (phase) => {
-            setMatchPhase(phase);
-            if (phase === 'EMatchPhase::None') {
-              setRegisteredPlayers([]);
-              setCurrentLevel(null);
-              setMyCharacter(null);
-              setTeamOnePoints(0);
-              setTeamTwoPoints(0);
-              setTeamOneSets(0);
-              setTeamTwoSets(0);
-            }
-          },
-          onPlayerRegistered: (username) => {
-            setRegisteredPlayers(prev => prev.includes(username) ? prev : [...prev, username]);
-          },
-          onLevel: (level) => setCurrentLevel(level),
-          onMyCharacter: (char) => setMyCharacter(char),
-          onScore: ({ team, from, to }) => {
-            if (team === 'TeamOne') {
-              if (from === 3 && to === 0) setTeamOneSets(teamOneSets + 1);
-              setTeamOnePoints(to);
-            } else {
-              if (from === 3 && to === 0) setTeamTwoSets(teamTwoSets + 1);
-              setTeamTwoPoints(to);
-            }
-          },
+        await initMonitorCallbacks({ // Moved to its own file for organization sake
+          setMatchPhase, setRegisteredPlayers, setCurrentLevel, setMyCharacter,
+          setTeamOnePoints, setTeamTwoPoints, setTeamOneSets, setTeamTwoSets,
+          teamOneSets, teamTwoSets,
+          myCharacter, currentLevel,
         });
 
         // 4) <Connect to CC> (unused rn)
