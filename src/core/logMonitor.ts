@@ -74,42 +74,70 @@ export const PHASE_COLORS: Record<string, string> = Object.fromEntries(
 );
 
 
-
-
+export type ScoreEvent = {
+  team: 'TeamOne' | 'TeamTwo';
+  from: number;
+  to: number;
+};
+ 
 export type LogMonitorCallbacks = {
   onMatchPhase?: (phase: MatchPhase) => void;
   onPlayerRegistered?: (username: string) => void;
+  onLevel?: (level: string) => void;
+  onMyCharacter?: (character: string) => void;
+  onScore?: (event: ScoreEvent) => void;
 };
-
-// Starts the Rust log monitor and wires up event listeners.
-// Returns an unlisten function to clean up listeners (does NOT stop the Rust thread).
+ 
 export async function startLogMonitor(
   offset: number,
   callbacks: LogMonitorCallbacks
 ): Promise<UnlistenFn> {
   const home = await homeDir();
   const logPath = await join(home, windows_log);
-
+ 
   await invoke('start_log_monitor', { path: logPath, offset });
-
+ 
   const unlisteners: UnlistenFn[] = [];
-
+ 
   if (callbacks.onMatchPhase) {
-    const unlisten = await listen<string>('log://match-phase', (event) => {
-      console.log(`Changing GameState to ${event.payload}.`);
-      callbacks.onMatchPhase?.(event.payload as MatchPhase);
-    });
-    unlisteners.push(unlisten);
+    unlisteners.push(await listen<string>('log://match-phase', (e) => {
+      console.log(`[monitor] Phase -> ${e.payload}`);
+      callbacks.onMatchPhase?.(e.payload as MatchPhase);
+    }));
   }
-
+ 
   if (callbacks.onPlayerRegistered) {
-    const unlisten = await listen<string>('log://player-registered', (event) => {
-      console.debug(`Player Registered: ${event.payload}.`);
-      callbacks.onPlayerRegistered?.(event.payload);
-    });
-    unlisteners.push(unlisten);
+    unlisteners.push(await listen<string>('log://player-registered', (e) => {
+      console.log(`[monitor] Player registered: ${e.payload}`);
+      callbacks.onPlayerRegistered?.(e.payload);
+    }));
   }
-
-  // Return a single cleanup function that removes all listeners
+ 
+  if (callbacks.onLevel) {
+    unlisteners.push(await listen<string>('log://level', (e) => {
+      console.log(`[monitor] Level -> ${e.payload}`);
+      callbacks.onLevel?.(e.payload);
+    }));
+  }
+ 
+  if (callbacks.onMyCharacter) {
+    unlisteners.push(await listen<string>('log://my-character', (e) => {
+      console.log(`[monitor] My character -> ${e.payload}`);
+      callbacks.onMyCharacter?.(e.payload);
+    }));
+  }
+ 
+  if (callbacks.onScore) {
+    unlisteners.push(await listen<string>('log://score', (e) => {
+      try {
+        const parsed: ScoreEvent = JSON.parse(e.payload);
+        console.log(`[monitor] Score -> ${parsed.team} ${parsed.from} -> ${parsed.to}`);
+        callbacks.onScore?.(parsed);
+      } catch {
+        console.warn('[monitor] Failed to parse score event:', e.payload);
+      }
+    }));
+  }
+ 
   return () => unlisteners.forEach((fn) => fn());
 }

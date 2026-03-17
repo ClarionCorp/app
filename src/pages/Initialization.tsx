@@ -19,7 +19,21 @@ const STEPS = [
 const STEP_PCTS = [15, 35, 55, 75, 92, 100];
  
 export default function InitializationPage() {
-  const { navigate, setUserData, setMatchPhase, setRegisteredPlayers, setOdyAuth } = useOutletContext<AppContextType>();
+  const {
+    navigate,
+    setUserData,
+    setMatchPhase,
+    setRegisteredPlayers,
+    setTeamOnePoints,
+    setTeamTwoPoints,
+    setCurrentLevel,
+    setMyCharacter,
+    setTeamOneSets,
+    setTeamTwoSets,
+    setOdyAuth,
+    teamOneSets,
+    teamTwoSets,
+  } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -50,12 +64,29 @@ export default function InitializationPage() {
         await startLogMonitor(0, {
           onMatchPhase: (phase) => {
             setMatchPhase(phase);
-            if (phase != 'EMatchPhase::None') {
+            if (phase === 'EMatchPhase::None') {
               setRegisteredPlayers([]);
+              setCurrentLevel(null);
+              setMyCharacter(null);
+              setTeamOnePoints(0);
+              setTeamTwoPoints(0);
+              setTeamOneSets(0);
+              setTeamTwoSets(0);
             }
           },
           onPlayerRegistered: (username) => {
             setRegisteredPlayers(prev => prev.includes(username) ? prev : [...prev, username]);
+          },
+          onLevel: (level) => setCurrentLevel(level),
+          onMyCharacter: (char) => setMyCharacter(char),
+          onScore: ({ team, from, to }) => {
+            if (team === 'TeamOne') {
+              if (from === 3 && to === 0) setTeamOneSets(teamOneSets + 1);
+              setTeamOnePoints(to);
+            } else {
+              if (from === 3 && to === 0) setTeamTwoSets(teamTwoSets + 1);
+              setTeamTwoPoints(to);
+            }
           },
         });
 

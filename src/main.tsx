@@ -12,6 +12,7 @@ import HomePage from './pages/Home';
 import ErrorBoundary from './components/ErrorBoundry';
 import RankCheckerPage from './pages/RankChecker';
 import ComingSoonPage from './pages/ComingSoon';
+import DebugPage from './pages/Debugger';
 
 const router = createHashRouter([
   {
@@ -26,6 +27,7 @@ const router = createHashRouter([
       { path: "cgm",              element: <ComingSoonPage /> },
       { path: "cqm",              element: <ComingSoonPage /> },
       { path: "mods",             element: <ComingSoonPage /> },
+      { path: "debug",            element: <DebugPage /> },
     ],
   },
 ]);

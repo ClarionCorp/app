@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { OdyAuth, SelfQuery } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
@@ -21,6 +21,19 @@ export interface AppContextType {
 
   registeredPlayers: string[];
   setRegisteredPlayers: React.Dispatch<React.SetStateAction<string[]>>;
+
+  currentLevel: string | null;
+  setCurrentLevel: (v: string | null) => void;
+  myCharacter: string | null;
+  setMyCharacter: (v: string | null) => void;
+  teamOnePoints: number;
+  setTeamOnePoints: (v: number) => void;
+  teamTwoPoints: number;
+  setTeamTwoPoints: (v: number) => void;
+  teamOneSets: number;
+  setTeamOneSets: (v: number) => void;
+  teamTwoSets: number;
+  setTeamTwoSets: (v: number) => void;
 }
 
 function App() {
@@ -28,11 +41,25 @@ function App() {
   const [userData, setUserData] = useState<SelfQuery>();
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('EMatchPhase::Unknown');
   const [registeredPlayers, setRegisteredPlayers] = useState<string[]>([]);
+  const [currentLevel, setCurrentLevel] = useState<string | null>(null);
+  const [myCharacter, setMyCharacter] = useState<string | null>(null);
+  const [teamOnePoints, setTeamOnePoints] = useState<number>(0);
+  const [teamTwoPoints, setTeamTwoPoints] = useState<number>(0);
+  const [teamOneSets, setTeamOneSets] = useState<number>(0);
+  const [teamTwoSets, setTeamTwoSets] = useState<number>(0);
   const navigate = useNavigate();
   useDiscordRpc(); // init once
 
   const location = useLocation(); // Remove these when they are no longer 'coming soon'.
   const showSidebar = !['/', '/home', '/cgm', '/cqm', '/account', '/mods'].includes(location.pathname);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'F9') navigate('/debug');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <div className="min-h-screen bg-surface text-white pt-12">
@@ -47,6 +74,12 @@ function App() {
             userData, setUserData,
             matchPhase, setMatchPhase,
             registeredPlayers, setRegisteredPlayers,
+            currentLevel, setCurrentLevel,
+            myCharacter, setMyCharacter,
+            teamOnePoints, setTeamOnePoints,
+            teamTwoPoints, setTeamTwoPoints,
+            teamOneSets, setTeamOneSets,
+            teamTwoSets, setTeamTwoSets,
             }}
           />
         </main>

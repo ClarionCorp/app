@@ -1,12 +1,12 @@
 use std::io::{Read, Seek, SeekFrom};
 use std::fs::OpenOptions;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
 
-type MonitorFlag = Arc<Mutex<Option<Arc<AtomicBool>>>>;
+type MonitorFlag = Arc<std::sync::Mutex<Option<Arc<AtomicBool>>>>;
 
 #[tauri::command]
 fn read_log_from(path: String, offset: u64) -> Result<(String, u64), String> {
@@ -16,6 +16,7 @@ fn read_log_from(path: String, offset: u64) -> Result<(String, u64), String> {
     #[cfg(target_os = "windows")]
     {
         use std::os::windows::fs::OpenOptionsExt;
+        // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
         opts.share_mode(7);
     }
 
@@ -101,6 +102,15 @@ fn start_log_monitor(app: AppHandle, path: String, offset: u64) {
                             if let Some(player) = regex_player_registered(line) {
                                 let _ = app.emit("log://player-registered", player);
                             }
+                            if let Some(level) = regex_level(line) {
+                                let _ = app.emit("log://level", level);
+                            }
+                            if let Some(character) = regex_my_character(line) {
+                                let _ = app.emit("log://my-character", character);
+                            }
+                            if let Some(score) = regex_score(line) {
+                                let _ = app.emit("log://score", score);
+                            }
                         }
                     }
                 }
@@ -148,9 +158,64 @@ fn regex_player_registered(line: &str) -> Option<String> {
     None
 }
 
+// Extracts Level from the MatchPhase perf stats line
+fn regex_level(line: &str) -> Option<String> {
+    let prefix = "Level: '";
+    if !line.contains("LogPMPerfStatsSubsystem") { return None; }
+    if let Some(start) = line.find(prefix) {
+        let rest = &line[start + prefix.len()..];
+        if let Some(end) = rest.find('\'') {
+            return Some(rest[..end].to_string());
+        }
+    }
+    None
+}
+
+// Extracts the character name from the CharacterSelect VOD event
+// e.g. VOD_Rune_CharacterSelect_02 -> Rune
+fn regex_my_character(line: &str) -> Option<String> {
+    let prefix = "LogPMVoiceOverManagerComponent: UPMVoiceOverManagerComponent::ProcessNewEvents - Processing New Event 'VOD_";
+    let suffix = "_CharacterSelect_";
+    if let Some(start) = line.find(prefix) {
+        let rest = &line[start + prefix.len()..];
+        if let Some(end) = rest.find(suffix) {
+            return Some(rest[..end].to_string());
+        }
+    }
+    None
+}
+
+// Extracts score changes, emits JSON string { team, from, to }
+fn regex_score(line: &str) -> Option<String> {
+    let prefix = "LogPMGameState: APMGameState::OnRep_MatchScoreInfo - ";
+    if let Some(start) = line.find(prefix) {
+        let rest = &line[start + prefix.len()..];
+        let team = if rest.starts_with("TeamOne") {
+            "TeamOne"
+        } else if rest.starts_with("TeamTwo") {
+            "TeamTwo"
+        } else {
+            return None;
+        };
+        let from_prefix = "changed from ";
+        let to_prefix = " to ";
+        if let Some(from_start) = rest.find(from_prefix) {
+            let after_from = &rest[from_start + from_prefix.len()..];
+            if let Some(to_pos) = after_from.find(to_prefix) {
+                let from_str = &after_from[..to_pos];
+                let to_str = after_from[to_pos + to_prefix.len()..].trim();
+                if let (Ok(from), Ok(to)) = (from_str.parse::<u32>(), to_str.parse::<u32>()) {
+                    return Some(format!("{{\"team\":\"{}\",\"from\":{},\"to\":{}}}", team, from, to));
+                }
+            }
+        }
+    }
+    None
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let monitor_flag: MonitorFlag = Arc::new(Mutex::new(None));
+    let monitor_flag: MonitorFlag = Arc::new(std::sync::Mutex::new(None));
 
     tauri::Builder::default()
         .manage(monitor_flag)
