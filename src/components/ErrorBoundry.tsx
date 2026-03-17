@@ -1,7 +1,6 @@
 import { useNavigate, useRouteError } from "react-router-dom";
 import { Button } from "./UI/Button";
 import { ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
-import { invoke } from "@tauri-apps/api/core";
 
 export default function ErrorBoundary() {
   const error = useRouteError() as Error;
