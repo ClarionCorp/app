@@ -50,8 +50,8 @@ export function useDiscordRpc() {
 
   async function updateActivity(options: RpcActivityOptions) {
     if (!started.current) { console.warn(`[DRPC] Current state is not set yet! Ignoring Command...`); return; };
-    console.warn(`Received request to change rich presence...`);
-    console.warn(`Options: ${JSON.stringify(options, null, 1)}`);
+    console.info(`Received request to change rich presence...`);
+    console.debug(`DRPC Options: ${JSON.stringify(options, null, 1)}`);
 
     try {
       const {

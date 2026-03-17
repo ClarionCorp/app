@@ -67,14 +67,19 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
       if (lastPhaseGroupRef.current !== phaseGroup) {
         lastPhaseGroupRef.current = phaseGroup;
         console.log(`Sending Discord a new Game State! (${phaseGroup})`);
+        let largeImg = 'aimiapp_logo';
+        if (myCharacterRef.current) { largeImg = getCharDevName(myCharacterRef.current).toLowerCase(); }
+        else { console.warn(`CharacterRef is null!`) };
+
+        // current problem is that both currentLevelRef and myCharacterRef are null. Just like... always.
 
         switch (phaseGroup) {
           case 'in_game':
             await updateActivityRef.current({
               details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
-              state: `⬛⬛🟦 2 | 2 🟥🟥⬛`, // test placeholder (idk how to format this shit properly to make sense lol)
-              largeImage: getCharDevName(myCharacterRef.current ?? 'aimiapp_logo').toLowerCase(),
-              largeText: `${myCharacterRef.current ? `Playing ${myCharacterRef.current}` : 'AiMi App'}`,
+              state: `⬛⬛🟦 <2 | 2> 🟥🟥⬛`, // test placeholder (idk how to format this shit properly to make sense lol)
+              largeImage: largeImg,
+              largeText: `${myCharacterRef.current ? `Playing ${myCharacterRef.current}` : 'AiMi Companion App'}`,
               smallImage: 'platinum_high', // placeholder
               smallText: 'High Platinum', // placeholder
               buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/download" }],

@@ -57,10 +57,10 @@ export const PHASE_GROUPS = {
     'EMatchPhase::LoadoutSelect',
     'EMatchPhase::CharacterSelect',
     'EMatchPhase::VersusScreen',
-    'EMatchPhase::FaceOffIntro',        // unfortunately too early to call map assets and stuff, may move back later if stable
   ],
   in_game: [
     'EMatchPhase::InGame',
+    'EMatchPhase::FaceOffIntro',
     'EMatchPhase::FaceOffCountdown',
     'EMatchPhase::GoalScore',
     'EMatchPhase::GoalCelebration',
