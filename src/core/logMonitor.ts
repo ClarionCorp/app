@@ -6,6 +6,8 @@ import { windows_log } from './constants';
 export type MatchPhase =
   | 'EMatchPhase::Unknown'
   | 'EMatchPhase::None'
+  | 'EMatchPhase::PreGame'
+  | 'EMatchPhase::ArenaOverview'
   | 'EMatchPhase::BanSelect'
   | 'EMatchPhase::LoadoutSelect'
   | 'EMatchPhase::CharacterSelect'
@@ -23,6 +25,8 @@ export type MatchPhase =
 
 export const PHASE_LABELS: Partial<Record<MatchPhase, string>> = {
   'EMatchPhase::None':                 'Idle',
+  'EMatchPhase::PreGame':              'Pre Game',
+  'EMatchPhase::ArenaOverview':        'Arena Overview',
   'EMatchPhase::BanSelect':            'Ban Phase',
   'EMatchPhase::LoadoutSelect':        'Loadout Select',
   'EMatchPhase::CharacterSelect':      'Character Select',
@@ -47,6 +51,8 @@ export const PHASE_GROUPS = {
     'EMatchPhase::PostGameSummary'
   ],
   starting: [
+    'EMatchPhase::PreGame',
+    'EMatchPhase::ArenaOverview',
     'EMatchPhase::BanSelect',
     'EMatchPhase::LoadoutSelect',
     'EMatchPhase::CharacterSelect',

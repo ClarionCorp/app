@@ -5,10 +5,15 @@ import { DebugConsole } from './components/DebugConsole';
 import { MatchPhase } from './core/logMonitor';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
-import { useDiscordRpc } from './core/discord';
+import { RpcActivityOptions, useDiscordRpc } from './core/discord';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
+
+  updateActivity: (options: RpcActivityOptions) => Promise<void>;
+  clear: () => Promise<void>;
+  startRpc: () => Promise<void>;
+  stopRpc: () => Promise<void>;
 
   odyAuth: OdyAuth;
   setOdyAuth: (auth: OdyAuth) => void;
@@ -48,7 +53,7 @@ function App() {
   const [teamOneSets, setTeamOneSets] = useState<number>(0);
   const [teamTwoSets, setTeamTwoSets] = useState<number>(0);
   const navigate = useNavigate();
-  useDiscordRpc(); // init once
+  const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
 
   const location = useLocation(); // Remove these when they are no longer 'coming soon'.
   const showSidebar = !['/', '/home', '/cgm', '/cqm', '/account', '/mods'].includes(location.pathname);
@@ -70,6 +75,7 @@ function App() {
         <main className={showSidebar ? "flex-1 pl-13" : "flex-1"}>
           <Outlet context={{
             navigate,
+            updateActivity, clear, startRpc, stopRpc,
             odyAuth, setOdyAuth,
             userData, setUserData,
             matchPhase, setMatchPhase,

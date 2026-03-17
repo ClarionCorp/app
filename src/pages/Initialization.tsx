@@ -1,18 +1,18 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { fetchSelfQuery, verifyClientFiles } from "../core/init";
-import { DEFAULT_ACTIVITY, useDiscordRpc } from "../core/discord";
+import { DEFAULT_ACTIVITY } from "../core/discord";
 import { initMonitorCallbacks } from "../core/monitorCallbacks";
 
 // PLACEHOLDERS
 const STEPS = [
   "Fetching client files...",       // Grab identity.json & OS Log Files
   "Connecting to servers...",       // Fetch account info from Ody using identity.json
+  "Connecting to Discord...",       // Start Discord RPC (must be before logs)
   "Loading monitor service...",     // Read log and fetch current game status
   "Connecting to ClarionCorp...",   // CC API Handshake for Online Status
-  "Connecting to Discord...",       // Start Discord RPC
   "Ready!",                         // Doesn't do anything
 ];
  
@@ -21,6 +21,7 @@ const STEP_PCTS = [15, 35, 55, 75, 92, 100];
 export default function InitializationPage() {
   const {
     navigate,
+    updateActivity,
     setUserData,
     setMatchPhase,
     setRegisteredPlayers,
@@ -31,6 +32,8 @@ export default function InitializationPage() {
     setTeamOneSets,
     setTeamTwoSets,
     setOdyAuth,
+    startRpc,
+    stopRpc,
     teamOneSets,
     teamTwoSets,
     myCharacter,
@@ -39,7 +42,12 @@ export default function InitializationPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const { updateActivity } = useDiscordRpc();
+  const currentLevelRef = useRef(currentLevel);
+  const myCharacterRef = useRef(myCharacter);
+  const lastPhaseGroupRef = useRef<string | null>(null);
+
+  useEffect(() => { currentLevelRef.current = currentLevel; }, [currentLevel]);
+  useEffect(() => { myCharacterRef.current = myCharacter; }, [myCharacter]);
  
   useEffect(() => {
     let cancelled = false;
@@ -59,26 +67,29 @@ export default function InitializationPage() {
         const selfQuery = await fetchSelfQuery();
         if (cancelled) return;
         setUserData(selfQuery);
- 
-        // 3) Read log and fetch current game status
+
+        // 3) Connect to Discord RPC
         setStepIndex(2);
         setProgress(STEP_PCTS[2]);
+        await stopRpc();
+        await startRpc();
+        await updateActivity(DEFAULT_ACTIVITY);
+ 
+        // 4) Read log and fetch current game status
+        setStepIndex(3);
+        setProgress(STEP_PCTS[3]);
         await initMonitorCallbacks({ // Moved to its own file for organization sake
+          updateActivity,
           setMatchPhase, setRegisteredPlayers, setCurrentLevel, setMyCharacter,
           setTeamOnePoints, setTeamTwoPoints, setTeamOneSets, setTeamTwoSets,
           teamOneSets, teamTwoSets,
-          myCharacter, currentLevel,
+          myCharacterRef, currentLevelRef, lastPhaseGroupRef,
         });
 
-        // 4) <Connect to CC> (unused rn)
-        setStepIndex(3);
-        setProgress(STEP_PCTS[3]);
-        await new Promise((res) => setTimeout(res, 500));
-
-        // 5) Connect to Discord RPC
+        // 5) <Connect to CC> (unused rn)
         setStepIndex(4);
         setProgress(STEP_PCTS[4]);
-        await updateActivity(DEFAULT_ACTIVITY);
+        await new Promise((res) => setTimeout(res, 500));
  
         navigate('/home');
       } catch (err) {

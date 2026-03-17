@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { start, stop, setActivity, clearActivity } from "tauri-plugin-drpc";
+import { useRef } from "react";
+import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
 
 const APP_ID = "1483520798017982707";
@@ -17,7 +17,7 @@ export interface RpcActivityOptions {
 }
 
 export const DEFAULT_ACTIVITY: RpcActivityOptions = {
-  details: "Idling...",
+  details: "Idling on Main Menu",
   state: "Powered by Ai.Mi App",
   largeImage: "aimiapp_logo",
   buttons: [{ label: "Download Companion", url: "https://clarioncorp.net/download" }],
@@ -26,26 +26,25 @@ export const DEFAULT_ACTIVITY: RpcActivityOptions = {
 export function useDiscordRpc() {
   const started = useRef(false);
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function init() {
-      try {
-        await start(APP_ID);
-        started.current = true;
-        if (mounted) await updateActivity(DEFAULT_ACTIVITY);
-      } catch (err) {
-        console.error("Discord RPC failed to start:", err);
-      }
+  async function startRpc() {
+    try {
+      await start(APP_ID);
+      started.current = true;
+    } catch (err) {
+      console.error("Discord RPC failed to start:", err);
+      throw err;
     }
+  }
 
-    init();
-
-    return () => {
-      mounted = false;
-      stop().catch(() => {});
-    };
-  }, []);
+  async function stopRpc() {
+    try {
+      await stop();
+      started.current = false;
+    } catch (err) {
+      console.error("Discord RPC failed to stop:", err);
+      throw err;
+    }
+  }
 
   async function updateActivity(options: RpcActivityOptions) {
     if (!started.current) return;
@@ -58,7 +57,6 @@ export function useDiscordRpc() {
       smallImage,
       smallText,
       startTimestamp,
-      endTimestamp,
       buttons,
     } = options;
 
@@ -74,9 +72,9 @@ export function useDiscordRpc() {
     if (smallText) assets.setSmallText(smallText);
     activity = activity.setAssets(assets);
 
-    if (startTimestamp !== undefined || endTimestamp !== undefined) {
+    if (startTimestamp !== undefined) {
       activity = activity.setTimestamps(
-        new Timestamps(startTimestamp ?? Date.now(), endTimestamp)
+        new Timestamps(startTimestamp ?? Date.now())
       );
     }
 
@@ -86,6 +84,8 @@ export function useDiscordRpc() {
       );
     }
 
+    console.debug(activity);
+
     await setActivity(activity);
   }
 
@@ -94,5 +94,5 @@ export function useDiscordRpc() {
     await clearActivity();
   }
 
-  return { updateActivity, clear };
+  return { updateActivity, clear, startRpc, stopRpc };
 }

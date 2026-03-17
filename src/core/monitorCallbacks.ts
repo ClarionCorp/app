@@ -1,9 +1,11 @@
+import { RefObject } from 'react';
 import { AppContextType } from '../App';
-import { DEFAULT_ACTIVITY, useDiscordRpc } from './discord';
+import { DEFAULT_ACTIVITY, RpcActivityOptions } from './discord';
 import { getPhaseGroup, startLogMonitor } from './logMonitor';
-import { getCharDevName } from './objects';
+import { getCharDevName, getMapName } from './objects';
 
 type MonitorContext = Pick<AppContextType,
+  | 'updateActivity'
   | 'setMatchPhase'
   | 'setRegisteredPlayers'
   | 'setCurrentLevel'
@@ -14,13 +16,15 @@ type MonitorContext = Pick<AppContextType,
   | 'setTeamTwoSets'
   | 'teamOneSets'
   | 'teamTwoSets'
-  | 'currentLevel'
-  | 'myCharacter'
->;
+> & {
+  currentLevelRef: RefObject<string | null>;
+  myCharacterRef: RefObject<string | null>;
+  lastPhaseGroupRef: RefObject<string | null>;
+};
 
 export async function initMonitorCallbacks(ctx: MonitorContext) {
-  const { updateActivity } = useDiscordRpc();
   const {
+    updateActivity,
     setMatchPhase,
     setRegisteredPlayers,
     setCurrentLevel,
@@ -31,9 +35,18 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     setTeamTwoSets,
     teamOneSets,
     teamTwoSets,
-    currentLevel,
-    myCharacter
+    currentLevelRef,
+    myCharacterRef,
+    lastPhaseGroupRef,
   } = ctx;
+
+  let rpcDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  function debouncedUpdateActivity(options: RpcActivityOptions) {
+    if (rpcDebounceTimer) clearTimeout(rpcDebounceTimer);
+    rpcDebounceTimer = setTimeout(() => {
+      updateActivity(options).catch(console.error);
+    }, 5000); // wait 5s before actually sending
+  }
 
   return startLogMonitor(0, {
     onMatchPhase: async (phase) => {
@@ -51,27 +64,35 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
 
       // Discord RPC updates
       const phaseGroup = getPhaseGroup(phase);
+      console.debug(`Changing Phase Group: ${phaseGroup}`);
 
-      switch (phaseGroup) {
-        case 'starting':
-          await updateActivity({
-            details: `Ranked - ${currentLevel}`,
-            startTimestamp: new Date().getTime(),
-          })
-          break;
-        case 'in_game':
-          await updateActivity({
-            details: `Ranked - ${currentLevel}`,
-            state: `__I - 2pts | 2pts - II_`, // test placeholder (idk how to format this shit properly to make sense lol)
-            largeImage: getCharDevName(myCharacter ?? 'aimiapp_logo').toLowerCase(),
-            largeText: myCharacter ?? 'AiMi App',
-            smallImage: 'platinum_high', // placeholder
-            smallText: 'High Platinum', // placeholder
-          })
-          break;
-        default: // includes out_of_game
-          await updateActivity(DEFAULT_ACTIVITY)
-          break;
+      if (lastPhaseGroupRef.current !== phaseGroup) {
+        lastPhaseGroupRef.current = phaseGroup;
+        console.log(`Sending Discord a new Game State! (${phaseGroup})`);
+
+        switch (phaseGroup) {
+          case 'in_game':
+            await updateActivity({
+              details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
+              state: `⬛⬛🟦 2 | 2 🟥🟥⬛`, // test placeholder (idk how to format this shit properly to make sense lol)
+              largeImage: getCharDevName(myCharacterRef.current ?? 'aimiapp_logo').toLowerCase(),
+              largeText: `${myCharacterRef.current ? `Playing ${myCharacterRef.current}` : 'AiMi App'}`,
+              smallImage: 'platinum_high', // placeholder
+              smallText: 'High Platinum', // placeholder
+              startTimestamp: new Date().getTime(),
+            })
+            break;
+          case 'starting':
+            await updateActivity({
+              details: `Ranked - ${currentLevelRef.current}`,
+              state: `Voting on Game Settings...`,
+              startTimestamp: new Date().getTime(),
+            })
+            break;
+          default: // includes out_of_game
+            debouncedUpdateActivity(DEFAULT_ACTIVITY)
+            break;
+        }
       }
     },
 

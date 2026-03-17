@@ -52,7 +52,7 @@ const CHARACTER_DEV_NAMES: Record<string, string> = {
   'X': 'HulkingBeast',
   'Ai.Mi': 'MagicalPlaymaker',      // check in game
   'Rune': 'ManipulatingMastermind',
-  "Drek'ar": 'NimbleBlaster',    // check in game
+  'Drekar': 'NimbleBlaster',    // check in game
   'Vyce': 'RockOni',
   'Asher': 'ShieldUser',
   'Kai': 'SpeedySkirmisher',
@@ -64,4 +64,14 @@ const CHARACTER_DEV_NAMES: Record<string, string> = {
 
 export function getCharDevName(character: string): string {
   return CHARACTER_DEV_NAMES[character];
+}
+
+
+const MAP_DEV_NAMES: Record<string, string> = {
+  'GameMapAhtenCity': 'Ahten City',
+  'GameMapAtlasLab': 'Atlas Lab',
+}
+
+export function getMapName(map: string): string {
+  return MAP_DEV_NAMES[map] ?? map;
 }
