@@ -114,6 +114,7 @@ export type LogMonitorCallbacks = {
   onMyCharacter?: (character: string) => void | Promise<void>;
   onScore?: (event: ScoreEvent) => void | Promise<void>;
   onMyTeam?: (team: 'TeamOne' | 'TeamTwo') => void;
+  onQueue?: (queue: string) => void;
 };
  
 export async function startLogMonitor(
@@ -129,28 +130,28 @@ export async function startLogMonitor(
  
   if (callbacks.onMatchPhase) {
     unlisteners.push(await listen<string>('log://match-phase', (e) => {
-      console.log(`[monitor] Phase -> ${e.payload}`);
+      console.debug(`[monitor] Phase -> ${e.payload}`);
       void callbacks.onMatchPhase?.(e.payload as MatchPhase);
     }));
   }
  
   if (callbacks.onPlayerRegistered) {
     unlisteners.push(await listen<string>('log://player-registered', (e) => {
-      console.log(`[monitor] Player registered: ${e.payload}`);
+      console.debug(`[monitor] Player registered: ${e.payload}`);
       callbacks.onPlayerRegistered?.(e.payload);
     }));
   }
  
   if (callbacks.onLevel) {
     unlisteners.push(await listen<string>('log://level', (e) => {
-      console.log(`[monitor] Level -> ${e.payload}`);
+      console.debug(`[monitor] Level -> ${e.payload}`);
       callbacks.onLevel?.(e.payload);
     }));
   }
  
   if (callbacks.onMyCharacter) {
     unlisteners.push(await listen<string>('log://my-character', (e) => {
-      console.log(`[monitor] My character -> ${e.payload}`);
+      console.debug(`[monitor] My character -> ${e.payload}`);
       callbacks.onMyCharacter?.(e.payload);
     }));
   }
@@ -159,7 +160,7 @@ export async function startLogMonitor(
     unlisteners.push(await listen<string>('log://score', (e) => {
       try {
         const parsed: ScoreEvent = JSON.parse(e.payload);
-        console.log(`[monitor] Score -> ${parsed.team} ${parsed.from} -> ${parsed.to}`);
+        console.debug(`[monitor] Score -> ${parsed.team} ${parsed.from} -> ${parsed.to}`);
         callbacks.onScore?.(parsed);
       } catch {
         console.warn('[monitor] Failed to parse score event:', e.payload);
@@ -169,8 +170,15 @@ export async function startLogMonitor(
 
   if (callbacks.onMyTeam) {
     unlisteners.push(await listen<string>('log://my-team', (e) => {
-      console.log(`[monitor] My team -> ${e.payload}`);
+      console.debug(`[monitor] My team -> ${e.payload}`);
       callbacks.onMyTeam?.(e.payload as 'TeamOne' | 'TeamTwo');
+    }));
+  }
+
+  if (callbacks.onQueue) {
+    unlisteners.push(await listen<string>('log://queue', (e) => {
+      // console.debug(`[monitor] Queue -> ${e.payload}`);
+      callbacks.onQueue?.(e.payload);
     }));
   }
  

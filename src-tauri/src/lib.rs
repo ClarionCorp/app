@@ -156,6 +156,10 @@ fn start_log_monitor(app: AppHandle, path: String, offset: u64) {
                             if let Some(team) = regex_my_team(line) {
                                 let _ = app.emit("log://my-team", team);
                             }
+
+                            if let Some(queue) = regex_queue(line) {
+                                let _ = app.emit("log://queue", queue);
+                            }
                         }
                     }
                 }
@@ -272,6 +276,18 @@ fn regex_my_team(line: &str) -> Option<String> {
         let team = rest.trim();
         if team == "TeamOne" || team == "TeamTwo" {
             return Some(team.to_string());
+        }
+    }
+    None
+}
+
+// Extracts what game mode the player is queuing for
+fn regex_queue(line: &str) -> Option<String> {
+    let prefix = "Queue Selection: {\"queue\":\"queue:";
+    if let Some(start) = line.find(prefix) {
+        let rest = &line[start + prefix.len()..];
+        if let Some(end) = rest.find('"') {
+            return Some(rest[..end].to_string());
         }
     }
     None

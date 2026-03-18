@@ -1,6 +1,6 @@
 import { AppContextType } from '../App';
 import { db } from './database/driver';
-import { getUser } from './database/queries';
+import { getCurrentMatch, getUser } from './database/queries';
 import { currentMatch } from './database/schema';
 import { DEFAULT_ACTIVITY } from './discord';
 import { getPhaseGroup, startLogMonitor } from './logMonitor';
@@ -11,22 +11,9 @@ import { getRankFromLP } from './utilities/ranks';
 type MonitorContext = Pick<AppContextType,
   | 'updateActivity'
   | 'setMatchPhase'
-  | 'setRegisteredPlayers'
-  | 'setCurrentLevel'
-  | 'setMyCharacter'
-  | 'setTeamOnePoints'
-  | 'setTeamTwoPoints'
-  | 'setTeamOneSets'
-  | 'setTeamTwoSets'
-  | 'setMyTeam'
-  | 'setCurrentRating'
 > & {
   sessionOffset: number;
 };
-
-async function getMatch() {
-  return db.select().from(currentMatch).limit(1).then(r => r[0] ?? null);
-}
 
 function formatScore(
   teamOnePoints: number,
@@ -50,14 +37,6 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
   const {
     updateActivity,
     setMatchPhase,
-    setRegisteredPlayers,
-    setCurrentLevel,
-    setMyCharacter,
-    setTeamOnePoints,
-    setTeamTwoPoints,
-    setTeamOneSets,
-    setTeamTwoSets,
-    setMyTeam,
     sessionOffset,
   } = ctx;
 
@@ -91,14 +70,6 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
       setMatchPhase(phase);
 
       if (phase === 'EMatchPhase::None') {
-        setRegisteredPlayers([]);
-        setCurrentLevel(null);
-        setMyCharacter(null);
-        setTeamOnePoints(0);
-        setTeamTwoPoints(0);
-        setTeamOneSets(0);
-        setTeamTwoSets(0);
-        setMyTeam(null);
         await db.update(currentMatch).set({
           rawPhase: phase,
           level: null,
@@ -121,13 +92,12 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
         lastPhaseGroup = phaseGroup;
         console.log(`Sending Discord a new Game State! (${phaseGroup})`);
 
-        const match = await getMatch();
+        const match = await getCurrentMatch();
         const user = await getUser();
         let largeImg = 'aimiapp_logo';
         if (match?.myCharacter) { largeImg = getCharDevName(match.myCharacter).toLowerCase(); }
 
         // Also the score -> set calc is hardcoded to 3, so custom games break currently.
-        // Then, need to tackle actually using the user's rank (probably fetch once in /me on app launch?)
         // Finally, we need to hook up the actual game mode instead of just using 'Ranked'. ['Ranked', 'Custom', 'TTT', 'Normal', 'Quick Play', 'Practice']
 
         switch (phaseGroup) {
@@ -171,41 +141,33 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     },
 
     onPlayerRegistered: async (username) => {
-      const match = await getMatch();
+      const match = await getCurrentMatch();
       const prev = match?.playerNames ?? [];
       if (prev.includes(username)) return;
       const next = [...prev, username];
-      setRegisteredPlayers(next);
       await db.update(currentMatch).set({ playerNames: next }).run();
     },
 
     onLevel: async (level) => {
-      setCurrentLevel(level);
       await db.update(currentMatch).set({ level }).run();
     },
 
     onMyCharacter: async (char) => {
-      setMyCharacter(char);
       await db.update(currentMatch).set({ myCharacter: char }).run();
     },
 
     onScore: async ({ team, from, to }) => {
-      const match = await getMatch();
+      const match = await getCurrentMatch();
       if (team === 'TeamOne') {
         const newSets = (from === 3 && to === 0) ? (match?.teamOneSets ?? 0) + 1 : (match?.teamOneSets ?? 0);
-        setTeamOnePoints(to);
-        setTeamOneSets(newSets);
         await db.update(currentMatch).set({ teamOnePts: to, teamOneSets: newSets }).run();
       } else {
         const newSets = (from === 3 && to === 0) ? (match?.teamTwoSets ?? 0) + 1 : (match?.teamTwoSets ?? 0);
-        setTeamTwoPoints(to);
-        setTeamTwoSets(newSets);
         await db.update(currentMatch).set({ teamTwoPts: to, teamTwoSets: newSets }).run();
       }
     },
 
     onMyTeam: async (team) => {
-      setMyTeam(team);
       await db.update(currentMatch).set({ myTeam: team }).run();
     },
   });

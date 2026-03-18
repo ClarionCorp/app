@@ -1,7 +1,7 @@
 import { AuthTable, UserTable } from "../../types/database";
 import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { auth, user } from "./schema";
+import { auth, currentMatch, user } from "./schema";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -19,7 +19,9 @@ export async function getAuthTokens(): Promise<AuthTable | null> {
   return rows[0] ?? null;
 }
 
-
+export async function getCurrentMatch() {
+  return db.select().from(currentMatch).limit(1).then(r => r[0] ?? null);
+}
 
 
 

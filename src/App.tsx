@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { OdyAuth, SelfQuery } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
@@ -23,41 +23,12 @@ export interface AppContextType {
 
   matchPhase: MatchPhase | null;
   setMatchPhase: (phase: MatchPhase | null) => void;
-
-  registeredPlayers: string[];
-  setRegisteredPlayers: React.Dispatch<React.SetStateAction<string[]>>;
-
-  currentLevel: string | null;
-  setCurrentLevel: (v: string | null) => void;
-  myCharacter: string | null;
-  setMyCharacter: (v: string | null) => void;
-  teamOnePoints: number;
-  setTeamOnePoints: (v: number) => void;
-  teamTwoPoints: number;
-  setTeamTwoPoints: (v: number) => void;
-  teamOneSets: number;
-  setTeamOneSets: (v: number) => void;
-  teamTwoSets: number;
-  setTeamTwoSets: (v: number) => void;
-  myTeam: string | null;
-  setMyTeam: (v: string | null) => void;
-  myCurrentRating: number | null;
-  setCurrentRating: (v: number | null) => void;
 }
 
 function App() {
   const [odyAuth, setOdyAuth] = useState<OdyAuth>();
   const [userData, setUserData] = useState<SelfQuery>();
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('EMatchPhase::Unknown');
-  const [registeredPlayers, setRegisteredPlayers] = useState<string[]>([]);
-  const [currentLevel, setCurrentLevel] = useState<string | null>(null);
-  const [myCharacter, setMyCharacter] = useState<string | null>(null);
-  const [teamOnePoints, setTeamOnePoints] = useState<number>(0);
-  const [teamTwoPoints, setTeamTwoPoints] = useState<number>(0);
-  const [teamOneSets, setTeamOneSets] = useState<number>(0);
-  const [teamTwoSets, setTeamTwoSets] = useState<number>(0);
-  const [myCurrentRating, setCurrentRating] = useState<number>(0);
-  const [myTeam, setMyTeam] = useState<string | null>(null);
   const navigate = useNavigate();
   const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
 
@@ -87,15 +58,6 @@ function App() {
             odyAuth, setOdyAuth,
             userData, setUserData,
             matchPhase, setMatchPhase,
-            registeredPlayers, setRegisteredPlayers,
-            currentLevel, setCurrentLevel,
-            myCharacter, setMyCharacter,
-            teamOnePoints, setTeamOnePoints,
-            teamTwoPoints, setTeamTwoPoints,
-            teamOneSets, setTeamOneSets,
-            teamTwoSets, setTeamTwoSets,
-            myTeam, setMyTeam,
-            myCurrentRating, setCurrentRating,
             }}
           />
         </main>

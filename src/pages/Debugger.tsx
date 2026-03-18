@@ -2,6 +2,9 @@ import { motion } from 'framer-motion';
 import { useOutletContext } from 'react-router-dom';
 import { AppContextType } from '../App';
 import { getPhaseGroup, PHASE_COLORS, PHASE_LABELS } from '../core/logMonitor';
+import { useEffect, useState } from 'react';
+import { CurrentMatchTable } from '../types/database';
+import { getCurrentMatch } from '../core/database/queries';
 
 interface DebugRowProps {
   label: string;
@@ -26,19 +29,18 @@ function SectionHeader({ title }: { title: string }) {
 }
 
 export default function DebugPage() {
+  const [currentMatch, setCurrentMatch] = useState<CurrentMatchTable | null>(null);
   const {
     matchPhase,
-    registeredPlayers,
-    currentLevel,
-    myCharacter,
-    teamOnePoints,
-    teamTwoPoints,
-    teamOneSets,
-    teamTwoSets,
-    myTeam,
   } = useOutletContext<AppContextType>();
 
   const inGame = matchPhase ? getPhaseGroup(matchPhase) !== 'out_of_game' : false;
+
+  useEffect(() => {
+    getCurrentMatch().then(setCurrentMatch);
+  }, []);
+
+  if (!currentMatch) return <p>Loading...</p>;
 
   return (
     <div className="min-h-screen bg-background px-6 py-6">
@@ -60,29 +62,29 @@ export default function DebugPage() {
             </span>
           } />
           <DebugRow label="Raw Phase" value={matchPhase ?? '—'} />
-          <DebugRow label="Level" value={inGame ? (currentLevel ?? '—') : '—'} />
-          <DebugRow label="My Character" value={inGame ? (myCharacter ?? '—') : '—'} />
-          <DebugRow label="My Team" value={inGame ? (myTeam ?? '—') : '—'} />
+          <DebugRow label="Level" value={inGame ? (currentMatch.level ?? '—') : '—'} />
+          <DebugRow label="My Character" value={inGame ? (currentMatch.myCharacter ?? '—') : '—'} />
+          <DebugRow label="My Team" value={inGame ? (currentMatch.myTeam ?? '—') : '—'} />
         </div>
 
         {/* Score */}
         <div className="bg-surface-subtle border border-background-border rounded-xl px-4 mt-3">
           <SectionHeader title="Score" />
-          <DebugRow label="Team One Points" value={inGame ? teamOnePoints : '—'} />
-          <DebugRow label="Team Two Points" value={inGame ? teamTwoPoints : '—'} />
-          <DebugRow label="Team One Sets" value={inGame ? teamOneSets : '—'} />
-          <DebugRow label="Team Two Sets" value={inGame ? teamTwoSets : '—'} />
+          <DebugRow label="Team One Points" value={inGame ? currentMatch.teamOnePts : '—'} />
+          <DebugRow label="Team Two Points" value={inGame ? currentMatch.teamTwoPts : '—'} />
+          <DebugRow label="Team One Sets" value={inGame ? currentMatch.teamOneSets : '—'} />
+          <DebugRow label="Team Two Sets" value={inGame ? currentMatch.teamTwoSets : '—'} />
         </div>
 
         {/* Players */}
         <div className="bg-surface-subtle border border-background-border rounded-xl px-4 mt-3">
-          <SectionHeader title={`Registered Players (${registeredPlayers.length})`} />
-          {registeredPlayers.length === 0 ? (
+          <SectionHeader title={`Registered Players (${currentMatch.playerNames.length})`} />
+          {currentMatch.playerNames.length === 0 ? (
             <div className="py-3">
               <span className="text-xs text-char-subtle">None yet</span>
             </div>
           ) : (
-            registeredPlayers.map((p, i) => (
+            currentMatch.playerNames.map((p, i) => (
               <DebugRow key={p} label={`Player ${i + 1}`} value={p} />
             ))
           )}

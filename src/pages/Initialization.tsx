@@ -29,18 +29,9 @@ export default function InitializationPage() {
     updateActivity,
     setUserData,
     setMatchPhase,
-    setRegisteredPlayers,
-    setTeamOnePoints,
-    setTeamTwoPoints,
-    setCurrentLevel,
-    setMyCharacter,
-    setTeamOneSets,
-    setTeamTwoSets,
     setOdyAuth,
     startRpc,
     stopRpc,
-    setMyTeam,
-    setCurrentRating,
   } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -83,9 +74,7 @@ export default function InitializationPage() {
         const sessionOffset = await invoke<number>('find_session_start', { path: logPath });
         await initMonitorCallbacks({ // Moved to its own file for organization sake
           updateActivity,
-          setMatchPhase, setRegisteredPlayers, setCurrentLevel, setMyCharacter, setMyTeam,
-          setTeamOnePoints, setTeamTwoPoints, setTeamOneSets, setTeamTwoSets,
-          setCurrentRating,
+          setMatchPhase,
           sessionOffset,
         });
 
