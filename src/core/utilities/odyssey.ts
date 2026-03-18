@@ -1,5 +1,8 @@
 import { RankedQuery, SelfQuery, UserQuery } from "../../types/odyssey";
 import { OdyAPI } from "../constants";
+import { db } from "../database/driver";
+import { getUser } from "../database/queries";
+import { user } from "../database/schema";
 import { readIdentity } from "../init";
 
 type QueryJSON ={
@@ -71,4 +74,16 @@ export async function fetchSelfQuery(): Promise<SelfQuery> {
   }
 
   return res.json() as Promise<SelfQuery>;
+}
+
+// refetches and saves the user's current ody rating to the database
+// also returns with that number to save on having to also fetch the database.
+export async function refreshRating(): Promise<number | null> {
+  // This assumes the general playerData is already in the database.
+  const userData = await getUser();
+  if (!userData) return null;
+  const ranked = await fetchRankQuery(userData.playerId);
+  if (!ranked) return null;
+  await db.update(user).set({ rating: ranked.rating }).run();
+  return ranked.rating;
 }

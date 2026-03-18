@@ -1,9 +1,12 @@
 import { AppContextType } from '../App';
 import { db } from './database/driver';
+import { getUser } from './database/queries';
 import { currentMatch } from './database/schema';
 import { DEFAULT_ACTIVITY } from './discord';
 import { getPhaseGroup, startLogMonitor } from './logMonitor';
 import { getCharDevName, getMapName } from './objects';
+import { refreshRating } from './utilities/odyssey';
+import { getRankFromLP } from './utilities/ranks';
 
 type MonitorContext = Pick<AppContextType,
   | 'updateActivity'
@@ -120,17 +123,18 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
         console.log(`Sending Discord a new Game State! (${phaseGroup})`);
 
         const match = await getMatch();
+        const user = await getUser();
         let largeImg = 'aimiapp_logo';
         if (match?.myCharacter) { largeImg = getCharDevName(match.myCharacter).toLowerCase(); }
 
-        // Current issue, startTimestamp gets reset whenever the activity changes no matter what.
-        // We should keep track of it, so it can always set to "start" from now minus x seconds since actual start.
-        // Also the score to set calc is hardcoded to 3, so custom games break currently.
+        // Also the score -> set calc is hardcoded to 3, so custom games break currently.
         // Then, need to tackle actually using the user's rank (probably fetch once in /me on app launch?)
         // Finally, we need to hook up the actual game mode instead of just using 'Ranked'. ['Ranked', 'Custom', 'TTT', 'Normal', 'Quick Play', 'Practice']
 
         switch (phaseGroup) {
           case 'in_game': // fires when a game has started and after scores/intermissions
+            const rankObject = getRankFromLP(user?.rating);
+            console.debug(`Current Rank: ${JSON.stringify(rankObject, null, 1)} (${user?.rating} rating)`);
             await updateActivity({
               details: `Ranked - ${match?.level ? getMapName(match.level) : match?.level}`,
               state: formatScore(
@@ -142,8 +146,8 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
               ),
               largeImage: largeImg,
               largeText: match?.myCharacter ? `Playing ${match.myCharacter}` : 'AiMi Companion App',
-              smallImage: 'platinum_high', // placeholder
-              smallText: 'High Platinum', // placeholder
+              smallImage: rankObject.key, // this resolves properly but discord isn't showing it for some reason, come back later.
+              smallText: rankObject.name,
               buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
               startTimestamp: match.startedAt.getTime(),
             });
@@ -151,7 +155,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
           case 'waiting': // fires after scoring/intermission to update in_game
             break;
           case 'starting': // fires once after the queue pops
-            setCurrentRating(2);
+            await refreshRating();
             const startingTs = new Date();
             await db.update(currentMatch).set({ startedAt: startingTs }).run();
             await updateActivity({
