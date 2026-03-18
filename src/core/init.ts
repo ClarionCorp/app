@@ -1,10 +1,10 @@
 import { exists, readTextFile } from '@tauri-apps/plugin-fs';
 import { homeDir, join } from '@tauri-apps/api/path';
-import { windows_identity, windows_log, OdyAPI } from './constants';
-import { OdyAuth, SelfQuery } from '../types/odyssey';
+import { windows_identity, windows_log } from './constants';
+import { OdyAuth } from '../types/odyssey';
 
 
-async function readIdentity(): Promise<OdyAuth> {
+export async function readIdentity(): Promise<OdyAuth> {
   const home = await homeDir();
   const fullIdentityPath = await join(home, windows_identity);
   const raw = await readTextFile(fullIdentityPath);
@@ -39,7 +39,7 @@ async function readIdentity(): Promise<OdyAuth> {
   };
 }
 
-// 1) Verify identity.json and OmegaStrikers.log exist, and identity has required keys
+// Verify identity.json and OmegaStrikers.log exist, and identity has required keys
 export async function verifyClientFiles(): Promise<OdyAuth> {
   const home = await homeDir();
 
@@ -61,24 +61,4 @@ export async function verifyClientFiles(): Promise<OdyAuth> {
   }
 
   return await readIdentity();
-}
-
-// 2) Fetch the player's account info from the Ody API
-export async function fetchSelfQuery(): Promise<SelfQuery> {
-  const { jwt, rft } = await readIdentity();
-
-  const res = await fetch(`${OdyAPI}/v1/me`, {
-    headers: {
-      'X-Authorization': `Bearer ${jwt}`,
-      'x-Refresh-Token': rft,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch account info from Ody API. Status: ${res.status} ${res.statusText}`
-    );
-  }
-
-  return res.json() as Promise<SelfQuery>;
 }

@@ -1,5 +1,6 @@
-import { OdyAuth, RankedQuery, UserQuery } from "../../types/odyssey";
+import { OdyAuth, RankedQuery, SelfQuery, UserQuery } from "../../types/odyssey";
 import { OdyAPI } from "../constants";
+import { readIdentity } from "../init";
 
 type QueryJSON ={
   matches: UserQuery[]
@@ -49,4 +50,23 @@ export async function rankQuery(playerId: string, auth: OdyAuth): Promise<Ranked
     console.warn(`Player '${playerId}' returned no data!`);
     return null
   }
+}
+
+export async function fetchSelfQuery(): Promise<SelfQuery> {
+  const { jwt, rft } = await readIdentity();
+
+  const res = await fetch(`${OdyAPI}/v1/me`, {
+    headers: {
+      'X-Authorization': `Bearer ${jwt}`,
+      'x-Refresh-Token': rft,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      `Failed to fetch account info from Ody API. Status: ${res.status} ${res.statusText}`
+    );
+  }
+
+  return res.json() as Promise<SelfQuery>;
 }

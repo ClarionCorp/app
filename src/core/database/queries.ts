@@ -1,0 +1,59 @@
+import { AuthTable, UserTable } from "../../types/database";
+import { SelfQuery } from "../../types/odyssey";
+import { db } from "./driver";
+import { auth, user } from "./schema";
+
+// Just using a basic translation file since I am still new to Drizzle
+
+//
+// Fetchers
+//
+
+export async function getUser(): Promise<UserTable | null> {
+  const rows = await db.select().from(user).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getAuthTokens(): Promise<AuthTable | null> {
+  const rows = await db.select().from(auth).limit(1);
+  return rows[0] ?? null;
+}
+
+
+
+
+
+
+//
+// Setters
+//
+
+export async function upsertUser(data: SelfQuery) {
+  return db.insert(user).values({
+    id: 1,
+    ...data,
+    tags: data.tags,
+    gameLiftRegionUrls: data.gameLiftRegionUrls,
+    discordId: data.discordConnection?.discordId ?? null,
+    lastDisplayNameChangeTimestamp: data.lastDisplayNameChangeTimestamp ?? null,
+    rating: null,
+  }).onConflictDoUpdate({
+    target: user.id,
+    set: {
+      ...data,
+      discordId: data.discordConnection?.discordId ?? null,
+      lastDisplayNameChangeTimestamp: data.lastDisplayNameChangeTimestamp ?? null,
+    },
+  }).run();
+}
+
+export async function updateRating(rating: number) {
+  return db.update(user).set({ rating }).run();
+}
+
+export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
+  return db.insert(auth).values({ id: 1, ...data }).onConflictDoUpdate({
+    target: auth.id,
+    set: data,
+  }).run();
+}

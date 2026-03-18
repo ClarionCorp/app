@@ -29,6 +29,10 @@
     "process:default",
     "drpc:default",
     "drpc:allow-is-running",
-    "drpc:allow-set-activity"
+    "drpc:allow-set-activity",
+    "sql:default",
+    "sql:allow-load",
+    "sql:allow-select",
+    "sql:allow-execute"
   ]
 }

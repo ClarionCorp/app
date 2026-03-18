@@ -2,12 +2,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
-import { fetchSelfQuery, verifyClientFiles } from "../core/init";
+import { verifyClientFiles } from "../core/init";
 import { DEFAULT_ACTIVITY } from "../core/discord";
 import { initMonitorCallbacks } from "../core/monitorCallbacks";
 import { homeDir, join } from "@tauri-apps/api/path";
 import { windows_log } from "../core/constants";
 import { invoke } from "@tauri-apps/api/core";
+import { fetchSelfQuery } from "../core/utilities/odyssey";
+import { upsertUser } from "../core/database/queries";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -73,6 +75,7 @@ export default function InitializationPage() {
         const selfQuery = await fetchSelfQuery();
         if (cancelled) return;
         setUserData(selfQuery);
+        await upsertUser(selfQuery);
 
         // 3) Connect to Discord RPC
         setStepIndex(2);

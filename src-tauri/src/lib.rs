@@ -289,6 +289,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_drpc::init())
+        .plugin(tauri_plugin_sql::Builder::default().build())
         .invoke_handler(tauri::generate_handler![read_log_from, find_session_start, start_log_monitor, stop_log_monitor])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
