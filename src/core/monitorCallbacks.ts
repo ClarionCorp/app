@@ -97,6 +97,9 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
 
         // Current issue, startTimestamp gets reset whenever the activity changes no matter what.
         // We should keep track of it, so it can always set to "start" from now minus x seconds since actual start.
+        // Also the score to set calc is hardcoded to 3, so custom games break currently.
+        // Then, need to tackle actually using the user's rank (probably fetch once in /me on app launch?)
+        // Finally, we need to hook up the actual game mode instead of just using 'Ranked'. ['Ranked', 'Custom', 'TTT', 'Normal', 'Quick Play', 'Practice']
 
         switch (phaseGroup) {
           case 'in_game':
@@ -107,7 +110,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
               largeText: `${myCharacterRef.current ? `Playing ${myCharacterRef.current}` : 'AiMi Companion App'}`,
               smallImage: 'platinum_high', // placeholder
               smallText: 'High Platinum', // placeholder
-              buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/download" }],
+              buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
             })
             break;
           case 'waiting':

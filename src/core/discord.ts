@@ -20,7 +20,7 @@ export const DEFAULT_ACTIVITY: RpcActivityOptions = {
   details: "Idling on Main Menu",
   state: "Powered by Ai.Mi App",
   largeImage: "aimiapp_logo",
-  buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/download" }],
+  buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
 }
 
 export function useDiscordRpc() {
