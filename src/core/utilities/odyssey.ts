@@ -1,4 +1,4 @@
-import { OdyAuth, RankedQuery, SelfQuery, UserQuery } from "../../types/odyssey";
+import { RankedQuery, SelfQuery, UserQuery } from "../../types/odyssey";
 import { OdyAPI } from "../constants";
 import { readIdentity } from "../init";
 
@@ -10,13 +10,14 @@ type RankedJSON ={
   players: RankedQuery[]
 }
 
-export async function usernameQuery(username: string, auth: OdyAuth): Promise<UserQuery | null> {
+export async function fetchUsernameQuery(username: string): Promise<UserQuery | null> {
+  const { jwt, rft } = await readIdentity();
   try {
     const res = await fetch(`${OdyAPI}/v1/players?usernameQuery=${username}`, {
       method: 'GET',
       headers: {
-        'X-Authorization': `Bearer ${auth.jwt}`,
-        'X-Refresh-Token': `${auth.rft}`
+        'X-Authorization': `Bearer ${jwt}`,
+        'X-Refresh-Token': `${rft}`
       }
     });
 
@@ -31,13 +32,14 @@ export async function usernameQuery(username: string, auth: OdyAuth): Promise<Us
   }
 }
 
-export async function rankQuery(playerId: string, auth: OdyAuth): Promise<RankedQuery | null> {
+export async function fetchRankQuery(playerId: string): Promise<RankedQuery | null> {
+  const { jwt, rft } = await readIdentity();
   try {
     const res = await fetch(`${OdyAPI}/v1/ranked/leaderboard/search/${playerId}?entriesBefore=0&entriesAfter=0`, {
       method: 'GET',
       headers: {
-        'X-Authorization': `Bearer ${auth.jwt}`,
-        'X-Refresh-Token': `${auth.rft}`
+        'X-Authorization': `Bearer ${jwt}`,
+        'X-Refresh-Token': `${rft}`
       }
     });
 

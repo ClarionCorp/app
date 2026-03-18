@@ -3,23 +3,23 @@ import { motion, type Variants } from 'framer-motion';
 import { useOutletContext } from 'react-router-dom';
 import { AppContextType } from '../App';
 import { PlayerCard } from '../components/PlayerCard';
-import { OdyAuth, RankedQuery } from '../types/odyssey';
+import { RankedQuery } from '../types/odyssey';
 import { getPhaseGroup } from '../core/logMonitor';
-import { rankQuery, usernameQuery } from '../core/utilities/odyssey';
+import { fetchRankQuery, fetchUsernameQuery } from '../core/utilities/odyssey';
 
 const containerVariants: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
 };
 
-async function fetchPlayerData(usernames: string[], auth: OdyAuth): Promise<RankedQuery[]> {
+async function fetchPlayerData(usernames: string[]): Promise<RankedQuery[]> {
   console.log(`Fetching ${usernames.length} users...`);
   console.debug(`Fetching ranks for ${usernames.join(', ')}...`)
   const results = await Promise.allSettled(
     usernames.map(async (username) => {
-      const user = await usernameQuery(username, auth);
+      const user = await fetchUsernameQuery(username);
       if (!user) return;
-      const ranked = await rankQuery(user.playerId, auth);
+      const ranked = await fetchRankQuery(user.playerId);
       if (!ranked) return;
       return ranked;
     })
@@ -31,7 +31,7 @@ async function fetchPlayerData(usernames: string[], auth: OdyAuth): Promise<Rank
 }
 
 export default function RankCheckerPage() {
-  const { matchPhase, registeredPlayers, odyAuth } = useOutletContext<AppContextType>();
+  const { matchPhase, registeredPlayers } = useOutletContext<AppContextType>();
   const [players, setPlayers] = useState<RankedQuery[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export default function RankCheckerPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchPlayerData(unfetched, odyAuth);
+        const data = await fetchPlayerData(unfetched);
         if (!unmounted.current) setPlayers(prev => [...prev, ...data]);
       } catch (e) {
         if (!unmounted.current) setError(e instanceof Error ? e.message : String(e));

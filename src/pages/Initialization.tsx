@@ -8,8 +8,8 @@ import { initMonitorCallbacks } from "../core/monitorCallbacks";
 import { homeDir, join } from "@tauri-apps/api/path";
 import { windows_log } from "../core/constants";
 import { invoke } from "@tauri-apps/api/core";
-import { fetchSelfQuery } from "../core/utilities/odyssey";
-import { upsertUser } from "../core/database/queries";
+import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
+import { updateRating, upsertUser } from "../core/database/queries";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -21,7 +21,7 @@ const STEPS = [
   "Ready!",                         // Doesn't do anything
 ];
  
-const STEP_PCTS = [15, 35, 55, 75, 92, 100];
+const STEP_PCTS = [0, 15, 35, 65, 85, 100];
  
 export default function InitializationPage() {
   const {
@@ -73,9 +73,11 @@ export default function InitializationPage() {
         setStepIndex(1);
         setProgress(STEP_PCTS[1]);
         const selfQuery = await fetchSelfQuery();
+        const rankQuery = await fetchRankQuery(selfQuery.playerId);
         if (cancelled) return;
         setUserData(selfQuery);
         await upsertUser(selfQuery);
+        if (rankQuery) await updateRating(rankQuery.rating);
 
         // 3) Connect to Discord RPC
         setStepIndex(2);
