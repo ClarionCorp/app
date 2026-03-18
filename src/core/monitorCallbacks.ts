@@ -4,7 +4,7 @@ import { getCurrentMatch, getUser, updateCurrentMatch } from './database/queries
 import { currentMatch } from './database/schema';
 import { DEFAULT_ACTIVITY } from './discord';
 import { getPhaseGroup, startLogMonitor } from './logMonitor';
-import { getCharDevName, getMapName } from './objects';
+import { getCharDevName, getMapName, getQueueName } from './objects';
 import { refreshRating } from './utilities/odyssey';
 import { getRankFromLP } from './utilities/ranks';
 
@@ -105,7 +105,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
             const rankObject = getRankFromLP(user?.rating);
             console.debug(`Current Rank: ${JSON.stringify(rankObject, null, 1)} (${user?.rating} rating)`);
             await updateActivity({
-              details: `Ranked - ${match?.level ? getMapName(match.level) : match?.level}`,
+              details: `${match?.queue ? getQueueName(match.queue) : match?.queue} - ${match?.level ? getMapName(match.level) : match?.level}`,
               state: formatScore(
                 match?.teamOnePts ?? 0,
                 match?.teamTwoPts ?? 0,
@@ -169,6 +169,10 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
 
     onMyTeam: async (team) => {
       await updateCurrentMatch({ myTeam: team });
+    },
+
+    onQueue: async (queue) => {
+      await updateCurrentMatch({ queue: queue });
     },
   });
 }

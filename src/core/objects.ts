@@ -86,3 +86,17 @@ const MAP_DEV_NAMES: Record<string, string> = {
 export function getMapName(map: string): string {
   return MAP_DEV_NAMES[map] ?? map;
 }
+
+const QUEUE_DEV_NAMES: Record<string, string> = {
+  '3v3': 'Normal',
+  'coopvsai': 'Co-Op VS AI',
+  'custom': 'Custom',
+  'custom:NvM': 'Custom',
+  'practice': 'Practice',
+  'quickplay': 'Quick Play',
+  'ranked:3v3': 'Ranked'
+}
+
+export function getQueueName(queue: string): string {
+  return QUEUE_DEV_NAMES[queue] ?? queue;
+}
