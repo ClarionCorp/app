@@ -14,9 +14,12 @@ type MonitorContext = Pick<AppContextType,
   | 'setTeamTwoPoints'
   | 'setTeamOneSets'
   | 'setTeamTwoSets'
-  | 'teamOneSets'
-  | 'teamTwoSets'
+  | 'teamOnePointsRef'
+  | 'teamTwoPointsRef'
+  | 'teamOneSetsRef'
+  | 'teamTwoSetsRef'
   | 'setMyTeam'
+  | 'myTeamRef'
   | 'currentLevelRef'
   | 'myCharacterRef'
 > & {
@@ -24,6 +27,24 @@ type MonitorContext = Pick<AppContextType,
   updateActivityRef: RefObject<(options: RpcActivityOptions) => Promise<void>>;
   sessionOffset: number;
 };
+
+function formatScore(
+  teamOnePoints: number,
+  teamTwoPoints: number,
+  teamOneSets: number,
+  teamTwoSets: number,
+  myTeam: string | null,
+): string {
+  const myPoints = myTeam === 'TeamTwo' ? teamTwoPoints : teamOnePoints;
+  const theirPoints = myTeam === 'TeamTwo' ? teamOnePoints : teamTwoPoints;
+  const mySets = myTeam === 'TeamTwo' ? teamTwoSets : teamOneSets;
+  const theirSets = myTeam === 'TeamTwo' ? teamOneSets : teamTwoSets;
+
+  const myBar = `${'⬛'.repeat(3 - mySets)}${'🟦'.repeat(mySets)}`;
+  const theirBar = `${'🟥'.repeat(theirSets)}${'⬛'.repeat(3 - theirSets)}`;
+
+  return `${myBar} (${myPoints} | ${theirPoints}) ${theirBar}`;
+}
 
 export async function initMonitorCallbacks(ctx: MonitorContext) {
   const {
@@ -36,13 +57,16 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     setTeamOneSets,
     setTeamTwoSets,
     setMyTeam,
-    teamOneSets,
-    teamTwoSets,
+    teamOneSetsRef,
+    teamTwoSetsRef,
+    teamOnePointsRef,
+    teamTwoPointsRef,
     currentLevelRef,
     myCharacterRef,
     lastPhaseGroupRef,
     updateActivityRef,
     sessionOffset,
+    myTeamRef,
   } = ctx;
 
   return startLogMonitor(sessionOffset, {
@@ -63,7 +87,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
       // Discord RPC updates
       const phaseGroup = getPhaseGroup(phase);
       console.debug(`Changing Phase Group: ${phaseGroup}`);
-      // console.debug(`Ref: ${currentLevelRef?.current}`);
+      console.debug(`T1: ${teamOnePointsRef.current} T2: ${teamTwoPointsRef.current}`);
 
       if (lastPhaseGroupRef.current !== phaseGroup) {
         lastPhaseGroupRef.current = phaseGroup;
@@ -71,11 +95,14 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
         let largeImg = 'aimiapp_logo';
         if (myCharacterRef.current) { largeImg = getCharDevName(myCharacterRef.current).toLowerCase(); }
 
+        // Current issue, startTimestamp gets reset whenever the activity changes no matter what.
+        // We should keep track of it, so it can always set to "start" from now minus x seconds since actual start.
+
         switch (phaseGroup) {
           case 'in_game':
             await updateActivityRef.current({
               details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
-              state: `⬛⬛🟦 (2 | 2) 🟥🟥⬛`, // test placeholder (idk how to format this shit properly to make sense lol)
+              state: formatScore(teamOnePointsRef.current, teamTwoPointsRef.current, teamOneSetsRef.current, teamTwoSetsRef.current, myTeamRef.current),
               largeImage: largeImg,
               largeText: `${myCharacterRef.current ? `Playing ${myCharacterRef.current}` : 'AiMi Companion App'}`,
               smallImage: 'platinum_high', // placeholder
@@ -83,15 +110,17 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
               buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/download" }],
             })
             break;
+          case 'waiting':
+            break;
           case 'starting':
-            // await updateActivity({
-            //   details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
-            //   state: `Voting on Game Settings...`,
-            //   startTimestamp: new Date().getTime(),
-            // })
+            await updateActivityRef.current({
+              details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
+              state: `Voting on Game Settings...`,
+              startTimestamp: new Date().getTime(),
+            })
             break;
           default: // includes out_of_game
-            // await updateActivity(DEFAULT_ACTIVITY)
+            await updateActivityRef.current(DEFAULT_ACTIVITY)
             break;
         }
       }
@@ -109,10 +138,10 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
 
     onScore: ({ team, from, to }) => {
       if (team === 'TeamOne') {
-        if (from === 3 && to === 0) setTeamOneSets(teamOneSets + 1);
+        if (from === 3 && to === 0) setTeamOneSets(teamOneSetsRef.current + 1);
         setTeamOnePoints(to);
       } else {
-        if (from === 3 && to === 0) setTeamTwoSets(teamTwoSets + 1);
+        if (from === 3 && to === 0) setTeamTwoSets(teamTwoSetsRef.current + 1);
         setTeamTwoPoints(to);
       }
     },

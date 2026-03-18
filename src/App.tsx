@@ -44,6 +44,11 @@ export interface AppContextType {
 
   currentLevelRef: RefObject<string | null>;
   myCharacterRef: RefObject<string | null>;
+  myTeamRef: RefObject<string | null>;
+  teamOnePointsRef: RefObject<number>;
+  teamTwoPointsRef: RefObject<number>;
+  teamOneSetsRef: RefObject<number>;
+  teamTwoSetsRef: RefObject<number>;
 }
 
 function App() {
@@ -63,12 +68,22 @@ function App() {
 
   const currentLevelRef = useRef<string | null>(null);
   const myCharacterRef = useRef<string | null>(null);
+  const myTeamRef = useRef<string | null>(null);
+  const teamOnePointsRef = useRef<number>(0);
+  const teamTwoPointsRef = useRef<number>(0);
+  const teamOneSetsRef = useRef<number>(0);
+  const teamTwoSetsRef = useRef<number>(0);
 
   const location = useLocation(); // Remove these when they are no longer 'coming soon'.
   const showSidebar = !['/', '/home', '/cgm', '/cqm', '/account', '/mods'].includes(location.pathname);
 
   useEffect(() => { currentLevelRef.current = currentLevel; }, [currentLevel]);
   useEffect(() => { myCharacterRef.current = myCharacter; }, [myCharacter]);
+  useEffect(() => { myTeamRef.current = myTeam; }, [myTeam]);
+  useEffect(() => { teamOnePointsRef.current = teamOnePoints; }, [teamOnePoints]);
+  useEffect(() => { teamTwoPointsRef.current = teamTwoPoints; }, [teamTwoPoints]);
+  useEffect(() => { teamOneSetsRef.current = teamOneSets; }, [teamOneSets]);
+  useEffect(() => { teamTwoSetsRef.current = teamTwoSets; }, [teamTwoSets]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -92,15 +107,13 @@ function App() {
             userData, setUserData,
             matchPhase, setMatchPhase,
             registeredPlayers, setRegisteredPlayers,
-            currentLevel, setCurrentLevel,
-            myCharacter, setMyCharacter,
-            teamOnePoints, setTeamOnePoints,
-            teamTwoPoints, setTeamTwoPoints,
-            teamOneSets, setTeamOneSets,
-            teamTwoSets, setTeamTwoSets,
-            myTeam, setMyTeam,
-            currentLevelRef,
-            myCharacterRef,
+            currentLevel, setCurrentLevel, currentLevelRef,
+            myCharacter, setMyCharacter, myCharacterRef,
+            teamOnePoints, setTeamOnePoints, teamOnePointsRef,
+            teamTwoPoints, setTeamTwoPoints, teamTwoPointsRef,
+            teamOneSets, setTeamOneSets, teamOneSetsRef,
+            teamTwoSets, setTeamTwoSets, teamTwoSetsRef,
+            myTeam, setMyTeam, myTeamRef,
             }}
           />
         </main>

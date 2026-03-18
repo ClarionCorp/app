@@ -21,6 +21,7 @@ export type MatchPhase =
   | 'EMatchPhase::Intermission'
   | 'EMatchPhase::IntermissionMvp'
   | 'EMatchPhase::IntermissionIntro'
+  | 'EMatchPhase::IntermissionOutro'
   | 'EMatchPhase::PostGameCelebration'
   | 'EMatchPhase::PostGameSummary';
 
@@ -41,6 +42,7 @@ export const PHASE_LABELS: Partial<Record<MatchPhase, string>> = {
   'EMatchPhase::Intermission':         'Intermission',
   'EMatchPhase::IntermissionMvp':      'Intermission',
   'EMatchPhase::IntermissionIntro':    'Intermission',
+  'EMatchPhase::IntermissionOutro':    'Intermission',
   'EMatchPhase::PostGameCelebration':  'Post Game',
   'EMatchPhase::PostGameSummary':      'Post Game',
 };
@@ -61,11 +63,14 @@ export const PHASE_GROUPS = {
     'EMatchPhase::CharacterSelect',
     'EMatchPhase::VersusScreen',
   ],
+  waiting: [
+    'EMatchPhase::IntermissionOutro',
+    'EMatchPhase::GoalScore',
+  ],
   in_game: [
     'EMatchPhase::InGame',
     'EMatchPhase::FaceOffIntro',
     'EMatchPhase::FaceOffCountdown',
-    'EMatchPhase::GoalScore',
     'EMatchPhase::GoalCelebration',
     'EMatchPhase::IntermissionMvp',
     'EMatchPhase::IntermissionIntro',
@@ -78,6 +83,7 @@ export type PhaseGroup = keyof typeof PHASE_GROUPS;
 const PHASE_GROUP_COLORS: Record<PhaseGroup, string> = {
   out_of_game: 'text-char-subtle',
   starting: 'text-yellow-400',
+  waiting: 'text-green-400',
   in_game: 'text-green-400',
 };
 
