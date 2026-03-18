@@ -88,6 +88,13 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
       const phaseGroup = getPhaseGroup(phase);
       console.debug(`Changing Phase Group: ${phaseGroup}`);
 
+      // fires once after setup, right before start game starts
+      if (phase == 'EMatchPhase::VersusScreen') {
+        console.log('Game Starting!');
+        const startingTs = new Date();
+        await db.update(currentMatch).set({ startedAt: startingTs }).run();
+      }
+
       if (lastPhaseGroup !== phaseGroup) {
         lastPhaseGroup = phaseGroup;
         console.log(`Sending Discord a new Game State! (${phaseGroup})`);
@@ -125,12 +132,11 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
             break;
           case 'starting': // fires once after the queue pops
             await refreshRating();
-            const startingTs = new Date();
-            await db.update(currentMatch).set({ startedAt: startingTs }).run();
             await updateActivity({
               details: `Ranked - ${match?.level ? getMapName(match.level) : match?.level}`,
               state: `Voting on Game Settings...`,
-              startTimestamp: startingTs.getTime(),
+              startTimestamp: new Date().getTime(),
+              endTimestamp: new Date().getTime() + 60 * 1000,
             });
             break;
           default: // fires when the user returns to the lobby
