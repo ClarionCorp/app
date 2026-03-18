@@ -70,6 +70,17 @@ export function getCharDevName(character: string): string {
 const MAP_DEV_NAMES: Record<string, string> = {
   'GameMapAhtenCity': 'Ahten City',
   'GameMapAtlasLab': 'Atlas Lab',
+  'GameMapClarionCorp': 'Clarion Test Chamber',
+  'GameMapDigitalWorld': "Ai.Mi's App",
+  'GameMapDrums': 'Taiko Temple',
+  'GameMapMusicStage': 'Demon Dais',
+  'GameMapNightMarket': 'Night Market',
+  'GameMapObscura': 'Gates of Obscura',
+  'GameMapOniVillage': 'Oni Village',
+  'GameMapPractice': 'Practice',
+  'GameMapRGM': 'Tea Time Tussle',
+  'GameMapSummerSplash': "Inky's Splash Zone",
+  'TutorialMap': 'Tutorial',
 }
 
 export function getMapName(map: string): string {

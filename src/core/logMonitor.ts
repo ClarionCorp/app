@@ -9,6 +9,7 @@ export type MatchPhase =
   | 'EMatchPhase::PreGame'
   | 'EMatchPhase::ArenaOverview'
   | 'EMatchPhase::BanSelect'
+  | 'EMatchPhase::CharacterPreSelect'
   | 'EMatchPhase::LoadoutSelect'
   | 'EMatchPhase::CharacterSelect'
   | 'EMatchPhase::VersusScreen'
@@ -27,6 +28,7 @@ export const PHASE_LABELS: Partial<Record<MatchPhase, string>> = {
   'EMatchPhase::None':                 'Idle',
   'EMatchPhase::PreGame':              'Pre Game',
   'EMatchPhase::ArenaOverview':        'Arena Overview',
+  'EMatchPhase::CharacterPreSelect':   'Character PreSelect',
   'EMatchPhase::BanSelect':            'Ban Phase',
   'EMatchPhase::LoadoutSelect':        'Loadout Select',
   'EMatchPhase::CharacterSelect':      'Character Select',
@@ -53,6 +55,7 @@ export const PHASE_GROUPS = {
   starting: [
     'EMatchPhase::PreGame',
     'EMatchPhase::ArenaOverview',
+    'EMatchPhase::CharacterPreSelect',
     'EMatchPhase::BanSelect',
     'EMatchPhase::LoadoutSelect',
     'EMatchPhase::CharacterSelect',

@@ -17,9 +17,9 @@ type MonitorContext = Pick<AppContextType,
   | 'teamOneSets'
   | 'teamTwoSets'
   | 'setMyTeam'
+  | 'currentLevelRef'
+  | 'myCharacterRef'
 > & {
-  currentLevelRef: RefObject<string | null>;
-  myCharacterRef: RefObject<string | null>;
   lastPhaseGroupRef: RefObject<string | null>;
   updateActivityRef: RefObject<(options: RpcActivityOptions) => Promise<void>>;
   sessionOffset: number;
@@ -63,21 +63,19 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
       // Discord RPC updates
       const phaseGroup = getPhaseGroup(phase);
       console.debug(`Changing Phase Group: ${phaseGroup}`);
+      // console.debug(`Ref: ${currentLevelRef?.current}`);
 
       if (lastPhaseGroupRef.current !== phaseGroup) {
         lastPhaseGroupRef.current = phaseGroup;
         console.log(`Sending Discord a new Game State! (${phaseGroup})`);
         let largeImg = 'aimiapp_logo';
         if (myCharacterRef.current) { largeImg = getCharDevName(myCharacterRef.current).toLowerCase(); }
-        else { console.warn(`CharacterRef is null!`) };
-
-        // current problem is that both currentLevelRef and myCharacterRef are null. Just like... always.
 
         switch (phaseGroup) {
           case 'in_game':
             await updateActivityRef.current({
               details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
-              state: `⬛⬛🟦 <2 | 2> 🟥🟥⬛`, // test placeholder (idk how to format this shit properly to make sense lol)
+              state: `⬛⬛🟦 (2 | 2) 🟥🟥⬛`, // test placeholder (idk how to format this shit properly to make sense lol)
               largeImage: largeImg,
               largeText: `${myCharacterRef.current ? `Playing ${myCharacterRef.current}` : 'AiMi Companion App'}`,
               smallImage: 'platinum_high', // placeholder

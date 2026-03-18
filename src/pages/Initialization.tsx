@@ -40,21 +40,15 @@ export default function InitializationPage() {
     setMyTeam,
     teamOneSets,
     teamTwoSets,
-    myCharacter,
-    currentLevel,
+    myCharacterRef,
+    currentLevelRef,
   } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const currentLevelRef = useRef(currentLevel);
-  const myCharacterRef = useRef(myCharacter);
   const lastPhaseGroupRef = useRef<string | null>(null);
   const updateActivityRef = useRef(updateActivity);
 
-  useEffect(() => { currentLevelRef.current = currentLevel; }, [currentLevel]);
-  useEffect(() => { myCharacterRef.current = myCharacter; }, [myCharacter]);
-  useEffect(() => { updateActivityRef.current = updateActivity; }, [updateActivity]);
- 
   useEffect(() => {
     let cancelled = false;
  

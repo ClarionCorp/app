@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { RefObject, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { OdyAuth, SelfQuery } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
@@ -41,6 +41,9 @@ export interface AppContextType {
   setTeamTwoSets: (v: number) => void;
   myTeam: string | null;
   setMyTeam: (v: string | null) => void;
+
+  currentLevelRef: RefObject<string | null>;
+  myCharacterRef: RefObject<string | null>;
 }
 
 function App() {
@@ -58,8 +61,14 @@ function App() {
   const navigate = useNavigate();
   const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
 
+  const currentLevelRef = useRef<string | null>(null);
+  const myCharacterRef = useRef<string | null>(null);
+
   const location = useLocation(); // Remove these when they are no longer 'coming soon'.
   const showSidebar = !['/', '/home', '/cgm', '/cqm', '/account', '/mods'].includes(location.pathname);
+
+  useEffect(() => { currentLevelRef.current = currentLevel; }, [currentLevel]);
+  useEffect(() => { myCharacterRef.current = myCharacter; }, [myCharacter]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -89,7 +98,9 @@ function App() {
             teamTwoPoints, setTeamTwoPoints,
             teamOneSets, setTeamOneSets,
             teamTwoSets, setTeamTwoSets,
-            myTeam, setMyTeam
+            myTeam, setMyTeam,
+            currentLevelRef,
+            myCharacterRef,
             }}
           />
         </main>
