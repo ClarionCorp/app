@@ -40,7 +40,7 @@ await conn.execute(`CREATE TABLE IF NOT EXISTS \`currentMatch\` (
   \`teamOneSets\` integer,
   \`teamTwoSets\` integer,
   \`playerNames\` text DEFAULT '[]' NOT NULL,
-  \`created_at\` integer NOT NULL
+  \`startedAt\` integer NOT NULL
 )`);
 
 export const db = drizzle(async (sql, params, method) => {

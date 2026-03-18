@@ -41,20 +41,10 @@ export default function InitializationPage() {
     stopRpc,
     setMyTeam,
     setCurrentRating,
-    teamOneSetsRef,
-    teamTwoSetsRef,
-    teamOnePointsRef,
-    teamTwoPointsRef,
-    myCharacterRef,
-    currentLevelRef,
-    myTeamRef,
-    myCurrentRating,
-    myCurrentRatingRef,
   } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const lastPhaseGroupRef = useRef<string | null>(null);
   const updateActivityRef = useRef(updateActivity);
 
   useEffect(() => {
@@ -93,12 +83,10 @@ export default function InitializationPage() {
         const logPath = await join(home, windows_log);
         const sessionOffset = await invoke<number>('find_session_start', { path: logPath });
         await initMonitorCallbacks({ // Moved to its own file for organization sake
-          updateActivity, updateActivityRef,
+          updateActivity,
           setMatchPhase, setRegisteredPlayers, setCurrentLevel, setMyCharacter, setMyTeam,
           setTeamOnePoints, setTeamTwoPoints, setTeamOneSets, setTeamTwoSets,
-          teamOneSetsRef, teamTwoSetsRef, teamOnePointsRef, teamTwoPointsRef,
-          myCharacterRef, currentLevelRef, lastPhaseGroupRef, myTeamRef,
-          myCurrentRating, setCurrentRating, myCurrentRatingRef,
+          setCurrentRating,
           sessionOffset,
         });
 

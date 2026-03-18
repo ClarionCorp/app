@@ -45,5 +45,5 @@ export const currentMatch = sqliteTable("currentMatch", {
 
   playerNames: text("playerNames", { mode: 'json' }).$type<string[]>().notNull().default([]),
 
-  startedAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  startedAt: integer("startedAt", { mode: "timestamp" }).notNull(),
 });

@@ -1,0 +1,1 @@
+ALTER TABLE `currentMatch` RENAME COLUMN "created_at" TO "startedAt";
