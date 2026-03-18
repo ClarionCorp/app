@@ -58,7 +58,6 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     setTeamOneSets,
     setTeamTwoSets,
     setMyTeam,
-    setCurrentRating,
     sessionOffset,
   } = ctx;
 
@@ -146,7 +145,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
               ),
               largeImage: largeImg,
               largeText: match?.myCharacter ? `Playing ${match.myCharacter}` : 'AiMi Companion App',
-              smallImage: rankObject.key, // this resolves properly but discord isn't showing it for some reason, come back later.
+              smallImage: rankObject.key,
               smallText: rankObject.name,
               buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
               startTimestamp: match.startedAt.getTime(),

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { verifyClientFiles } from "../core/init";
@@ -45,7 +45,6 @@ export default function InitializationPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const updateActivityRef = useRef(updateActivity);
 
   useEffect(() => {
     let cancelled = false;
