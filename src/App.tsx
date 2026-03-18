@@ -41,6 +41,8 @@ export interface AppContextType {
   setTeamTwoSets: (v: number) => void;
   myTeam: string | null;
   setMyTeam: (v: string | null) => void;
+  myCurrentRating: number | null;
+  setCurrentRating: (v: number | null) => void;
 
   currentLevelRef: RefObject<string | null>;
   myCharacterRef: RefObject<string | null>;
@@ -49,6 +51,7 @@ export interface AppContextType {
   teamTwoPointsRef: RefObject<number>;
   teamOneSetsRef: RefObject<number>;
   teamTwoSetsRef: RefObject<number>;
+  myCurrentRatingRef: RefObject<number>;
 }
 
 function App() {
@@ -62,6 +65,7 @@ function App() {
   const [teamTwoPoints, setTeamTwoPoints] = useState<number>(0);
   const [teamOneSets, setTeamOneSets] = useState<number>(0);
   const [teamTwoSets, setTeamTwoSets] = useState<number>(0);
+  const [myCurrentRating, setCurrentRating] = useState<number>(0);
   const [myTeam, setMyTeam] = useState<string | null>(null);
   const navigate = useNavigate();
   const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
@@ -73,6 +77,7 @@ function App() {
   const teamTwoPointsRef = useRef<number>(0);
   const teamOneSetsRef = useRef<number>(0);
   const teamTwoSetsRef = useRef<number>(0);
+  const myCurrentRatingRef = useRef<number>(0);
 
   const location = useLocation(); // Remove these when they are no longer 'coming soon'.
   const showSidebar = !['/', '/home', '/cgm', '/cqm', '/account', '/mods'].includes(location.pathname);
@@ -92,6 +97,8 @@ function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // This whole file is a fuckin mess but idk how to fix it so whatever
 
   return (
     <div className="min-h-screen bg-surface text-white pt-12">
@@ -114,6 +121,7 @@ function App() {
             teamOneSets, setTeamOneSets, teamOneSetsRef,
             teamTwoSets, setTeamTwoSets, teamTwoSetsRef,
             myTeam, setMyTeam, myTeamRef,
+            myCurrentRating, setCurrentRating, myCurrentRatingRef,
             }}
           />
         </main>

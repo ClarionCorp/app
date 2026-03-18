@@ -22,6 +22,9 @@ type MonitorContext = Pick<AppContextType,
   | 'myTeamRef'
   | 'currentLevelRef'
   | 'myCharacterRef'
+  | 'myCurrentRating'
+  | 'setCurrentRating'
+  | 'myCurrentRatingRef'
 > & {
   lastPhaseGroupRef: RefObject<string | null>;
   updateActivityRef: RefObject<(options: RpcActivityOptions) => Promise<void>>;
@@ -57,6 +60,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     setTeamOneSets,
     setTeamTwoSets,
     setMyTeam,
+    setCurrentRating,
     teamOneSetsRef,
     teamTwoSetsRef,
     teamOnePointsRef,
@@ -67,6 +71,8 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     updateActivityRef,
     sessionOffset,
     myTeamRef,
+    myCurrentRating,
+    myCurrentRatingRef,
   } = ctx;
 
   return startLogMonitor(sessionOffset, {
@@ -102,7 +108,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
         // Finally, we need to hook up the actual game mode instead of just using 'Ranked'. ['Ranked', 'Custom', 'TTT', 'Normal', 'Quick Play', 'Practice']
 
         switch (phaseGroup) {
-          case 'in_game':
+          case 'in_game': // fires when a game has started and after scores/intermissions
             await updateActivityRef.current({
               details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
               state: formatScore(teamOnePointsRef.current, teamTwoPointsRef.current, teamOneSetsRef.current, teamTwoSetsRef.current, myTeamRef.current),
@@ -113,16 +119,21 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
               buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
             })
             break;
-          case 'waiting':
+          case 'waiting': // fires after scoring/intermission to update in_game
             break;
-          case 'starting':
+          case 'starting': // fires once after the queue pops
+            // Refresh user's rating
+            
+            setCurrentRating(2);
+
+
             await updateActivityRef.current({
               details: `Ranked - ${currentLevelRef.current ? getMapName(currentLevelRef.current) : currentLevelRef.current}`, // prob a better way to do this lol
               state: `Voting on Game Settings...`,
               startTimestamp: new Date().getTime(),
             })
             break;
-          default: // includes out_of_game
+          default: // fires when the user returns to the lobby
             await updateActivityRef.current(DEFAULT_ACTIVITY)
             break;
         }

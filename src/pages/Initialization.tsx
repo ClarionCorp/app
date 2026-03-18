@@ -38,6 +38,7 @@ export default function InitializationPage() {
     startRpc,
     stopRpc,
     setMyTeam,
+    setCurrentRating,
     teamOneSetsRef,
     teamTwoSetsRef,
     teamOnePointsRef,
@@ -45,6 +46,8 @@ export default function InitializationPage() {
     myCharacterRef,
     currentLevelRef,
     myTeamRef,
+    myCurrentRating,
+    myCurrentRatingRef,
   } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -90,6 +93,7 @@ export default function InitializationPage() {
           setTeamOnePoints, setTeamTwoPoints, setTeamOneSets, setTeamTwoSets,
           teamOneSetsRef, teamTwoSetsRef, teamOnePointsRef, teamTwoPointsRef,
           myCharacterRef, currentLevelRef, lastPhaseGroupRef, myTeamRef,
+          myCurrentRating, setCurrentRating, myCurrentRatingRef,
           sessionOffset,
         });
 
