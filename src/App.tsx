@@ -6,6 +6,8 @@ import { MatchPhase } from './core/logMonitor';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import { RpcActivityOptions, useDiscordRpc } from './core/discord';
+import { CurrentMatchTable } from './types/database';
+import { getCurrentMatch } from './core/database/queries';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -23,12 +25,16 @@ export interface AppContextType {
 
   matchPhase: MatchPhase | null;
   setMatchPhase: (phase: MatchPhase | null) => void;
+
+  currentMatch: CurrentMatchTable | null;
+  setCurrentMatch: (phase: CurrentMatchTable | null) => void;
 }
 
 function App() {
   const [odyAuth, setOdyAuth] = useState<OdyAuth>();
   const [userData, setUserData] = useState<SelfQuery>();
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('EMatchPhase::Unknown');
+  const [currentMatch, setCurrentMatch] = useState<CurrentMatchTable | null>(null);
   const navigate = useNavigate();
   const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
 
@@ -41,6 +47,14 @@ function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    const load = () => getCurrentMatch().then(setCurrentMatch);
+    load();
+
+    window.addEventListener("currentMatch:changed", load);
+    return () => window.removeEventListener("currentMatch:changed", load);
   }, []);
 
   // This whole file is a fuckin mess but idk how to fix it so whatever
@@ -58,6 +72,7 @@ function App() {
             odyAuth, setOdyAuth,
             userData, setUserData,
             matchPhase, setMatchPhase,
+            currentMatch, setCurrentMatch,
             }}
           />
         </main>

@@ -1,6 +1,6 @@
 import { AppContextType } from '../App';
 import { db } from './database/driver';
-import { getCurrentMatch, getUser } from './database/queries';
+import { getCurrentMatch, getUser, updateCurrentMatch } from './database/queries';
 import { currentMatch } from './database/schema';
 import { DEFAULT_ACTIVITY } from './discord';
 import { getPhaseGroup, startLogMonitor } from './logMonitor';
@@ -145,30 +145,30 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
       const prev = match?.playerNames ?? [];
       if (prev.includes(username)) return;
       const next = [...prev, username];
-      await db.update(currentMatch).set({ playerNames: next }).run();
+      await updateCurrentMatch({ playerNames: next });
     },
 
     onLevel: async (level) => {
-      await db.update(currentMatch).set({ level }).run();
+      await updateCurrentMatch({ level });
     },
 
     onMyCharacter: async (char) => {
-      await db.update(currentMatch).set({ myCharacter: char }).run();
+      await updateCurrentMatch({ myCharacter: char });
     },
 
     onScore: async ({ team, from, to }) => {
       const match = await getCurrentMatch();
       if (team === 'TeamOne') {
         const newSets = (from === 3 && to === 0) ? (match?.teamOneSets ?? 0) + 1 : (match?.teamOneSets ?? 0);
-        await db.update(currentMatch).set({ teamOnePts: to, teamOneSets: newSets }).run();
+      await updateCurrentMatch({ teamOnePts: to, teamOneSets: newSets });
       } else {
         const newSets = (from === 3 && to === 0) ? (match?.teamTwoSets ?? 0) + 1 : (match?.teamTwoSets ?? 0);
-        await db.update(currentMatch).set({ teamTwoPts: to, teamTwoSets: newSets }).run();
+      await updateCurrentMatch({ teamTwoPts: to, teamTwoSets: newSets });
       }
     },
 
     onMyTeam: async (team) => {
-      await db.update(currentMatch).set({ myTeam: team }).run();
+      await updateCurrentMatch({ myTeam: team });
     },
   });
 }

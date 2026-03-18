@@ -59,3 +59,8 @@ export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
     set: data,
   }).run();
 }
+
+export async function updateCurrentMatch(data: Partial<typeof currentMatch.$inferInsert>) {
+  await db.update(currentMatch).set(data).run();
+  window.dispatchEvent(new Event("currentMatch:changed"));
+}
