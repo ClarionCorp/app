@@ -9,7 +9,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "regen": "drizzle-kit generate",
+    "regen": "drizzle-kit push",
     "studio": "drizzle-kit studio"
   },
   "dependencies": {

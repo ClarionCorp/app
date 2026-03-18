@@ -35,6 +35,7 @@ export const currentMatch = sqliteTable("currentMatch", {
 
   rawPhase: text("rawPhase").notNull(),
   level: text("level"),
+  queue: text("queue"),
   myCharacter: text("myCharacter"),
   myTeam: text("myTeam"),
 
