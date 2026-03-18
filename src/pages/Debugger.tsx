@@ -33,7 +33,6 @@ export default function DebugPage() {
 
   const inGame = matchPhase ? getPhaseGroup(matchPhase) !== 'out_of_game' : false;
 
-
   return (
     <div className="min-h-screen bg-background px-6 py-6">
       <motion.div

@@ -25,7 +25,7 @@ export default function RankIcon({ rating, size = 'md' }: RankProps) {
       }
     )}
     style={{
-      backgroundImage: `url('${rankData.rankObject.image}')`,
+      backgroundImage: `url('${rankData.image}')`,
     }}
   />
 }

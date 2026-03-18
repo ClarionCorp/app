@@ -11,8 +11,7 @@ interface PlayerCardProps {
 }
 
 export function PlayerCard({ player, index }: PlayerCardProps) {
-  const nearbyRanks = getRankFromLP(player.rating);
-  const rankInfo = nearbyRanks.rankObject;
+  const rankInfo = getRankFromLP(player.rating);
   const winRate = player.games > 0
     ? ((player.wins / player.games) * 100).toFixed(1)
     : '0.0';

@@ -31,24 +31,15 @@ async function fetchPlayerData(usernames: string[]): Promise<RankedQuery[]> {
 }
 
 export default function RankCheckerPage() {
-  const { matchPhase, registeredPlayers } = useOutletContext<AppContextType>();
+  const { currentMatch } = useOutletContext<AppContextType>();
   const [players, setPlayers] = useState<RankedQuery[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fetchedUsernames = useRef(new Set<string>());
-  const unmounted = useRef(false);
 
-  const phaseGroup = matchPhase ? getPhaseGroup(matchPhase) : 'out_of_game';
-  const inLobby = phaseGroup === 'starting' || phaseGroup === 'in_game';
-
-  // Reset when leaving the lobby so the next game starts fresh
-  useEffect(() => {
-    if (!inLobby) {
-      setPlayers([]);
-      fetchedUsernames.current = new Set();
-      setError(null);
-    }
-  }, [inLobby]);
+  const phaseGroup = currentMatch?.rawPhase ? getPhaseGroup(currentMatch.rawPhase) : 'out_of_game';
+  const inLobby = phaseGroup === 'starting' || phaseGroup === 'in_game' || phaseGroup === 'waiting';
+  const registeredPlayers = currentMatch?.playerNames ?? [];
 
   useEffect(() => {
     const unfetched = registeredPlayers.filter(u => !fetchedUsernames.current.has(u));
@@ -62,21 +53,16 @@ export default function RankCheckerPage() {
       setError(null);
       try {
         const data = await fetchPlayerData(unfetched);
-        if (!unmounted.current) setPlayers(prev => [...prev, ...data]);
+        setPlayers(prev => [...prev, ...data]);
       } catch (e) {
-        if (!unmounted.current) setError(e instanceof Error ? e.message : String(e));
+        setError(e instanceof Error ? e.message : String(e));
       } finally {
-        if (!unmounted.current) setLoading(false);
+        setLoading(false);
       }
     }
 
     load();
   }, [inLobby, registeredPlayers]);
-
-  useEffect(() => {
-    unmounted.current = false;
-    return () => { unmounted.current = true; };
-  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
