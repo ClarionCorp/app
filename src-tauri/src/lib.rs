@@ -229,8 +229,8 @@ fn regex_level(line: &str) -> Option<String> {
 // Extracts the character name from the CharacterSelect VOD event
 // e.g. VOD_Rune_CharacterSelect_02 -> Rune
 fn regex_my_character(line: &str) -> Option<String> {
-    let prefix = "LogPMVoiceOverManagerComponent: UPMVoiceOverManagerComponent::ProcessNewEvents - Processing New Event 'VOD_";
-    let suffix = "_CharacterSelect_";
+    let prefix = "LogPMPlayerControllerBase: APMPlayerControllerBase::AddVOEvent - Processing event 'VOD_";
+    let suffix = "_CharacterIntro_";
     if let Some(start) = line.find(prefix) {
         let rest = &line[start + prefix.len()..];
         if let Some(end) = rest.find(suffix) {
@@ -270,12 +270,15 @@ fn regex_score(line: &str) -> Option<String> {
 
 // Extracts what team the player is placed on
 fn regex_my_team(line: &str) -> Option<String> {
-    let prefix = "LogPMPlayerState: Player Player changed to team EAssignedTeam::";
+    let prefix = "LogPMPlayerState: StreamTeamLevel Called, OldTeam = EAssignedTeam::";
+    let new_prefix = ", NewTeam = EAssignedTeam::";
     if let Some(start) = line.find(prefix) {
         let rest = &line[start + prefix.len()..];
-        let team = rest.trim();
-        if team == "TeamOne" || team == "TeamTwo" {
-            return Some(team.to_string());
+        if let Some(new_start) = rest.find(new_prefix) {
+            let team = rest[new_start + new_prefix.len()..].trim();
+            if team == "TeamOne" || team == "TeamTwo" {
+                return Some(team.to_string());
+            }
         }
     }
     None

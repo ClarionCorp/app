@@ -104,8 +104,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
         let largeImg = 'aimiapp_logo';
         if (match?.myCharacter) { largeImg = getCharDevName(match.myCharacter).toLowerCase(); }
 
-        // Also the score -> set calc is hardcoded to 3, so custom games break currently.
-        // Finally, we need to hook up the actual game mode instead of just using 'Ranked'. ['Ranked', 'Custom', 'TTT', 'Normal', 'Quick Play', 'Practice']
+        // Current problem is that the score -> set calc is hardcoded to 3, so custom games sort of break currently.
 
         switch (phaseGroup) {
           case 'in_game': // fires when a game has started and after scores/intermissions
@@ -124,7 +123,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
               largeText: match?.myCharacter ? `Playing ${match.myCharacter}` : 'AiMi Companion App',
               smallImage: rankObject.key,
               smallText: rankObject.name,
-              buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
+              // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
               startTimestamp: match.startedAt.getTime(),
             });
             break;

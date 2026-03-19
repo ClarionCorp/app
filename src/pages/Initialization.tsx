@@ -48,6 +48,7 @@ export default function InitializationPage() {
         const auth = await verifyClientFiles();
         setOdyAuth(auth);
         if (cancelled) return;
+        await new Promise((res) => setTimeout(res, 50));
  
         // 2) Fetch account info from Ody using identity.json
         setStepIndex(1);
@@ -58,6 +59,7 @@ export default function InitializationPage() {
         setUserData(selfQuery);
         await upsertUser(selfQuery);
         if (rankQuery) await updateRating(rankQuery.rating);
+        await new Promise((res) => setTimeout(res, 50));
 
         // 3) Connect to Discord RPC
         setStepIndex(2);
@@ -65,6 +67,7 @@ export default function InitializationPage() {
         await stopRpc();
         await startRpc();
         await updateActivity(DEFAULT_ACTIVITY);
+        await new Promise((res) => setTimeout(res, 50));
  
         // 4) Read log and fetch current game status
         setStepIndex(3);
@@ -77,6 +80,7 @@ export default function InitializationPage() {
           setMatchPhase,
           sessionOffset,
         });
+        await new Promise((res) => setTimeout(res, 50));
 
         // 5) <Connect to CC> (unused rn)
         setStepIndex(4);
