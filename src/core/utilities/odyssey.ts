@@ -69,7 +69,7 @@ export async function fetchSelfQuery(): Promise<SelfQuery> {
 
   if (!res.ok) {
     throw new Error(
-      `Failed to fetch account info from Ody API. Status: ${res.status} ${res.statusText}`
+      `Failed to fetch account info from Ody API.\nPlease make sure you have the game open.\n\n(Status: ${res.status})`
     );
   }
 

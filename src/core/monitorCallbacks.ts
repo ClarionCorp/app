@@ -120,7 +120,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
                 match?.myTeam ?? null,
               ),
               largeImage: largeImg,
-              largeText: match?.myCharacter ? `Playing ${match.myCharacter}` : 'AiMi Companion App',
+              largeText: match?.myCharacter ? `Playing ${match.myCharacter}` : 'Ai.Mi Companion App',
               smallImage: rankObject.key,
               smallText: rankObject.name,
               // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
