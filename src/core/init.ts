@@ -2,6 +2,7 @@ import { exists, readTextFile } from '@tauri-apps/plugin-fs';
 import { homeDir, join } from '@tauri-apps/api/path';
 import { windows_identity, windows_log } from './constants';
 import { OdyAuth } from '../types/odyssey';
+import { upsertAuth } from './database/queries';
 
 
 export async function readIdentity(): Promise<OdyAuth> {
@@ -32,6 +33,12 @@ export async function readIdentity(): Promise<OdyAuth> {
       'identity.json is missing required keys. Expected both "jwt" and "refreshToken" under "accessTokens".'
     );
   }
+
+  await upsertAuth({
+    odyJwt: accessTokens.jwt as string,
+    odyRft: accessTokens.refreshToken as string,
+    createdAt: new Date(),
+  })
 
   return {
     jwt: accessTokens.jwt as string,

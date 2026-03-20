@@ -2,6 +2,11 @@ import { motion, type Variants } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { NAV_ITEMS } from "../core/objects";
+import { useEffect, useState } from "react";
+import { AppSettingsTable } from "../types/database";
+import { db } from "../core/database/driver";
+import { appSettings } from "../core/database/schema";
+import { eq } from "drizzle-orm";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -24,10 +29,25 @@ const itemVariants: Variants = {
 
 export default function HomePage() {
   const { navigate, userData } = useOutletContext<AppContextType>();
+  const [setup, updateSetup] = useState<AppSettingsTable | null>(null);
 
-  if (!userData || !userData?.username) {
-    throw new Error(`App doesn't currently support forced refresh. Please Restart.`)
+  if (!userData || !userData?.username) { // This still uses the old method because not everything works being hot-reloaded like this.
+    throw new Error(`App doesn't currently support forced refresh. Please Restart.`)        // (the "crash" is intentional)
   }
+
+  useEffect(() => {
+    async function checkSetup() {
+      const existing = await db.select().from(appSettings).where(eq(appSettings.id, 1)).limit(1).then(r => r[0] ?? null);
+
+      if (!existing) { // doesn't exist, redirect to setup screen instead.
+        
+      } else {
+        
+      }
+    }
+
+    checkSetup();
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background px-8 pb-24">

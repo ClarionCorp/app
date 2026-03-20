@@ -1,7 +1,7 @@
 import { AuthTable, UserTable } from "../../types/database";
 import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { auth, currentMatch, user } from "./schema";
+import { appSettings, auth, currentMatch, user } from "./schema";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -56,6 +56,13 @@ export async function updateRating(rating: number) {
 export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
   return db.insert(auth).values({ id: 1, ...data }).onConflictDoUpdate({
     target: auth.id,
+    set: data,
+  }).run();
+}
+
+export async function upsertSettings(data: Omit<typeof appSettings.$inferInsert, "id">) {
+  return db.insert(appSettings).values({ id: 1, ...data }).onConflictDoUpdate({
+    target: appSettings.id,
     set: data,
   }).run();
 }

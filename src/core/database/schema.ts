@@ -25,6 +25,7 @@ export const auth = sqliteTable("auth", {
   odyJwt: text("odyJwt").notNull(),
   odyRft: text("odyRft").notNull(),
   ccJwt: text("ccJwt"),
+  appId: text("appId").notNull().$defaultFn(() => crypto.randomUUID()),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
@@ -47,4 +48,19 @@ export const currentMatch = sqliteTable("currentMatch", {
   playerNames: text("playerNames", { mode: 'json' }).$type<string[]>().notNull().default([]),
 
   startedAt: integer("startedAt", { mode: "timestamp" }).notNull(),
+});
+
+
+// Only one row that stores basic app settings
+export const appSettings = sqliteTable("appSettings", {
+  id: integer("id").primaryKey(),
+  finishedSetup: integer("finishedSetup", { mode: "boolean" }).notNull().default(false),
+
+  // Consents
+  sendStats: integer("sendStats", { mode: "boolean" }).notNull().default(true),           // Match History, etc.
+  sendPlayState: integer("sendPlayState", { mode: "boolean" }).notNull().default(true),   // Discord RPC, CC "queuing" pilot status
+  sendPlayCount: integer("sendPlayCount", { mode: "boolean" }).notNull().default(true),   // Simply +1 to the player counter (anonymous)
+  gbTerms: integer("gbTerms", { mode: "boolean" }).notNull().default(false),              // GameBanana ToS for downloading mods
+
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
