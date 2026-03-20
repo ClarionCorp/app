@@ -10,7 +10,7 @@ import {
   GearIcon,
   HouseIcon,
 } from '@phosphor-icons/react';
-import { NAV_ITEMS } from '../core/objects';
+import { NAV_ITEMS } from '../../core/objects/navigation';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   account:     <UserIcon size={18} weight="duotone" />,

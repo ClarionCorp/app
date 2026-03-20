@@ -4,7 +4,7 @@ import { getCurrentMatch, getUser, updateCurrentMatch } from './database/queries
 import { currentMatch } from './database/schema';
 import { DEFAULT_ACTIVITY } from './discord';
 import { getPhaseGroup, startLogMonitor } from './logMonitor';
-import { getCharDevName, getMapName, getQueueName } from './objects';
+import { getCharDevName, getMapName, getQueueName } from './objects/ody';
 import { refreshRating } from './utilities/odyssey';
 import { getRankFromLP } from './utilities/ranks';
 

@@ -9,7 +9,7 @@ import { ThemeProvider } from './components/Theme/ThemeProvider';
 import { ToastProvider } from './components/UI/Toast';
 import InitializationPage from './pages/Initialization';
 import HomePage from './pages/Home';
-import ErrorBoundary from './components/ErrorBoundry';
+import ErrorBoundary from './components/Navigation/ErrorBoundry';
 import RankCheckerPage from './pages/RankChecker';
 import ComingSoonPage from './pages/ComingSoon';
 import DebugPage from './pages/Debugger';
@@ -25,6 +25,7 @@ const router = createHashRouter([
       { path: "home",             element: <HomePage /> },
       { path: "rankchecker",      element: <RankCheckerPage /> },
       { path: "account",          element: <ComingSoonPage /> },
+      { path: "settings",         element: <ComingSoonPage /> },
       { path: "cgm",              element: <ComingSoonPage /> },
       { path: "cqm",              element: <ComingSoonPage /> },
       { path: "mods",             element: <ComingSoonPage /> },

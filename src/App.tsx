@@ -3,8 +3,8 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { OdyAuth, SelfQuery } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import { MatchPhase } from './core/logMonitor';
-import Sidebar from './components/Sidebar';
-import TopBar from './components/TopBar';
+import Sidebar from './components/Navigation/Sidebar';
+import TopBar from './components/Navigation/TopBar';
 import { RpcActivityOptions, useDiscordRpc } from './core/discord';
 import { CurrentMatchTable } from './types/database';
 import { getCurrentMatch } from './core/database/queries';
@@ -38,9 +38,10 @@ function App() {
   const navigate = useNavigate();
   const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
 
-  const location = useLocation(); // Remove these when they are no longer 'coming soon'.
-  const showSidebar = !['/', '/home', '/cgm', '/cqm', '/account', '/mods'].includes(location.pathname);
+  const location = useLocation();
+  const showSidebar = !['/', '/home', '/setup'].includes(location.pathname);
 
+  // Debug Page
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'F9') navigate('/debug');
@@ -49,6 +50,7 @@ function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // Current Match Updater
   useEffect(() => {
     const load = () => getCurrentMatch().then(setCurrentMatch);
     load();
@@ -57,7 +59,6 @@ function App() {
     return () => window.removeEventListener("currentMatch:changed", load);
   }, []);
 
-  // This whole file is a fuckin mess but idk how to fix it so whatever
 
   return (
     <div className="min-h-screen bg-background text-white pt-12">

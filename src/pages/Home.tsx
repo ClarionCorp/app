@@ -1,11 +1,11 @@
 import { motion, type Variants } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
-import { NAV_ITEMS } from "../core/objects";
 import { useEffect } from "react";
 import { db } from "../core/database/driver";
 import { appSettings } from "../core/database/schema";
 import { eq } from "drizzle-orm";
+import { NAV_ITEMS } from "../core/objects/navigation";
 
 const containerVariants: Variants = {
   hidden: {},

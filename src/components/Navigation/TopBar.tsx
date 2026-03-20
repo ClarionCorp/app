@@ -1,4 +1,4 @@
-import { MatchPhase, PHASE_COLORS, PHASE_LABELS } from '../core/logMonitor';
+import { MatchPhase, PHASE_COLORS, PHASE_LABELS } from '../../core/logMonitor';
 
 interface TopBarProps {
   matchPhase: MatchPhase;
