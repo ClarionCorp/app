@@ -13,6 +13,7 @@ import ErrorBoundary from './components/ErrorBoundry';
 import RankCheckerPage from './pages/RankChecker';
 import ComingSoonPage from './pages/ComingSoon';
 import DebugPage from './pages/Debugger';
+import SetupPage from './pages/AppSetup';
 
 const router = createHashRouter([
   {
@@ -28,6 +29,7 @@ const router = createHashRouter([
       { path: "cqm",              element: <ComingSoonPage /> },
       { path: "mods",             element: <ComingSoonPage /> },
       { path: "debug",            element: <DebugPage /> },
+      { path: "setup",            element: <SetupPage /> },
     ],
   },
 ]);

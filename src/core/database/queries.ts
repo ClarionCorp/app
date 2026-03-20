@@ -60,8 +60,8 @@ export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
   }).run();
 }
 
-export async function upsertSettings(data: Omit<typeof appSettings.$inferInsert, "id">) {
-  return db.insert(appSettings).values({ id: 1, ...data }).onConflictDoUpdate({
+export async function upsertSettings(data: Omit<typeof appSettings.$inferInsert, "id" | "createdAt">) {
+  return db.insert(appSettings).values({ id: 1, ...data, createdAt: new Date() }).onConflictDoUpdate({
     target: appSettings.id,
     set: data,
   }).run();

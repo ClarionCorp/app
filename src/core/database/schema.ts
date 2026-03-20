@@ -60,6 +60,7 @@ export const appSettings = sqliteTable("appSettings", {
   sendStats: integer("sendStats", { mode: "boolean" }).notNull().default(true),           // Match History, etc.
   sendPlayState: integer("sendPlayState", { mode: "boolean" }).notNull().default(true),   // Discord RPC, CC "queuing" pilot status
   sendPlayCount: integer("sendPlayCount", { mode: "boolean" }).notNull().default(true),   // Simply +1 to the player counter (anonymous)
+  appTerms: integer("appTerms", { mode: "boolean" }).notNull().default(false),             // App ToS
   gbTerms: integer("gbTerms", { mode: "boolean" }).notNull().default(false),              // GameBanana ToS for downloading mods
 
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),

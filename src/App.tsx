@@ -60,7 +60,7 @@ function App() {
   // This whole file is a fuckin mess but idk how to fix it so whatever
 
   return (
-    <div className="min-h-screen bg-surface text-white pt-12">
+    <div className="min-h-screen bg-background text-white pt-12">
       <TopBar matchPhase={matchPhase} />
  
       <div className="flex">
