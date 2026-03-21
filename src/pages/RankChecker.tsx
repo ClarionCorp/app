@@ -38,12 +38,12 @@ export default function RankCheckerPage() {
   const fetchedUsernames = useRef(new Set<string>());
 
   const phaseGroup = currentMatch?.rawPhase ? getPhaseGroup(currentMatch.rawPhase) : 'out_of_game';
-  const inLobby = phaseGroup === 'starting' || phaseGroup === 'in_game' || phaseGroup === 'waiting';
+  const inGame = phaseGroup === 'starting' || phaseGroup === 'in_game' || phaseGroup === 'waiting';
   const registeredPlayers = currentMatch?.playerNames ?? [];
 
   useEffect(() => {
     const unfetched = registeredPlayers.filter(u => !fetchedUsernames.current.has(u));
-    if (!inLobby || unfetched.length === 0) {
+    if (!inGame || unfetched.length === 0) {
       setPlayers([]); // always clear when in lobby
       return;
     };
@@ -65,13 +65,13 @@ export default function RankCheckerPage() {
     }
 
     load();
-  }, [inLobby, registeredPlayers]);
+  }, [inGame, registeredPlayers]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-6 py-5">
-        {!inLobby ? (
+        {!inGame ? (
           <motion.div
             className="flex flex-col items-center justify-center h-full min-h-64 gap-3 text-center"
             initial={{ opacity: 0 }}
