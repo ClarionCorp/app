@@ -5,6 +5,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
+mod mods;
 
 type MonitorFlag = Arc<std::sync::Mutex<Option<Arc<AtomicBool>>>>;
 
@@ -309,7 +310,17 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_drpc::init())
         .plugin(tauri_plugin_sql::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![read_log_from, find_session_start, start_log_monitor, stop_log_monitor])
+        .invoke_handler(tauri::generate_handler![
+            read_log_from,
+            find_session_start,
+            start_log_monitor,
+            stop_log_monitor,
+            mods::validate_game_dir,
+            mods::toggle_mod,
+            mods::delete_mod,
+            mods::download_mod,
+            ]
+        )
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

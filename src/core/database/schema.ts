@@ -54,6 +54,7 @@ export const currentMatch = sqliteTable("currentMatch", {
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
   id: integer("id").primaryKey(),
+  gameDir: text("gameDir").notNull().default("C:\\Program Files (x86)\\Steam\\steamapps\\common\\OmegaStrikers"),
   finishedSetup: integer("finishedSetup", { mode: "boolean" }).notNull().default(false),
 
   // Consents
@@ -64,4 +65,15 @@ export const appSettings = sqliteTable("appSettings", {
   gbTerms: integer("gbTerms", { mode: "boolean" }).notNull().default(false),              // GameBanana ToS for downloading mods
 
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+});
+
+export const installedMods = sqliteTable("installedMods", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  gbId: integer("gbId"),
+  name: text("name").notNull(),
+  version: text("version"),
+  thumbUrl: text("thumbUrl"),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  fileNames: text("fileNames", { mode: "json" }).$type<string[]>().notNull().default([]),
+  installedAt: integer("installedAt", { mode: "timestamp" }).notNull(),
 });
