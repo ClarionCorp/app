@@ -13,7 +13,7 @@ export interface ScanResult {
 
 export async function validateGameDir(gameDir: string): Promise<boolean> {
   try {
-    await invoke("validate_game_dir", { game_dir: gameDir });
+    await invoke("validate_game_dir", { gameDir });
     return true;
   } catch {
     return false;
@@ -25,7 +25,7 @@ export async function toggleMod(
   fileNames: string[],
   enable: boolean
 ): Promise<void> {
-  await invoke("toggle_mod", { game_dir: gameDir, file_names: fileNames, enable });
+  await invoke("toggle_mod", { gameDir, fileNames, enable });
 }
 
 export async function deleteMod(
@@ -33,11 +33,11 @@ export async function deleteMod(
   fileNames: string[],
   enabled: boolean
 ): Promise<void> {
-  await invoke("delete_mod", { game_dir: gameDir, file_names: fileNames, enabled });
+  await invoke("delete_mod", { gameDir, fileNames, enabled });
 }
 
 export async function scanModsFolder(gameDir: string): Promise<ScanResult[]> {
-  return invoke<ScanResult[]>("scan_mods_folder", { game_dir: gameDir });
+  return invoke<ScanResult[]>("scan_mods_folder", { gameDir });
 }
 
 // Returns the list of pak filenames that were extracted from the zip
@@ -46,7 +46,7 @@ export async function downloadMod(
   url: string,
   downloadFileName: string
 ): Promise<string[]> {
-  return invoke<string[]>("download_mod", { game_dir: gameDir, url, download_file_name: downloadFileName });
+  return invoke<string[]>("download_mod", { gameDir, url, downloadFileName });
 }
 
 export function onDownloadProgress(

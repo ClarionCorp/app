@@ -5,8 +5,9 @@ import { db } from "../database/driver";
 import { appSettings, installedMods } from "../database/schema";
 
 async function getGameDir(): Promise<string> {
-  const settings = await db.select().from(appSettings).where(eq(appSettings.id, 1)).get();
+  const [settings] = await db.select().from(appSettings).where(eq(appSettings.id, 1));
   if (!settings) throw new Error("No settings found");
+  if (!settings.gameDir) throw new Error("No gameDir found");
   return settings.gameDir;
 }
 
