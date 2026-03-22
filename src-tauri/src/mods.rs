@@ -173,3 +173,35 @@ pub async fn download_mod(
     app.emit("mod:download_complete", &extracted_paks).ok();
     Ok(extracted_paks)
 }
+
+#[derive(Debug, Serialize)]
+pub struct ScanResult {
+    pub file_name: String,
+    pub enabled: bool,
+}
+
+// Returns all .pak filenames found in the Paks dir and disabled dir
+#[tauri::command]
+pub fn scan_mods_folder(app: AppHandle, game_dir: String) -> Result<Vec<ScanResult>, String> {
+    let game_path = resolve_game_path(&game_dir).ok_or("GAME_NOT_FOUND")?;
+    let mut results: Vec<ScanResult> = Vec::new();
+
+    for (dir, enabled) in [
+        (paks_dir(&game_path), true),
+        (disabled_dir(&app), false),
+    ] {
+        if !dir.exists() {
+            continue;
+        }
+        for entry in fs::read_dir(&dir).map_err(|e| e.to_string())?.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("pak") {
+                continue;
+            }
+            let file_name = path.file_name().unwrap().to_string_lossy().to_string();
+            results.push(ScanResult { file_name, enabled });
+        }
+    }
+
+    Ok(results)
+}

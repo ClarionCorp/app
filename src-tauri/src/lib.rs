@@ -319,6 +319,7 @@ pub fn run() {
             mods::toggle_mod,
             mods::delete_mod,
             mods::download_mod,
+            mods::scan_mods_folder,
             ]
         )
         .run(tauri::generate_context!())

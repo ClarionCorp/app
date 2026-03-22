@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getModDownloadFile, getModThumbnail, type GBMod } from "./gamebanana";
-import { downloadMod, toggleMod, deleteMod, validateGameDir } from "./mods";
+import { downloadMod, toggleMod, deleteMod, validateGameDir, scanModsFolder } from "./mods";
 import { db } from "../database/driver";
 import { appSettings, installedMods } from "../database/schema";
 
@@ -68,4 +68,27 @@ export function getInstalledMods() {
 export function isModInstalled(gbId: number): boolean {
   const mod = db.select().from(installedMods).where(eq(installedMods.gbId, gbId)).get();
   return !!mod;
+}
+
+export async function scanAndSyncMods(): Promise<number> {
+  const gameDir = await getGameDir();
+  const found = await scanModsFolder(gameDir);
+
+  // Clear existing table
+  await db.delete(installedMods).run();
+
+  // Re-insert one row per pak, grouped as individual mods since we have no GB metadata
+  for (const result of found) {
+    await db.insert(installedMods).values({
+      gbId: null,
+      name: result.file_name.replace(".pak", ""),
+      version: null,
+      thumbUrl: null,
+      enabled: result.enabled,
+      fileNames: [result.file_name],
+      installedAt: new Date(),
+    }).run();
+  }
+
+  return found.length;
 }

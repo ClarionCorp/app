@@ -10,8 +10,12 @@ import {
   TrashIcon,
   CaretLeftIcon,
   CaretRightIcon,
+  FolderOpenIcon,
+  WarningIcon,
+  ArrowClockwiseIcon,
+  SpinnerIcon,
 } from "@phosphor-icons/react";
-import { disableMod, enableMod, getInstalledMods, uninstallMod } from "../core/mods/manager";
+import { disableMod, enableMod, getInstalledMods, scanAndSyncMods, uninstallMod } from "../core/mods/manager";
 import { InstalledMod } from "../types/database";
 
 const MODS_PER_PAGE = 8;
@@ -23,6 +27,9 @@ export default function InstalledMods() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [pendingId, setPendingId] = useState<number | null>(null);
+  const [scanModalOpen, setScanModalOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<number | null>(null);
 
   async function loadMods() {
     setLoading(true);
@@ -71,6 +78,30 @@ export default function InstalledMods() {
     }
   }
 
+  async function handleScan() {
+    setScanning(true);
+    setScanResult(null);
+    try {
+      const count = await scanAndSyncMods();
+      setScanResult(count);
+      await loadMods();
+    } catch (e) {
+      console.error("Scan failed:", e);
+    } finally {
+      setScanning(false);
+    }
+  }
+
+  function openScanModal() {
+    setScanResult(null);
+    setScanModalOpen(true);
+  }
+
+  function closeScanModal() {
+    if (scanning) return;
+    setScanModalOpen(false);
+  }
+
   return (
     <div className="flex flex-col h-full px-6 py-6 gap-5">
 
@@ -96,16 +127,24 @@ export default function InstalledMods() {
             placeholder="Search mods..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-surface border border-white/8 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/25 outline-none focus:border-white/20 transition-all"
+            className="w-full bg-surface border border-surface rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/25 outline-none focus:border-white/20 transition-all"
           />
         </div>
         <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => navigate("/mods/directory")}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 text-white text-sm font-medium transition-colors shrink-0 cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-tertiary text-white text-sm font-medium transition-colors shrink-0 cursor-pointer"
         >
           <PlusIcon size={15} weight="bold" />
           Install Mods
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.96 }}
+          onClick={openScanModal}
+          title="Scan mods folder for existing mods"
+          className="p-2 rounded-md border border-surface bg-surface hover:bg-white/10 text-char-subtle hover:text-white transition-all shrink-0 cursor-pointer"
+        >
+          <ArrowClockwiseIcon size={17} />
         </motion.button>
       </div>
 
@@ -120,7 +159,7 @@ export default function InstalledMods() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3 text-white/25">
+            <div className="flex flex-col items-center gap-3 text-white/25 mt-10">
               {search ? (
                 <>
                   <MagnifyingGlassIcon size={32} />
@@ -130,12 +169,15 @@ export default function InstalledMods() {
                 <>
                   <PackageIcon size={32} />
                   <span className="text-sm">No mods installed</span>
-                  <button
-                    onClick={() => navigate("/mods/directory")}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors mt-1"
-                  >
-                    Browse the mod directory →
-                  </button>
+                  <div className="flex flex-col items-center gap-2 mt-1">
+                    <button
+                      onClick={openScanModal}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border border-background-border hover:bg-surface text-char-subtle hover:text-tertiary text-sm transition-all cursor-pointer"
+                    >
+                      <FolderOpenIcon size={14} />
+                      Scan Mods Folder for Existing Mods
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -152,12 +194,12 @@ export default function InstalledMods() {
                 transition={{ duration: 0.15, delay: i * 0.03 }}
                 className={`flex items-center gap-4 px-4 py-3 rounded-xl border transition-colors ${
                   mod.enabled
-                    ? "bg-white/4 border-white/8 hover:bg-white/6"
+                    ? "bg-white/4 border-surface hover:bg-white/6"
                     : "bg-white/2 border-white/5 opacity-60 hover:opacity-80"
                 }`}
               >
                 {/* Thumbnail */}
-                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/5 border border-white/8">
+                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-surface border border-background-border">
                   {mod.thumbUrl ? (
                     <img
                       src={mod.thumbUrl}
@@ -193,7 +235,7 @@ export default function InstalledMods() {
                     disabled={pendingId === mod.id}
                     onClick={() => handleToggle(mod)}
                     title={mod.enabled ? "Disable mod" : "Enable mod"}
-                    className="p-2 rounded-lg hover:bg-white/8 text-white/40 hover:text-white/80 transition-all disabled:opacity-40"
+                    className="p-2 rounded-lg hover:bg-surface text-char-subtle hover:text-white/80 transition-all disabled:opacity-40"
                   >
                     {mod.enabled ? (
                       <ToggleRightIcon size={18} weight="fill" className="text-indigo-400" />
@@ -227,7 +269,7 @@ export default function InstalledMods() {
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="p-1.5 rounded-lg hover:bg-white/8 text-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="p-1.5 rounded-lg hover:bg-surface text-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
               <CaretLeftIcon size={14} weight="bold" />
             </button>
@@ -238,7 +280,7 @@ export default function InstalledMods() {
                 className={`w-7 h-7 rounded-lg text-xs font-medium transition-all ${
                   p === page
                     ? "bg-indigo-500 text-white"
-                    : "text-white/40 hover:bg-white/8 hover:text-white"
+                    : "text-white/40 hover:bg-surface hover:text-white"
                 }`}
               >
                 {p}
@@ -247,13 +289,107 @@ export default function InstalledMods() {
             <button
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="p-1.5 rounded-lg hover:bg-white/8 text-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+              className="p-1.5 rounded-lg hover:bg-surface text-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
               <CaretRightIcon size={14} weight="bold" />
             </button>
           </div>
         </div>
       )}
+
+
+      {/* Scan Modal */}
+      <AnimatePresence>
+        {scanModalOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={closeScanModal}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+            >
+              <div className="pointer-events-auto w-full max-w-sm mx-4 bg-surface border border-background-border rounded-2xl shadow-2xl overflow-hidden">
+
+                {/* Modal Header */}
+                <div className="flex items-start gap-3 p-5 pb-4">
+                  <div className="p-2 rounded-lg bg-amber-500/10 shrink-0 mt-0.5">
+                    <WarningIcon size={18} className="text-amber-400" weight="fill" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold text-white">
+                      Overwrite & Rescan Mods Folder
+                    </span>
+                    <p className="text-sm text-char-subtle leading-relaxed">
+                      This will clear your local mod database and replace it with whatever
+                      <code>.pak</code> files are currently found in your mods folder. Any metadata from
+                      previously installed mods will be lost.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Scan Result */}
+                <AnimatePresence>
+                  {scanResult !== null && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mx-5 mb-4 px-3 py-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20"
+                    >
+                      <span className="text-xs text-indigo-300">
+                        Found and imported {scanResult} pak file{scanResult !== 1 ? "s" : ""}.
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Modal Actions */}
+                <div className="flex items-center gap-2 px-5 pb-5">
+                  <button
+                    onClick={closeScanModal}
+                    disabled={scanning}
+                    className="flex-1 py-2 rounded-lg border border-background-border text-char-subtle hover:text-white/70 hover:bg-surface text-sm transition-all disabled:opacity-40 cursor-pointer"
+                  >
+                    {scanResult !== null ? "Close" : "Cancel"}
+                  </button>
+                  {scanResult === null && (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleScan}
+                      disabled={scanning}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-secondary hover:bg-tertiary text-white text-sm font-medium transition-colors disabled:opacity-60 cursor-pointer"
+                    >
+                      {scanning ? (
+                        <>
+                          <SpinnerIcon size={14} className="animate-spin" />
+                          Scanning...
+                        </>
+                      ) : (
+                        <>
+                          <ArrowClockwiseIcon size={14} weight="bold" />
+                          Scan & Import
+                        </>
+                      )}
+                    </motion.button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
