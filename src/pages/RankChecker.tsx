@@ -42,13 +42,16 @@ export default function RankCheckerPage() {
   const registeredPlayers = currentMatch?.playerNames ?? [];
 
   useEffect(() => {
-    const unfetched = registeredPlayers.filter(u => !fetchedUsernames.current.has(u));
-    if (!inGame || unfetched.length === 0) {
-      setPlayers([]); // always clear when in lobby
+    if (!inGame) {
+      setPlayers([]);
+      fetchedUsernames.current.clear();
       return;
-    };
+    }
 
-    // Mark synchronously so concurrent effect runs don't double-fetch
+    const unfetched = registeredPlayers.filter(u => !fetchedUsernames.current.has(u));
+    if (unfetched.length === 0) return;
+
+    // Mark synchronously so concurrent effect runs dont double-fetch
     unfetched.forEach(u => fetchedUsernames.current.add(u));
 
     async function load() {

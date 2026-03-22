@@ -43,6 +43,9 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
   // track last phase group outside of React
   let lastPhaseGroup: string | null = null;
 
+  // in-memory player set (avoids DB-read race when all 6 players register in the same log batch)
+  const activePlayers = new Set<string>();
+
   // Clear current match database table
   await db.insert(currentMatch).values({
     id: 1,
@@ -70,6 +73,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
       setMatchPhase(phase);
 
       if (phase === 'EMatchPhase::None') {
+        activePlayers.clear();
         await db.update(currentMatch).set({
           rawPhase: phase,
           level: null,
@@ -146,11 +150,9 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
     },
 
     onPlayerRegistered: async (username) => {
-      const match = await getCurrentMatch();
-      const prev = match?.playerNames ?? [];
-      if (prev.includes(username)) return;
-      const next = [...prev, username];
-      await updateCurrentMatch({ playerNames: next });
+      if (activePlayers.has(username) || activePlayers.size >= 6) return;
+      activePlayers.add(username);
+      await updateCurrentMatch({ playerNames: [...activePlayers] });
     },
 
     onLevel: async (level) => {
