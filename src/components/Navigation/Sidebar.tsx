@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
@@ -48,19 +48,13 @@ export default function Sidebar({ navigate, connectedToOdy }: SidebarProps) {
           <span className="shrink-0">
             <HouseIcon size={18} weight="duotone" />
           </span>
-          <AnimatePresence>
-            {hovered && (
-              <motion.span
-                className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -6 }}
-                transition={{ duration: 0.15 }}
-              >
-                Home
-              </motion.span>
-            )}
-          </AnimatePresence>
+          <motion.span
+            className="text-sm font-medium whitespace-nowrap overflow-hidden"
+            animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : -6 }}
+            transition={{ duration: 0.15 }}
+          >
+            Home
+          </motion.span>
         </button>
 
         <div className="my-1 border-t border-background-border" />
@@ -87,19 +81,13 @@ export default function Sidebar({ navigate, connectedToOdy }: SidebarProps) {
               <span className="shrink-0">
                 {ICON_MAP[item.slug]}
               </span>
-              <AnimatePresence>
-                {hovered && (
-                  <motion.span
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -6 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              <motion.span
+                className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : -6 }}
+                transition={{ duration: 0.15 }}
+              >
+                {item.label}
+              </motion.span>
             </button>
           );
         })}

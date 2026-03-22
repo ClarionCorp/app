@@ -8,8 +8,6 @@ import {
   ToggleLeftIcon,
   ToggleRightIcon,
   TrashIcon,
-  CaretLeftIcon,
-  CaretRightIcon,
   FolderOpenIcon,
   WarningIcon,
   ArrowClockwiseIcon,
@@ -89,6 +87,7 @@ export default function InstalledMods() {
       console.error("Scan failed:", e);
     } finally {
       setScanning(false);
+      setScanModalOpen(false);
     }
   }
 
@@ -188,14 +187,14 @@ export default function InstalledMods() {
               <motion.div
                 key={mod.id}
                 layout
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.15, delay: i * 0.03 }}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.12, delay: i * 0.03 }}
                 className={`flex items-center gap-4 px-4 py-3 rounded-xl border transition-colors ${
                   mod.enabled
-                    ? "bg-white/4 border-surface hover:bg-white/6"
-                    : "bg-white/2 border-white/5 opacity-60 hover:opacity-80"
+                    ? "bg-surface border-background-border"
+                    : "bg-white/2 border-background-border opacity-60 hover:opacity-80"
                 }`}
               >
                 {/* Thumbnail */}
@@ -235,12 +234,12 @@ export default function InstalledMods() {
                     disabled={pendingId === mod.id}
                     onClick={() => handleToggle(mod)}
                     title={mod.enabled ? "Disable mod" : "Enable mod"}
-                    className="p-2 rounded-lg hover:bg-surface text-char-subtle hover:text-white/80 transition-all disabled:opacity-40"
+                    className="p-2 rounded-lg hover:bg-surface text-char-subtle hover:text-white/80 transition-all disabled:opacity-40 cursor-pointer"
                   >
                     {mod.enabled ? (
-                      <ToggleRightIcon size={18} weight="fill" className="text-indigo-400" />
+                      <ToggleRightIcon size={24} weight="fill" className="text-secondary" />
                     ) : (
-                      <ToggleLeftIcon size={18} />
+                      <ToggleLeftIcon size={24} />
                     )}
                   </motion.button>
                   <motion.button
@@ -248,9 +247,9 @@ export default function InstalledMods() {
                     disabled={pendingId === mod.id}
                     onClick={() => handleDelete(mod)}
                     title="Uninstall mod"
-                    className="p-2 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-all disabled:opacity-40"
+                    className="p-2 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-all disabled:opacity-40 cursor-pointer"
                   >
-                    <TrashIcon size={16} />
+                    <TrashIcon size={18} />
                   </motion.button>
                 </div>
               </motion.div>
@@ -261,38 +260,21 @@ export default function InstalledMods() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-xs text-white/25 tabular-nums">
-            Page {page} of {totalPages}
-          </span>
+        <div className="flex items-center justify-center pt-1">
           <div className="flex items-center gap-1">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="p-1.5 rounded-lg hover:bg-surface text-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all"
-            >
-              <CaretLeftIcon size={14} weight="bold" />
-            </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
               <button
                 key={p}
                 onClick={() => setPage(p)}
-                className={`w-7 h-7 rounded-lg text-xs font-medium transition-all ${
+                className={`w-7 h-7 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                   p === page
-                    ? "bg-indigo-500 text-white"
+                    ? "bg-secondary text-white"
                     : "text-white/40 hover:bg-surface hover:text-white"
                 }`}
               >
                 {p}
               </button>
             ))}
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="p-1.5 rounded-lg hover:bg-surface text-white/40 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-all"
-            >
-              <CaretRightIcon size={14} weight="bold" />
-            </button>
           </div>
         </div>
       )}
@@ -317,7 +299,7 @@ export default function InstalledMods() {
               initial={{ opacity: 0, scale: 0.95, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 8 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              transition={{ duration: 0.10, ease: "easeOut" }}
               className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
             >
               <div className="pointer-events-auto w-full max-w-sm mx-4 bg-surface border border-background-border rounded-2xl shadow-2xl overflow-hidden">
@@ -346,7 +328,7 @@ export default function InstalledMods() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="mx-5 mb-4 px-3 py-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20"
+                      className="mx-5 mb-4 px-3 py-2.5 rounded-lg bg-secondary/10 border border-secondary/20"
                     >
                       <span className="text-xs text-indigo-300">
                         Found and imported {scanResult} pak file{scanResult !== 1 ? "s" : ""}.
