@@ -6,7 +6,7 @@ import { MatchPhase } from './core/logMonitor';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { RpcActivityOptions, useDiscordRpc } from './core/discord';
-import { CurrentMatchTable } from './types/database';
+import { CurrentMatchTable, UserTable } from './types/database';
 import { getCurrentMatch } from './core/database/queries';
 
 export interface AppContextType {
@@ -20,7 +20,7 @@ export interface AppContextType {
   odyAuth: OdyAuth;
   setOdyAuth: (auth: OdyAuth) => void;
 
-  userData: SelfQuery;
+  userData: UserTable;
   setUserData: (self: SelfQuery) => void;
 
   matchPhase: MatchPhase | null;
@@ -28,13 +28,17 @@ export interface AppContextType {
 
   currentMatch: CurrentMatchTable | null;
   setCurrentMatch: (phase: CurrentMatchTable | null) => void;
+
+  connectedToOdy: boolean;
+  setConnectedStatus: (status: boolean) => void;
 }
 
 function App() {
   const [odyAuth, setOdyAuth] = useState<OdyAuth>();
-  const [userData, setUserData] = useState<SelfQuery>();
+  const [userData, setUserData] = useState<SelfQuery | null>(null);
   const [matchPhase, setMatchPhase] = useState<MatchPhase>('EMatchPhase::Unknown');
   const [currentMatch, setCurrentMatch] = useState<CurrentMatchTable | null>(null);
+  const [connectedToOdy, setConnectedStatus] = useState<boolean>(false);
   const navigate = useNavigate();
   const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
 
@@ -59,13 +63,12 @@ function App() {
     return () => window.removeEventListener("currentMatch:changed", load);
   }, []);
 
-
   return (
     <div className="min-h-screen bg-background text-white pt-12">
       <TopBar matchPhase={matchPhase} />
  
       <div className="flex">
-        {showSidebar && <Sidebar navigate={navigate} />}
+        {showSidebar && <Sidebar navigate={navigate} connectedToOdy={connectedToOdy} />}
         <main className={showSidebar ? "flex-1 pl-13" : "flex-1"}>
           <Outlet context={{
             navigate,
@@ -74,6 +77,7 @@ function App() {
             userData, setUserData,
             matchPhase, setMatchPhase,
             currentMatch, setCurrentMatch,
+            connectedToOdy, setConnectedStatus,
             }}
           />
         </main>

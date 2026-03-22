@@ -23,9 +23,10 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 interface SidebarProps {
   navigate: (path: string) => void;
+  connectedToOdy: boolean;
 }
 
-export default function Sidebar({ navigate }: SidebarProps) {
+export default function Sidebar({ navigate, connectedToOdy }: SidebarProps) {
   const location = useLocation();
   const [hovered, setHovered] = useState(false);
 
@@ -66,15 +67,20 @@ export default function Sidebar({ navigate }: SidebarProps) {
 
         {NAV_ITEMS.map((item) => {
           const isActive = currentSlug === item.slug;
+          const disabled = item.online && !connectedToOdy;
           return (
             <button
               key={item.slug}
-              onClick={() => navigate(`/${item.slug}`)}
+              onClick={() => !disabled && navigate(`/${item.slug}`)}
+              disabled={disabled}
+              title={disabled ? "Requires game to be open" : undefined}
               className={`
-                flex items-center gap-3 w-full px-2 py-2.5 rounded-lg transition-colors cursor-pointer text-left
-                ${isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-char-subtle hover:bg-surface-active hover:text-char'
+                flex items-center gap-3 w-full px-2 py-2.5 rounded-lg transition-colors text-left
+                ${disabled
+                  ? 'opacity-40 cursor-not-allowed text-char-subtle'
+                  : isActive
+                    ? 'bg-primary/10 text-primary cursor-pointer'
+                    : 'text-char-subtle hover:bg-surface-active hover:text-char cursor-pointer'
                 }
               `}
             >

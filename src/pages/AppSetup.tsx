@@ -129,7 +129,7 @@ function TelemetryStep({
           <ChartBarIcon size={22} weight="duotone" className="text-primary" />
         </div>
         <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-semibold text-char tracking-tight">Telemetry & Data</h2>
+          <h2 className="text-2xl font-semibold text-char tracking-tight">Data Handling</h2>
           <p className="text-sm text-char-subtle">We would humbly request to use some data to make the experience better for everyone.</p>
         </div>
       </div>

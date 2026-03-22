@@ -27,11 +27,15 @@ const itemVariants: Variants = {
 };
 
 export default function HomePage() {
-  const { navigate, userData } = useOutletContext<AppContextType>();
+  const { navigate, userData, connectedToOdy } = useOutletContext<AppContextType>();
+  const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type;
+  const wasReloaded = navType === "reload" && sessionStorage.getItem("reloadHandled") !== "true";
 
-  if (!userData || !userData?.username) { // This still uses the old method because not everything works being hot-reloaded like this.
-    throw new Error(`App doesn't currently support forced refresh. Please Restart.`)        // (the "crash" is intentional)
+  if (wasReloaded) {
+    throw new Error(`App doesn't currently support forced refresh. Please Restart.`);
   }
+
+  sessionStorage.removeItem("reloadHandled");
 
   useEffect(() => {
     async function checkSetup() {
@@ -60,7 +64,7 @@ export default function HomePage() {
           />
           <div className="text-center">
             <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
-              Welcome back, {userData?.username}!
+              Welcome back{userData ? `, ${userData.username}` : ''}!
             </p>
             <h1 className="text-2xl font-extrabold tracking-tight text-char">
               How can I <span className="text-primary">help</span>?
@@ -75,11 +79,14 @@ export default function HomePage() {
         initial="hidden"
         animate="show"
       >
-        {NAV_ITEMS.map((item) => (
-          <motion.div key={item.slug} variants={itemVariants}>
-            <NavButton item={item} onClick={() => navigate(item.slug)} />
-          </motion.div>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const disabled = item.online && !connectedToOdy;
+          return (
+            <motion.div key={item.slug} variants={itemVariants}>
+              <NavButton item={item} disabled={disabled} onClick={() => !disabled && navigate(item.slug)} />
+            </motion.div>
+          );
+        })}
       </motion.div>
     </div>
   );
@@ -87,16 +94,18 @@ export default function HomePage() {
 
 interface NavButtonProps {
   item: (typeof NAV_ITEMS)[number];
+  disabled?: boolean;
   onClick: () => void;
 }
 
-function NavButton({ item, onClick }: NavButtonProps) {
+function NavButton({ item, disabled, onClick }: NavButtonProps) {
   return (
     <motion.button
       onClick={onClick}
-      className="relative h-32 w-full rounded-2xl overflow-hidden border border-background-border hover:border-primary group focus:outline-none p-2 cursor-pointer shadow-lg"
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.97 }}
+      disabled={disabled}
+      className={`relative h-32 w-full rounded-2xl overflow-hidden border border-background-border group focus:outline-none p-2 shadow-lg ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary cursor-pointer"}`}
+      whileHover={disabled ? {} : { scale: 1.03 }}
+      whileTap={disabled ? {} : { scale: 0.97 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
     >
       <div
@@ -111,7 +120,7 @@ function NavButton({ item, onClick }: NavButtonProps) {
           {item.label}
         </p>
         <p className="relative z-10 text-xs tracking-wide text-zinc-400 hidden sm:block">
-          {item.desc}
+          {disabled ? "Requires game to be open" : item.desc}
         </p>
       </div>
     </motion.button>

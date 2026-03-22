@@ -10,6 +10,7 @@ import { windows_log } from "../core/constants";
 import { invoke } from "@tauri-apps/api/core";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
 import { updateRating, upsertUser } from "../core/database/queries";
+import { useToast } from "../components/UI/Toast";
 
 // PLACEHOLDERS
 const STEPS = [
@@ -32,10 +33,12 @@ export default function InitializationPage() {
     setOdyAuth,
     startRpc,
     stopRpc,
+    setConnectedStatus,
   } = useOutletContext<AppContextType>();
   const [stepIndex, setStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -50,16 +53,24 @@ export default function InitializationPage() {
         if (cancelled) return;
         await new Promise((res) => setTimeout(res, 50));
  
-        // 2) Fetch account info from Ody using identity.json
-        setStepIndex(1);
-        setProgress(STEP_PCTS[1]);
-        const selfQuery = await fetchSelfQuery();
-        const rankQuery = await fetchRankQuery(selfQuery.playerId);
-        if (cancelled) return;
-        setUserData(selfQuery);
-        await upsertUser(selfQuery);
-        if (rankQuery) await updateRating(rankQuery.rating);
-        await new Promise((res) => setTimeout(res, 50));
+        // Sub Try/Catch to not fail whole function
+        try {
+          // 2) Fetch account info from Ody using identity.json
+          setStepIndex(1);
+          setProgress(STEP_PCTS[1]);
+          const selfQuery = await fetchSelfQuery();
+          const rankQuery = await fetchRankQuery(selfQuery.playerId);
+          if (cancelled) return;
+          setUserData(selfQuery);
+          await upsertUser(selfQuery);
+          if (rankQuery) await updateRating(rankQuery.rating);
+          setConnectedStatus(true);
+          await new Promise((res) => setTimeout(res, 50));
+        } catch (e) {
+          console.warn(`Something went wrong while fetching account data!`, e);
+          toast("Game's not open, some features have been disabled.", 'error');
+          setConnectedStatus(false);
+        }
 
         // 3) Connect to Discord RPC
         setStepIndex(2);

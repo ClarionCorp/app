@@ -73,6 +73,7 @@ export async function fetchSelfQuery(): Promise<SelfQuery> {
     );
   }
 
+  console.debug('Successfully fetched user data from Odyssey!');
   return res.json() as Promise<SelfQuery>;
 }
 

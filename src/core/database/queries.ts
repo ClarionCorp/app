@@ -31,20 +31,24 @@ export async function getCurrentMatch() {
 //
 
 export async function upsertUser(data: SelfQuery) {
+  const lastDisplayNameChangeTimestamp = data.lastDisplayNameChangeTimestamp
+    ? new Date(data.lastDisplayNameChangeTimestamp)
+    : null;
+
   return db.insert(user).values({
     id: 1,
     ...data,
     tags: data.tags,
     gameLiftRegionUrls: data.gameLiftRegionUrls,
     discordId: data.discordConnection?.discordId ?? null,
-    lastDisplayNameChangeTimestamp: data.lastDisplayNameChangeTimestamp ?? null,
+    lastDisplayNameChangeTimestamp,
     rating: null,
   }).onConflictDoUpdate({
     target: user.id,
     set: {
       ...data,
       discordId: data.discordConnection?.discordId ?? null,
-      lastDisplayNameChangeTimestamp: data.lastDisplayNameChangeTimestamp ?? null,
+      lastDisplayNameChangeTimestamp,
     },
   }).run();
 }

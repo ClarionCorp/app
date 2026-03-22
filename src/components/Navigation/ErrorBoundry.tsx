@@ -7,7 +7,7 @@ export default function ErrorBoundary() {
   const navigate = useNavigate();
 
   const handleRestart = async () => {
-    // await invoke('stop_log_monitor');
+    sessionStorage.setItem("reloadHandled", "true");
     navigate('/');
   };
 

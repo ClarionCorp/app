@@ -9,19 +9,22 @@ export const NAV_ITEMS = [
     label: "Rank Checker",
     desc: "Auto fetch the ranks of everyone in game",
     slug: 'rankchecker',
-    image: "/backgrounds/Temple.webp"
+    image: "/backgrounds/Temple.webp",
+    online: true,
   },
   {
     label: "Custom Games Manager",
     desc: "Tweak every aspect of Custom Games",
     slug: 'cgm',
-    image: "/backgrounds/MusicShow.webp"
+    image: "/backgrounds/MusicShow.webp",
+    online: true,
   },
   {
     label: "Queue Manager",
     desc: "Queue into some weird game modes",
     slug: 'cqm',
-    image: "/backgrounds/MusicStage.webp"
+    image: "/backgrounds/MusicStage.webp",
+    online: true,
   },
   {
     label: "Mod Manager",
