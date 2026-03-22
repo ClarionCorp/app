@@ -4,6 +4,12 @@ import { downloadMod, toggleMod, deleteMod, validateGameDir, scanModsFolder } fr
 import { db } from "../database/driver";
 import { appSettings, installedMods } from "../database/schema";
 
+const FILE_PREFIX = "OmegaStrikers-Windows_";
+
+function stripPrefix(fileName: string): string {
+  return fileName.startsWith(FILE_PREFIX) ? fileName.slice(FILE_PREFIX.length) : fileName;
+}
+
 async function getGameDir(): Promise<string> {
   const [settings] = await db.select().from(appSettings).where(eq(appSettings.id, 1));
   if (!settings) throw new Error("No settings found");
@@ -26,7 +32,7 @@ export async function installMod(gbMod: GBMod): Promise<void> {
 
   db.insert(installedMods).values({
     gbId: gbMod._idRow,
-    name: gbMod._sName,
+    name: stripPrefix(gbMod._sName),
     version: gbMod._sVersion ?? null,
     thumbUrl: getModThumbnail(gbMod, "220"),
     enabled: true,
@@ -82,7 +88,7 @@ export async function scanAndSyncMods(): Promise<number> {
   for (const result of found) {
     await db.insert(installedMods).values({
       gbId: null,
-      name: result.file_name.replace(".pak", ""),
+      name: stripPrefix(result.file_name).replace(".pak", ""),
       version: null,
       thumbUrl: null,
       enabled: result.enabled,

@@ -157,6 +157,10 @@ pub async fn download_mod(
             .to_string_lossy()
             .to_string();
 
+        if !pak_file_name.starts_with("OmegaStrikers-Windows_") {
+            continue;
+        }
+
         let dest = paks.join(&pak_file_name);
         let mut out = fs::File::create(&dest).map_err(|e| e.to_string())?;
         std::io::copy(&mut entry, &mut out).map_err(|e| e.to_string())?;
@@ -199,6 +203,9 @@ pub fn scan_mods_folder(app: AppHandle, game_dir: String) -> Result<Vec<ScanResu
                 continue;
             }
             let file_name = path.file_name().unwrap().to_string_lossy().to_string();
+            if !file_name.starts_with("OmegaStrikers-Windows_") {
+                continue;
+            }
             results.push(ScanResult { file_name, enabled });
         }
     }
