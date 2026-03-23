@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 
 // Only one row that stores basic, refetchable user data
 export const user = sqliteTable("user", {
@@ -76,4 +76,20 @@ export const installedMods = sqliteTable("installedMods", {
   enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
   fileNames: text("fileNames", { mode: "json" }).$type<string[]>().notNull().default([]),
   installedAt: integer("installedAt", { mode: "timestamp" }).notNull(),
+});
+
+export const modCache = sqliteTable("modCache", {
+  id: integer("id").primaryKey(),
+  name: text("name").notNull(),
+  version: text("version"),
+  thumbUrl: text("thumbUrl"),
+  submitterName: text("submitterName").notNull(),
+  categoryName: text("categoryName"),
+  categoryId: integer("categoryId"),
+  likeCount: integer("likeCount").notNull().default(0),
+  viewCount: integer("viewCount").notNull().default(0),
+  wasFeatured: integer("wasFeatured", { mode: "boolean" }).notNull().default(false),
+  profileUrl: text("profileUrl").notNull(),
+  popularityScore: real("popularityScore").notNull().default(0),
+  cachedAt: integer("cachedAt", { mode: "timestamp" }).notNull(),
 });
