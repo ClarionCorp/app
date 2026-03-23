@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MagnifyingGlassIcon,
@@ -33,6 +32,7 @@ import {
 } from "../core/mods/cache";
 import { CachedMod } from "../types/database";
 import { Dropdown } from "../components/UI/Dropdown";
+import { ModModal } from "../components/Mods/ModModal";
 
 const SORT_OPTIONS: { label: string; value: CacheSortOrder; icon: React.ReactNode }[] = [
   { label: "Popular", value: "popularity", icon: <ChartBarIcon size={13} /> },
@@ -66,8 +66,6 @@ function formatAge(date: Date): string {
 }
  
 export default function ModDirectory() {
-  const navigate = useNavigate();
- 
   const [mods, setMods] = useState<CachedMod[]>([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
@@ -81,6 +79,7 @@ export default function ModDirectory() {
   const [cacheAge, setCacheAge] = useState<Date | null>(null);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [selectedModId, setSelectedModId] = useState<number | null>(null);
   const categoryTriggerRef = useRef<HTMLButtonElement>(null);
   const sortTriggerRef = useRef<HTMLButtonElement>(null);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -296,7 +295,7 @@ export default function ModDirectory() {
                   key={mod.id}
                   mod={mod}
                   index={i}
-                  onClick={() => navigate(`/mods/${mod.id}`)}
+                  onClick={() => setSelectedModId(mod.id)}
                 />
               ))}
             </AnimatePresence>
@@ -340,6 +339,11 @@ export default function ModDirectory() {
           </button>
         </div>
       )}
+
+      <ModModal
+        modId={selectedModId}
+        onClose={() => setSelectedModId(null)}
+      />
     </div>
   );
 }
@@ -361,6 +365,7 @@ function ModCard({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
+      whileTap={{ scale: 0.97 }}
       transition={{ duration: 0.12, delay: Math.min(index * 0.015, 0.2) }}
       onClick={onClick}
       className="flex flex-col rounded-xl border border-background-border bg-surface hover:bg-surface-raised hover:border-primary/20 transition-all cursor-pointer group overflow-hidden"

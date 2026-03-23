@@ -6,6 +6,7 @@ export interface GBModPreviewImage {
   _sType: string;
   _sBaseUrl: string;
   _sFile: string;
+  _sFile100?: string;
   _sFile220?: string;
   _sFile530?: string;
   _hFile220?: number;
@@ -38,6 +39,7 @@ export interface GBMod {
     _sIconUrl: string;
   };
   _aFiles?: GBModFile[];
+  _sText?: string;
 }
 
 export interface GBModFile {
@@ -76,15 +78,10 @@ export type ModSortOrder =
 const MOD_FIELDS = [
   "_sName",
   "_sVersion",
-  "_sDescription",
   "_sProfileUrl",
-  "_tsDateAdded",
-  "_tsDateModified",
+  "_sText",
   "_nLikeCount",
   "_nViewCount",
-  "_nPostCount",
-  "_bWasFeatured",
-  "_aTags",
   "_aPreviewMedia",
   "_aSubmitter",
   "_aRootCategory",
@@ -111,23 +108,15 @@ export async function fetchMods(opts: {
     "_nPerpage": String(opts.perPage ?? 20),
     "_sOrderBy": opts.sort ?? "_tsDateAdded,DESC",
   });
-  if (opts.gameId) params.set("_aFilters[Generic_Game]", String(opts.gameId));
+  if (opts.gameId) params.set("_aFilters[Generic_Game]", String(OS_GAME_ID));
   if (opts.categoryId) params.set("_aFilters[Generic_Category]", String(opts.categoryId));
 
   return gbFetch(`${GB_API}/Mod/Index?${params}`);
 }
 
-export async function fetchOSMods(opts?: {
-  categoryId?: number;
-  page?: number;
-  perPage?: number;
-  sort?: ModSortOrder;
-}): Promise<GBModListResponse> {
-  return fetchMods({ gameId: OS_GAME_ID, ...opts });
-}
-
 export async function fetchMod(modId: number): Promise<GBMod> {
-  return gbFetch(`${GB_API}/Mod/${modId}?_csvProperties=${MOD_FIELDS}`);
+  const url = `${GB_API}/Mod/${modId}?_csvProperties=${MOD_FIELDS}`;
+  return gbFetch(url);
 }
 
 export async function fetchCategories(gameId = OS_GAME_ID): Promise<GBCategory[]> {
