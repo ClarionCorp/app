@@ -50,20 +50,19 @@ export default function InstalledMods() {
   }, [search]);
 
   const filtered = mods.filter((m) =>
-    m.name.toLowerCase().includes(search.toLowerCase())
+    m.name.toLowerCase().includes(search.toLowerCase()) ||
+    m.submitterName?.toLowerCase().includes(search.toLowerCase())
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / MODS_PER_PAGE));
   const paginated = filtered.slice((page - 1) * MODS_PER_PAGE, page * MODS_PER_PAGE);
 
   async function handleToggle(mod: InstalledMod) {
-    console.log("[handleToggle] clicked", mod.id, mod.name);
-    console.log("[handleToggle] mod.id:", mod.id, "type:", typeof mod.id);
     setPendingId(mod.id);
     try {
       if (mod.enabled) await disableMod(mod.id);
       else await enableMod(mod.id);
-      await loadMods();
+      setMods((prev) => prev.map((m) => m.id === mod.id ? { ...m, enabled: !m.enabled } : m));
     } catch (e) {
       console.error("[handleToggle] error:", e);
     } finally {
@@ -72,11 +71,10 @@ export default function InstalledMods() {
   }
 
   async function handleDelete(mod: InstalledMod) {
-    console.log("[handleDelete] clicked", mod.id, mod.name);
     setPendingId(mod.id);
     try {
       await uninstallMod(mod.id);
-      await loadMods();
+      setMods((prev) => prev.filter((m) => m.id !== mod.id));
     } catch (e) {
       console.error("[handleDelete] error:", e);
     } finally {
@@ -206,12 +204,12 @@ export default function InstalledMods() {
                 }`}
               >
                 {/* Thumbnail */}
-                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-surface border border-background-border">
+                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-surface border border-background-border relative">
                   {mod.thumbUrl ? (
                     <img
                       src={mod.thumbUrl}
                       alt={mod.name}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover transition-all ${!mod.enabled ? "grayscale opacity-40" : ""}`}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -224,22 +222,26 @@ export default function InstalledMods() {
                 <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                   <span
                     onClick={() => mod.gbId && openUrl(`https://gamebanana.com/mods/${mod.gbId}`)}
-                    className={`text-sm font-medium text-white truncate ${mod.gbId ? "hover:text-secondary cursor-pointer transition-colors" : ""}`}
+                    className={`text-sm font-medium truncate transition-colors ${mod.enabled ? "text-white" : "text-white/30"} ${mod.gbId ? "hover:text-secondary cursor-pointer transition-colors" : ""}`}
                   >
                     {mod.name}
                   </span>
                   <div className="flex items-center gap-2">
                     {mod.submitterName && (
-                      <span className="text-xs text-char-subtle truncate">by {mod.submitterName}</span>
+                      <span className={`text-xs truncate transition-colors ${mod.enabled ? "text-char-subtle" : "text-white/20"}`}>
+                        by {mod.submitterName}
+                      </span>
                     )}
                     {mod.submitterName && mod.version && (
                       <span className="text-xs text-white/15">·</span>
                     )}
                     {mod.version && (
-                      <span className="text-xs text-white/30">v{mod.version}</span>
+                      <span className={`text-xs transition-colors ${mod.enabled ? "text-white/30" : "text-white/15"}`}>
+                        v{mod.version}
+                      </span>
                     )}
                     {!mod.enabled && (
-                      <span className="text-xs text-white/25 italic">disabled</span>
+                      <span className="text-xs text-white/20 italic">disabled</span>
                     )}
                   </div>
                 </div>
