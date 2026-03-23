@@ -20,6 +20,7 @@ import { onDownloadComplete, onDownloadProgress } from "../../core/mods/mods";
 import { fetchMod, GBMod, getModDownloadFile } from "../../core/mods/gamebanana";
 import { installMod } from "../../core/mods/manager";
 import { ImageViewer } from "./ImageViewerModal";
+import { useToast } from "../UI/Toast";
 
 const PREFIX = "OmegaStrikers-Windows_";
 function stripPrefix(name: string): string {
@@ -41,6 +42,7 @@ export function ModModal({ modId, onClose }: ModModalProps) {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (modId === null) {
@@ -108,8 +110,14 @@ export function ModModal({ modId, onClose }: ModModalProps) {
       console.log("[ModModal] Download complete");
     } catch (e: any) {
       console.error("[ModModal] Download failed:", e);
-      setDownloadState("error");
-      setErrorMsg(e?.message ?? "Download failed.");
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes("Could not find EOCD")) {
+        toast("Archive format is not supported yet. Please ask the mod creator to upload a .zip version!", 'error');
+        setDownloadState("idle");
+      } else {
+        setDownloadState("error");
+        setErrorMsg(e?.message ?? "Download failed.");
+      }
     }
   }
 
