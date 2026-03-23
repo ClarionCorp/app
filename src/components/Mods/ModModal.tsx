@@ -373,16 +373,16 @@ export function ModModal({ modId, onClose }: ModModalProps) {
                 ) : null}
               </div>
             </motion.div>
-          </>
+            </>
         )}
-        <AnimatePresence>
-          {fullscreenImage && (
-            <ImageViewer
-              url={fullscreenImage}
-              onClose={() => setFullscreenImage(null)}
-            />
-          )}
-        </AnimatePresence>
+      </AnimatePresence>
+      <AnimatePresence>
+        {fullscreenImage && (
+          <ImageViewer
+            url={fullscreenImage}
+            onClose={() => setFullscreenImage(null)}
+          />
+        )}
       </AnimatePresence>
     </>,
     document.body
