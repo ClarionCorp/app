@@ -109,7 +109,7 @@ export async function fetchMods(opts: {
     "_nPerpage": String(opts.perPage ?? 20),
     "_sOrderBy": opts.sort ?? "_tsDateAdded,DESC",
   });
-  if (opts.gameId) params.set("_aFilters[Generic_Game]", String(OS_GAME_ID));
+  if (opts.gameId) params.set("_aFilters[Generic_Game]", String(opts.gameId));
   if (opts.categoryId) params.set("_aFilters[Generic_Category]", String(opts.categoryId));
 
   return gbFetch(`${GB_API}/Mod/Index?${params}`);

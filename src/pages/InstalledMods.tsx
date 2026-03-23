@@ -57,21 +57,28 @@ export default function InstalledMods() {
   const paginated = filtered.slice((page - 1) * MODS_PER_PAGE, page * MODS_PER_PAGE);
 
   async function handleToggle(mod: InstalledMod) {
+    console.log("[handleToggle] clicked", mod.id, mod.name);
+    console.log("[handleToggle] mod.id:", mod.id, "type:", typeof mod.id);
     setPendingId(mod.id);
     try {
       if (mod.enabled) await disableMod(mod.id);
       else await enableMod(mod.id);
       await loadMods();
+    } catch (e) {
+      console.error("[handleToggle] error:", e);
     } finally {
       setPendingId(null);
     }
   }
 
   async function handleDelete(mod: InstalledMod) {
+    console.log("[handleDelete] clicked", mod.id, mod.name);
     setPendingId(mod.id);
     try {
       await uninstallMod(mod.id);
       await loadMods();
+    } catch (e) {
+      console.error("[handleDelete] error:", e);
     } finally {
       setPendingId(null);
     }

@@ -1,7 +1,7 @@
 import { db } from "../database/driver";
 import { modCache } from "../database/schema";
 import { eq, desc, like, and, or } from "drizzle-orm";
-import { fetchMods, getModThumbnail, type GBMod } from "./gamebanana";
+import { fetchMods, getModThumbnail, OS_GAME_ID, type GBMod } from "./gamebanana";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -68,7 +68,7 @@ export async function refreshCache(
 
   // Fetch all pages
   do {
-    const res = await fetchMods({ page, perPage: PER_PAGE, sort: "_tsDateAdded,DESC" });
+    const res = await fetchMods({ gameId: OS_GAME_ID, page, perPage: PER_PAGE, sort: "_tsDateAdded,DESC" });
     total = res._aMetadata._nRecordCount;
     allMods.push(...res._aRecords);
     onProgress?.(allMods.length, total);

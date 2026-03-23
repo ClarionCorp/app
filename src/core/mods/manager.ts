@@ -42,33 +42,6 @@ export async function installMod(gbMod: GBMod): Promise<void> {
   }).run();
 }
 
-export async function enableMod(modId: number): Promise<void> {
-  const mod = await db.select().from(installedMods).where(eq(installedMods.id, modId)).get();
-  if (!mod) throw new Error("Mod not found");
-
-  const gameDir = await getGameDir();
-  await toggleMod(gameDir, mod.fileNames, true);
-  db.update(installedMods).set({ enabled: true }).where(eq(installedMods.id, modId)).run();
-}
-
-export async function disableMod(modId: number): Promise<void> {
-  const mod = await db.select().from(installedMods).where(eq(installedMods.id, modId)).get();
-  if (!mod) throw new Error("Mod not found");
-
-  const gameDir = await getGameDir();
-  await toggleMod(gameDir, mod.fileNames, false);
-  db.update(installedMods).set({ enabled: false }).where(eq(installedMods.id, modId)).run();
-}
-
-export async function uninstallMod(modId: number): Promise<void> {
-  const mod = await db.select().from(installedMods).where(eq(installedMods.id, modId)).get();
-  if (!mod) throw new Error("Mod not found");
-
-  const gameDir = await getGameDir();
-  await deleteMod(gameDir, mod.fileNames, mod.enabled);
-  db.delete(installedMods).where(eq(installedMods.id, modId)).run();
-}
-
 export function getInstalledMods() {
   return db.select().from(installedMods).orderBy(installedMods.installedAt).all();
 }
@@ -99,4 +72,34 @@ export async function scanAndSyncMods(): Promise<number> {
   }
 
   return found.length;
+}
+
+
+// Moved down here to differenciate from installing
+export async function enableMod(modId: number): Promise<void> {
+  const [mod] = await db.select().from(installedMods).where(eq(installedMods.id, modId));
+  if (!mod) throw new Error("Mod not found");
+
+  const gameDir = await getGameDir();
+  
+  await toggleMod(gameDir, mod.fileNames, true);
+  await db.update(installedMods).set({ enabled: true }).where(eq(installedMods.id, modId)).run();
+}
+
+export async function disableMod(modId: number): Promise<void> {
+  const [mod] = await db.select().from(installedMods).where(eq(installedMods.id, modId));
+  if (!mod) throw new Error("Mod not found");
+
+  const gameDir = await getGameDir();
+  await toggleMod(gameDir, mod.fileNames, false);
+  await db.update(installedMods).set({ enabled: false }).where(eq(installedMods.id, modId)).run();
+}
+
+export async function uninstallMod(modId: number): Promise<void> {
+  const [mod] = await db.select().from(installedMods).where(eq(installedMods.id, modId));
+  if (!mod) throw new Error("Mod not found");
+
+  const gameDir = await getGameDir();
+  await deleteMod(gameDir, mod.fileNames, mod.enabled);
+  await db.delete(installedMods).where(eq(installedMods.id, modId)).run();
 }
