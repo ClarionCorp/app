@@ -131,7 +131,7 @@ export default function InstalledMods() {
         </div>
         <motion.button
           whileTap={{ scale: 0.96 }}
-          onClick={() => navigate("/mods/directory")}
+          onClick={() => navigate("/mods/add")}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-tertiary text-white text-sm font-medium transition-colors shrink-0 cursor-pointer"
         >
           <PlusIcon size={15} weight="bold" />

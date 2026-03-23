@@ -16,6 +16,7 @@ export interface GBMod {
   _idRow: number;
   _sName: string;
   _sVersion: string;
+  _sDescription?: string;
   _sProfileUrl: string;
   _tsDateAdded: number;
   _tsDateModified?: number;
@@ -75,6 +76,7 @@ export type ModSortOrder =
 const MOD_FIELDS = [
   "_sName",
   "_sVersion",
+  "_sDescription",
   "_sProfileUrl",
   "_tsDateAdded",
   "_tsDateModified",
