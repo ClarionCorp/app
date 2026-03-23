@@ -76,6 +76,7 @@ export type ModSortOrder =
   | "_tsDateModified,DESC";
 
 const MOD_FIELDS = [
+  "_idRow",
   "_sName",
   "_sVersion",
   "_sProfileUrl",

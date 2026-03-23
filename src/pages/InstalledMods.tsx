@@ -15,6 +15,7 @@ import {
 } from "@phosphor-icons/react";
 import { disableMod, enableMod, getInstalledMods, scanAndSyncMods, uninstallMod } from "../core/mods/manager";
 import { InstalledMod } from "../types/database";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const MODS_PER_PAGE = 8;
 
@@ -214,10 +215,19 @@ export default function InstalledMods() {
 
                 {/* Info */}
                 <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                  <span className="text-sm font-medium text-white truncate">
+                  <span
+                    onClick={() => mod.gbId && openUrl(`https://gamebanana.com/mods/${mod.gbId}`)}
+                    className={`text-sm font-medium text-white truncate ${mod.gbId ? "hover:text-secondary cursor-pointer transition-colors" : ""}`}
+                  >
                     {mod.name}
                   </span>
                   <div className="flex items-center gap-2">
+                    {mod.submitterName && (
+                      <span className="text-xs text-char-subtle truncate">by {mod.submitterName}</span>
+                    )}
+                    {mod.submitterName && mod.version && (
+                      <span className="text-xs text-white/15">·</span>
+                    )}
                     {mod.version && (
                       <span className="text-xs text-white/30">v{mod.version}</span>
                     )}

@@ -35,6 +35,7 @@ export async function installMod(gbMod: GBMod): Promise<void> {
     name: stripModPrefix(gbMod._sName),
     version: gbMod._sVersion ?? null,
     thumbUrl: getModThumbnail(gbMod, "220"),
+    submitterName: gbMod._aSubmitter._sName,
     enabled: true,
     fileNames: extractedPaks,
     installedAt: new Date(),

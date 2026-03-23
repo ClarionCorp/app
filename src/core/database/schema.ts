@@ -73,6 +73,7 @@ export const installedMods = sqliteTable("installedMods", {
   name: text("name").notNull(),
   version: text("version"),
   thumbUrl: text("thumbUrl"),
+  submitterName: text("submitterName"),
   enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
   fileNames: text("fileNames", { mode: "json" }).$type<string[]>().notNull().default([]),
   installedAt: integer("installedAt", { mode: "timestamp" }).notNull(),
