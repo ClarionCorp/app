@@ -9,7 +9,7 @@ import { homeDir, join } from "@tauri-apps/api/path";
 import { windows_log } from "../core/constants";
 import { invoke } from "@tauri-apps/api/core";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { updateRating, upsertUser } from "../core/database/queries";
+import { getTelemetrySettings, updateRating, upsertUser } from "../core/database/queries";
 import { useToast } from "../components/UI/Toast";
 
 // PLACEHOLDERS
@@ -76,8 +76,11 @@ export default function InitializationPage() {
         setStepIndex(2);
         setProgress(STEP_PCTS[2]);
         await stopRpc();
-        await startRpc();
-        await updateActivity(DEFAULT_ACTIVITY);
+        const drpc = (await getTelemetrySettings()).play_state;
+        if (drpc == true) { // only start if allowed to
+          await startRpc();
+          await updateActivity(DEFAULT_ACTIVITY);
+        }
         await new Promise((res) => setTimeout(res, 50));
  
         // 4) Read log and fetch current game status

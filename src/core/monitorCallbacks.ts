@@ -1,6 +1,6 @@
 import { AppContextType } from '../App';
 import { db } from './database/driver';
-import { getCurrentMatch, getUser, updateCurrentMatch } from './database/queries';
+import { getCurrentMatch, getTelemetrySettings, getUser, updateCurrentMatch } from './database/queries';
 import { currentMatch } from './database/schema';
 import { DEFAULT_ACTIVITY } from './discord';
 import { getPhaseGroup, startLogMonitor } from './logMonitor';
@@ -99,52 +99,56 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
         await db.update(currentMatch).set({ startedAt: startingTs }).run();
       }
 
-      if (lastPhaseGroup !== phaseGroup) {
-        lastPhaseGroup = phaseGroup;
-        console.log(`Sending Discord a new Game State! (${phaseGroup})`);
+      // Discord RPC
+      const appSettings = await getTelemetrySettings();
+      if (appSettings.play_state) { // only run this block to update drpc if allowed to
+        if (lastPhaseGroup !== phaseGroup) {
+          lastPhaseGroup = phaseGroup;
+          console.log(`Sending Discord a new Game State! (${phaseGroup})`);
 
-        const match = await getCurrentMatch();
-        const user = await getUser();
-        let largeImg = 'aimiapp_logo';
-        if (match?.myCharacter) { largeImg = getCharDevName(match.myCharacter).toLowerCase(); }
+          const match = await getCurrentMatch();
+          const user = await getUser();
+          let largeImg = 'aimiapp_logo';
+          if (match?.myCharacter) { largeImg = getCharDevName(match.myCharacter).toLowerCase(); }
 
-        // Current problem is that the score -> set calc is hardcoded to 3, so custom games sort of break currently.
+          // Current problem is that the score -> set calc is hardcoded to 3, so custom games sort of break currently.
 
-        switch (phaseGroup) {
-          case 'in_game': // fires when a game has started and after scores/intermissions
-            const rankObject = getRankFromLP(user?.rating);
-            console.debug(`Current Rank: ${JSON.stringify(rankObject, null, 1)} (${user?.rating} rating)`);
-            await updateActivity({
-              details: `${match?.queue ? getQueueName(match.queue) : match?.queue} - ${match?.level ? getMapName(match.level) : match?.level}`,
-              state: formatScore(
-                match?.teamOnePts ?? 0,
-                match?.teamTwoPts ?? 0,
-                match?.teamOneSets ?? 0,
-                match?.teamTwoSets ?? 0,
-                match?.myTeam ?? null,
-              ),
-              largeImage: largeImg,
-              largeText: match?.myCharacter ? `Playing ${match.myCharacter}` : 'Ai.Mi Companion App',
-              smallImage: rankObject.key,
-              smallText: rankObject.name,
-              // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
-              startTimestamp: match.startedAt.getTime(),
-            });
-            break;
-          case 'waiting': // fires after scoring/intermission to update in_game
-            break;
-          case 'starting': // fires once after the queue pops
-            await refreshRating();
-            await updateActivity({
-              details: `Ranked - ${match?.level ? getMapName(match.level) : match?.level}`,
-              state: `Voting on Game Settings...`,
-              startTimestamp: new Date().getTime(),
-              endTimestamp: new Date().getTime() + 60 * 1000,
-            });
-            break;
-          default: // fires when the user returns to the lobby
-            await updateActivity(DEFAULT_ACTIVITY);
-            break;
+          switch (phaseGroup) {
+            case 'in_game': // fires when a game has started and after scores/intermissions
+              const rankObject = getRankFromLP(user?.rating);
+              console.debug(`Current Rank: ${JSON.stringify(rankObject, null, 1)} (${user?.rating} rating)`);
+              await updateActivity({
+                details: `${match?.queue ? getQueueName(match.queue) : match?.queue} - ${match?.level ? getMapName(match.level) : match?.level}`,
+                state: formatScore(
+                  match?.teamOnePts ?? 0,
+                  match?.teamTwoPts ?? 0,
+                  match?.teamOneSets ?? 0,
+                  match?.teamTwoSets ?? 0,
+                  match?.myTeam ?? null,
+                ),
+                largeImage: largeImg,
+                largeText: match?.myCharacter ? `Playing ${match.myCharacter}` : 'Ai.Mi Companion App',
+                smallImage: rankObject.key,
+                smallText: rankObject.name,
+                // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
+                startTimestamp: match.startedAt.getTime(),
+              });
+              break;
+            case 'waiting': // fires after scoring/intermission to update in_game
+              break;
+            case 'starting': // fires once after the queue pops
+              await refreshRating();
+              await updateActivity({
+                details: `Ranked - ${match?.level ? getMapName(match.level) : match?.level}`,
+                state: `Voting on Game Settings...`,
+                startTimestamp: new Date().getTime(),
+                endTimestamp: new Date().getTime() + 60 * 1000,
+              });
+              break;
+            default: // fires when the user returns to the lobby
+              await updateActivity(DEFAULT_ACTIVITY);
+              break;
+          }
         }
       }
     },

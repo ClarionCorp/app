@@ -36,6 +36,7 @@ export default function Sidebar({ navigate, connectedToOdy }: SidebarProps) {
     <motion.aside
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
+      initial={{ width: 52 }}
       animate={{ width: hovered ? 250 : 52 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="fixed left-0 top-12 bottom-0 z-40 flex flex-col bg-surface-subtle border-r border-background-border overflow-hidden"

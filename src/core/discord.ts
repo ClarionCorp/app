@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
+import { getTelemetrySettings } from "./database/queries";
 
 const APP_ID = "1483520798017982707";
 
@@ -27,6 +28,11 @@ export function useDiscordRpc() {
   const started = useRef(false);
 
   async function startRpc() {
+    const appSettings = await getTelemetrySettings();
+    if (appSettings.play_state == false) {
+      console.warn(`Ignoring call to start dRPC since it is disabled.`);
+      return;
+    };
     try {
       console.log(`Starting new Discord RPC...`);
       await start(APP_ID);

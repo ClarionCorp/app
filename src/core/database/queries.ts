@@ -1,4 +1,4 @@
-import { AuthTable, UserTable } from "../../types/database";
+import { AuthTable, TelemetryOption, UserTable } from "../../types/database";
 import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
 import { appSettings, auth, currentMatch, user } from "./schema";
@@ -23,7 +23,14 @@ export async function getCurrentMatch() {
   return db.select().from(currentMatch).limit(1).then(r => r[0] ?? null);
 }
 
-
+export async function getTelemetrySettings(): Promise<Record<TelemetryOption, boolean>> {
+  const rows = await db.select().from(appSettings).limit(1);
+  return {
+    game_stats: rows[0].sendStats ?? true,
+    play_state: rows[0].sendPlayState ?? true,
+    play_count: rows[0].sendPlayCount ?? true,
+  };
+}
 
 
 //

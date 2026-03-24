@@ -20,6 +20,7 @@ import { upsertSettings } from '../core/database/queries';
 import { useOutletContext } from 'react-router-dom';
 import { AppContextType } from '../App';
 import { useToast } from '../components/UI/Toast';
+import { TelemetryOption } from '../types/database';
 
 type Step = 'welcome' | 'terms' | 'telemetry';
 const STEPS: Step[] = ['welcome', 'terms', 'telemetry'];
@@ -93,7 +94,6 @@ function TermsStep({ accepted, onAccepted }: { accepted: boolean; onAccepted: (v
   );
 }
 
-type TelemetryOption = 'game_stats' | 'play_state' | 'play_count';
 const telemetryOptions: { value: TelemetryOption; label: string; description: string; icon: React.ReactNode }[] = [
   {
     value: 'game_stats',
