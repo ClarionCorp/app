@@ -297,6 +297,23 @@ fn regex_queue(line: &str) -> Option<String> {
     None
 }
 
+// Resets database cleanly
+#[tauri::command]
+fn reset_local_database(app: tauri::AppHandle) -> Result<(), String> {
+    let app_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| e.to_string())?;
+
+    let db_path = app_dir.join("lapis.db");
+
+    if db_path.exists() {
+        std::fs::remove_file(&db_path).map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -315,6 +332,7 @@ pub fn run() {
             find_session_start,
             start_log_monitor,
             stop_log_monitor,
+            reset_local_database,
             mods::validate_game_dir,
             mods::toggle_mod,
             mods::delete_mod,

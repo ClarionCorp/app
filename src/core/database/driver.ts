@@ -1,6 +1,9 @@
 import Database from "@tauri-apps/plugin-sql";
 import { drizzle } from "drizzle-orm/sqlite-proxy";
 import * as schema from "../database/schema";
+import { invoke } from "@tauri-apps/api/core";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { is, Table } from "drizzle-orm";
 
 const conn = await Database.load("sqlite:lapis.db");
 
@@ -20,3 +23,15 @@ export const db = drizzle(async (sql, params, method) => {
     throw err;
   }
 }, { schema });
+
+export async function resetDatabase() {
+  await invoke("stop_log_monitor");
+
+  const tables = Object.values(schema).filter((t) => is(t, Table));
+
+  for (const table of tables) {
+    await db.delete(table as Table);
+  }
+
+  await relaunch();
+}
