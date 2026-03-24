@@ -16,6 +16,7 @@ import DebugPage from './pages/Debugger';
 import SetupPage from './pages/AppSetup';
 import InstalledMods from './pages/InstalledMods';
 import ModDirectory from './pages/ModDirectory';
+import SettingsPage from './pages/Settings';
 
 const router = createHashRouter([
   {
@@ -27,7 +28,7 @@ const router = createHashRouter([
       { path: "home",             element: <HomePage /> },
       { path: "rankchecker",      element: <RankCheckerPage /> },
       { path: "account",          element: <ComingSoonPage /> },
-      { path: "settings",         element: <ComingSoonPage /> },
+      { path: "settings",         element: <SettingsPage /> },
       { path: "cgm",              element: <ComingSoonPage /> },
       { path: "cqm",              element: <ComingSoonPage /> },
       { path: "mods",             element: <InstalledMods /> },

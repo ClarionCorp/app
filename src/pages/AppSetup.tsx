@@ -9,9 +9,6 @@ import {
   ArrowLeftIcon,
   CheckIcon,
   ShieldIcon,
-  ListPlusIcon,
-  GameControllerIcon,
-  TrendUpIcon,
 } from '@phosphor-icons/react';
 import { Checkbox } from '../components/UI/Checkbox';
 import { Button } from '../components/UI/Button';
@@ -20,7 +17,7 @@ import { upsertSettings } from '../core/database/queries';
 import { useOutletContext } from 'react-router-dom';
 import { AppContextType } from '../App';
 import { useToast } from '../components/UI/Toast';
-import { TelemetryOption } from '../types/database';
+import { TelemetryOption, telemetryOptions } from '../types/settings';
 
 type Step = 'welcome' | 'terms' | 'telemetry';
 const STEPS: Step[] = ['welcome', 'terms', 'telemetry'];
@@ -93,27 +90,6 @@ function TermsStep({ accepted, onAccepted }: { accepted: boolean; onAccepted: (v
     </div>
   );
 }
-
-const telemetryOptions: { value: TelemetryOption; label: string; description: string; icon: React.ReactNode }[] = [
-  {
-    value: 'game_stats',
-    label: 'Extra Game Stats',
-    description: 'Automatically send limited match history data to ClarionCorp.',
-    icon: <ListPlusIcon size={18} weight="duotone" />,
-  },
-  {
-    value: 'play_state',
-    label: 'Playing State',
-    description: 'Share current game state with Discord Rich Presence and your account on ClarionCorp.',
-    icon: <GameControllerIcon size={18} weight="duotone" />,
-  },
-  {
-    value: 'play_count',
-    label: 'Play Count',
-    description: 'Send an anonymous +1 to ClarionCorp for updating the online counter.',
-    icon: <TrendUpIcon size={18} weight="duotone" />,
-  },
-];
 
 function TelemetryStep({
   selected,

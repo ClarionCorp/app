@@ -94,7 +94,7 @@ export function Checkbox({ checked, onChange, label, description, icon, disabled
         'flex items-center gap-3.5 p-3.5 rounded-xl border transition-all text-left cursor-pointer w-full',
         checked
           ? 'bg-primary/10 border-primary/40'
-          : 'bg-surface-raised border-background-border hover:border-primary/20 hover:bg-surface-overlay',
+          : 'bg-surface border-background-border hover:border-secondary/30',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
