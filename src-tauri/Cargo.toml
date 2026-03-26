@@ -1,6 +1,6 @@
 [package]
 name = "aimiapp"
-version = "0.1.0"
+version = "0.2.0"
 description = "An Omega Strikers companion app"
 authors = ["blals"]
 edition = "2021"
