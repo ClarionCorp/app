@@ -22,7 +22,8 @@
       "allow": [
         { "path": "$HOME/Desktop/**" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
-        { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" }
+        { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" },
+        { "path": "$TEMP/PostGameStats.json" }
       ]
     },
     "fs:allow-read-dir",

@@ -94,3 +94,31 @@ export const modCache = sqliteTable("modCache", {
   popularityScore: real("popularityScore").notNull().default(0),
   cachedAt: integer("cachedAt", { mode: "timestamp" }).notNull(),
 });
+
+
+// Basic list of previous matches for local match history
+// Doesn't get cleared in "Reset Database", actual file must be deleted
+export const matchHistory = sqliteTable("matchHistory", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+
+  players: text("players", { mode: 'json' }).$type<string[]>().notNull().default([]),
+  mapId: text("mapId").notNull(),
+  characterId: text("characterId").notNull(),
+  duration: integer("duration").notNull(),
+  myScore: integer("myScore").notNull(),
+  enemyScore: integer("enemyScore").notNull(),
+
+  wonGame: integer("wonGame", { mode: "boolean" }).notNull(),
+  goals: integer("goals").notNull().default(0),
+  assists: integer("assists").notNull().default(0),
+  saves: integer("saves").notNull().default(0),
+  kos: integer("kos").notNull().default(0),
+  damage: integer("damage").notNull().default(0),
+  shots: integer("shots").notNull().default(0),
+  redirects: integer("redirects").notNull().default(0),
+  orbs: integer("orbs").notNull().default(0),
+
+  allGameStats: text("allGameStats", { mode: 'json' }).notNull().default([]),
+
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+});
