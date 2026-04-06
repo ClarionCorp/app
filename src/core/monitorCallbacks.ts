@@ -142,7 +142,7 @@ export async function initMonitorCallbacks(ctx: MonitorContext) {
                 details: `Ranked - ${match?.level ? getMapName(match.level) : match?.level}`,
                 state: `Voting on Game Settings...`,
                 startTimestamp: new Date().getTime(),
-                endTimestamp: new Date().getTime() + 60 * 1000,
+                endTimestamp: new Date().getTime() + 70 * 1000,
               });
               break;
             default: // fires when the user returns to the lobby
