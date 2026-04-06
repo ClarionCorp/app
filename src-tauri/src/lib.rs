@@ -338,6 +338,7 @@ pub fn run() {
             mods::delete_mod,
             mods::download_mod,
             mods::scan_mods_folder,
+            mods::extract_zip,
             ]
         )
         .run(tauri::generate_context!())

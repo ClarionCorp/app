@@ -1,4 +1,4 @@
-import { AuthTable, UserTable } from "../../types/database";
+import { AppSettingsTable, AuthTable, UserTable } from "../../types/database";
 import { TelemetryOption } from "../../types/settings";
 import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
@@ -32,6 +32,11 @@ export async function getTelemetrySettings(): Promise<Record<TelemetryOption, bo
     play_state: row?.sendPlayState ?? true,
     play_count: row?.sendPlayCount ?? true,
   };
+}
+
+export async function getAppSettings(): Promise<AppSettingsTable | null> {
+  const rows = await db.select().from(appSettings).limit(1);
+  return rows[0] ?? null;
 }
 
 

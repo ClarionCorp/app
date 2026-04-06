@@ -1,10 +1,10 @@
 // src-tauri/src/mods.rs
 
 use std::fs;
-use std::io::Write;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use futures_util::StreamExt;
-use serde::{Serialize};
+use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
 use zip::ZipArchive;
 
@@ -211,4 +211,27 @@ pub fn scan_mods_folder(app: AppHandle, game_dir: String) -> Result<Vec<ScanResu
     }
 
     Ok(results)
+}
+
+#[tauri::command]
+pub fn extract_zip(zip_path: String, dest_dir: String) -> Result<(), String> {
+    let file = fs::File::open(&zip_path).map_err(|e| e.to_string())?;
+    let mut archive = ZipArchive::new(file).map_err(|e| e.to_string())?;
+
+    for i in 0..archive.len() {
+        let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
+        let out_path = Path::new(&dest_dir).join(entry.mangled_name());
+
+        if entry.is_dir() {
+            fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
+        } else {
+            if let Some(parent) = out_path.parent() {
+                fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+            }
+            let mut out_file = fs::File::create(&out_path).map_err(|e| e.to_string())?;
+            io::copy(&mut entry, &mut out_file).map_err(|e| e.to_string())?;
+        }
+    }
+
+    Ok(())
 }
