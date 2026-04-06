@@ -9,6 +9,11 @@ import {
   ArrowLeftIcon,
   CheckIcon,
   ShieldIcon,
+  CheckCircleIcon,
+  WarningIcon,
+  ArrowCounterClockwiseIcon,
+  DownloadSimpleIcon,
+  WrenchIcon,
 } from '@phosphor-icons/react';
 import { Checkbox } from '../components/UI/Checkbox';
 import { Button } from '../components/UI/Button';
@@ -18,9 +23,10 @@ import { useOutletContext } from 'react-router-dom';
 import { AppContextType } from '../App';
 import { useToast } from '../components/UI/Toast';
 import { TelemetryOption, telemetryOptions } from '../types/settings';
+import { installUE4SS } from '../core/utilities/ue4ss';
 
-type Step = 'welcome' | 'terms' | 'telemetry';
-const STEPS: Step[] = ['welcome', 'terms', 'telemetry'];
+type Step = 'welcome' | 'terms' | 'telemetry' | 'ue4ss';
+const STEPS: Step[] = ['welcome', 'terms', 'telemetry', 'ue4ss'];
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const slideVariants: Variants = {
@@ -124,10 +130,119 @@ function TelemetryStep({
   );
 }
 
+function UE4SSStep({
+  status,
+  percent,
+  message,
+  onInstall,
+}: {
+  status: 'idle' | 'installing' | 'done' | 'error';
+  percent: number | null;
+  message: string;
+  onInstall: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-row gap-4 items-center">
+        <div className="size-12 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
+          <WrenchIcon size={22} weight="duotone" className="text-primary" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-semibold text-char tracking-tight">Install UE4SS?</h2>
+          <p className="text-sm text-char-subtle">
+            UE4SS is a mod loader that lets us dig deeper into your game stats. You can skip this and install it later.
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-background-border bg-surface-raised p-4 flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-medium text-char">RE-UE4SS v3.0.1</p>
+          <p className="text-xs text-char-subtle">
+            Open-source scripting system, live viewer, and blueprint mod loader for UE4+ games.
+          </p>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {status === 'idle' && (
+            <motion.div key="install-btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <Button variant="primary" size="md" onClick={onInstall} iconLeft={<DownloadSimpleIcon size={14} weight="bold" />}>
+                Install UE4SS & CC Mods
+              </Button>
+            </motion.div>
+          )}
+
+          {(status === 'installing') && (
+            <motion.div
+              key="progress"
+              className="flex flex-col gap-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-char-subtle">{message}</p>
+                {percent !== null && (
+                  <p className="text-xs text-char-subtle tabular-nums">{percent}%</p>
+                )}
+              </div>
+              <div className="h-1.5 rounded-full bg-background-border overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-primary"
+                  initial={{ width: '0%' }}
+                  animate={{ width: percent !== null ? `${percent}%` : '100%' }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                />
+              </div>
+              {percent === null && (
+                <p className="text-xs text-char-subtle/60 italic">This may take a moment...</p>
+              )}
+            </motion.div>
+          )}
+
+          {status === 'done' && (
+            <motion.div
+              key="done"
+              className="flex items-center gap-2 text-sm text-green-400"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              <CheckCircleIcon size={16} weight="duotone" />
+              UE4SS installed successfully!
+            </motion.div>
+          )}
+
+          {status === 'error' && (
+            <motion.div
+              key="error"
+              className="flex flex-col gap-2"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              <p className="text-sm text-red-400 flex items-center gap-2">
+                <WarningIcon size={16} weight="duotone" />
+                Installation failed. You can try again later from Settings.
+              </p>
+              <Button variant="ghost" size="md" onClick={onInstall} iconLeft={<ArrowCounterClockwiseIcon size={14} weight="bold" />}>
+                Retry
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
 export default function SetupPage() {
   const { navigate } = useOutletContext<AppContextType>();
   const [currentStep, setCurrentStep] = useState<Step>('welcome');
   const [direction, setDirection] = useState(1);
+  const [ue4ssStatus, setUe4ssStatus] = useState<'idle' | 'installing' | 'done' | 'error'>('idle');
+  const [ue4ssPercent, setUe4ssPercent] = useState<number | null>(null);
+  const [ue4ssMessage, setUe4ssMessage] = useState('');
   const { toast } = useToast();
 
   // Step default state
@@ -144,10 +259,15 @@ export default function SetupPage() {
 
   function canAdvance() {
     if (currentStep === 'terms') return termsAccepted;
+    if (currentStep === 'ue4ss') return ue4ssStatus !== 'installing';
     return true;
   }
 
   async function advance() {
+    if (currentStep == 'welcome') {
+      await handleGameDir()
+    }
+
     if (!canAdvance()) return;
     setDirection(1);
     if (!isLast) {
@@ -171,6 +291,23 @@ export default function SetupPage() {
     if (isFirst) return;
     setDirection(-1);
     setCurrentStep(STEPS[currentIdx - 1]);
+  }
+
+  async function handleInstallUE4SS() {
+    setUe4ssStatus('installing');
+    try {
+      await installUE4SS((stage, percent, message) => {
+        setUe4ssPercent(percent);
+        setUe4ssMessage(message);
+        if (stage === 'done') setUe4ssStatus('done');
+      });
+    } catch {
+      setUe4ssStatus('error');
+    }
+  }
+
+  async function handleGameDir() {
+    await upsertSettings({ gameDir: `C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers` }); // we don't support different dirs yet (thanks tauri permissions)
   }
 
   return (
@@ -205,6 +342,14 @@ export default function SetupPage() {
                     )}
                     {currentStep === 'telemetry' && (
                       <TelemetryStep selected={telemetry} onSelected={(key, val) => setTelemetry(prev => ({ ...prev, [key]: val }))} />
+                    )}
+                    {currentStep === 'ue4ss' && (
+                      <UE4SSStep
+                        status={ue4ssStatus}
+                        percent={ue4ssPercent}
+                        message={ue4ssMessage}
+                        onInstall={handleInstallUE4SS}
+                      />
                     )}
                   </motion.div>
                 </AnimatePresence>

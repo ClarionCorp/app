@@ -54,6 +54,15 @@
     "sql:default",
     "sql:allow-load",
     "sql:allow-select",
-    "sql:allow-execute"
+    "sql:allow-execute",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://github.com/*" },
+        { "url": "https://api.github.com/*" },
+        { "url": "https://api.clarioncorp.net/*" },
+        { "url": "https://clarioncorp.net/api/*" }
+      ]
+    }
   ]
 }

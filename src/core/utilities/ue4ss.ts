@@ -6,6 +6,7 @@ import { exists, writeFile } from "@tauri-apps/plugin-fs";
 import { getAppSettings } from "../database/queries";
 import { invoke } from "@tauri-apps/api/core";
 import { GithubRelease } from "../../types/github";
+import { fetch } from "@tauri-apps/plugin-http";
 
 const ue4ssRelativePaths = [
   'OmegaStrikers/Binaries/Win64/imgui.ini',
@@ -94,7 +95,7 @@ export async function installUE4SS(onProgress?: ProgressCallback) {
       cm_chunks.push(value);
       cm_received += value.length;
       const percent = cm_contentLength ? Math.round(70 + (cm_received / cm_contentLength) * 20) : null;
-      onProgress?.('downloading', percent, `Downloading Mods... ${percent ?? '?'}%`); // ends at 90
+      onProgress?.('downloading', percent, `Downloading Helper Scripts... ${percent ?? '?'}%`); // ends at 90
     }
 
     // Stitch chunks into one buffer
@@ -113,7 +114,7 @@ export async function installUE4SS(onProgress?: ProgressCallback) {
     onProgress?.('extracting', 95, 'Extracting files...');
     await invoke('extract_zip', {
       zipPath: cm_zipPath,
-      destDir: await join(appSettings.gameDir, 'OmegaStrikers/Binaries/Win64/'),
+      destDir: await join(appSettings.gameDir, 'OmegaStrikers/Binaries/Win64/Mods'),
     });
 
 

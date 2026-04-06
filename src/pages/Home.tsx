@@ -41,7 +41,7 @@ export default function HomePage() {
     async function checkSetup() {
       const existing = await db.select().from(appSettings).where(eq(appSettings.id, 1)).limit(1).then(r => r[0] ?? null);
 
-      if (!existing) { // doesn't exist, redirect to setup screen instead.
+      if (!existing || !existing.finishedSetup) { // doesn't exist, redirect to setup screen instead.
         navigate('/setup')
       }
     }
