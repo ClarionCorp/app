@@ -46,6 +46,13 @@
     },
     "fs:allow-read-dir",
     "fs:allow-rename",
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [
+        { "path": "C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
+        { "path": "D:/SteamLibrary/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
+      ]
+    },
     "os:default",
     "process:default",
     "drpc:default",

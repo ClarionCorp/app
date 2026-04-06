@@ -15,6 +15,7 @@ const ue4ssRelativePaths = [
   'OmegaStrikers/Binaries/Win64/UE4SS-settings.ini',
   'OmegaStrikers/Binaries/Win64/dwmapi.dll',
   'OmegaStrikers/Binaries/Win64/Changelog.md',
+  'OmegaStrikers/Binaries/Win64/README.md',
 ];
 
 type InstallProgressCallback = (stage: 'checking' | 'downloading' | 'extracting' | 'done', percent: number | null, message: string) => void;

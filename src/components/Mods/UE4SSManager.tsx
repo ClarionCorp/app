@@ -8,7 +8,7 @@ import {
   CheckCircleIcon,
   WarningIcon,
 } from '@phosphor-icons/react';
-import { installUE4SS } from '../../core/utilities/ue4ss';
+import { checkForUpdates, installUE4SS, unInstallUE4SS } from '../../core/utilities/ue4ss';
 import { Button } from '../UI/Button';
 import { ProgressBar } from '../UI/ProgressBar';
 
@@ -25,8 +25,7 @@ export function UE4SSSection({ installed, onInstalled, onUninstalled }: UE4SSSec
   const [status, setStatus] = useState<ActionStatus>('idle');
   const [percent, setPercent] = useState<number | null>(null);
   const [message, setMessage] = useState('');
-
-  const isRunning = status === 'running';
+  const [updateFound, setUpdateFound] = useState(false);
 
   async function handleInstall() {
     setAction('install');
@@ -34,11 +33,12 @@ export function UE4SSSection({ installed, onInstalled, onUninstalled }: UE4SSSec
     setPercent(null);
     setMessage('');
     try {
-      await installUE4SS((stage, pct, msg) => {
+      await installUE4SS((_, pct, msg) => {
         setPercent(pct);
         setMessage(msg);
       });
       setStatus('done');
+      setTimeout(reset, 2000);
       onInstalled?.();
     } catch {
       setStatus('error');
@@ -48,9 +48,33 @@ export function UE4SSSection({ installed, onInstalled, onUninstalled }: UE4SSSec
   async function handleUpdate() {
     setAction('update');
     setStatus('running');
-    setPercent(null);
-    setMessage('Checking for updates...');
-    // TODO: wire up update logic
+    try {
+      setPercent(0);
+      setMessage('Checking for updates...');
+      const release = await checkForUpdates();
+
+      if (!release) {
+        setStatus('done'); // already up to date
+        setTimeout(reset, 2000);
+        return;
+      }
+
+      setUpdateFound(true);
+
+      await unInstallUE4SS((_, pct, msg) => {
+        setPercent(pct);
+        setMessage(msg);
+      });
+
+      await installUE4SS((_, pct, msg) => {
+        setPercent(pct);
+        setMessage(msg);
+      });
+
+      setStatus('done');
+    } catch {
+      setStatus('error');
+    }
   }
 
   async function handleUninstall() {
@@ -58,9 +82,17 @@ export function UE4SSSection({ installed, onInstalled, onUninstalled }: UE4SSSec
     setStatus('running');
     setPercent(null);
     setMessage('Uninstalling UE4SS...');
-    // TODO: wire up uninstall logic
-    setStatus('done');
-    onUninstalled?.();
+    try {
+      await unInstallUE4SS((_, pct, msg) => {
+        setPercent(pct);
+        setMessage(msg);
+      });
+      setStatus('done');
+      setTimeout(reset, 2000);
+      onUninstalled?.();
+    } catch {
+      setStatus('error');
+    }
   }
 
   function reset() {
@@ -112,7 +144,7 @@ export function UE4SSSection({ installed, onInstalled, onUninstalled }: UE4SSSec
           >
             <CheckCircleIcon size={16} weight="duotone" />
             {action === 'install' && 'UE4SS installed successfully!'}
-            {action === 'update' && 'UE4SS is up to date.'}
+            {action === 'update' && (updateFound ? 'UE4SS updated successfully!' : 'Already up to date.')}
             {action === 'uninstall' && 'UE4SS uninstalled.'}
           </motion.div>
         )}
