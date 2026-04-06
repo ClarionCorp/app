@@ -5,6 +5,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
+use sysinfo::System;
 mod mods;
 
 type MonitorFlag = Arc<std::sync::Mutex<Option<Arc<AtomicBool>>>>;
@@ -314,6 +315,16 @@ fn reset_local_database(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+// Checks for running processes (just for checking if game is running)
+#[tauri::command]
+fn is_process_running(name: &str) -> bool {
+    let mut sys = System::new_all();
+    sys.refresh_all();
+    sys.processes().values().any(|p| {
+        p.name().to_string_lossy().eq_ignore_ascii_case(name)
+    })
+}
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -334,6 +345,7 @@ pub fn run() {
             start_log_monitor,
             stop_log_monitor,
             reset_local_database,
+            is_process_running,
             mods::validate_game_dir,
             mods::toggle_mod,
             mods::delete_mod,

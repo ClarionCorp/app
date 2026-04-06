@@ -2,24 +2,27 @@
 // Most of the file is dormant if the user chooses not to install the companion mods
 
 import { join, tempDir } from "@tauri-apps/api/path";
-import { exists, writeFile } from "@tauri-apps/plugin-fs";
-import { getAppSettings } from "../database/queries";
+import { exists, remove, writeFile } from "@tauri-apps/plugin-fs";
+import { getAppSettings, upsertSettings } from "../database/queries";
 import { invoke } from "@tauri-apps/api/core";
 import { GithubRelease } from "../../types/github";
 import { fetch } from "@tauri-apps/plugin-http";
 
 const ue4ssRelativePaths = [
+  'OmegaStrikers/Binaries/Win64/Mods',
   'OmegaStrikers/Binaries/Win64/imgui.ini',
   'OmegaStrikers/Binaries/Win64/UE4SS.dll',
-  'OmegaStrikers/Binaries/Win64/Mods',
-  'OmegaStrikers/Binaries/Win64/Mods/mods.txt',
+  'OmegaStrikers/Binaries/Win64/UE4SS-settings.ini',
+  'OmegaStrikers/Binaries/Win64/dwmapi.dll',
+  'OmegaStrikers/Binaries/Win64/Changelog.md',
 ];
 
-type ProgressCallback = (stage: 'checking' | 'downloading' | 'extracting' | 'done', percent: number | null, message: string) => void;
+type InstallProgressCallback = (stage: 'checking' | 'downloading' | 'extracting' | 'done', percent: number | null, message: string) => void;
+type UnInstallProgressCallback = (stage: 'checking' | 'removing' | 'cleaning' | 'done', percent: number | null, message: string) => void;
 
 // We need to pull a specific version that we know works, then strip it down to the barebones.
 // Then we can install our helper mods in the UE4SS mods folder.
-export async function installUE4SS(onProgress?: ProgressCallback) {
+export async function installUE4SS(onProgress?: InstallProgressCallback, latestModObj?: GithubRelease) {
   try {
     onProgress?.('checking', 0, 'Checking dependencies...');
     // Check if needed paths are setup.
@@ -27,8 +30,8 @@ export async function installUE4SS(onProgress?: ProgressCallback) {
     if (!appSettings || !appSettings.gameDir) throw new Error(`App isn't setup or Game Directory is not set!`);
 
     // Check if already installed
-    const alrInst = await checkUE4SS(appSettings.gameDir);
-    if (alrInst) throw new Error('UE4SS is already installed! Either update, or uninstall your current version.');
+    // const alrInst = await checkUE4SS(appSettings.gameDir);
+    // if (alrInst) throw new Error('UE4SS is already installed! Either update, or uninstall your current version.');
 
 
     // Download and Install UE4SS from GitHub
@@ -77,9 +80,14 @@ export async function installUE4SS(onProgress?: ProgressCallback) {
     // to override defaults and actually add the mods that make things work.
 
     onProgress?.('downloading', 65, 'Starting mod downloads...');
-    const getLatestMods = await fetch('https://api.github.com/repos/WWYDF/CCAppMods/releases/latest', { method: 'GET' });
-    if (!getLatestMods.ok) throw new Error(`GitHub Fetch Failed: ${getLatestMods.status}`);
-    const latestMods: GithubRelease = await getLatestMods.json();
+    let latestMods: GithubRelease;
+    if (latestModObj) {
+      latestMods = latestModObj;
+    } else {
+      const getLatestMods = await fetch('https://api.github.com/repos/WWYDF/CCAppMods/releases/latest', { method: 'GET' });
+      if (!getLatestMods.ok) throw new Error(`GitHub Fetch Failed: ${getLatestMods.status}`);
+      latestMods = await getLatestMods.json();
+    }
 
     const cm_response = await fetch(latestMods.assets[0].browser_download_url, { method: 'GET' });
     if (!cm_response.ok) throw new Error(`GitHub Download Failed: ${cm_response.status}`);
@@ -117,6 +125,7 @@ export async function installUE4SS(onProgress?: ProgressCallback) {
       destDir: await join(appSettings.gameDir, 'OmegaStrikers/Binaries/Win64/Mods'),
     });
 
+    await upsertSettings({ ue4ss: latestMods.tag_name });
 
     onProgress?.('done', 100, 'UE4SS installed successfully!');
     console.log(`Installed UE4SS to Game's Directory.`);
@@ -132,4 +141,61 @@ export async function installUE4SS(onProgress?: ProgressCallback) {
 export async function checkUE4SS(base: string): Promise<boolean> {
   const results = await Promise.all(ue4ssRelativePaths.map(async p => exists(await join(base, p))));
   return results.some(Boolean);
+}
+
+
+// Checks with GitHub Releases for mismatched version.
+// Either returns nothing if uptodate, or the new version object to prevent refetching.
+export async function checkForUpdates(): Promise<GithubRelease | null> {
+  try {
+    const getLatestMods = await fetch('https://api.github.com/repos/WWYDF/CCAppMods/releases/latest', { method: 'GET' });
+    if (!getLatestMods.ok) throw new Error(`GitHub Fetch Failed: ${getLatestMods.status}`);
+    const latestMods: GithubRelease = await getLatestMods.json();
+
+    const appSettings = await getAppSettings();
+    if (!appSettings || !appSettings.ue4ss) return null;
+
+    if (appSettings.ue4ss == latestMods.tag_name) { return null }
+    else { return latestMods };
+  } catch (e) {
+    console.error(`[Updater] ${e}`);
+    return null;
+  }
+}
+
+export async function unInstallUE4SS(onProgress?: UnInstallProgressCallback) {
+  try {
+    onProgress?.('checking', 0, 'Checking system...');
+    const appSettings = await getAppSettings();
+    if (!appSettings || !appSettings.gameDir) throw new Error(`App isn't setup or Game Directory is not set!`);
+
+    // Check if game is running.
+    const gameRunning = await invoke<boolean>("is_process_running", { name: "OmegaStrikers.exe" }); // verify actual exe name later
+    if (gameRunning == true) throw new Error(`Game is currently running! Please close it before trying again.`);
+
+    // Find and remove associated files
+    onProgress?.('removing', 20, 'Removing Mods Folder...');
+    const modsFolder = await join(appSettings.gameDir, ue4ssRelativePaths[0]);
+    if (await exists(modsFolder)) {
+      await remove(modsFolder, { recursive: true });
+    }
+
+    onProgress?.('removing', 50, 'Removing UE4SS Binaries...');
+    for (const path of ue4ssRelativePaths) {
+      let compPath = await join(appSettings.gameDir, path);
+      if (await exists(compPath)) {
+        await remove(compPath, { recursive: true });
+      }
+    }
+
+    onProgress?.('cleaning', 90, 'Cleaning up...');
+    await upsertSettings({ ue4ss: null });
+
+    onProgress?.('done', 100, 'UE4SS uninstalled successfully!');
+    console.log(`Uninstalled UE4SS from Game's Directory.`);
+
+  } catch (e) {
+    console.error(`[UE4SS] Failed to uninstall UE4SS!`, e);
+    return;
+  }
 }

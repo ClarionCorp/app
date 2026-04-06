@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowCounterClockwiseIcon, ChartBarIcon, FireIcon, WarningIcon } from '@phosphor-icons/react';
+import { ArrowCounterClockwiseIcon, ChartBarIcon, FireIcon, WarningIcon, WrenchIcon } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Checkbox } from '../components/UI/Checkbox';
-import { getTelemetrySettings, upsertSettings } from '../core/database/queries';
+import { getAppSettings, getTelemetrySettings, upsertSettings } from '../core/database/queries';
 import { TelemetryOption, telemetryOptions } from '../types/settings';
 import { Button } from '../components/UI/Button';
 import { resetDatabase } from '../core/database/driver';
+import { UE4SSSection } from '../components/Mods/UE4SSManager';
 
 export default function SettingsPage() {
   const [telemetry, setTelemetry] = useState<Record<TelemetryOption, boolean>>({
@@ -15,11 +16,14 @@ export default function SettingsPage() {
     play_state: true,
     play_count: true,
   });
+  const [sideCarEnabled, setSideCar] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
       setTelemetry(await getTelemetrySettings());
+      const appSettings = await getAppSettings();
+      setSideCar(!!appSettings?.ue4ss);
     })();
   }, []);
 
@@ -63,6 +67,18 @@ export default function SettingsPage() {
             />
           ))}
         </div>
+      </div>
+
+      <div className="flex flex-col gap-4 pt-5">
+        <div className="flex flex-row gap-3 items-center ml-1">
+          <WrenchIcon size={16} weight="duotone" className="text-char-subtle" />
+          <p className="text-sm font-medium text-char">UE4SS Sidecar</p>
+        </div>
+        <UE4SSSection
+          installed={sideCarEnabled}
+          onInstalled={() => setSideCar(true)}
+          onUninstalled={() => setSideCar(false)}
+        />
       </div>
 
       <div className="flex flex-col gap-4 pt-10">
