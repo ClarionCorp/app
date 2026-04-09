@@ -45,16 +45,16 @@ export default function InitializationPage() {
  
     async function run() {
       try {
-        // 1) Grab identity.json & OS Log Files
-        setStepIndex(0);
-        setProgress(STEP_PCTS[0]);
-        const auth = await verifyClientFiles();
-        setOdyAuth(auth);
-        if (cancelled) return;
-        await new Promise((res) => setTimeout(res, 50));
- 
-        // Sub Try/Catch to not fail whole function
+        // Separate Try/Catch to not fail whole function while accessing files
         try {
+          // 1) Grab identity.json & OS Log Files
+          setStepIndex(0);
+          setProgress(STEP_PCTS[0]);
+          const auth = await verifyClientFiles();
+          setOdyAuth(auth);
+          if (cancelled) return;
+          await new Promise((res) => setTimeout(res, 50));
+
           // 2) Fetch account info from Ody using identity.json
           setStepIndex(1);
           setProgress(STEP_PCTS[1]);
@@ -84,17 +84,24 @@ export default function InitializationPage() {
         await new Promise((res) => setTimeout(res, 50));
  
         // 4) Read log and fetch current game status
-        setStepIndex(3);
-        setProgress(STEP_PCTS[3]);
-        const home = await homeDir();
-        const logPath = await join(home, windows_log);
-        const sessionOffset = await invoke<number>('find_session_start', { path: logPath });
-        await initMonitorCallbacks({ // Moved to its own file for organization sake
-          updateActivity,
-          setMatchPhase,
-          sessionOffset,
-        });
-        await new Promise((res) => setTimeout(res, 50));
+        try {
+          setStepIndex(3);
+          setProgress(STEP_PCTS[3]);
+          const home = await homeDir();
+          const logPath = await join(home, windows_log);
+          const sessionOffset = await invoke<number>('find_session_start', { path: logPath });
+          await initMonitorCallbacks({ // Moved to its own file for organization sake
+            updateActivity,
+            setMatchPhase,
+            sessionOffset,
+          });
+          await new Promise((res) => setTimeout(res, 50));
+
+        } catch (e) {
+          console.error(`Something went fatally wrong in the initialization process. App may not work as expected.`, e);
+          toast("An error occurred while loading, check logs for details.", 'error');
+          setConnectedStatus(false); // just to be safe
+        }
 
         // 5) <Connect to CC> (unused rn)
         setStepIndex(4);

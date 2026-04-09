@@ -26,7 +26,7 @@ tauri-plugin-fs = "2"
 tauri-plugin-os = "2"
 tauri-plugin-process = "2"
 tauri-plugin-drpc = "0.1.6"
-tauri-plugin-sql = { version = "2.3.2", features = ["sqlite"] }
+tauri-plugin-sql = { version = "2.4.0", features = ["sqlite"] }
 reqwest = { version = "0.12", features = ["stream"] }
 futures-util = "0.3"
 zip = "2"
