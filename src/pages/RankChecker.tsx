@@ -26,7 +26,7 @@ async function fetchPlayerData(usernames: string[]): Promise<RankedQuery[]> {
   );
 
   return results
-    .filter((r): r is PromiseFulfilledResult<RankedQuery> => r.status === 'fulfilled')
+    .filter((r): r is PromiseFulfilledResult<RankedQuery> => r.status === 'fulfilled' && r.value != null)
     .map((r) => r.value);
 }
 
@@ -59,6 +59,7 @@ export default function RankCheckerPage() {
       setError(null);
       try {
         const data = await fetchPlayerData(unfetched);
+        if (!data) { console.warn(`Failed to fetch rank data for ${unfetched.join(', ')}!`) };
         setPlayers(prev => [...prev, ...data]);
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
@@ -110,9 +111,11 @@ export default function RankCheckerPage() {
             initial="hidden"
             animate="show"
           >
-            {players.map((player, index) => (
-              <PlayerCard key={player.playerId} player={player} index={index} />
-            ))}
+            {players
+              .filter((player) => player?.playerId !== null)
+              .map((player, index) => (
+                <PlayerCard key={player.playerId} player={player} index={index} />
+              ))}
 
             {players.length === 0 && (
               <motion.div

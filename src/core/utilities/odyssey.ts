@@ -25,7 +25,7 @@ export async function fetchUsernameQuery(username: string): Promise<UserQuery | 
     });
 
     const data: QueryJSON = await res.json();
-    if (!res.ok || data.matches.length == 0 || !data.matches[0].playerId) { throw new Error(`API Unreachable or Player not found (${res.status})`) };
+    if (!res.ok || data.matches.length == 0 || !data.matches[0]?.playerId) { throw new Error(`API Unreachable or Player not found (${res.status})`) };
 
     return data.matches[0];
   } catch (error) {
