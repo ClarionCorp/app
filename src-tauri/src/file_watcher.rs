@@ -3,10 +3,10 @@ use serde::Serialize;
 use std::sync::mpsc;
 use tauri::{AppHandle, Emitter};
 
-const WATCHED_FILES: &[&str] = &[
-    "ue4ss_players.json",
-    "ue4ss_gamestate.json",
-    "PostGameStats.json",
+const WATCHED_FILES: &[(&str, &str)] = &[
+    ("ue4ss_players.json", "ue4ss-players-changed"),
+    ("ue4ss_gamestate.json", "ue4ss-gamestate-changed"),
+    ("PostGameStats.json", "postgame-stats-changed"),
 ];
 
 #[derive(Serialize, Clone)]
@@ -47,9 +47,12 @@ pub fn start_file_watcher(app: AppHandle) {
                     for path in &event.paths {
                         if let Some(filename) = path.file_name() {
                             let name = filename.to_string_lossy();
-                            if WATCHED_FILES.contains(&name.as_ref()) {
+                            if let Some((_, event_name)) = WATCHED_FILES
+                                .iter()
+                                .find(|(file, _)| *file == name.as_ref())
+                            {
                                 let _ = app.emit(
-                                    "ue4ss-file-changed",
+                                    event_name,
                                     FileChangeEvent {
                                         file: name.to_string(),
                                         kind: kind.to_string(),

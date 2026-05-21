@@ -5,6 +5,7 @@ import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { RpcActivityOptions, useDiscordRpc } from './core/utilities/discord';
+import { onGameStateChanged, onPlayersChanged, onPostGameStatsChanged } from './core/bridgeListener';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -38,6 +39,23 @@ function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // Rust Mod Bridge Listeners
+  useEffect(() => {
+  const unlistens = Promise.all([
+    onPlayersChanged(async (payload) => {
+      // later commands here
+    }),
+    onGameStateChanged(async (payload) => {
+      // later commands here
+    }),
+    onPostGameStatsChanged(async (payload) => {
+      // later commands here
+    }),
+  ]);
+
+  return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
+}, []);
 
   return (
     <div className="min-h-screen bg-background text-white pt-12">
