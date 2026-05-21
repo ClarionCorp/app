@@ -35,3 +35,4 @@ tauri-plugin-http = "2.5.8"
 sysinfo = "0.38.4"
 axum = "0.7"
 tower-http = { version = "0.5", features = ["cors"] }
+notify = "6"

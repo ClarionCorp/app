@@ -5,18 +5,12 @@ import "./core/styles/globals.css";
 import App from "./App";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createHashRouter } from "react-router-dom";
-import { ThemeProvider } from './components/Theme/ThemeProvider';
 import { ToastProvider } from './components/UI/Toast';
-import InitializationPage from './pages/Initialization';
 import HomePage from './pages/Home';
 import ErrorBoundary from './components/Navigation/ErrorBoundry';
-import RankCheckerPage from './pages/RankChecker';
 import ComingSoonPage from './pages/ComingSoon';
-import DebugPage from './pages/Debugger';
-import SetupPage from './pages/AppSetup';
-import InstalledMods from './pages/InstalledMods';
-import ModDirectory from './pages/ModDirectory';
-import SettingsPage from './pages/Settings';
+import DebugPage from './pages/DebugPage';
+import { ThemeProvider } from './components/UI/Theme/ThemeProvider';
 
 const router = createHashRouter([
   {
@@ -24,17 +18,10 @@ const router = createHashRouter([
     element: <App />,
     errorElement: <ErrorBoundary />,
     children: [
-      { index: true, path: '/',   element: <InitializationPage /> },
-      { path: "home",             element: <HomePage /> },
-      { path: "rankchecker",      element: <RankCheckerPage /> },
+      // { index: true, path: '/',   element: <InitializationPage /> },
+      { path: "/",             element: <HomePage /> },
       { path: "account",          element: <ComingSoonPage /> },
-      { path: "settings",         element: <SettingsPage /> },
-      { path: "cgm",              element: <ComingSoonPage /> },
-      { path: "cqm",              element: <ComingSoonPage /> },
-      { path: "mods",             element: <InstalledMods /> },
-      { path: "mods/add",         element: <ModDirectory /> },
       { path: "debug",            element: <DebugPage /> },
-      { path: "setup",            element: <SetupPage /> },
     ],
   },
 ]);

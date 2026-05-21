@@ -1,5 +1,7 @@
-use tauri::{Manager};
+use tauri::Manager;
 use sysinfo::System;
+
+mod file_watcher;
 
 // Resets database cleanly
 #[tauri::command]
@@ -32,6 +34,10 @@ fn is_process_running(name: &str) -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            file_watcher::start_file_watcher(app.handle().clone());
+            Ok(())
+        })
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
