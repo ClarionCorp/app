@@ -11,7 +11,7 @@ export const themeScript = `
 (function () {
   try {
     var theme = localStorage.getItem('theme');
-    if (theme === 'light' || theme === 'dark') {
+    if (theme === 'aimi' || theme === 'clarion') {
       document.documentElement.setAttribute('data-theme', theme);
     }
   } catch (_) {}

@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
-import { getTelemetrySettings } from "./database/queries";
+import { getTelemetrySettings } from "../database/queries";
 
 const APP_ID = "1483520798017982707";
 

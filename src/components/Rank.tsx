@@ -1,7 +1,7 @@
 'use client'
 
 import clsx from 'clsx'
-import { getRankFromLP } from '../core/utilities/ranks'
+import { getRankFromLP } from '../core/objects/ranks'
 
 export interface RankProps {
   rating: number

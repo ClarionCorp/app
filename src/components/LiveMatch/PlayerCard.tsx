@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { RankedQuery } from '../types/odyssey';
-import { getRankFromLP } from '../core/utilities/ranks';
-import RankIcon from './Rank';
+import { RankedQuery } from '../../types/odyssey';
+import { getRankFromLP } from '../../core/objects/ranks';
+import RankIcon from '../Rank';
 import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 

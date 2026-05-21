@@ -5,7 +5,7 @@ import { DebugConsole } from './components/DebugConsole';
 import { MatchPhase } from './core/logMonitor';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { RpcActivityOptions, useDiscordRpc } from './core/discord';
+import { RpcActivityOptions, useDiscordRpc } from './core/utilities/discord';
 import { CurrentMatchTable, UserTable } from './types/database';
 import { getCurrentMatch } from './core/database/queries';
 

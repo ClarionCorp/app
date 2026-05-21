@@ -50,8 +50,8 @@
   --color-char-accent: var(--theme-char-accent);
 }
 
-/* Dark (default) */
-:root {
+/* AiMi (dark, default) */
+:root[data-theme="aimi"] {
   --theme-background: #080108;
   --theme-background-border: #191a1b;
   --theme-slate: #0A0A0A;
@@ -71,23 +71,23 @@
   --theme-char-accent: #A899FF;
 }
 
-/* Light */
-:root[data-theme="light"] {
-  --theme-background: #F4F4F6;
-  --theme-background-border: #E2E2E8;
-  --theme-slate: #EAEAEF;
-  --theme-surface: #F4F4F6;
-  --theme-surface-subtle: #E2E2E8;
-  --theme-surface-raised: #FFFFFF;
-  --theme-surface-overlay: #ECECF2;
-  --theme-surface-active: #E0E0EA;
-  --theme-primary: #7C58F2;
-  --theme-secondary: #6645D1;
-  --theme-tertiary: #825CFA;
-  --theme-error: #E53E30;
+/* Clarion (dark, wip) */
+:root[data-theme="clarion"] {
+  --theme-background: #010801;
+  --theme-background-border: #191a1b;
+  --theme-slate: #0A0A0A;
+  --theme-surface: #0e0e0e;
+  --theme-surface-subtle: #09010a;
+  --theme-surface-raised: #1a1a1a;
+  --theme-surface-overlay: #202020;
+  --theme-surface-active: #1c0a1f;
+  --theme-primary: #58f258;
+  --theme-secondary: #4dcf63;
+  --theme-tertiary: #40ad40;
+  --theme-error: #FF5E4F;
   --theme-pink: #F763E4;
-  --theme-char: #111114;
-  --theme-char-secondary: #4A4A5A;
-  --theme-char-subtle: #8A8A9A;
-  --theme-char-accent: #6645D1;
+  --theme-char: #F2F2F4;
+  --theme-char-secondary: #A0A0B0;
+  --theme-char-subtle: #606070;
+  --theme-char-accent: #A899FF;
 }

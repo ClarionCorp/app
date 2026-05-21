@@ -1,16 +1,14 @@
 // Just a central file to edit constant variables across updates.
 // I don't recommend changing this unless you know what you are doing.
 
-export const version = '0.1';
+export const version = '2.0.0-pre1';
 export const ClarionAPI = 'https://api.clarioncorp.net';
-export const OdyAPI = 'https://prometheus-proxy.odysseyinteractive.gg/api'
+export const OdyAPI = 'https://prometheus-proxy.odysseyinteractive.gg/api';
+export const AiMiAPI = 'https://api.aimis.app';
 
 
-// File Path Suffixes (after user home folder)
+// Identity Path Suffix (after user home folder)
 export const windows_identity = 'AppData/Local/OmegaStrikers/identity.json';
 
-// Log File Paths (after user home folder)
+// Log File Path (after user home folder)
 export const windows_log = 'AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log';
-
-// Sorry this is my testing file lol
-// export const windows_log = 'Desktop/dicks/Test/OmegaStrikers.log';
