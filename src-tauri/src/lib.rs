@@ -7,6 +7,7 @@ use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
 use sysinfo::System;
 mod mods;
+mod webserver;
 
 type MonitorFlag = Arc<std::sync::Mutex<Option<Arc<AtomicBool>>>>;
 
@@ -354,6 +355,16 @@ pub fn run() {
             mods::extract_zip,
             ]
         )
+        .setup(|app| {
+            let app_handle = app.handle().clone();
+            
+            // Spawn webserver in background
+            tauri::async_runtime::spawn(async move {
+                webserver::start_webserver(app_handle).await;
+            });
+            
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

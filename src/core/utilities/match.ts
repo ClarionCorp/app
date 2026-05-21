@@ -3,6 +3,7 @@ import { getCurrentMatch, getUser } from "../database/queries";
 import { refreshRating } from "./odyssey";
 import { matchHistory } from "../database/schema";
 import { db } from "../database/driver";
+import { listen } from "@tauri-apps/api/event";
 
 export type PostGameStats = {
   shots: string, // actually all strings
@@ -59,3 +60,8 @@ export async function saveMatch() {
     console.error('Something went wrong saving the match!', e);
   }
 }
+
+const unlisten = await listen<PostGameStats[]>('postgame-stats', (event) => {
+  console.info('Received postgame stats:', event.payload);
+  // event.payload will be the array of player stats
+});
