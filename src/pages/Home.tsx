@@ -1,10 +1,6 @@
 import { motion, type Variants } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
-import { useEffect } from "react";
-import { db } from "../core/database/driver";
-import { appSettings } from "../core/database/schema";
-import { eq } from "drizzle-orm";
 import { NAV_ITEMS } from "../core/objects/navigation";
 
 const containerVariants: Variants = {
@@ -27,7 +23,7 @@ const itemVariants: Variants = {
 };
 
 export default function HomePage() {
-  const { navigate, userData, connectedToOdy } = useOutletContext<AppContextType>();
+  const { navigate, connectedToOdy } = useOutletContext<AppContextType>();
   const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type;
   const wasReloaded = navType === "reload" && sessionStorage.getItem("reloadHandled") !== "true";
 
@@ -37,17 +33,6 @@ export default function HomePage() {
 
   sessionStorage.removeItem("reloadHandled");
 
-  useEffect(() => {
-    async function checkSetup() {
-      const existing = await db.select().from(appSettings).where(eq(appSettings.id, 1)).limit(1).then(r => r[0] ?? null);
-
-      if (!existing || !existing.finishedSetup) { // doesn't exist, redirect to setup screen instead.
-        navigate('/setup')
-      }
-    }
-
-    checkSetup();
-  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] bg-background px-8 pb-24">
@@ -64,7 +49,7 @@ export default function HomePage() {
           />
           <div className="text-center">
             <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
-              Welcome back{userData ? `, ${userData.username}` : ''}!
+              Welcome back!
             </p>
             <h1 className="text-2xl font-extrabold tracking-tight text-char">
               How can I <span className="text-primary">help</span>?

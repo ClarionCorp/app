@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
 // Only one row that stores basic, refetchable user data
 export const user = sqliteTable("user", {
@@ -29,75 +29,33 @@ export const auth = sqliteTable("auth", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
-// Only one row that stores basic, refetchable current game data
-// I would normally use the match table (that has history) with a bool, but we'll do the safer option for now (this)
+// Saves data sent from GameStateMod (one row)
 export const currentMatch = sqliteTable("currentMatch", {
   id: integer("id").primaryKey(),
-
-  rawPhase: text("rawPhase").notNull(),
-  level: text("level"),
-  queue: text("queue"),
-  myCharacter: text("myCharacter"),
-  myTeam: text("myTeam"),
+  gameState: text("gameState"),
+  map: text("map"),
+  queue: text("queue"), // Ranked, Norms, Customs, etc.
+  teamNum: integer("teamNum").$type<1 | 2>(),
 
   teamOnePts: integer("teamOnePts"),
   teamTwoPts: integer("teamTwoPts"),
   teamOneSets: integer("teamOneSets"),
   teamTwoSets: integer("teamTwoSets"),
 
-  playerNames: text("playerNames", { mode: 'json' }).$type<string[]>().notNull().default([]),
-
   startedAt: integer("startedAt", { mode: "timestamp" }).notNull(),
 });
 
-
-// Only one row that stores basic app settings
-export const appSettings = sqliteTable("appSettings", {
-  id: integer("id").primaryKey(),
-  gameDir: text("gameDir").notNull().default("C:\\Program Files (x86)\\Steam\\steamapps\\common\\OmegaStrikers"),
-  finishedSetup: integer("finishedSetup", { mode: "boolean" }).notNull().default(false),
-
-  // Consents
-  sendStats: integer("sendStats", { mode: "boolean" }).notNull().default(true),           // Match History, etc.
-  sendPlayState: integer("sendPlayState", { mode: "boolean" }).notNull().default(true),   // Discord RPC, CC "queuing" pilot status
-  sendPlayCount: integer("sendPlayCount", { mode: "boolean" }).notNull().default(true),   // Simply +1 to the player counter (anonymous)
-  appTerms: integer("appTerms", { mode: "boolean" }).notNull().default(false),            // App ToS
-  gbTerms: integer("gbTerms", { mode: "boolean" }).notNull().default(false),              // GameBanana ToS for downloading mods
-  ue4ss: text("ue4ss"),                                                                   // UE4SS Mod Release Version. null = not installed.
-
-  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+// Saves data sent from PlayerFinderMod (multi-row)
+export const matchPlayers = sqliteTable("matchPlayers", {
+  username: text("username").notNull(),
+  teamNum: integer("teamNum").$type<1 | 2>(), // can be null if not on a team yet
+  role: text("role").$type<'Forward' | 'Goalie'>(),
+  charName: text("charName"),
+  charId: text("charId"),
+  isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
 });
 
-export const installedMods = sqliteTable("installedMods", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  gbId: integer("gbId"),
-  name: text("name").notNull(),
-  version: text("version"),
-  thumbUrl: text("thumbUrl"),
-  submitterName: text("submitterName"),
-  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
-  fileNames: text("fileNames", { mode: "json" }).$type<string[]>().notNull().default([]),
-  installedAt: integer("installedAt", { mode: "timestamp" }).notNull(),
-});
-
-export const modCache = sqliteTable("modCache", {
-  id: integer("id").primaryKey(),
-  name: text("name").notNull(),
-  version: text("version"),
-  thumbUrl: text("thumbUrl"),
-  submitterName: text("submitterName").notNull(),
-  categoryName: text("categoryName"),
-  categoryId: integer("categoryId"),
-  likeCount: integer("likeCount").notNull().default(0),
-  viewCount: integer("viewCount").notNull().default(0),
-  wasFeatured: integer("wasFeatured", { mode: "boolean" }).notNull().default(false),
-  profileUrl: text("profileUrl").notNull(),
-  popularityScore: real("popularityScore").notNull().default(0),
-  cachedAt: integer("cachedAt", { mode: "timestamp" }).notNull(),
-});
-
-
-// Basic list of previous matches for local match history
+// Basic list of previous matches for local match history (will prob be removed l8r)
 // Doesn't get cleared in "Reset Database", actual file must be deleted
 export const matchHistory = sqliteTable("matchHistory", {
   id: integer("id").primaryKey({ autoIncrement: true }),

@@ -1,8 +1,7 @@
-import { AppSettingsTable, AuthTable, UserTable } from "../../types/database";
-import { TelemetryOption } from "../../types/settings";
+import { AuthTable, UserTable } from "../../types/database";
 import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { appSettings, auth, currentMatch, user } from "./schema";
+import { auth, currentMatch, user, matchPlayers } from "./schema";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -22,21 +21,6 @@ export async function getAuthTokens(): Promise<AuthTable | null> {
 
 export async function getCurrentMatch() {
   return db.select().from(currentMatch).limit(1).then(r => r[0] ?? null);
-}
-
-export async function getTelemetrySettings(): Promise<Record<TelemetryOption, boolean>> {
-  const rows = await db.select().from(appSettings).limit(1);
-  const row = rows[0];
-  return {
-    game_stats: row?.sendStats ?? true,
-    play_state: row?.sendPlayState ?? true,
-    play_count: row?.sendPlayCount ?? true,
-  };
-}
-
-export async function getAppSettings(): Promise<AppSettingsTable | null> {
-  const rows = await db.select().from(appSettings).limit(1);
-  return rows[0] ?? null;
 }
 
 
@@ -74,13 +58,6 @@ export async function updateRating(rating: number) {
 export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
   return db.insert(auth).values({ id: 1, ...data }).onConflictDoUpdate({
     target: auth.id,
-    set: data,
-  }).run();
-}
-
-export async function upsertSettings(data: Omit<typeof appSettings.$inferInsert, "id" | "createdAt">) {
-  return db.insert(appSettings).values({ id: 1, ...data, createdAt: new Date() }).onConflictDoUpdate({
-    target: appSettings.id,
     set: data,
   }).run();
 }

@@ -7,6 +7,6 @@ export default defineConfig({
   // dbCredentials only used by drizzle-kit for local tooling,
   // not at runtime in Tauri
   dbCredentials: {
-    url: process.env.APPDATA + "\\com.blals.aimiapp\\lapis.db",
+    url: process.env.APPDATA + "\\com.blals.aimiapp\\hyperpop.db",
   },
 });

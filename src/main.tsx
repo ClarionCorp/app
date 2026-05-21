@@ -6,6 +6,7 @@ import App from "./App";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createHashRouter } from "react-router-dom";
 import { ToastProvider } from './components/UI/Toast';
+import InitPage from './pages/Init';
 import HomePage from './pages/Home';
 import ErrorBoundary from './components/Navigation/ErrorBoundry';
 import ComingSoonPage from './pages/ComingSoon';
@@ -18,8 +19,8 @@ const router = createHashRouter([
     element: <App />,
     errorElement: <ErrorBoundary />,
     children: [
-      // { index: true, path: '/',   element: <InitializationPage /> },
-      { path: "/",             element: <HomePage /> },
+      { index: true,              element: <InitPage /> },
+      { path: "home",             element: <HomePage /> },
       { path: "account",          element: <ComingSoonPage /> },
       { path: "debug",            element: <DebugPage /> },
     ],
