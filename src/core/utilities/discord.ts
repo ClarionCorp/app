@@ -19,7 +19,7 @@ export interface RpcActivityOptions {
 export const DEFAULT_ACTIVITY: RpcActivityOptions = {
   details: "Idling on Main Menu",
   state: "Powered by Ai.Mi App",
-  largeImage: "aimiapp_logo",
+  largeImage: "aimiapp_logo_v2",
   // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
 }
 

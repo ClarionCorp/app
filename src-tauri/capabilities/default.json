@@ -24,8 +24,8 @@
         { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" },
         { "path": "$TEMP/**" },
-        { "path": "C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
-        { "path": "D:/SteamLibrary/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
+        { "path": "C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers/**" },
+        { "path": "D:/SteamLibrary/steamapps/common/OmegaStrikers/**" }
       ]
     },
     {
@@ -57,6 +57,7 @@
       "identifier": "fs:scope",
       "allow": [{ "path": "**/*" }]
     },
+    "dialog:default",
     "os:default",
     "process:default",
     "drpc:default",

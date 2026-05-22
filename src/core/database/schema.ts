@@ -1,5 +1,12 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
+// Only one row that stores basic app settings
+export const appSettings = sqliteTable("appSettings", {
+  id: integer("id").primaryKey(),
+  gameDirectory: text("gameDirectory"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+
 // Only one row that stores basic, refetchable user data
 export const user = sqliteTable("user", {
   id: integer("id").primaryKey(), // always 1

@@ -1,7 +1,7 @@
 import { AuthTable, UserTable } from "../../types/database";
 import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { auth, currentMatch, user, matchPlayers, matchHistory } from "./schema";
+import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory } from "./schema";
 import { eq } from "drizzle-orm";
 
 // Just using a basic translation file since I am still new to Drizzle
@@ -9,6 +9,18 @@ import { eq } from "drizzle-orm";
 //
 // Fetchers
 //
+
+export async function getAppSettings() {
+  const rows = await db.select().from(appSettings).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function upsertAppSettings(data: Partial<Pick<typeof appSettings.$inferInsert, 'gameDirectory'>>) {
+  return db.insert(appSettings).values({ id: 1, createdAt: new Date(), ...data }).onConflictDoUpdate({
+    target: appSettings.id,
+    set: data,
+  }).run();
+}
 
 export async function getUser(): Promise<UserTable | null> {
   const rows = await db.select().from(user).limit(1);
