@@ -98,7 +98,7 @@ local function tryRegisterHook()
             function(self, MatchEventLog)
                 print("\n")
                 print("[PGSM] Match Summary Event Called!")
-                print("[PGSM] Will start checking for stats in 10 seconds... (waiting for mvp screen to finish)")
+                print("[PGSM] Will start checking for stats in 15 seconds... (waiting for mvp screen to finish)")
                 print("")
                 
                 statsCollected = false
@@ -113,14 +113,14 @@ local function tryRegisterHook()
                     local success = collectStats()
                     
                     if not success and attempts < maxAttempts then
-                        ExecuteWithDelay(10000, tryCollect) -- Try again in 10 seconds
+                        ExecuteWithDelay(10000, tryCollect) -- Try again in 15 seconds
                     elseif not success then
                         print("[PGSM] (!) Gave up after max attempts")
                     end
                 end
                 
-                -- Wait 10 seconds before first attempt
-                ExecuteWithDelay(10000, tryCollect)
+                -- Wait 15 seconds before first attempt
+                ExecuteWithDelay(15000, tryCollect)
             end
         )
     end)
