@@ -28,18 +28,18 @@ export function getCharDevName(character: string): string {
 
 
 const MAP_DEV_NAMES: Record<string, string> = {
-  'GameMapAhtenCity': 'Ahten City',
-  'GameMapAtlasLab': 'Atlas Lab',
-  'GameMapClarionCorp': 'Clarion Test Chamber',
-  'GameMapDigitalWorld': "Ai.Mi's App",
-  'GameMapDrums': 'Taiko Temple',
-  'GameMapMusicStage': 'Demon Dais',
-  'GameMapNightMarket': 'Night Market',
-  'GameMapObscura': 'Gates of Obscura',
-  'GameMapOniVillage': 'Oni Village',
-  'GameMapPractice': 'Practice',
-  'GameMapRGM': 'Tea Time Tussle',
-  'GameMapSummerSplash': "Inky's Splash Zone",
+  'GMD_AhtenCity': 'Ahten City',
+  'GMD_AtlasLab': 'Atlas Lab',
+  'GMD_ClarionCorp': 'Clarion Test Chamber',
+  'GMD_DigitalWorld': "Ai.Mi's App",
+  'GMD_Drums': 'Taiko Temple',
+  'GMD_MusicStage': 'Demon Dais',
+  'GMD_NightMarket': 'Night Market',
+  'GMD_Obscura': 'Gates of Obscura',
+  'GMD_OniVillage': 'Oni Village',
+  'GMD_Practice': 'Practice',
+  'GMD_RGM': 'Tea Time Tussle',
+  'GMD_SummerSplash': "Inky's Splash Zone",
   'TutorialMap': 'Tutorial',
 }
 
@@ -48,13 +48,13 @@ export function getMapName(map: string): string {
 }
 
 const QUEUE_DEV_NAMES: Record<string, string> = {
-  '3v3': 'Normal',
-  'coopvsai': 'Co-Op VS AI',
-  'custom': 'Custom',
-  'custom:NvM': 'Custom',
-  'practice': 'Practice',
-  'quickplay': 'Quick Play',
-  'ranked:3v3': 'Ranked'
+  'queue:3v3': 'Normal',
+  'queue:coopvsai': 'Co-Op VS AI',
+  'queue:custom': 'Customs',
+  'queue:custom:NvM': 'Customs',
+  'queue:practice': 'Practice',
+  'queue:quickplay': 'Quick Play',
+  'queue:ranked:3v3': 'Ranked'
 }
 
 export function getQueueName(queue: string): string {

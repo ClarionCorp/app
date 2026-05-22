@@ -1,7 +1,11 @@
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
+use std::collections::HashMap;
 use std::sync::mpsc;
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
+
+const DEBOUNCE: Duration = Duration::from_millis(100);
 
 const WATCHED_FILES: &[(&str, &str)] = &[
     ("ue4ss_players.json", "ue4ss-players-changed"),
@@ -35,6 +39,8 @@ pub fn start_file_watcher(app: AppHandle) {
             return;
         }
 
+        let mut last_seen: HashMap<String, Instant> = HashMap::new();
+
         for result in rx {
             match result {
                 Ok(event) => {
@@ -52,6 +58,12 @@ pub fn start_file_watcher(app: AppHandle) {
                                 .iter()
                                 .find(|(file, _)| *file == name.as_ref())
                             {
+                                let now = Instant::now();
+                                let key = format!("{kind}:{name}");
+                                if last_seen.get(&key).map_or(false, |t| now.duration_since(*t) < DEBOUNCE) {
+                                    continue;
+                                }
+                                last_seen.insert(key, now);
                                 let content = if kind != "removed" {
                                     std::fs::read_to_string(path).ok()
                                 } else {

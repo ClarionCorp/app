@@ -4,18 +4,13 @@ import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { RpcActivityOptions, useDiscordRpc } from './core/utilities/discord';
 import { onGameStateChanged, onPlayersChanged, onPostGameStatsChanged } from './core/bridgeListener';
 import { getMyMatchPlayer, getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch } from './core/database/queries';
 import { GameStateJSON, PlayerFinderJSON, PostGameStatsJSON } from './types/ue4ss';
+import { tryUpdateDiscordRPC } from './core/utilities/discord';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
-
-  updateActivity: (options: RpcActivityOptions) => Promise<void>;
-  clear: () => Promise<void>;
-  startRpc: () => Promise<void>;
-  stopRpc: () => Promise<void>;
 
   odyAuth: OdyAuth;
   setOdyAuth: (auth: OdyAuth) => void;
@@ -28,7 +23,6 @@ function App() {
   const [odyAuth, setOdyAuth] = useState<OdyAuth>();
   const [connectedToOdy, setConnectedStatus] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { updateActivity, clear, startRpc, stopRpc } = useDiscordRpc();
 
   const location = useLocation();
   const showSidebar = !['/', '/home', '/setup'].includes(location.pathname);
@@ -58,6 +52,7 @@ function App() {
         charName: p.character_name,
         charId: p.character_id,
         isMe: p.name === currentUser?.username,
+        rating: p.name === currentUser?.username ? currentUser.rating : 0
       })));
     }),
     onGameStateChanged(async (payload) => {
@@ -76,6 +71,8 @@ function App() {
         teamTwoSets: data.t2_sets,
         startedAt: new Date(),
       });
+
+      await tryUpdateDiscordRPC(data); // Ask Discord Helper to try and update
     }),
     onPostGameStatsChanged(async (payload) => {
       console.debug(`PGSM Changed!`)
@@ -130,7 +127,6 @@ function App() {
         <main className={showSidebar ? "flex-1 pl-13" : "flex-1"}>
           <Outlet context={{
             navigate,
-            updateActivity, clear, startRpc, stopRpc,
             odyAuth, setOdyAuth,
             connectedToOdy, setConnectedStatus,
             }}

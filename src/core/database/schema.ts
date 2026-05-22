@@ -59,6 +59,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   role: text("role").$type<'Forward' | 'Goalie'>(),
   charName: text("charName"),
   charId: text("charId"),
+  rating: integer("rating").default(0),
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
 });
 

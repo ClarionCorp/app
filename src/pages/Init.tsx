@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { readIdentity } from "../core/init";
-import { DEFAULT_ACTIVITY } from "../core/utilities/discord";
+import { DEFAULT_ACTIVITY, startRpc, stopRpc, updateActivity } from "../core/utilities/discord";
 import { dirname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -22,10 +22,7 @@ const STEP_PCTS = [5, 40, 75, 100];
 export default function InitializationPage() {
   const {
     navigate,
-    updateActivity,
     setOdyAuth,
-    startRpc,
-    stopRpc,
     setConnectedStatus,
   } = useOutletContext<AppContextType>();
 
