@@ -1,10 +1,10 @@
-import { start, setActivity, clearActivity, stop, isRunning } from "tauri-plugin-drpc";
+import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
-import { GameStateJSON } from "../../types/ue4ss";
 import { PHASE_GROUPS } from "./match";
 import { getRankFromLP } from "../objects/ranks";
-import { getCharDevName, getMapName, getQueueName } from "../objects/ody";
+import { getMapName, getQueueName, removeDevCharPrefix } from "../objects/ody";
 import { getMatchPlayers } from "../database/queries";
+import { CurrentMatchTable } from "../../types/database";
 
 const APP_ID = "1483520798017982707";
 
@@ -20,12 +20,20 @@ export interface RpcActivityOptions {
   buttons?: { label: string; url: string }[];
 }
 
+export interface DiscordRpc {
+  updateActivity: (options: RpcActivityOptions) => Promise<void>;
+  clear: () => Promise<void>;
+  stop: () => Promise<void>;
+}
+
 export const DEFAULT_ACTIVITY: RpcActivityOptions = {
   details: "Idling on Main Menu",
   state: "Powered by Ai.Mi App",
   largeImage: "aimiapp_logo_v2",
   // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
 }
+
+export let discordRpc: DiscordRpc | null = null;
 
 export async function startRpc() {
   // Add back some sort of disabling dRPC later
@@ -37,6 +45,11 @@ export async function startRpc() {
   try {
     console.log(`Starting new Discord RPC...`);
     await start(APP_ID);
+    discordRpc = {
+      updateActivity: _updateActivity,
+      clear: _clearActivity,
+      stop: stopRpc,
+    };
   } catch (err) {
     console.error("Discord RPC failed to start:", err);
     throw err;
@@ -47,14 +60,14 @@ export async function stopRpc() {
   try {
     console.log(`Stopping current Discord RPC...`);
     await stop();
+    discordRpc = null;
   } catch (err) {
     console.error("Discord RPC failed to stop:", err);
     throw err;
   }
 }
 
-export async function updateActivity(options: RpcActivityOptions) {
-  if (!await isRunning()) { console.warn(`[DRPC] Not running, ignoring activity update.`); return; }
+async function _updateActivity(options: RpcActivityOptions) {
   console.info(`Received request to change rich presence...`);
   console.debug(`DRPC Options: ${JSON.stringify(options, null, 1)}`);
 
@@ -102,50 +115,51 @@ export async function updateActivity(options: RpcActivityOptions) {
   }
 }
 
-export async function clearRpc() {
+async function _clearActivity() {
   await clearActivity();
 }
 
-export async function tryUpdateDiscordRPC(currentMatch: GameStateJSON) {
+export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
+  if (!discordRpc) { console.warn(`[DRPC] Not started, skipping update.`); return; }
+  console.debug(`GameState Changed! (${currentMatch.gameState})`);
+
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
-  
-  if (currentMatch.phase == 'null' || PHASE_GROUPS.out_of_game.some(p => p === currentMatch.phase)) {
-    await updateActivity({ details: 'test' });
-  }
-  
-  // else if (PHASE_GROUPS.starting.some(p => p === currentMatch.phase)) {
-  //   await updateActivity({
 
+  if (currentMatch.gameState == null || currentMatch.gameState == 'null' || PHASE_GROUPS.out_of_game.some(p => p === currentMatch.gameState)) {
+    await discordRpc.updateActivity(DEFAULT_ACTIVITY);
+  }
+
+  // else if (PHASE_GROUPS.starting.some(p => p === currentMatch.phase)) {
+  //   await discordRpc.updateActivity({
   //   });
   // }
-  
-  else if (PHASE_GROUPS.in_game.some(p => p === currentMatch.phase)) {
+
+  else if (PHASE_GROUPS.waiting.some(p => p === currentMatch.gameState)) {
+    return;
+  }
+
+  else if (PHASE_GROUPS.in_game.some(p => p === currentMatch.gameState)) {
     console.debug(`Updating dRPC...`);
-    // console.debug(`Username: ${myPlayer?.username}`);
-    // console.debug(`Queue: ${getQueueName(currentMatch.queue)}`);
-    // console.debug(`Map: ${getMapName(currentMatch.map_id)}`);
-    console.debug(`Character: ${myPlayer?.charId} -> ${myPlayer?.charName}`);
     const rankObject = getRankFromLP(myPlayer?.rating);
-    // console.debug(`Current Rank: ${JSON.stringify(rankObject, null, 1)} (${myPlayer?.rating} rating)`);
-    
+
     let largeImg = 'aimiapp_logo_v2';
-    if (myPlayer?.charId) { largeImg = getCharDevName(myPlayer?.charId).toLowerCase(); }
-    await updateActivity({
-      details: `${getQueueName(currentMatch.queue)} - ${getMapName(currentMatch.map_id)}`,
+    if (myPlayer?.charId) { largeImg = removeDevCharPrefix(myPlayer?.charId as string).toLowerCase(); }
+    await discordRpc.updateActivity({// cant be null here
+      details: `${getQueueName(currentMatch.queue!)} - ${getMapName(currentMatch.map!)}`,
       state: formatScore(
-        currentMatch.t1_goals ?? 0,
-        currentMatch.t2_goals ?? 0,
-        currentMatch.t1_sets ?? 0,
-        currentMatch.t2_sets ?? 0,
-        currentMatch.my_team ?? 0,
+        currentMatch.teamOnePts ?? 0,
+        currentMatch.teamTwoPts ?? 0,
+        currentMatch.teamOneSets ?? 0,
+        currentMatch.teamTwoSets ?? 0,
+        currentMatch.teamNum ?? 0,
       ),
       largeImage: largeImg,
       largeText: myPlayer?.charName ? `Playing ${myPlayer?.charName}` : 'Ai.Mi Companion App',
       smallImage: rankObject.key,
       smallText: rankObject.name,
       // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
-      startTimestamp: new Date().getTime(),
+      startTimestamp: currentMatch.startedAt.getTime(),
     });
   }
 }

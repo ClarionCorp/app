@@ -1,31 +1,32 @@
-const CHARACTER_DEV_NAMES: Record<string, string> = {
-  'Atlas': 'AngelicSupport',
-  'Luna': 'ChaoticRocketeer',
-  'Juno': 'CleverSummoner',
-  'Mako': 'DrumOni',
-  'Octavia': 'EDMOni',
-  'Era': 'EmpoweringEnchanter',
-  'Zentaro': 'FlashySwordsman',
-  'Juliette': 'FlexibleBrawler',
-  'Finii': 'GravityMage',
-  'Nao': 'Healer',
-  'X': 'HulkingBeast',
-  'Aimi': 'MagicalPlaymaker',      // check in game
-  'Rune': 'ManipulatingMastermind',
-  'Drekar': 'NimbleBlaster',    // check in game
-  'Vyce': 'RockOni',
-  'Asher': 'ShieldUser',
-  'Kai': 'SpeedySkirmisher',
-  'Dubu': 'StalwartProtector',
-  'Estelle': 'TempoSniper',
-  'Kazan': 'UmbrellaUser',
-  'Rasmus': 'WhipFighter',
+const CHARACTER_NAMES: Record<string, string> = {
+  'CD_AngelicSupport': 'Atlas',
+  'CD_ChaoticRocketeer': 'Luna',
+  'CD_CleverSummoner': 'Juno',
+  'CD_DrumOni': 'Mako',
+  'CD_EDMOni': 'Octavia',
+  'CD_EmpoweringEnchanter': 'Era',
+  'CD_FlashySwordsman': 'Zentaro',
+  'CD_FlexibleBrawler': 'Juliette',
+  'CD_GravityMage': 'Finii',
+  'CD_Healer': 'Nao',
+  'CD_HulkingBeast': 'X',
+  'CD_MagicalPlaymaker': 'Ai.Mi',
+  'CD_ManipulatingMastermind': 'Rune',
+  'CD_NimbleBlaster': "Drek'ar",
+  'CD_RockOni': 'Vyce',
+  'CD_ShieldUser': 'Asher',
+  'CD_SpeedySkirmisher': 'Kai',
+  'CD_StalwartProtector': 'Dubu',
+  'CD_TempoSniper': 'Estelle',
+  'CD_UmbrellaUser': 'Kazan',
+  'CD_WhipFighter': 'Rasmus',
 }
 
-export function getCharDevName(character: string): string {
-  return CHARACTER_DEV_NAMES[character];
+export function getCharName(character: string): string {
+  return CHARACTER_NAMES[character];
 }
 
+export const removeDevCharPrefix = (str: string) => str.replace(/^CD_/, '');
 
 const MAP_DEV_NAMES: Record<string, string> = {
   'GMD_AhtenCity': 'Ahten City',

@@ -76,10 +76,11 @@ export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
 }
 
 export async function upsertCurrentMatch(data: Omit<typeof currentMatch.$inferInsert, "id">) {
-  return db.insert(currentMatch).values({ id: 1, ...data }).onConflictDoUpdate({
+  const rows = await db.insert(currentMatch).values({ id: 1, ...data }).onConflictDoUpdate({
     target: currentMatch.id,
     set: data,
-  }).run();
+  }).returning();
+  return rows[0];
 }
 
 export async function getMatchPlayers() {

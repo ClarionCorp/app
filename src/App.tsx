@@ -56,11 +56,10 @@ function App() {
       })));
     }),
     onGameStateChanged(async (payload) => {
-      console.debug(`Game State Changed!`)
       if (payload.kind === 'removed' || !payload.content) return;
       const data = JSON.parse(payload.content) as GameStateJSON;
 
-      await upsertCurrentMatch({
+      const cMatch = await upsertCurrentMatch({
         gameState: data.phase,
         map: data.map,
         queue: data.queue,
@@ -72,7 +71,7 @@ function App() {
         startedAt: new Date(),
       });
 
-      await tryUpdateDiscordRPC(data); // Ask Discord Helper to try and update
+      await tryUpdateDiscordRPC(cMatch); // Ask Discord Helper to try and update
     }),
     onPostGameStatsChanged(async (payload) => {
       console.debug(`PGSM Changed!`)

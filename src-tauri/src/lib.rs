@@ -2,6 +2,7 @@ use tauri::Manager;
 use sysinfo::System;
 
 mod file_watcher;
+mod log_watcher;
 
 // Resets database cleanly
 #[tauri::command]
@@ -36,6 +37,7 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             file_watcher::start_file_watcher(app.handle().clone());
+            log_watcher::start_log_watcher(app.handle().clone());
             Ok(())
         })
         .plugin(tauri_plugin_process::init())

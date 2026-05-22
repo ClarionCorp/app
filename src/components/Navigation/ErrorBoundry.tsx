@@ -1,6 +1,7 @@
 import { useNavigate, useRouteError } from "react-router-dom";
 import { ArrowCounterClockwiseIcon } from "@phosphor-icons/react";
 import { Button } from "../UI/Button";
+import { discordRpc } from "../../core/utilities/discord";
 
 export default function ErrorBoundary() {
   const error = useRouteError() as Error;
@@ -8,6 +9,7 @@ export default function ErrorBoundary() {
 
   const handleRestart = async () => {
     sessionStorage.setItem("reloadHandled", "true");
+    discordRpc?.stop();
     navigate('/');
   };
 
