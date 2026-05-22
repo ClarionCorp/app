@@ -37,7 +37,6 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             file_watcher::start_file_watcher(app.handle().clone());
-            log_watcher::start_log_watcher(app.handle().clone());
             Ok(())
         })
         .plugin(tauri_plugin_process::init())
@@ -50,7 +49,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             reset_local_database,
-            is_process_running
+            is_process_running,
+            log_watcher::get_latest_match_timestamp
             ]
         )
         .run(tauri::generate_context!())

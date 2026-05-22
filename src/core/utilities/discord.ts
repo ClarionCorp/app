@@ -126,7 +126,6 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
 
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
-  console.debug(currentMatch.startedAt?.getTime())
 
   if (
     currentMatch.gameState == null ||
@@ -142,7 +141,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
     await discordRpc.updateActivity({
       details: `${getQueueName(currentMatch.queue!)} - ${getMapName(currentMatch.map!)}`,
       state: `Voting on Match Settings...`,
-      startTimestamp: new Date().getTime(),
+      startTimestamp: new Date().getTime(), //uhh fix this later lol, save timestamp in memory or db so we aren't sending the same one over and over again
       endTimestamp: new Date().getTime() + 60 * 1000,
     });
   }

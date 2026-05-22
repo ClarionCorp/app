@@ -4,7 +4,7 @@ import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { onGameMatchStarted, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged } from './core/bridgeListener';
+import { onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, refreshLatestMatchStart } from './core/bridgeListener';
 import { getMyMatchPlayer, getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch } from './core/database/queries';
 import { GameStateJSON, PlayerFinderJSON, PostGameStatsJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
@@ -39,7 +39,6 @@ function App() {
   // Rust Mod Bridge Listeners
   useEffect(() => {
   const unlistens = Promise.all([
-    onGameMatchStarted(),
     onPlayersChanged(async (payload) => {
       console.debug(`Player Status Changed!`)
       if (payload.kind === 'removed' || !payload.content) return;
@@ -59,6 +58,7 @@ function App() {
     onGameStateChanged(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
       const data = JSON.parse(payload.content) as GameStateJSON;
+      await refreshLatestMatchStart();
 
       let cMatch = await upsertCurrentMatch({
         gameState: data.phase,
@@ -69,7 +69,7 @@ function App() {
         teamTwoPts: data.t2_goals,
         teamOneSets: data.t1_sets,
         teamTwoSets: data.t2_sets,
-        startedAt: data.phase == 'VersusScreen' ? new Date() : undefined
+        // startedAt: data.phase == 'VersusScreen' ? new Date() : undefined
       });
 
       await tryUpdateDiscordRPC(cMatch); // Ask Discord Helper to try and update

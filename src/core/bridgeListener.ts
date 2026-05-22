@@ -1,4 +1,5 @@
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 import { upsertCurrentMatch } from './database/queries';
 
 export interface FileChangePayload {
@@ -31,19 +32,12 @@ export async function onPostGameStatsChanged(
   });
 }
 
-// Parses "2026.05.22-03.21.41:896" from the Unreal log into a Date.
-function parseLogTimestamp(ts: string): Date | null {
+export async function refreshLatestMatchStart(): Promise<void> {
+  const ts = await invoke<string | null>('get_latest_match_timestamp');
+  if (!ts) return;
   const m = ts.match(/^(\d{4})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})\.(\d{2}):(\d+)$/);
-  if (!m) return null;
+  if (!m) return;
   const [, year, month, day, hour, min, sec, ms] = m;
-  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(min), Number(sec), Number(ms)));
-}
-
-export async function onGameMatchStarted(): Promise<UnlistenFn> {
-  return listen<{ timestamp: string }>('game-match-started', async (event) => {
-    const startedAt = parseLogTimestamp(event.payload.timestamp);
-    if (!startedAt) return;
-    console.debug(`Updating startMatch! ${startedAt}`)
-    await upsertCurrentMatch({ startedAt });
-  });
+  const startedAt = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(min), Number(sec), Number(ms)));
+  await upsertCurrentMatch({ startedAt });
 }
