@@ -4,10 +4,12 @@ import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, refreshLatestMatchStart } from './core/bridgeListener';
-import { getMyMatchPlayer, getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch } from './core/database/queries';
-import { GameStateJSON, PlayerFinderJSON, PostGameStatsJSON } from './types/ue4ss';
+import { getPlayerAwakenings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, refreshLatestMatchStart } from './core/bridgeListener';
+import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers } from './core/database/queries';
+import { GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
+
+const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -52,7 +54,8 @@ function App() {
         charName: p.character_name,
         charId: p.character_id,
         isMe: p.name === currentUser?.username,
-        rating: p.name === currentUser?.username ? currentUser.rating : 0
+        rating: p.name === currentUser?.username ? currentUser.rating : 0,
+        xp: p.level,
       })));
     }),
     onGameStateChanged(async (payload) => {
@@ -75,41 +78,35 @@ function App() {
       await tryUpdateDiscordRPC(cMatch); // Ask Discord Helper to try and update
     }),
     onPostGameStatsChanged(async (payload) => {
-      console.debug(`PGSM Changed!`)
       if (payload.kind === 'removed' || !payload.content) return;
+      console.debug(`Match Ended! Saving...`)
+      await refreshLatestMatchStart();
       const stats = JSON.parse(payload.content) as PostGameStatsJSON;
 
-      const [match, currentUser, myPlayer] = await Promise.all([
+      const [match, currentUser, matchPlayers, awakenings] = await Promise.all([
         getCurrentMatch(),
         getUser(),
-        getMyMatchPlayer(),
+        getMatchPlayers(),
+        getPlayerAwakenings(),
       ]);
       if (!match || !currentUser) return;
 
-      const myEntry = stats.find(s => s.name === currentUser.username);
-      if (!myEntry) return;
+      const players = mergeMatchPlayers(matchPlayers, stats, awakenings);
+      const myPlayer = players.find(p => p.name === currentUser.username);
+      if (!myPlayer) return;
 
       const myTeam = match.teamNum ?? 1;
       const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
       const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
 
       await insertMatchHistory({
-        players: stats.map(s => s.name),
+        players,
         mapId: match.map ?? '',
-        characterId: myPlayer?.charId ?? '',
-        duration: 0,
-        myScore,
-        enemyScore,
+        duration: diffSeconds(match.startedAt!, new Date()),
+        myTeam,
+        t1_sets: match.teamOneSets ?? 0,
+        t2_sets: match.teamTwoSets ?? 0,
         wonGame: myScore > enemyScore,
-        goals:  parseInt(myEntry.goals),
-        assists: parseInt(myEntry.assists),
-        saves: parseInt(myEntry.saves),
-        kos: parseInt(myEntry.kos),
-        damage: parseInt(myEntry.damage),
-        shots: parseInt(myEntry.shots),
-        redirects: parseInt(myEntry.redirects),
-        orbs: parseInt(myEntry.orbs),
-        allGameStats: stats,
         createdAt: new Date(),
       });
     }),

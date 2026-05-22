@@ -50,7 +50,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             reset_local_database,
             is_process_running,
-            log_watcher::get_latest_match_timestamp
+            log_watcher::get_latest_match_timestamp,
+            log_watcher::get_player_awakenings
             ]
         )
         .run(tauri::generate_context!())

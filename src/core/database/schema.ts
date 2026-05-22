@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { MatchPlayer } from "../../types/ue4ss";
 
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
@@ -61,31 +62,22 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   charId: text("charId"),
   rating: integer("rating").default(0),
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
+  xp: integer("xp").default(0),
 });
 
-// Basic list of previous matches for local match history (will prob be removed l8r)
-// Doesn't get cleared in "Reset Database", actual file must be deleted
+// Basic list of previous matches for local match history
 export const matchHistory = sqliteTable("matchHistory", {
   id: integer("id").primaryKey({ autoIncrement: true }),
 
-  players: text("players", { mode: 'json' }).$type<string[]>().notNull().default([]),
   mapId: text("mapId").notNull(),
-  characterId: text("characterId").notNull(),
   duration: integer("duration").notNull(),
-  myScore: integer("myScore").notNull(),
-  enemyScore: integer("enemyScore").notNull(),
 
+  players: text("players", { mode: 'json' }).$type<MatchPlayer[]>().notNull().default([]),
+
+  t1_sets: integer("t1_sets").notNull(),
+  t2_sets: integer("t2_sets").notNull(),
+  myTeam: integer("myTeam").notNull(), // just easier than pathing thru players
   wonGame: integer("wonGame", { mode: "boolean" }).notNull(),
-  goals: integer("goals").notNull().default(0),
-  assists: integer("assists").notNull().default(0),
-  saves: integer("saves").notNull().default(0),
-  kos: integer("kos").notNull().default(0),
-  damage: integer("damage").notNull().default(0),
-  shots: integer("shots").notNull().default(0),
-  redirects: integer("redirects").notNull().default(0),
-  orbs: integer("orbs").notNull().default(0),
-
-  allGameStats: text("allGameStats", { mode: 'json' }).notNull().default([]),
 
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });

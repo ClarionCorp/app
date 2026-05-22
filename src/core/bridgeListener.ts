@@ -1,6 +1,7 @@
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { upsertCurrentMatch } from './database/queries';
+import { PlayerAwakenings } from '../types/ue4ss';
 
 export interface FileChangePayload {
   file: string;
@@ -30,6 +31,10 @@ export async function onPostGameStatsChanged(
   return listen<FileChangePayload>('postgame-stats-changed', (event) => {
     handler(event.payload);
   });
+}
+
+export async function getPlayerAwakenings(): Promise<PlayerAwakenings[]> {
+  return invoke<PlayerAwakenings[]>('get_player_awakenings');
 }
 
 export async function refreshLatestMatchStart(): Promise<void> {

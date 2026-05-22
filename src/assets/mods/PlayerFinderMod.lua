@@ -32,8 +32,9 @@ local function PollPlayers()
                 local charId, charName = GetCharacter(ps)
                 local ok, isGoalie = pcall(function() return ps:IsGoalie() end)
                 local role = (ok and isGoalie) and "Goalie" or "Forward"
+                local level = ps.Level
                 if name == "" or name == "nil" then return nil end
-                return { name = name, team = team, charId = charId, charName = charName, role = role }
+                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level }
             end)
             if ok and entry then
                 table.insert(players, entry)
@@ -48,10 +49,10 @@ local function PollPlayers()
         local charIdStr   = p.charId   and ('"' .. p.charId   .. '"') or "null"
         local charNameStr = p.charName and ('"' .. p.charName .. '"') or "null"
         table.insert(parts, string.format(
-            '{"name":"%s","team":%s,"role":"%s","character_id":%s,"character_name":%s}',
-            p.name, tostring(p.team), p.role, charIdStr, charNameStr
+            '{"name":"%s","team":%s,"role":"%s","character_id":%s,"character_name":%s,"level":%s}',
+            p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level)
         ))
-        snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId) .. ";"
+        snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId) .. "|" .. tostring(p.level) .. ";"
     end
 
     if snapshot ~= LastSnapshot then
@@ -59,7 +60,7 @@ local function PollPlayers()
 
         print(string.format("\n[%s] Players (%d):", ModName, #players))
         for _, p in ipairs(players) do
-            print(string.format("  Team %s | %-8s | %s | %s (%s)", tostring(p.team), p.role, p.name, p.charName or "null", p.charId or "null"))
+            print(string.format("  Team %s | %-8s | Lv%-3s | %s | %s (%s)", tostring(p.team), p.role, tostring(p.level), p.name, p.charName or "null", p.charId or "null"))
         end
 
         local json = string.format('{"timestamp":%d,"players":[%s]}', os.time(), table.concat(parts, ","))

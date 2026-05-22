@@ -1,6 +1,5 @@
 import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
-import { PHASE_GROUPS } from "./match";
 import { getRankFromLP } from "../objects/ranks";
 import { getMapName, getQueueName, removeDevCharPrefix } from "../objects/ody";
 import { getMatchPlayers } from "../database/queries";
@@ -8,6 +7,37 @@ import { CurrentMatchTable } from "../../types/database";
 import { refreshRating } from "./odyssey";
 
 const APP_ID = "1483520798017982707";
+
+export const PHASE_GROUPS = {
+  out_of_game: [
+    'Unknown',
+    'None',
+    'PostGameCelebration',
+    'PostGameSummary'
+  ],
+  starting: [
+    'PreGame',
+    'ArenaOverview',
+    'CharacterPreSelect',
+    'BanSelect',
+    'LoadoutSelect',
+    'CharacterSelect',
+    'VersusScreen',
+  ],
+  waiting: [
+    'IntermissionOutro',
+    'GoalScore',
+  ],
+  in_game: [
+    'InGame',
+    'FaceOffIntro',
+    'FaceOffCountdown',
+    'GoalCelebration',
+    'IntermissionMvp',
+    'IntermissionIntro',
+    'Intermission'
+  ],
+} as const;
 
 export interface RpcActivityOptions {
   details?: string;
