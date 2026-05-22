@@ -1,7 +1,8 @@
 import { AuthTable, UserTable } from "../../types/database";
 import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { auth, currentMatch, user, matchPlayers } from "./schema";
+import { auth, currentMatch, user, matchPlayers, matchHistory } from "./schema";
+import { eq } from "drizzle-orm";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -62,7 +63,28 @@ export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
   }).run();
 }
 
-export async function updateCurrentMatch(data: Partial<typeof currentMatch.$inferInsert>) {
-  await db.update(currentMatch).set(data).run();
-  window.dispatchEvent(new Event("currentMatch:changed"));
+export async function upsertCurrentMatch(data: Omit<typeof currentMatch.$inferInsert, "id">) {
+  return db.insert(currentMatch).values({ id: 1, ...data }).onConflictDoUpdate({
+    target: currentMatch.id,
+    set: data,
+  }).run();
+}
+
+export async function getMatchPlayers() {
+  return db.select().from(matchPlayers);
+}
+
+export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[]) {
+  await db.delete(matchPlayers).run();
+  if (players.length > 0) {
+    await db.insert(matchPlayers).values(players).run();
+  }
+}
+
+export async function getMyMatchPlayer() {
+  return db.select().from(matchPlayers).where(eq(matchPlayers.isMe, true)).limit(1).then(r => r[0] ?? null);
+}
+
+export async function insertMatchHistory(data: Omit<typeof matchHistory.$inferInsert, "id">) {
+  return db.insert(matchHistory).values(data).run();
 }

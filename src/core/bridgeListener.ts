@@ -3,6 +3,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 export interface FileChangePayload {
   file: string;
   kind: 'created' | 'modified' | 'removed';
+  content: string | null;
 }
 
 export async function onPlayersChanged(

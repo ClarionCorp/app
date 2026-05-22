@@ -6,6 +6,8 @@ import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { RpcActivityOptions, useDiscordRpc } from './core/utilities/discord';
 import { onGameStateChanged, onPlayersChanged, onPostGameStatsChanged } from './core/bridgeListener';
+import { getMyMatchPlayer, getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch } from './core/database/queries';
+import { GameStateJSON, PlayerFinderJSON, PostGameStatsJSON } from './types/ue4ss';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -44,13 +46,75 @@ function App() {
   useEffect(() => {
   const unlistens = Promise.all([
     onPlayersChanged(async (payload) => {
-      // later commands here
+      console.debug(`Player Status Changed!`)
+      if (payload.kind === 'removed' || !payload.content) return;
+      const data = JSON.parse(payload.content) as PlayerFinderJSON;
+      const currentUser = await getUser();
+
+      await setMatchPlayers(data.players.map(p => ({
+        username: p.name,
+        teamNum: p.team,
+        role: p.role,
+        charName: p.character_name,
+        charId: p.character_id,
+        isMe: p.name === currentUser?.username,
+      })));
     }),
     onGameStateChanged(async (payload) => {
-      // later commands here
+      console.debug(`Game State Changed!`)
+      if (payload.kind === 'removed' || !payload.content) return;
+      const data = JSON.parse(payload.content) as GameStateJSON;
+
+      await upsertCurrentMatch({
+        gameState: data.phase,
+        map: data.map,
+        queue: data.queue,
+        teamNum: data.my_team,
+        teamOnePts: data.t1_goals,
+        teamTwoPts: data.t2_goals,
+        teamOneSets: data.t1_sets,
+        teamTwoSets: data.t2_sets,
+        startedAt: new Date(),
+      });
     }),
     onPostGameStatsChanged(async (payload) => {
-      // later commands here
+      console.debug(`PGSM Changed!`)
+      if (payload.kind === 'removed' || !payload.content) return;
+      const stats = JSON.parse(payload.content) as PostGameStatsJSON;
+
+      const [match, currentUser, myPlayer] = await Promise.all([
+        getCurrentMatch(),
+        getUser(),
+        getMyMatchPlayer(),
+      ]);
+      if (!match || !currentUser) return;
+
+      const myEntry = stats.find(s => s.name === currentUser.username);
+      if (!myEntry) return;
+
+      const myTeam = match.teamNum ?? 1;
+      const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
+      const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
+
+      await insertMatchHistory({
+        players: stats.map(s => s.name),
+        mapId: match.map ?? '',
+        characterId: myPlayer?.charId ?? '',
+        duration: 0,
+        myScore,
+        enemyScore,
+        wonGame: myScore > enemyScore,
+        goals:  parseInt(myEntry.goals),
+        assists: parseInt(myEntry.assists),
+        saves: parseInt(myEntry.saves),
+        kos: parseInt(myEntry.kos),
+        damage: parseInt(myEntry.damage),
+        shots: parseInt(myEntry.shots),
+        redirects: parseInt(myEntry.redirects),
+        orbs: parseInt(myEntry.orbs),
+        allGameStats: stats,
+        createdAt: new Date(),
+      });
     }),
   ]);
 

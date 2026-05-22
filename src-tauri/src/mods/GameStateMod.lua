@@ -128,12 +128,13 @@ local function LogMatchState()
             local mapIdStr = mapId    and ('"' .. mapId    .. '"') or "null"
             local queueStr = queueId  and ('"' .. queueId  .. '"') or "null"
             WriteState(string.format(
-                '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"queue":%s}',
+                '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"queue":%s,"timestamp":%d}',
                 phaseName,
                 myTeam and tostring(myTeam) or "null",
                 t1.NumGoalsThisSet, t1.NumSetsThisMatch,
                 t2.NumGoalsThisSet, t2.NumSetsThisMatch,
-                mapStr, mapIdStr, queueStr
+                mapStr, mapIdStr, queueStr,
+                os.time()
             ))
         end
     end

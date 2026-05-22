@@ -1,12 +1,15 @@
 type TeamNum = 1 | 2;
 
-export type PlayerFinderJSON = [{
-  name: string,
-  team: TeamNum,
-  role: 'Forward' | 'Goalie',
-  character_id: string, // CD_NimbleBlaster
-  character_name: string, // "Drek'ar"
-}];
+export type PlayerFinderJSON = {
+  players: {
+    name: string,
+    team: TeamNum,
+    role: 'Forward' | 'Goalie',
+    character_id: string, // CD_NimbleBlaster
+    character_name: string, // "Drek'ar"
+  }[],
+  timestamp: number, // keeps tauri updating even if data is the same
+};
 
 export type GameStateJSON = {
   phase: string,
@@ -18,6 +21,7 @@ export type GameStateJSON = {
   map: string,
   map_id: string,
   queue: string,
+  timestamp: number, // keeps tauri updating even if data is the same
 }
 
 export type PostGameStatsJSON = [{

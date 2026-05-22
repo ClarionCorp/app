@@ -13,6 +13,7 @@ const WATCHED_FILES: &[(&str, &str)] = &[
 pub struct FileChangeEvent {
     pub file: String,
     pub kind: String,
+    pub content: Option<String>,
 }
 
 pub fn start_file_watcher(app: AppHandle) {
@@ -51,11 +52,18 @@ pub fn start_file_watcher(app: AppHandle) {
                                 .iter()
                                 .find(|(file, _)| *file == name.as_ref())
                             {
+                                let content = if kind != "removed" {
+                                    std::fs::read_to_string(path).ok()
+                                } else {
+                                    None
+                                };
+
                                 let _ = app.emit(
                                     event_name,
                                     FileChangeEvent {
                                         file: name.to_string(),
                                         kind: kind.to_string(),
+                                        content,
                                     },
                                 );
                             }

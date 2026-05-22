@@ -62,12 +62,17 @@ local function PollPlayers()
             print(string.format("  Team %s | %-8s | %s | %s (%s)", tostring(p.team), p.role, p.name, p.charName or "null", p.charId or "null"))
         end
 
-        local json = "[" .. table.concat(parts, ",") .. "]"
+        local json = string.format('{"timestamp":%d,"players":[%s]}', os.time(), table.concat(parts, ","))
         local f = io.open(PLAYERS_FILE, "w")
         if f then f:write(json) f:close() end
     end
 
     ExecuteWithDelay(3000, PollPlayers)
 end
+
+RegisterKeyBind(Key.F5, function()
+    LastSnapshot = ""
+    print(string.format("[%s] Force refresh triggered", ModName))
+end)
 
 ExecuteWithDelay(3000, PollPlayers)

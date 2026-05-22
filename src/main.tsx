@@ -19,8 +19,8 @@ const router = createHashRouter([
     element: <App />,
     errorElement: <ErrorBoundary />,
     children: [
-      { index: true,              element: <InitPage /> },
-      { path: "home",             element: <HomePage /> },
+      // { index: true,              element: <InitPage /> },
+      { path: "/",             element: <HomePage /> },
       { path: "account",          element: <ComingSoonPage /> },
       { path: "debug",            element: <DebugPage /> },
     ],

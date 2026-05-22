@@ -1,17 +1,15 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useOutletContext } from 'react-router-dom';
-import { AppContextType } from '../App';
+import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
+import type { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 
-interface DebugRowProps {
-  label: string;
-  value: React.ReactNode;
-}
+const POLL_MS = 2000;
 
-function DebugRow({ label, value }: DebugRowProps) {
+function DebugRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-background-border last:border-0">
       <span className="text-xs text-char-subtle">{label}</span>
-      <span className="text-xs font-medium text-char text-right max-w-[60%] truncate">{value}</span>
+      <span className="text-xs font-medium text-char text-right max-w-[60%] truncate">{value ?? '—'}</span>
     </div>
   );
 }
@@ -25,7 +23,20 @@ function SectionHeader({ title }: { title: string }) {
 }
 
 export default function DebugPage() {
-  const inGame = matchPhase ? getPhaseGroup(matchPhase) !== 'out_of_game' : false;
+  const [match, setMatch] = useState<CurrentMatchTable | null>(null);
+  const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
+
+  useEffect(() => {
+    async function poll() {
+      const [m, p] = await Promise.all([getCurrentMatch(), getMatchPlayers()]);
+      setMatch(m);
+      setPlayers(p);
+    }
+
+    poll();
+    const id = setInterval(poll, POLL_MS);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background px-6 py-6">
@@ -36,41 +47,41 @@ export default function DebugPage() {
         transition={{ duration: 0.3 }}
       >
         <h1 className="text-lg font-bold text-char mb-1">Debug</h1>
-        <p className="text-xs text-char-subtle mb-6">Live game state from log monitor</p>
+        <p className="text-xs text-char-subtle mb-6">Polling every {POLL_MS / 1000}s</p>
 
         {/* Match State */}
         <div className="bg-surface-subtle border border-background-border rounded-xl px-4">
           <SectionHeader title="Match State" />
-          <DebugRow label="Phase" value={
-            <span className={(PHASE_COLORS as Record<string, string>)[matchPhase ?? ''] ?? 'text-char-subtle'}>
-              {(PHASE_LABELS as Record<string, string>)[matchPhase ?? ''] ?? 'Unknown'}
-            </span>
-          } />
-          <DebugRow label="Raw Phase" value={matchPhase ?? '—'} />
-          <DebugRow label="Level" value={inGame ? (currentMatch?.level ?? '—') : '—'} />
-          <DebugRow label="My Character" value={inGame ? (currentMatch?.myCharacter ?? '—') : '—'} />
-          <DebugRow label="My Team" value={inGame ? (currentMatch?.myTeam ?? '—') : '—'} />
+          <DebugRow label="Game State"  value={match?.gameState} />
+          <DebugRow label="Map"         value={match?.map} />
+          <DebugRow label="Queue"       value={match?.queue} />
+          <DebugRow label="My Team"     value={match?.teamNum} />
+          <DebugRow label="Started At"  value={match?.startedAt?.toLocaleTimeString()} />
         </div>
 
         {/* Score */}
         <div className="bg-surface-subtle border border-background-border rounded-xl px-4 mt-3">
           <SectionHeader title="Score" />
-          <DebugRow label="Team One Points" value={inGame ? currentMatch?.teamOnePts : '—'} />
-          <DebugRow label="Team Two Points" value={inGame ? currentMatch?.teamTwoPts : '—'} />
-          <DebugRow label="Team One Sets" value={inGame ? currentMatch?.teamOneSets : '—'} />
-          <DebugRow label="Team Two Sets" value={inGame ? currentMatch?.teamTwoSets : '—'} />
+          <DebugRow label="Team 1 Points" value={match?.teamOnePts} />
+          <DebugRow label="Team 2 Points" value={match?.teamTwoPts} />
+          <DebugRow label="Team 1 Sets"   value={match?.teamOneSets} />
+          <DebugRow label="Team 2 Sets"   value={match?.teamTwoSets} />
         </div>
 
         {/* Players */}
         <div className="bg-surface-subtle border border-background-border rounded-xl px-4 mt-3">
-          <SectionHeader title={`Registered Players (${currentMatch?.playerNames.length})`} />
-          {currentMatch?.playerNames.length === 0 ? (
+          <SectionHeader title={`Players (${players.length})`} />
+          {players.length === 0 ? (
             <div className="py-3">
               <span className="text-xs text-char-subtle">None yet</span>
             </div>
           ) : (
-            currentMatch?.playerNames.map((p, i) => (
-              <DebugRow key={p} label={`Player ${i + 1}`} value={p} />
+            players.map((p) => (
+              <DebugRow
+                key={p.username}
+                label={`${p.username}${p.isMe ? ' (me)' : ''}`}
+                value={`T${p.teamNum} · ${p.role ?? '?'} · ${p.charName ?? '?'}`}
+              />
             ))
           )}
         </div>
