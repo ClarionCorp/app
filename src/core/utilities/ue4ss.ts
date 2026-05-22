@@ -2,8 +2,7 @@
 // Most of the file is dormant if the user chooses not to install the companion mods
 
 import { join, tempDir } from "@tauri-apps/api/path";
-import { exists, remove, writeFile } from "@tauri-apps/plugin-fs";
-import { getAppSettings, upsertSettings } from "../database/queries";
+import { exists, mkdir, readTextFile, remove, writeFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { invoke } from "@tauri-apps/api/core";
 import { GithubRelease } from "../../types/github";
 import { fetch } from "@tauri-apps/plugin-http";
@@ -18,118 +17,90 @@ const ue4ssRelativePaths = [
   'OmegaStrikers/Binaries/Win64/README.md',
 ];
 
-type InstallProgressCallback = (stage: 'checking' | 'downloading' | 'extracting' | 'done', percent: number | null, message: string) => void;
+type InstallProgressCallback = (stage: 'checking' | 'downloading' | 'installing' | 'updating' | 'extracting' | 'done', percent: number | null, message: string) => void;
 type UnInstallProgressCallback = (stage: 'checking' | 'removing' | 'cleaning' | 'done', percent: number | null, message: string) => void;
 
-// We need to pull a specific version that we know works, then strip it down to the barebones.
-// Then we can install our helper mods in the UE4SS mods folder.
-export async function installUE4SS(onProgress?: InstallProgressCallback, latestModObj?: GithubRelease) {
+// The main function for checking if UE4SS is installed, and setting it up/updating if it isn't.
+export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProgressCallback) {
   try {
-    onProgress?.('checking', 0, 'Checking dependencies...');
-    // Check if needed paths are setup.
-    const appSettings = await getAppSettings();
-    if (!appSettings || !appSettings.gameDir) throw new Error(`App isn't setup or Game Directory is not set!`);
+    onProgress?.('checking', 0, 'Checking if UE4SS is installed...');
+    let ue4ss_installed = true;
 
-    // Check if already installed
-    // const alrInst = await checkUE4SS(appSettings.gameDir);
-    // if (alrInst) throw new Error('UE4SS is already installed! Either update, or uninstall your current version.');
+    const doCoreFilesExist = (
+      await Promise.all(ue4ssRelativePaths.map(async p => exists(await join(gameDirectory, p))))
+    ).every(Boolean);
 
+    if (doCoreFilesExist == false) {
+      ue4ss_installed = false;
+      // We need to download and install UE4SS before continuing
+      onProgress?.('downloading', 10, 'Fetching UE4SS from GitHub...');
 
-    // Download and Install UE4SS from GitHub
-    onProgress?.('downloading', 10, 'Starting download...');
-    // Fetch UE4SS download binaries
-    const ue4ss_response = await fetch('https://github.com/UE4SS-RE/RE-UE4SS/releases/download/v3.0.1/UE4SS_v3.0.1.zip', { method: 'GET' });
-    if (!ue4ss_response.ok) throw new Error(`GitHub Download Failed: ${ue4ss_response.status}`);
+      // Fetch UE4SS download binaries
+      const ue4ss_response = await fetch('https://github.com/UE4SS-RE/RE-UE4SS/releases/download/v3.0.1/UE4SS_v3.0.1.zip', { method: 'GET' });
+      if (!ue4ss_response.ok) throw new Error(`GitHub Download Failed: ${ue4ss_response.status}`);
 
-    const ue4ss_contentLength = Number(ue4ss_response.headers.get('Content-Length') ?? 0);
-    const ue4ss_reader = ue4ss_response.body!.getReader();
-    const ue4ss_chunks: Uint8Array[] = [];
-    let ue4ss_received = 0;
+      const ue4ss_contentLength = Number(ue4ss_response.headers.get('Content-Length') ?? 0);
+      const ue4ss_reader = ue4ss_response.body!.getReader();
+      const ue4ss_chunks: Uint8Array[] = [];
+      let ue4ss_received = 0;
 
-    while (true) {
-      const { done, value } = await ue4ss_reader.read();
-      if (done) break;
-      ue4ss_chunks.push(value);
-      ue4ss_received += value.length;
-      const percent = ue4ss_contentLength ? Math.round(20 + (ue4ss_received / ue4ss_contentLength) * 30) : null;
-      onProgress?.('downloading', percent, `Downloading UE4SS... ${percent ?? '?'}%`); // ends at 50
+      while (true) {
+        const { done, value } = await ue4ss_reader.read();
+        if (done) break;
+        ue4ss_chunks.push(value);
+        ue4ss_received += value.length;
+        const percent = ue4ss_contentLength ? Math.round(20 + (ue4ss_received / ue4ss_contentLength) * 10) : null;
+        onProgress?.('downloading', percent, `Downloading UE4SS... ${percent ?? '?'}%`); // ends at 30
+      }
+
+      // Stitch chunks into one buffer
+      const ue4ss_bytes = new Uint8Array(ue4ss_received);
+      let ue4ss_offset = 0;
+      for (const chunk of ue4ss_chunks) {
+        ue4ss_bytes.set(chunk, ue4ss_offset);
+        ue4ss_offset += chunk.length;
+      }
+
+      // Save to temp
+      const tmp = await tempDir();
+      const ue4ss_zipPath = await join(tmp, 'UE4SS_v3.0.1.zip');
+      await writeFile(ue4ss_zipPath, ue4ss_bytes);
+
+      // Extract
+      onProgress?.('extracting', 40, 'Extracting files...');
+      await invoke('extract_zip', {
+        zipPath: ue4ss_zipPath,
+        destDir: await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/'),
+      });
     }
 
-    // Stitch chunks into one buffer
-    const ue4ss_bytes = new Uint8Array(ue4ss_received);
-    let ue4ss_offset = 0;
-    for (const chunk of ue4ss_chunks) {
-      ue4ss_bytes.set(chunk, ue4ss_offset);
-      ue4ss_offset += chunk.length;
+    // Check for mod updates (or force it if ue4ss_installed is false)
+    onProgress?.('checking', 50, 'Checking mod versions...');
+    for (let i = 0; i < MODS.length; i++) {
+      const mod = MODS[i];
+      const percent = Math.round(50 + (i / MODS.length) * (90 - 50));
+
+      const scriptDir = await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods', mod.name, 'Scripts');
+      const installedPath = await join(scriptDir, 'main.lua');
+      const isInstalled = await exists(installedPath);
+
+      if (!isInstalled || !ue4ss_installed) {
+        onProgress?.('installing', percent, `Installing ${mod.name} v${mod.version}...`);
+        await mkdir(scriptDir, { recursive: true });
+        await writeTextFile(installedPath, mod.source);
+      } else {
+        const installedContent = await readTextFile(installedPath);
+        const installedVersion = parseVersion(installedContent);
+        if (installedVersion !== mod.version) {
+          onProgress?.('updating', percent, `Updating ${mod.name} ${installedVersion} -> ${mod.version}...`);
+          await writeTextFile(installedPath, mod.source);
+        }
+        // this mod is up to date, continue
+      }
     }
 
-    // Save to temp
-    const tmp = await tempDir();
-    const ue4ss_zipPath = await join(tmp, 'UE4SS_v3.0.1.zip');
-    await writeFile(ue4ss_zipPath, ue4ss_bytes);
-
-    // Extract
-    onProgress?.('extracting', 60, 'Extracting files...');
-    await invoke('extract_zip', {
-      zipPath: ue4ss_zipPath,
-      destDir: await join(appSettings.gameDir, 'OmegaStrikers/Binaries/Win64/'),
-    });
-
-    
-
-    // Now we need to do basically the same shit but for our mods repo
-    // to override defaults and actually add the mods that make things work.
-
-    onProgress?.('downloading', 65, 'Starting mod downloads...');
-    let latestMods: GithubRelease;
-    if (latestModObj) {
-      latestMods = latestModObj;
-    } else {
-      const getLatestMods = await fetch('https://api.github.com/repos/WWYDF/CCAppMods/releases/latest', { method: 'GET' });
-      if (!getLatestMods.ok) throw new Error(`GitHub Fetch Failed: ${getLatestMods.status}`);
-      latestMods = await getLatestMods.json();
-    }
-
-    const cm_response = await fetch(latestMods.assets[0].browser_download_url, { method: 'GET' });
-    if (!cm_response.ok) throw new Error(`GitHub Download Failed: ${cm_response.status}`);
-
-    const cm_contentLength = Number(cm_response.headers.get('Content-Length') ?? 0);
-    const cm_reader = cm_response.body!.getReader();
-    const cm_chunks: Uint8Array[] = [];
-    let cm_received = 0;
-
-    while (true) {
-      const { done, value } = await cm_reader.read();
-      if (done) break;
-      cm_chunks.push(value);
-      cm_received += value.length;
-      const percent = cm_contentLength ? Math.round(70 + (cm_received / cm_contentLength) * 20) : null;
-      onProgress?.('downloading', percent, `Downloading Helper Scripts... ${percent ?? '?'}%`); // ends at 90
-    }
-
-    // Stitch chunks into one buffer
-    const cm_bytes = new Uint8Array(cm_received);
-    let cm_offset = 0;
-    for (const chunk of cm_chunks) {
-      cm_bytes.set(chunk, cm_offset);
-      cm_offset += chunk.length;
-    }
-
-    // Save to temp (e.g. "CC-Mods-1.0.0.zip")
-    const cm_zipPath = await join(tmp, `CC-Mods-${latestMods.tag_name}.zip`);
-    await writeFile(cm_zipPath, cm_bytes);
-
-    // Extract (overwrites existing files, like mods.txt)
-    onProgress?.('extracting', 95, 'Extracting files...');
-    await invoke('extract_zip', {
-      zipPath: cm_zipPath,
-      destDir: await join(appSettings.gameDir, 'OmegaStrikers/Binaries/Win64/Mods'),
-    });
-
-    await upsertSettings({ ue4ss: latestMods.tag_name });
-
-    onProgress?.('done', 100, 'UE4SS installed successfully!');
-    console.log(`Installed UE4SS to Game's Directory.`);
+    onProgress?.('done', 100, 'UE4SS & Mods Up-to-date!');
+    console.log(`Successfully validated UE4SS & Installed Mods.`);
 
   } catch (e) {
     console.error(`[UE4SS] Failed to install UE4SS!`, e);
@@ -138,31 +109,29 @@ export async function installUE4SS(onProgress?: InstallProgressCallback, latestM
 }
 
 
-// Checks if UE4SS is already installed
-export async function checkUE4SS(base: string): Promise<boolean> {
-  const results = await Promise.all(ue4ssRelativePaths.map(async p => exists(await join(base, p))));
-  return results.some(Boolean);
-}
+// Mod Handling
+const modFiles = import.meta.glob('./mods/*.lua', { as: 'raw', eager: true });
+
+const parseVersion = (lua: string) =>
+  lua.match(/local ModVersion\s*=\s*"([^"]+)"/)?.[1] ?? '0.0.0';
+
+const parseName = (lua: string) =>
+  lua.match(/local ModName\s*=\s*"([^"]+)"/)?.[1];
+
+export type ModEntry = {
+  name: string;
+  version: string;
+  source: string; // raw lua content for copying
+};
+
+export const MODS: ModEntry[] = Object.values(modFiles).map(source => ({
+  name: parseName(source as string)!,
+  version: parseVersion(source as string),
+  source: source as string,
+}));
 
 
-// Checks with GitHub Releases for mismatched version.
-// Either returns nothing if uptodate, or the new version object to prevent refetching.
-export async function checkForUpdates(): Promise<GithubRelease | null> {
-  try {
-    const getLatestMods = await fetch('https://api.github.com/repos/WWYDF/CCAppMods/releases/latest', { method: 'GET' });
-    if (!getLatestMods.ok) throw new Error(`GitHub Fetch Failed: ${getLatestMods.status}`);
-    const latestMods: GithubRelease = await getLatestMods.json();
 
-    const appSettings = await getAppSettings();
-    if (!appSettings || !appSettings.ue4ss) return null;
-
-    if (appSettings.ue4ss == latestMods.tag_name) { return null }
-    else { return latestMods };
-  } catch (e) {
-    console.error(`[Updater] ${e}`);
-    return null;
-  }
-}
 
 export async function unInstallUE4SS(onProgress?: UnInstallProgressCallback) {
   try {

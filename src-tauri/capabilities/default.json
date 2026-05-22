@@ -53,6 +53,10 @@
         { "path": "D:/SteamLibrary/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
       ]
     },
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "**/*" }]
+    },
     "os:default",
     "process:default",
     "drpc:default",
