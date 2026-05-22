@@ -4,7 +4,6 @@
 import { join, tempDir } from "@tauri-apps/api/path";
 import { exists, mkdir, readTextFile, remove, writeFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { invoke } from "@tauri-apps/api/core";
-import { GithubRelease } from "../../types/github";
 import { fetch } from "@tauri-apps/plugin-http";
 
 const ue4ssRelativePaths = [
@@ -72,6 +71,13 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
         zipPath: ue4ss_zipPath,
         destDir: await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/'),
       });
+
+      // Overwrite the default mods.txt with a cut-down version
+      onProgress?.('installing', 45, 'Setting up defaults...');
+      await writeTextFile(
+        await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods/mods.txt'),
+        `ConsoleCommandsMod : 0\nConsoleEnablerMod : 0\n\n; Built-in keybinds, do not move up!\nKeybinds : 1\n`
+      );
     }
 
     // Check for mod updates (or force it if ue4ss_installed is false)
@@ -97,6 +103,8 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
         }
         // this mod is up to date, continue
       }
+
+      await ensureModEnabled(mod.name, await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods'));
     }
 
     onProgress?.('done', 100, 'UE4SS & Mods Up-to-date!');
@@ -131,13 +139,41 @@ export const MODS: ModEntry[] = Object.values(modFiles).map(source => ({
 }));
 
 
+async function ensureModEnabled(modName: string, modsFolder: string) {
+  const modsFilePath = await join(modsFolder, 'mods.txt');
 
+  if (!await exists(modsFilePath)) {
+    await writeTextFile(modsFilePath, `${modName} : 1\n`);
+    return;
+  }
 
-export async function unInstallUE4SS(onProgress?: UnInstallProgressCallback) {
+  const content = await readTextFile(modsFilePath);
+  const entryRegex = new RegExp(`^(${modName}\\s*:\\s*)(\\d)`, 'm');
+  const match = content.match(entryRegex);
+
+  if (match) {
+    if (match[2] === '1') return;
+    await writeTextFile(modsFilePath, content.replace(entryRegex, (_, prefix) => `${prefix}1`));
+    return;
+  }
+
+  // Not in file, insert before the built-in keybinds comment
+  const lines = content.split('\n');
+  const keybindsIdx = lines.findIndex(l => l.startsWith('; Built-in keybinds'));
+  const entry = `${modName} : 1`;
+
+  if (keybindsIdx !== -1) {
+    lines.splice(keybindsIdx, 0, entry);
+  } else {
+    lines.push(entry);
+  }
+
+  await writeTextFile(modsFilePath, lines.join('\n'));
+}
+
+export async function unInstallUE4SS(gameDirectory: string, onProgress?: UnInstallProgressCallback) {
   try {
     onProgress?.('checking', 0, 'Checking system...');
-    const appSettings = await getAppSettings();
-    if (!appSettings || !appSettings.gameDir) throw new Error(`App isn't setup or Game Directory is not set!`);
 
     // Check if game is running.
     const gameRunning = await invoke<boolean>("is_process_running", { name: "OmegaStrikers.exe" }); // verify actual exe name later
@@ -145,21 +181,20 @@ export async function unInstallUE4SS(onProgress?: UnInstallProgressCallback) {
 
     // Find and remove associated files
     onProgress?.('removing', 20, 'Removing Mods Folder...');
-    const modsFolder = await join(appSettings.gameDir, ue4ssRelativePaths[0]);
+    const modsFolder = await join(gameDirectory, ue4ssRelativePaths[0]);
     if (await exists(modsFolder)) {
       await remove(modsFolder, { recursive: true });
     }
 
     onProgress?.('removing', 50, 'Removing UE4SS Binaries...');
     for (const path of ue4ssRelativePaths) {
-      let compPath = await join(appSettings.gameDir, path);
+      let compPath = await join(gameDirectory, path);
       if (await exists(compPath)) {
         await remove(compPath, { recursive: true });
       }
     }
 
     onProgress?.('cleaning', 90, 'Cleaning up...');
-    await upsertSettings({ ue4ss: null });
 
     onProgress?.('done', 100, 'UE4SS uninstalled successfully!');
     console.log(`Uninstalled UE4SS from Game's Directory.`);
