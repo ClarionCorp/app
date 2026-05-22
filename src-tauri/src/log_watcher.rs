@@ -5,7 +5,7 @@ use tauri::{AppHandle, Emitter};
 
 const MATCH_PATTERN: &str = "Previous[EMatchPhase::VersusScreen]";
 const SCAN_TAIL_BYTES: u64 = 2 * 1024 * 1024;
-const STARTUP_DELAY: Duration = Duration::from_secs(10);
+const STARTUP_DELAY: Duration = Duration::from_secs(15);
 const POLL_INTERVAL: Duration = Duration::from_secs(30);
 
 #[derive(Serialize, Clone)]
@@ -57,22 +57,14 @@ pub fn start_log_watcher(app: AppHandle) {
     std::thread::spawn(move || {
         let path = match log_path() {
             Some(p) => p,
-            None => {
-                eprintln!("log_watcher: could not resolve OmegaStrikers log path");
-                return;
-            }
+            None => return,
         };
 
         std::thread::sleep(STARTUP_DELAY);
 
-        let mut last_emitted: Option<String> = None;
-
         loop {
             if let Some(ts) = find_latest_match(&path) {
-                if last_emitted.as_deref() != Some(&ts) {
-                    last_emitted = Some(ts.clone());
-                    let _ = app.emit("game-match-started", GameStartEvent { timestamp: ts });
-                }
+                let _ = app.emit("game-match-started", GameStartEvent { timestamp: ts });
             }
 
             std::thread::sleep(POLL_INTERVAL);

@@ -49,7 +49,7 @@ export const currentMatch = sqliteTable("currentMatch", {
   teamOneSets: integer("teamOneSets"),
   teamTwoSets: integer("teamTwoSets"),
 
-  startedAt: integer("startedAt", { mode: "timestamp" }).notNull(),
+  startedAt: integer("startedAt", { mode: "timestamp" }),
 });
 
 // Saves data sent from PlayerFinderMod (multi-row)

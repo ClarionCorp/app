@@ -5,6 +5,7 @@ import { getRankFromLP } from "../objects/ranks";
 import { getMapName, getQueueName, removeDevCharPrefix } from "../objects/ody";
 import { getMatchPlayers } from "../database/queries";
 import { CurrentMatchTable } from "../../types/database";
+import { refreshRating } from "./odyssey";
 
 const APP_ID = "1483520798017982707";
 
@@ -125,15 +126,26 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
 
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
+  console.debug(currentMatch.startedAt?.getTime())
 
-  if (currentMatch.gameState == null || currentMatch.gameState == 'null' || PHASE_GROUPS.out_of_game.some(p => p === currentMatch.gameState)) {
+  if (
+    currentMatch.gameState == null ||
+    currentMatch.gameState == 'null' ||
+    currentMatch.queue == null ||
+    PHASE_GROUPS.out_of_game.some(p => p === currentMatch.gameState)
+  ) {
     await discordRpc.updateActivity(DEFAULT_ACTIVITY);
   }
 
-  // else if (PHASE_GROUPS.starting.some(p => p === currentMatch.phase)) {
-  //   await discordRpc.updateActivity({
-  //   });
-  // }
+  else if (PHASE_GROUPS.starting.some(p => p === currentMatch.gameState)) {
+    await refreshRating();
+    await discordRpc.updateActivity({
+      details: `${getQueueName(currentMatch.queue!)} - ${getMapName(currentMatch.map!)}`,
+      state: `Voting on Match Settings...`,
+      startTimestamp: new Date().getTime(),
+      endTimestamp: new Date().getTime() + 60 * 1000,
+    });
+  }
 
   else if (PHASE_GROUPS.waiting.some(p => p === currentMatch.gameState)) {
     return;
@@ -159,7 +171,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
       smallImage: rankObject.key,
       smallText: rankObject.name,
       // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
-      startTimestamp: currentMatch.startedAt.getTime(),
+      startTimestamp: currentMatch.startedAt?.getTime(),
     });
   }
 }
