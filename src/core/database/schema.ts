@@ -55,12 +55,12 @@ export const currentMatch = sqliteTable("currentMatch", {
 
 // Saves data sent from PlayerFinderMod (multi-row)
 export const matchPlayers = sqliteTable("matchPlayers", {
-  username: text("username").notNull(),
+  username: text("username").notNull().unique(),
   teamNum: integer("teamNum").$type<1 | 2>(), // can be null if not on a team yet
   role: text("role").$type<'Forward' | 'Goalie'>(),
   charName: text("charName"),
   charId: text("charId"),
-  rating: integer("rating").default(0),
+  rating: integer("rating"),
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
   xp: integer("xp").default(0),
 });

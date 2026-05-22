@@ -10,6 +10,8 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
 import { getAppSettings, upsertAppSettings, updateRating, upsertUser } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
+import { db } from "../core/database/driver";
+import { matchPlayers } from "../core/database/schema";
 
 const STEPS = [
   "Checking UE4SS...",
@@ -77,6 +79,9 @@ export default function InitializationPage() {
           setUe4ssPercent(percent);
         });
         if (cancelled) return;
+
+        // 1.5) (Hidden) Purge players table as we'll just fetch a new one anyway
+        await db.delete(matchPlayers).run();
 
         // 2) Fetch account info from Odyssey
         setStepIndex(1);

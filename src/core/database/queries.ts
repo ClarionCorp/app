@@ -2,7 +2,7 @@ import { AuthTable, UserTable } from "../../types/database";
 import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
 import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory } from "./schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -88,10 +88,20 @@ export async function getMatchPlayers() {
 }
 
 export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[]) {
-  await db.delete(matchPlayers).run();
-  if (players.length > 0) {
-    await db.insert(matchPlayers).values(players).run();
-  }
+  if (players.length === 0) return [];
+  return db.insert(matchPlayers).values(players).onConflictDoUpdate({
+    target: matchPlayers.username,
+    set: {
+      xp: sql`excluded.xp`,
+    },
+  }).returning();
+}
+
+export async function updatePlayerRating(username: string, rating: number) {
+  return db.update(matchPlayers)
+    .set({ rating })
+    .where(eq(matchPlayers.username, username))
+    .returning();
 }
 
 export async function getMyMatchPlayer() {

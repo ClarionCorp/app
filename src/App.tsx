@@ -5,9 +5,12 @@ import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { getPlayerAwakenings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, refreshLatestMatchStart } from './core/bridgeListener';
-import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers } from './core/database/queries';
+import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating } from './core/database/queries';
 import { GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
+import { db } from './core/database/driver';
+import { matchPlayers } from './core/database/schema';
+import { fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -42,25 +45,40 @@ function App() {
   useEffect(() => {
   const unlistens = Promise.all([
     onPlayersChanged(async (payload) => {
-      console.debug(`Player Status Changed!`)
+      console.debug(`Players updated!`)
       if (payload.kind === 'removed' || !payload.content) return;
       const data = JSON.parse(payload.content) as PlayerFinderJSON;
       const currentUser = await getUser();
 
-      await setMatchPlayers(data.players.map(p => ({
+      const players = await setMatchPlayers(data.players.map(p => ({
         username: p.name,
         teamNum: p.team,
         role: p.role,
         charName: p.character_name,
         charId: p.character_id,
         isMe: p.name === currentUser?.username,
-        rating: p.name === currentUser?.username ? currentUser.rating : 0,
+        rating: p.name === currentUser?.username ? currentUser.rating : null,
         xp: p.level,
       })));
+
+      for (const player of players.filter(p => p.rating === null)) {
+        // fetch and set ratings (if empty)
+        console.info(`Fetching rank data for ${player.username}...`)
+        try {
+          const user = await fetchUsernameQuery(player.username);
+          const ranked = await fetchRankQuery(user!.playerId);
+          await updatePlayerRating(player.username, ranked!.rating);
+        } catch (e) {
+          console.warn(`No rank data could be found for ${player.username}.`);
+          updatePlayerRating(player.username, 0); // set to 0 to prevent refetching (and failing again)
+          continue;
+        }
+      }
     }),
     onGameStateChanged(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
       const data = JSON.parse(payload.content) as GameStateJSON;
+      if (data.phase == 'None') { await db.delete(matchPlayers).run(); }; // remove matchPlayers table entries for next game
       await refreshLatestMatchStart();
 
       let cMatch = await upsertCurrentMatch({
