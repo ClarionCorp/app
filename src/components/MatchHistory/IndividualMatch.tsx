@@ -5,6 +5,7 @@ import { getMapName, getCharName, getQueueName } from '../../core/objects/ody'
 import { getRankFromLP } from '../../core/objects/ranks'
 import clsx from 'clsx'
 import { TeamListing } from './TeamListing'
+import { getMapObjectFromID } from '../../core/objects/maps'
 
 type MatchHistoryRow = typeof matchHistory.$inferSelect
 
@@ -41,14 +42,14 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
       return 0
     })
 
-  const minutes = Math.floor(row.duration / 60)
-  const seconds = row.duration % 60
-  const durationDisplay = `${minutes}m ${seconds.toFixed(0)}s`
-  const mapName = getMapName(row.mapId)
+  const minutes = Math.floor(row.duration / 60);
+  const seconds = row.duration % 60;
+  const durationDisplay = `${minutes}m ${seconds.toFixed(0)}s`;
+  const mapObject = getMapObjectFromID(row.mapId);
 
-  const ratings = row.players.map(p => p.rating).filter((r): r is number => r !== null)
-  const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null
-  const avgRankData = avgRating != null ? getRankFromLP(avgRating) : null
+  const ratings = row.players.map(p => p.rating).filter((r): r is number => r !== null);
+  const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
+  const avgRankData = avgRating != null ? getRankFromLP(avgRating) : null;
   const score = `${row.myTeam === 1 ? row.t1_sets : row.t2_sets} : ${row.myTeam === 1 ? row.t2_sets : row.t1_sets}`;
 
   return (
@@ -63,7 +64,13 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
       {/* Compact Summary */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 cursor-pointer">
+        className="relative w-full px-4 py-3 cursor-pointer overflow-hidden">
+        <img
+          src={mapObject.image}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 w-full h-full object-cover opacity-5 pointer-events-none select-none"
+        />
         <div className="flex items-center justify-between gap-4">
           {/* Left side */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -123,7 +130,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
             {/* Map */}
             <div className="flex flex-col items-center gap-1">
               <span className="text-[10px] text-char-subtle">Map</span>
-              <span className="font-semibold">{mapName}</span>
+              <span className="font-semibold">{mapObject.mapName}</span>
             </div>
 
             {/* Duration */}
@@ -168,20 +175,16 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
             {/* My team */}
             <div className="px-4 py-3 space-y-2">
               <div className="text-xs font-semibold text-char-subtle mb-2">Your Team</div>
-              <div className="overflow-x-auto">
-                <div className="min-w-max space-y-1">
-                  <TeamListing players={myTeamPlayers} myUsername={myUsername} />
-                </div>
+              <div className="space-y-1">
+                <TeamListing players={myTeamPlayers} myUsername={myUsername} />
               </div>
             </div>
 
             {/* Enemy team */}
             <div className="px-4 py-3 space-y-2 border-t border-background-border/50">
               <div className="text-xs font-semibold text-char-subtle mb-2">Enemy Team</div>
-              <div className="overflow-x-auto">
-                <div className="min-w-max space-y-1">
-                  <TeamListing players={enemyTeamPlayers} myUsername={myUsername} />
-                </div>
+              <div className="space-y-1">
+                <TeamListing players={enemyTeamPlayers} myUsername={myUsername} />
               </div>
             </div>
           </motion.div>

@@ -1,10 +1,11 @@
 import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
 import { getRankFromLP } from "../objects/ranks";
-import { getMapName, getQueueName, removeDevCharPrefix } from "../objects/ody";
+import { getQueueName, removeDevCharPrefix } from "../objects/ody";
 import { getMatchPlayers } from "../database/queries";
 import { CurrentMatchTable } from "../../types/database";
 import { refreshRating } from "./odyssey";
+import { getMapObjectFromID } from "../objects/maps";
 
 const APP_ID = "1483520798017982707";
 
@@ -161,6 +162,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
 
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
+  const mapObject = getMapObjectFromID(currentMatch.map);
 
   if (
     currentMatch.gameState == null ||
@@ -174,7 +176,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
   else if (PHASE_GROUPS.starting.some(p => p === currentMatch.gameState)) {
     await refreshRating();
     await discordRpc.updateActivity({
-      details: `${getQueueName(currentMatch.queue!)} - ${getMapName(currentMatch.map!)}`,
+      details: `${getQueueName(currentMatch.queue!)} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
       startTimestamp: new Date().getTime(), //uhh fix this later lol, save timestamp in memory or db so we aren't sending the same one over and over again
       endTimestamp: new Date().getTime() + 60 * 1000,
@@ -192,7 +194,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
     let largeImg = 'aimiapp_logo_v2';
     if (myPlayer?.charId) { largeImg = removeDevCharPrefix(myPlayer?.charId as string).toLowerCase(); }
     await discordRpc.updateActivity({// cant be null here
-      details: `${getQueueName(currentMatch.queue!)} - ${getMapName(currentMatch.map!)}`,
+      details: `${getQueueName(currentMatch.queue!)} - ${mapObject.mapName}`,
       state: formatScore(
         currentMatch.teamOnePts ?? 0,
         currentMatch.teamTwoPts ?? 0,

@@ -18,7 +18,7 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
           )}
         >
           {/* Character + Username */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 min-w-0 max-w-1/5">
             <img
               src={`/characters/portrait/${p.characterId}.webp`}
               alt={getCharName(p.characterId) ?? p.characterId}
@@ -26,14 +26,14 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
             />
             <button
               onClick={() => openUrl(`https://clarioncorp.net/pilot/${p.name}`)}
-              className="text-sm font-medium w-28 truncate text-left cursor-pointer hover:underline" title={p.name}
+              className="text-sm font-medium w-full truncate text-left cursor-pointer hover:underline" title={p.name}
             >
               {p.name}
             </button>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center lg:gap-3 mx-auto shrink-0">
+          <div className="flex items-center lg:gap-3 mx-auto min-w-0 flex-wrap">
             <BasicPopover displayText={p.role}>
               <div className="flex items-center justify-center min-w-8">
                 {p.role === 'Forward' ? (

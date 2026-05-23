@@ -29,12 +29,19 @@ export function PlayerCard({ player, index, isBlue = false }: { player: MatchPla
       >
         {/* Background character watermark */}
         {player.charId && (
-          <img
-            src={`/characters/goalscore/${player.charId}.webp`}
-            alt=""
-            aria-hidden
-            className="absolute right-0 top-[-20%] h-[180%] aspect-square object-cover opacity-20 pointer-events-none select-none"
-          />
+          <>
+            <img
+              src={`/characters/goalscore/${player.charId}.webp`}
+              alt=""
+              aria-hidden
+              className="absolute right-0 top-[-20%] h-[200%] aspect-square object-cover opacity-20 pointer-events-none select-none"
+            />
+            <div
+              aria-hidden
+              className="absolute inset-y-0 right-0 w-full pointer-events-none select-none"
+              style={{ background: 'linear-gradient(to right, var(--color-surface) 80%, transparent 90%)' }}
+            />
+          </>
         )}
 
         <div className="relative flex items-center gap-4">
