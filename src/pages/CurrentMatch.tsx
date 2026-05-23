@@ -16,7 +16,7 @@ export default function CurrentMatchPage() {
   const [loading, setLoading] = useState(true);
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
   const [match, setMatchData] = useState<CurrentMatchTable>();
-  const [players, setPlayers] = useState<MatchPlayersTable[]>();
+  const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -39,8 +39,16 @@ export default function CurrentMatchPage() {
     load();
   }, []);
 
+  const myTeamNum = players.find(p => p.isMe)?.teamNum ?? 1;
+  const blueTeam = players
+    .filter(p => p.teamNum === myTeamNum)
+    .sort((a, b) => (a.role === 'Goalie' ? -1 : 1));
+  const redTeam = players
+    .filter(p => p.teamNum !== myTeamNum)
+    .sort((a, b) => (a.role === 'Goalie' ? -1 : 1));
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col">
       <div className="flex-1 overflow-y-auto px-6 py-5">
         <AnimatePresence mode="wait">
           {loading ? (
@@ -64,10 +72,26 @@ export default function CurrentMatchPage() {
               initial="hidden"
               animate="show"
             >
-              {players && players.length > 0 ? (
-                players.map((player, index) => (
-                  <PlayerCard key={player.username} player={player} index={index} />
-                ))
+              {players.length > 0 ? (
+                <>
+                  <div className="space-y-3">
+                    {blueTeam.map((player, index) => (
+                      <PlayerCard key={player.username} player={player} index={index} isBlue />
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-3 py-1">
+                    <div className="flex-1 h-px bg-background-border" />
+                    <span className="text-xs text-zinc-500">vs</span>
+                    <div className="flex-1 h-px bg-background-border" />
+                  </div>
+
+                  <div className="space-y-3">
+                    {redTeam.map((player, index) => (
+                      <PlayerCard key={player.username} player={player} index={blueTeam.length + index} />
+                    ))}
+                  </div>
+                </>
               ) : (
                 <motion.div
                   initial={{ opacity: 0 }}
