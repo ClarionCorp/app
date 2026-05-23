@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getCurrentMatch, getUser } from '../../core/database/queries';
-import { AiMiAPI } from '../../core/constants';
+import { AiMiAPI, version } from '../../core/constants';
 
 // Add back dynamic coloring when app gets bigger.
 // const onlineColor = (n: number) => n >= 100 ? 'text-green-400' : n >= 50 ? 'text-yellow-400' : 'text-red-400';
@@ -50,7 +50,7 @@ export default function TopBar() {
       {/* Right */}
       <div className="flex items-center gap-4">
         <p className="text-xs text-char-subtle">
-          State: {gameState ?? 'Game not running'}
+          v{version} by blals
         </p>
       </div>
     </div>
