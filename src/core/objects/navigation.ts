@@ -3,14 +3,14 @@ export const NAV_ITEMS = [
     label: "Current Match",
     desc: "View details about the match and its players",
     slug: 'match',
-    image: "/backgrounds/Temple.webp",
+    image: "/backgrounds/Strikers.webp",
     online: true,
   },
   {
     label: "Match History",
     desc: "See stats and make advanced changes",
     slug: 'history',
-    image: "/backgrounds/Strikers.webp"
+    image: "/backgrounds/Temple.webp"
   },
   {
     label: "Custom Games Manager",

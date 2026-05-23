@@ -71,7 +71,7 @@ export default function CurrentMatchPage() {
           ) : (
             <motion.div
               key="content"
-              className="max-w-2xl mx-auto space-y-3"
+              className="max-w mx-auto space-y-3"
               variants={containerVariants}
               initial="hidden"
               animate="show"
