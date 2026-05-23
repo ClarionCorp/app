@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
-import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
+import { MatchPlayersTable } from '../types/database';
 import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
@@ -18,7 +18,7 @@ const containerVariants: Variants = {
 export default function CurrentMatchPage() {
   const [loading, setLoading] = useState(true);
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
-  const [match, setMatchData] = useState<CurrentMatchTable>();
+  // const [match, setMatchData] = useState<CurrentMatchTable>();
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
   const [allTrainings, setTrainings] = useState<Awakenings[]>([]);
 
@@ -28,7 +28,7 @@ export default function CurrentMatchPage() {
       try {
         const matchDb = await getCurrentMatch();
         if (!matchDb) throw new Error('No active match found');
-        setMatchData(matchDb);
+        // setMatchData(matchDb);
 
         const playersDb = await getMatchPlayers();
         setPlayers(playersDb);
