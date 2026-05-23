@@ -21,13 +21,23 @@ export function PlayerCard({ player, index, isBlue = false }: { player: MatchPla
       <button
         onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
         title='Click to open profile on ClarionCorp'
-        className={`w-full text-left bg-surface border rounded-xl p-4 transition-colors cursor-pointer group shadow-xl ${
+        className={`relative w-full text-left bg-surface border rounded-xl p-4 transition-colors cursor-pointer group shadow-xl overflow-hidden ${
           isBlue
             ? 'border-blue-500/30 hover:border-blue-500/50'
             : 'border-background-border hover:border-primary/20'
         }`}
       >
-        <div className="flex items-center gap-4">
+        {/* Background character watermark */}
+        {player.charId && (
+          <img
+            src={`/characters/goalscore/${player.charId}.webp`}
+            alt=""
+            aria-hidden
+            className="absolute right-0 top-[-20%] h-[180%] aspect-square object-cover opacity-20 pointer-events-none select-none"
+          />
+        )}
+
+        <div className="relative flex items-center gap-4">
           {/* Rank icon */}
           <div className="shrink-0">
             <RankIcon rating={player.rating ?? 0} size="lg" />
@@ -61,18 +71,12 @@ export function PlayerCard({ player, index, isBlue = false }: { player: MatchPla
 
             <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span>
-                <span className="text-zinc-300 font-medium">{player.rating}</span> LP
+                Playing: <span className="text-zinc-300 font-medium">{player.charName}</span>
+              </span>
+              <span>
+                Rating: <span className="text-zinc-300 font-medium">{player.rating}</span>
               </span>
             </div>
-          </div>
-
-          {/* Character */}
-          <div className="flex items-center gap-2 shrink-0">
-            <img
-              src={`/characters/goalscore/${player.charId}.webp`}
-              alt={player.charName ?? ''}
-              className="w-20 aspect-square rounded-lg object-cover"
-            />
           </div>
         </div>
       </button>
