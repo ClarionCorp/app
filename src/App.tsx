@@ -138,7 +138,7 @@ function App() {
       <TopBar />
  
       <div className="flex">
-        {showSidebar && <Sidebar navigate={navigate} connectedToOdy={connectedToOdy} />}
+        {showSidebar && <Sidebar navigate={navigate} />}
         <main className={showSidebar ? "flex-1 pl-13" : "flex-1"}>
           <Outlet context={{
             navigate,

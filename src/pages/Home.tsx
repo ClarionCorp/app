@@ -1,6 +1,8 @@
 import { motion, type Variants } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
+import { isProcessRunning } from "../core/bridgeListener";
 import { NAV_ITEMS } from "../core/objects/navigation";
 
 const containerVariants: Variants = {
@@ -23,7 +25,12 @@ const itemVariants: Variants = {
 };
 
 export default function HomePage() {
-  const { navigate, connectedToOdy } = useOutletContext<AppContextType>();
+  const { navigate } = useOutletContext<AppContextType>();
+  const [gameRunning, setGameRunning] = useState(false);
+
+  useEffect(() => {
+    isProcessRunning('OmegaStrikers-Win64-Shipping.exe').then(setGameRunning);
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] bg-background px-8 pb-24">
@@ -56,7 +63,7 @@ export default function HomePage() {
         animate="show"
       >
         {NAV_ITEMS.map((item) => {
-          const disabled = item.online && !connectedToOdy;
+          const disabled = item.online && !gameRunning;
           return (
             <motion.div key={item.slug} variants={itemVariants}>
               <NavButton item={item} disabled={disabled} onClick={() => !disabled && navigate(item.slug)} />

@@ -25,7 +25,7 @@ const router = createHashRouter([
       { path: "match",            element: <CurrentMatchPage /> },
       { path: "mods",             element: <ComingSoonPage /> },
       { path: "settings",         element: <ComingSoonPage /> },
-      { path: "account",          element: <ComingSoonPage /> },
+      { path: "history",          element: <ComingSoonPage /> },
       { path: "debug",            element: <DebugPage /> },
     ],
   },

@@ -42,6 +42,10 @@ export async function getAllPossibleTrainings(): Promise<string[]> {
   return invoke<string[]>('get_all_possible_trainings');
 }
 
+export async function isProcessRunning(name: string): Promise<boolean> {
+  return invoke<boolean>('is_process_running', { name });
+}
+
 export async function refreshLatestMatchStart(): Promise<void> {
   const ts = await invoke<string | null>('get_latest_match_timestamp');
   if (!ts) return;

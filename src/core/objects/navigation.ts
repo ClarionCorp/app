@@ -4,12 +4,12 @@ export const NAV_ITEMS = [
     desc: "View details about the match and its players",
     slug: 'match',
     image: "/backgrounds/Temple.webp",
-    // online: true,
+    online: true,
   },
   {
     label: "Match History",
     desc: "See stats and make advanced changes",
-    slug: 'account',
+    slug: 'history',
     image: "/backgrounds/Strikers.webp"
   },
   {

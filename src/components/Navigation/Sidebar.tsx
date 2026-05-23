@@ -1,34 +1,39 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { isProcessRunning } from '../../core/bridgeListener';
 import {
-  UserIcon,
   ChartBarIcon,
   GameControllerIcon,
   QueueIcon,
   PuzzlePieceIcon,
   GearIcon,
   HouseIcon,
+  ClockCounterClockwiseIcon,
 } from '@phosphor-icons/react';
 import { NAV_ITEMS } from '../../core/objects/navigation';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
-  account:     <UserIcon size={18} weight="duotone" />,
-  match:       <ChartBarIcon size={18} weight="duotone" />,
-  cgm:         <GameControllerIcon size={18} weight="duotone" />,
-  cqm:         <QueueIcon size={18} weight="duotone" />,
-  mods:        <PuzzlePieceIcon size={18} weight="duotone" />,
-  settings:    <GearIcon size={18} weight="duotone" />,
+  match: <ChartBarIcon size={18} weight="duotone" />,
+  history: <ClockCounterClockwiseIcon size={18} weight="duotone" />,
+  cgm: <GameControllerIcon size={18} weight="duotone" />,
+  cqm: <QueueIcon size={18} weight="duotone" />,
+  mods: <PuzzlePieceIcon size={18} weight="duotone" />,
+  settings: <GearIcon size={18} weight="duotone" />,
 };
 
 interface SidebarProps {
   navigate: (path: string) => void;
-  connectedToOdy: boolean;
 }
 
-export default function Sidebar({ navigate, connectedToOdy }: SidebarProps) {
+export default function Sidebar({ navigate }: SidebarProps) {
   const location = useLocation();
   const [hovered, setHovered] = useState(false);
+  const [gameRunning, setGameRunning] = useState(false);
+
+  useEffect(() => {
+    isProcessRunning('OmegaStrikers-Win64-Shipping.exe').then(setGameRunning);
+  }, []);
 
   const currentSlug = location.pathname.replace('/', '');
 
@@ -62,7 +67,7 @@ export default function Sidebar({ navigate, connectedToOdy }: SidebarProps) {
 
         {NAV_ITEMS.map((item) => {
           const isActive = currentSlug === item.slug;
-          const disabled = item.online && !connectedToOdy;
+          const disabled = item.online && !gameRunning;
           return (
             <button
               key={item.slug}
