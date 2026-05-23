@@ -36,6 +36,14 @@ export async function getCurrentMatch() {
   return db.select().from(currentMatch).limit(1).then(r => r[0] ?? null);
 }
 
+export async function getMatchPlayers() {
+  return db.select().from(matchPlayers);
+}
+
+export async function getMyMatchPlayer() {
+  return db.select().from(matchPlayers).where(eq(matchPlayers.isMe, true)).limit(1).then(r => r[0] ?? null);
+}
+
 
 //
 // Setters
@@ -83,10 +91,6 @@ export async function upsertCurrentMatch(data: Omit<typeof currentMatch.$inferIn
   return rows[0];
 }
 
-export async function getMatchPlayers() {
-  return db.select().from(matchPlayers);
-}
-
 export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[]) {
   if (players.length === 0) return [];
   return db.insert(matchPlayers).values(players).onConflictDoUpdate({
@@ -102,10 +106,6 @@ export async function updatePlayerRating(username: string, rating: number) {
     .set({ rating })
     .where(eq(matchPlayers.username, username))
     .returning();
-}
-
-export async function getMyMatchPlayer() {
-  return db.select().from(matchPlayers).where(eq(matchPlayers.isMe, true)).limit(1).then(r => r[0] ?? null);
 }
 
 export async function insertMatchHistory(data: Omit<typeof matchHistory.$inferInsert, "id">) {
