@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { matchHistory } from '../../core/database/schema'
-import { getMapName, getCharName } from '../../core/objects/ody'
+import { getMapName, getCharName, getQueueName } from '../../core/objects/ody'
 import { getRankFromLP } from '../../core/objects/ranks'
 import clsx from 'clsx'
 import { TeamListing } from './TeamListing'
@@ -161,7 +161,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
           >
             {/* Header */}
             <div className="px-4 py-2 bg-surface-raised/20 flex items-center justify-between text-xs">
-              <span className="text-char-subtle">{row.queue} ({score})</span>
+              <span className="text-char-subtle">{getQueueName(row.queue)} ({score})</span>
               <span className="text-char-subtle">Played {formatRelativeTime(row.createdAt)}</span>
             </div>
 

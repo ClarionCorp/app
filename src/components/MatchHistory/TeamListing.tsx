@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { getCharName } from "../../core/objects/ody";
 import { ShieldIcon, SwordIcon } from "@phosphor-icons/react";
 import { MatchPlayer } from "../../types/ue4ss";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; myUsername: string }) {
   return (
@@ -23,13 +24,16 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
               alt={getCharName(p.characterId) ?? p.characterId}
               className="w-8 h-8 rounded object-cover"
             />
-            <span className="text-sm font-medium w-28 truncate" title={p.name}>
+            <button
+              onClick={() => openUrl(`https://clarioncorp.net/pilot/${p.name}`)}
+              className="text-sm font-medium w-28 truncate text-left cursor-pointer hover:underline" title={p.name}
+            >
               {p.name}
-            </span>
+            </button>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-2 lg:gap-3 mx-auto shrink-0">
+          <div className="flex items-center lg:gap-3 mx-auto shrink-0">
             <BasicPopover displayText={p.role}>
               <div className="flex items-center justify-center min-w-8">
                 {p.role === 'Forward' ? (
@@ -39,25 +43,41 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
                 )}
               </div>
             </BasicPopover>
-            <div className="flex flex-col items-center min-w-12">
+            <div className="flex flex-col items-center min-w-11">
               <span className="text-char-subtle text-[10px] leading-tight">Level</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.level}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-12', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-10', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Goals</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.goals}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-12', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Assists</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.assists}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-12', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Saves</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.saves}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-12', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">KOs</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.kos}</span>
+            </div>
+            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
+              <span className="text-char-subtle text-[10px] leading-tight">Damage</span>
+              <span className="text-xs lg:text-sm font-semibold leading-tight">{p.damage}</span>
+            </div>
+            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
+              <span className="text-char-subtle text-[10px] leading-tight">Shots</span>
+              <span className="text-xs lg:text-sm font-semibold leading-tight">{p.shots}</span>
+            </div>
+            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
+              <span className="text-char-subtle text-[10px] leading-tight">Redirects</span>
+              <span className="text-xs lg:text-sm font-semibold leading-tight">{p.redirects}</span>
+            </div>
+            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
+              <span className="text-char-subtle text-[10px] leading-tight">Orbs</span>
+              <span className="text-xs lg:text-sm font-semibold leading-tight">{p.orbs}</span>
             </div>
           </div>
 
@@ -80,8 +100,8 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
               </div>
             )}
             <div className="flex flex-col items-center gap-1">
-              <span className="text-[10px] text-char-subtle whitespace-nowrap">Trainings</span>
-              <div className="flex gap-0.5">
+              <span className="text-[10px] text-char-subtle whitespace-nowrap">Awakenings</span>
+              <div className="flex flex-wrap gap-0.5" style={{ maxWidth: '108px' }}>
                 {p.trainings.map((id, idx) => {
                   const info = getTrainingInfo(id)
                   if (!info || info.gear) return null

@@ -75,7 +75,7 @@ export function Dropdown({ items, open, onClose, className, triggerRef }: Dropdo
           animate="show"
           exit="exit"
           className={cn(
-            'absolute top-full left-2 right-2 mt-1 z-50',
+            'absolute top-full left-0 mt-1 z-10 min-w-full w-max',
             'bg-surface rounded-lg border border-background-border shadow-xl shadow-black/30 p-1',
             className
           )}

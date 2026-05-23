@@ -100,6 +100,8 @@ export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[
   return db.insert(matchPlayers).values(players).onConflictDoUpdate({
     target: matchPlayers.username,
     set: {
+      charName: sql`excluded.charName`,
+      charId: sql`excluded.charId`,
       xp: sql`excluded.xp`,
     },
   }).returning();

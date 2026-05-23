@@ -292,7 +292,7 @@ export const TRAININGS: Record<string, TrainingInfo> = {
     description: "Hits grant stacking Speed; lost if K.O.'d"
   },
   "TD_HitSpeed": {
-    awakeningId: "T_FightorFlight",
+    awakeningId: "T_FightOrFlight",
     image: "/trainings/TD_HitSpeed.webp",
     name: "Fight or Flight",
     description: "Hits grant Speed. Staggering hits refresh SECONDARY"

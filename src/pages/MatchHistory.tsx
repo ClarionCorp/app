@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { getMatchHistory, getUser } from '../core/database/queries'
 import { matchHistory } from '../core/database/schema'
-import { getMapName } from '../core/objects/ody'
-import { Dropdown } from '../components/UI/Dropdown'
+import { MAPS } from '../core/objects/maps'
+import { QUEUES } from '../core/objects/queues'
+import { Dropdown, type DropdownItem } from '../components/UI/Dropdown'
 import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import IndividualMatch from '../components/MatchHistory/IndividualMatch'
 
@@ -11,37 +12,46 @@ type MatchHistoryRow = typeof matchHistory.$inferSelect
 function FilterButton({
   label,
   active,
-  onOpen,
   onClear,
-  triggerRef,
+  items,
 }: {
   label: string
   active: boolean
-  onOpen: () => void
   onClear: () => void
-  triggerRef: React.RefObject<HTMLButtonElement | null>
+  items: DropdownItem[]
 }) {
+  const [open, setOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
   return (
-    <button
-      ref={triggerRef}
-      onClick={onOpen}
-      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors cursor-pointer ${
-        active ? 'border-primary/40 bg-primary/10' : 'border-background-border'
-      }`}
-    >
-      <span className={active ? 'text-char' : 'text-char-subtle'}>{label}</span>
-      {active ? (
-        <span
-          role="button"
-          onClick={(e) => { e.stopPropagation(); onClear() }}
-          className="text-char-subtle hover:text-char transition-colors"
-        >
-          <XIcon size={12} />
-        </span>
-      ) : (
-        <CaretDownIcon size={12} className="text-char-subtle" />
-      )}
-    </button>
+    <div className="relative">
+      <button
+        ref={triggerRef}
+        onClick={() => setOpen(o => !o)}
+        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors cursor-pointer ${
+          active ? 'border-primary/40 bg-primary/10' : 'border-background-border'
+        }`}
+      >
+        <span className={active ? 'text-char' : 'text-char-subtle'}>{label}</span>
+        {active ? (
+          <span
+            role="button"
+            onClick={(e) => { e.stopPropagation(); onClear() }}
+            className="text-char-subtle hover:text-char transition-colors"
+          >
+            <XIcon size={12} />
+          </span>
+        ) : (
+          <CaretDownIcon size={12} className="text-char-subtle" />
+        )}
+      </button>
+      <Dropdown
+        open={open}
+        onClose={() => setOpen(false)}
+        triggerRef={triggerRef}
+        items={items}
+      />
+    </div>
   )
 }
 
@@ -52,11 +62,6 @@ export default function MatchHistoryPage() {
 
   const [queueFilter, setQueueFilter] = useState<string | null>(null)
   const [mapFilter, setMapFilter] = useState<string | null>(null)
-  const [queueOpen, setQueueOpen] = useState(false)
-  const [mapOpen, setMapOpen] = useState(false)
-
-  const queueTriggerRef = useRef<HTMLButtonElement>(null)
-  const mapTriggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -68,12 +73,9 @@ export default function MatchHistoryPage() {
     load()
   }, [])
 
-  const queueOptions = [...new Set(matches.map(m => m.queue).filter(Boolean))] as string[]
-  const mapOptions = [...new Set(matches.map(m => getMapName(m.mapId)))]
-
   const filtered = matches.filter(m => {
     if (queueFilter && m.queue !== queueFilter) return false
-    if (mapFilter && getMapName(m.mapId) !== mapFilter) return false
+    if (mapFilter && m.mapId !== mapFilter) return false
     return true
   })
 
@@ -98,43 +100,27 @@ export default function MatchHistoryPage() {
     <div className="px-6 py-5 max-w-5xl mx-auto">
       {/* Filter bar */}
       <div className="flex items-center gap-2 mb-4">
-        <div className="relative">
-          <FilterButton
-            label={queueFilter ?? 'All Queues'}
-            active={queueFilter !== null}
-            onOpen={() => setQueueOpen(o => !o)}
-            onClear={() => setQueueFilter(null)}
-            triggerRef={queueTriggerRef}
-          />
-          <Dropdown
-            open={queueOpen}
-            onClose={() => setQueueOpen(false)}
-            triggerRef={queueTriggerRef}
-            items={queueOptions.map(q => ({
-              label: q,
-              onClick: () => setQueueFilter(q === queueFilter ? null : q),
-            }))}
-          />
-        </div>
+        <FilterButton
+          label={QUEUES.find(q => q.queueId === queueFilter)?.queueName ?? 'All Queues'}
+          active={queueFilter !== null}
+          onClear={() => setQueueFilter(null)}
+          items={QUEUES.map(q => ({
+            label: q.queueName,
+            icon: <q.icon size={14} />,
+            onClick: () => setQueueFilter(q.queueId === queueFilter ? null : q.queueId),
+          }))}
+        />
 
-        <div className="relative">
-          <FilterButton
-            label={mapFilter ?? 'All Maps'}
-            active={mapFilter !== null}
-            onOpen={() => setMapOpen(o => !o)}
-            onClear={() => setMapFilter(null)}
-            triggerRef={mapTriggerRef}
-          />
-          <Dropdown
-            open={mapOpen}
-            onClose={() => setMapOpen(false)}
-            triggerRef={mapTriggerRef}
-            items={mapOptions.map(m => ({
-              label: m,
-              onClick: () => setMapFilter(m === mapFilter ? null : m),
-            }))}
-          />
-        </div>
+        <FilterButton
+          label={MAPS.find(m => m.mapId === mapFilter)?.mapName ?? 'All Maps'}
+          active={mapFilter !== null}
+          onClear={() => setMapFilter(null)}
+          items={MAPS.map(m => ({
+            label: m.mapName,
+            icon: <m.icon size={14} />,
+            onClick: () => setMapFilter(m.mapId === mapFilter ? null : m.mapId),
+          }))}
+        />
 
         <span className="text-xs text-char-subtle ml-auto">
           {filtered.length} of {matches.length} match{matches.length !== 1 ? 'es' : ''}
