@@ -7,15 +7,14 @@ const POLL_MS = 3000;
 const HOVER_LEAVE_DELAY = 150;
 
 export function AvailableTrainings({ allTrainings }: { allTrainings: string[] }) {
-  const [available, setAvailable] = useState<string[]>(allTrainings);
+  const [claimed, setClaimed] = useState<Set<string>>(new Set());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     async function refresh() {
       const playerTrainings = await getPlayerTrainings();
-      const claimed = new Set(playerTrainings.flatMap(p => p.trainings));
-      setAvailable(allTrainings.filter(id => !claimed.has(id)));
+      setClaimed(new Set(playerTrainings.flatMap(p => p.trainings)));
     }
 
     refresh();
@@ -23,7 +22,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
     return () => clearInterval(id);
   }, [allTrainings]);
 
-  const displayable = available
+  const displayable = allTrainings
     .filter(id => {
       const info = getTrainingInfo(id);
       return info && !info.disabled;
@@ -34,12 +33,14 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
       return nameA.localeCompare(nameB);
     });
 
+  const availableCount = displayable.filter(id => !claimed.has(id)).length;
   const hoveredInfo = hoveredId ? getTrainingInfo(hoveredId) : null;
+  const hoveredIsTaken = hoveredId ? claimed.has(hoveredId) : false;
 
   return (
     <div className="bg-surface border border-background-border rounded-xl p-4">
       <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
-        Available Trainings ({displayable.length})
+        Available Trainings ({availableCount})
       </p>
       <div
         className="flex flex-wrap gap-1"
@@ -49,6 +50,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
       >
         {displayable.map(id => {
           const info = getTrainingInfo(id)!;
+          const isTaken = claimed.has(id);
           return (
             <div
               key={id}
@@ -61,7 +63,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
               <img
                 src={info.image}
                 alt={info.name}
-                className={`w-10 h-10 rounded transition-opacity cursor-pointer ${hoveredId && hoveredId !== id ? 'opacity-40' : 'opacity-100'}`}
+                className={`w-10 h-10 rounded cursor-pointer transition-all ${isTaken ? 'grayscale brightness-50' : ''} ${hoveredId && hoveredId !== id ? 'opacity-40' : 'opacity-100'}`}
               />
             </div>
           );
@@ -87,9 +89,12 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                <img src={hoveredInfo.image} alt={hoveredInfo.name} className="w-16 h-16 rounded-lg shrink-0" />
+                <img src={hoveredInfo.image} alt={hoveredInfo.name} className={`w-16 h-16 rounded-lg shrink-0 ${hoveredIsTaken ? 'grayscale brightness-50' : ''}`} />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-char">{hoveredInfo.name}</p>
+                  <p className="text-sm font-semibold text-char flex items-center gap-2">
+                    {hoveredInfo.name}
+                    {hoveredIsTaken && <span className="text-xs font-bold text-red-400">(TAKEN)</span>}
+                  </p>
                   <p className="text-xs text-char-subtle mt-1 leading-snug">{hoveredInfo.description}</p>
                 </div>
               </motion.div>
