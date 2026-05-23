@@ -81,7 +81,7 @@ export function mergeMatchPlayers(
       level: getLevelFromXP(player.xp ?? 0),
       role: player.role ?? 'Forward',
       team: player.teamNum ?? 1,
-      trainings: playerTrainings?.trainings ?? [],
+      trainings: [...new Set(playerTrainings?.trainings ?? [])],
       goals: stats?.goals ?? '0',
       redirects: stats?.redirects ?? '0',
       kos: stats?.kos ?? '0',

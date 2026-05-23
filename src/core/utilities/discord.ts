@@ -152,7 +152,7 @@ async function _clearActivity() {
 
 export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
   if (!discordRpc) { console.warn(`[DRPC] Not started, skipping update.`); return; }
-  console.debug(`GameState Changed! (${currentMatch.gameState})`);
+  console.info(`GameState Changed! (${currentMatch.gameState})`);
 
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);

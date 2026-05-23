@@ -1,6 +1,7 @@
 use std::io::{BufRead, BufReader, Seek, SeekFrom};
 
 const START_OF_MATCH: &str = "Previous[EMatchPhase::VersusScreen]";
+const REGISTER_TRAININGS: &str = "Previous[EMatchPhase::CharacterSelect]";
 const SCAN_TAIL_BYTES: u64 = 2 * 1024 * 1024;
 
 #[derive(serde::Serialize)]
@@ -94,7 +95,7 @@ fn find_player_awakenings(path: &std::path::Path) -> Vec<PlayerAwakenings> {
     let mut players: Vec<(String, Vec<String>)> = Vec::new();
 
     for line in reader.lines().flatten() {
-        if line.contains(START_OF_MATCH) {
+        if line.contains(REGISTER_TRAININGS) {
             players.clear();
         } else if let Some((username, training)) = parse_training_line(&line) {
             if let Some(entry) = players.iter_mut().find(|(u, _)| u == &username) {
