@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
-import { MatchPlayersTable } from '../types/database';
+import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
@@ -18,7 +18,7 @@ const containerVariants: Variants = {
 export default function CurrentMatchPage() {
   const [loading, setLoading] = useState(true);
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
-  // const [match, setMatchData] = useState<CurrentMatchTable>();
+  const [match, setMatchData] = useState<CurrentMatchTable>();
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
   const [allTrainings, setTrainings] = useState<Awakenings[]>([]);
 
@@ -28,7 +28,7 @@ export default function CurrentMatchPage() {
       try {
         const matchDb = await getCurrentMatch();
         if (!matchDb) throw new Error('No active match found');
-        // setMatchData(matchDb);
+        setMatchData(matchDb);
 
         const playersDb = await getMatchPlayers();
         setPlayers(playersDb);
@@ -50,6 +50,8 @@ export default function CurrentMatchPage() {
     const id = setInterval(async () => {
       const playersDb = await getMatchPlayers();
       setPlayers(playersDb);
+      const matchDb = await getCurrentMatch();
+      setMatchData(matchDb);
     }, 5000);
     return () => clearInterval(id);
   }, [loading]);
@@ -95,7 +97,7 @@ export default function CurrentMatchPage() {
                 <>
                   <div className="space-y-3">
                     {blueTeam.map((player, index) => (
-                      <PlayerCard key={player.username} player={player} index={index} isBlue />
+                      <PlayerCard key={player.username} player={player} match={match} index={index} isBlue />
                     ))}
                   </div>
 
@@ -107,7 +109,7 @@ export default function CurrentMatchPage() {
 
                   <div className="space-y-3">
                     {redTeam.map((player, index) => (
-                      <PlayerCard key={player.username} player={player} index={blueTeam.length + index} />
+                      <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} />
                     ))}
                   </div>
                 </>

@@ -3,14 +3,18 @@ import { getRankFromLP } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
 import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { MatchPlayersTable } from '../../types/database';
+import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
+import { getGameStatus } from '../../core/objects/gameStates';
 
 
-export function PlayerCard({ player, index, isBlue = false }: { player: MatchPlayersTable, index: number, isBlue?: boolean }) {
+export function PlayerCard({ player, match, index, isBlue = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean }) {
   const rankInfo = getRankFromLP(player.rating);
   // const winRate = player.games > 0
   //   ? ((player.wins / player.games) * 100).toFixed(1)
   //   : '0.0';
+
+  // We need to make sure the game has either started or isn't going
+  const charName = match && getGameStatus(match.gameState) !== 'STARTING' ? (player.charName ?? '—') : '—';
 
   return (
     <motion.div
@@ -28,7 +32,8 @@ export function PlayerCard({ player, index, isBlue = false }: { player: MatchPla
         }`}
       >
         {/* Background character watermark */}
-        {player.charId && (
+        {/* We need to make sure the game has either started or isn't going */}
+        {player.charId && match && getGameStatus(match.gameState) !== 'STARTING' && (
           <>
             <img
               src={`/characters/goalscore/${player.charId}.webp`}
@@ -78,7 +83,7 @@ export function PlayerCard({ player, index, isBlue = false }: { player: MatchPla
 
             <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span>
-                Playing: <span className="text-zinc-300 font-medium">{player.charName ?? '—'}</span>
+                Playing: <span className="text-zinc-300 font-medium">{charName}</span>
               </span>
               <span>
                 Rating: <span className="text-zinc-300 font-medium">{player.rating}</span>
