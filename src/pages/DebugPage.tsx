@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
 import type { CurrentMatchTable, MatchPlayersTable } from '../types/database';
+import { TRAININGS } from '../core/objects/trainings';
 
 const POLL_MS = 2000;
 
@@ -21,6 +22,8 @@ function SectionHeader({ title }: { title: string }) {
     </p>
   );
 }
+
+const activeTrainings = Object.entries(TRAININGS).filter(([, info]) => !info.disabled);
 
 export default function DebugPage() {
   const [match, setMatch] = useState<CurrentMatchTable | null>(null);
@@ -84,6 +87,19 @@ export default function DebugPage() {
               />
             ))
           )}
+        </div>
+
+        {/* Trainings */}
+        <div className="bg-surface-subtle border border-background-border rounded-xl px-4 mt-3 pb-4">
+          <SectionHeader title={`Trainings (${activeTrainings.length})`} />
+          <div className="grid grid-cols-6 gap-3">
+            {activeTrainings.map(([id, info]) => (
+              <div key={id} className="flex flex-col items-center gap-1">
+                <img src={info.image} alt={info.name} className="w-10 h-10 rounded" />
+                <span className="text-[10px] text-char text-center leading-tight">{info.name || id}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </motion.div>
     </div>

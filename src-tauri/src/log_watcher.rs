@@ -3,6 +3,8 @@ use std::io::{BufRead, BufReader, Seek, SeekFrom};
 const START_OF_MATCH: &str = "Previous[EMatchPhase::VersusScreen]";
 const REGISTER_TRAININGS: &str = "Previous[EMatchPhase::CharacterSelect]";
 const SCAN_TAIL_BYTES: u64 = 2 * 1024 * 1024;
+const POSSIBLE_TRAININGS_HEADER: &str = "UPMGameInstance::GetAllPossibleTrainings - Getting All possible trainings:";
+const POSSIBLE_TRAININGS_MARKER: &str = "UPMGameInstance::GetAllPossibleTrainings - ";
 
 #[derive(serde::Serialize)]
 pub struct PlayerAwakenings {
@@ -116,5 +118,70 @@ fn find_player_awakenings(path: &std::path::Path) -> Vec<PlayerAwakenings> {
 pub fn get_player_awakenings() -> Vec<PlayerAwakenings> {
     log_path()
         .map(|p| find_player_awakenings(&p))
+        .unwrap_or_default()
+}
+
+fn parse_possible_training_line(line: &str) -> Option<String> {
+    let idx = line.find(POSSIBLE_TRAININGS_MARKER)?;
+    let rest = &line[idx + POSSIBLE_TRAININGS_MARKER.len()..];
+
+    if rest.starts_with("Getting All possible trainings:") {
+        return None;
+    }
+
+    if let Some(after_adding) = rest.strip_prefix("Adding ") {
+        let end = after_adding.find(' ')?;
+        let id = after_adding[..end].to_string();
+        if !id.is_empty() { return Some(id); }
+    } else {
+        let id = rest.trim().to_string();
+        if !id.is_empty() { return Some(id); }
+    }
+
+    None
+}
+
+fn find_all_possible_trainings(path: &std::path::Path) -> Vec<String> {
+    let file = match std::fs::File::open(path) {
+        Ok(f) => f,
+        Err(_) => return vec![],
+    };
+    let file_size = match file.metadata() {
+        Ok(m) => m.len(),
+        Err(_) => return vec![],
+    };
+    let start_pos = file_size.saturating_sub(SCAN_TAIL_BYTES);
+
+    let mut reader = BufReader::new(file);
+    if reader.seek(SeekFrom::Start(start_pos)).is_err() {
+        return vec![];
+    }
+
+    if start_pos > 0 {
+        let mut discard = String::new();
+        let _ = reader.read_line(&mut discard);
+    }
+
+    let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut current: Vec<String> = Vec::new();
+
+    for line in reader.lines().flatten() {
+        if line.contains(POSSIBLE_TRAININGS_HEADER) {
+            seen.clear();
+            current.clear();
+        } else if let Some(id) = parse_possible_training_line(&line) {
+            if seen.insert(id.clone()) {
+                current.push(id);
+            }
+        }
+    }
+
+    current
+}
+
+#[tauri::command]
+pub fn get_all_possible_trainings() -> Vec<String> {
+    log_path()
+        .map(|p| find_all_possible_trainings(&p))
         .unwrap_or_default()
 }

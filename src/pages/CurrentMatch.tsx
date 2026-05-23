@@ -5,6 +5,7 @@ import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
+import { getAllPossibleTrainings } from '../core/bridgeListener';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -17,6 +18,7 @@ export default function CurrentMatchPage() {
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
   const [match, setMatchData] = useState<CurrentMatchTable>();
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
+  const [allTrainings, setTrainings] = useState<string[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -28,6 +30,8 @@ export default function CurrentMatchPage() {
 
         const playersDb = await getMatchPlayers();
         setPlayers(playersDb);
+
+        setTrainings(await getAllPossibleTrainings());
         setRetryMessage(null);
         setLoading(false);
       } catch (e) {
