@@ -35,3 +35,13 @@ export type PlayerRating = {
   games: number,
   createdAt: Date
 }
+
+export type Awakenings = {
+  id: string, // awakening id, not training id
+  name: string,
+  description?: string | null,
+  image: string,
+  active: boolean,
+  gear: boolean,
+  rotatedIn?: Date
+}

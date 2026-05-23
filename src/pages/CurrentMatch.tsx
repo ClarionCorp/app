@@ -5,8 +5,9 @@ import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
-import { getAllPossibleTrainings } from '../core/bridgeListener';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
+import { Awakenings } from '../types/clarion';
+import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -19,7 +20,7 @@ export default function CurrentMatchPage() {
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
   const [match, setMatchData] = useState<CurrentMatchTable>();
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
-  const [allTrainings, setTrainings] = useState<string[]>([]);
+  const [allTrainings, setTrainings] = useState<Awakenings[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -32,7 +33,7 @@ export default function CurrentMatchPage() {
         const playersDb = await getMatchPlayers();
         setPlayers(playersDb);
 
-        setTrainings(await getAllPossibleTrainings());
+        setTrainings(await getCurrentAwakeningRotation());
         setRetryMessage(null);
         setLoading(false);
       } catch (e) {

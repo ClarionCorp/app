@@ -1,20 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { getPlayerTrainings } from '../../core/bridgeListener';
-import { getTrainingInfo } from '../../core/objects/trainings';
+import { TRAININGS } from '../../core/objects/trainings';
+import type { Awakenings } from '../../types/clarion';
 
 const POLL_MS = 3000;
 const HOVER_LEAVE_DELAY = 150;
 
-export function AvailableTrainings({ allTrainings }: { allTrainings: string[] }) {
-  const [claimed, setClaimed] = useState<Set<string>>(new Set());
+// training id -> awakening id
+const TRAINING_TO_AWAKENING: Record<string, string> = Object.fromEntries(
+  Object.entries(TRAININGS)
+    .filter(([, info]) => info.awakeningId)
+    .map(([id, info]) => [id, info.awakeningId])
+);
+
+export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[] }) {
+  const [claimedAwakeningIds, setClaimedAwakeningIds] = useState<Set<string>>(new Set());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     async function refresh() {
       const playerTrainings = await getPlayerTrainings();
-      setClaimed(new Set(playerTrainings.flatMap(p => p.trainings)));
+      const claimedTrainingIds = new Set(playerTrainings.flatMap(p => p.trainings));
+      const awakeningIds = new Set(
+        Object.entries(TRAINING_TO_AWAKENING)
+          .filter(([trainingId]) => claimedTrainingIds.has(trainingId))
+          .map(([, awakeningId]) => awakeningId)
+      );
+      setClaimedAwakeningIds(awakeningIds);
     }
 
     refresh();
@@ -23,24 +37,17 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
   }, [allTrainings]);
 
   const displayable = allTrainings
-    .filter(id => {
-      const info = getTrainingInfo(id);
-      return info && !info.disabled;
-    })
-    .sort((a, b) => {
-      const nameA = getTrainingInfo(a)?.name ?? a;
-      const nameB = getTrainingInfo(b)?.name ?? b;
-      return nameA.localeCompare(nameB);
-    });
+    .filter(a => a.active && !a.gear)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-  const availableCount = displayable.filter(id => !claimed.has(id)).length;
-  const hoveredInfo = hoveredId ? getTrainingInfo(hoveredId) : null;
-  const hoveredIsTaken = hoveredId ? claimed.has(hoveredId) : false;
+  const availableCount = displayable.filter(a => !claimedAwakeningIds.has(a.id)).length;
+  const hovered = hoveredId ? displayable.find(a => a.id === hoveredId) ?? null : null;
+  const hoveredIsTaken = hoveredId ? claimedAwakeningIds.has(hoveredId) : false;
 
   return (
     <div className="bg-surface border border-background-border rounded-xl p-4">
       <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
-        Available Trainings ({availableCount})
+        Available Awakenings in Rotation ({availableCount})
       </p>
       <div
         className="flex flex-wrap gap-1"
@@ -48,22 +55,21 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
           leaveTimer.current = setTimeout(() => setHoveredId(null), HOVER_LEAVE_DELAY);
         }}
       >
-        {displayable.map(id => {
-          const info = getTrainingInfo(id)!;
-          const isTaken = claimed.has(id);
+        {displayable.map(awakening => {
+          const isTaken = claimedAwakeningIds.has(awakening.id);
           return (
             <div
-              key={id}
+              key={awakening.id}
               className="relative"
               onMouseEnter={() => {
                 if (leaveTimer.current) clearTimeout(leaveTimer.current);
-                setHoveredId(id);
+                setHoveredId(awakening.id);
               }}
             >
               <img
-                src={info.image}
-                alt={info.name}
-                className={`w-10 h-10 rounded cursor-pointer transition-all ${isTaken ? 'grayscale brightness-50' : ''} ${hoveredId && hoveredId !== id ? 'opacity-40' : 'opacity-100'}`}
+                src={awakening.image}
+                alt={awakening.name}
+                className={`w-10 h-10 rounded cursor-pointer transition-all ${isTaken ? 'grayscale brightness-50' : ''} ${hoveredId && hoveredId !== awakening.id ? 'opacity-40' : 'opacity-100'}`}
               />
             </div>
           );
@@ -71,7 +77,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
       </div>
 
       <AnimatePresence>
-        {hoveredInfo && (
+        {hovered && (
           <motion.div
             key="panel"
             className="border-t border-background-border overflow-hidden"
@@ -89,13 +95,13 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: string[] })
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                <img src={hoveredInfo.image} alt={hoveredInfo.name} className={`w-16 h-16 rounded-lg shrink-0 ${hoveredIsTaken ? 'grayscale brightness-50' : ''}`} />
+                <img src={hovered.image} alt={hovered.name} className={`w-16 h-16 rounded-lg shrink-0 ${hoveredIsTaken ? 'grayscale brightness-50' : ''}`} />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-char flex items-center gap-2">
-                    {hoveredInfo.name}
+                    {hovered.name}
                     {hoveredIsTaken && <span className="text-xs font-bold text-red-400">(TAKEN)</span>}
                   </p>
-                  <p className="text-xs text-char-subtle mt-1 leading-snug">{hoveredInfo.description}</p>
+                  <p className="text-xs text-char-subtle mt-1 leading-snug">{hovered.description}</p>
                 </div>
               </motion.div>
             </AnimatePresence>
