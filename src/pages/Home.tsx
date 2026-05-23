@@ -24,15 +24,6 @@ const itemVariants: Variants = {
 
 export default function HomePage() {
   const { navigate, connectedToOdy } = useOutletContext<AppContextType>();
-  // const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type;
-  // const wasReloaded = navType === "reload" && sessionStorage.getItem("reloadHandled") !== "true";
-
-  // if (wasReloaded) {
-  //   throw new Error(`App doesn't currently support forced refresh. Please Restart.`);
-  // }
-
-  // sessionStorage.removeItem("reloadHandled");
-
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] bg-background px-8 pb-24">

@@ -48,10 +48,10 @@ export default function CurrentMatchPage() {
   const myTeamNum = players.find(p => p.isMe)?.teamNum ?? 1;
   const blueTeam = players
     .filter(p => p.teamNum === myTeamNum)
-    .sort((a, b) => (a.role === 'Goalie' ? -1 : 1));
+    .sort((a) => (a.role === 'Goalie' ? -1 : 1));
   const redTeam = players
     .filter(p => p.teamNum !== myTeamNum)
-    .sort((a, b) => (a.role === 'Goalie' ? -1 : 1));
+    .sort((a) => (a.role === 'Goalie' ? -1 : 1));
 
   return (
     <div className="flex flex-col">
@@ -61,13 +61,11 @@ export default function CurrentMatchPage() {
             <motion.div
               key="loading"
               className="flex flex-col items-center justify-center h-full min-h-64 gap-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <div className="w-8 h-8 rounded-full border-[3px] border-surface-overlay border-t-primary animate-spin" />
               <p className="text-xs text-white">
-                {retryMessage ?? 'Fetching player data...'}
+                {retryMessage ?? 'Loading data...'}
               </p>
             </motion.div>
           ) : (
