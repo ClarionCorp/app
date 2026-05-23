@@ -12,6 +12,8 @@ import { getAppSettings, upsertAppSettings, updateRating, upsertUser } from "../
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { db } from "../core/database/driver";
 import { matchPlayers } from "../core/database/schema";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { version } from "../core/constants";
 
 const STEPS = [
   "Checking UE4SS...",
@@ -54,6 +56,9 @@ export default function InitializationPage() {
 
     async function run() {
       try {
+        // Update app title with version
+        await getCurrentWindow().setTitle(`Ai.Mi App v${version}`);
+
         // Get or prompt for game directory
         const settings = await getAppSettings();
         let gameDir = settings?.gameDirectory ?? null;

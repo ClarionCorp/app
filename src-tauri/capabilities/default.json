@@ -67,6 +67,7 @@
     "sql:allow-load",
     "sql:allow-select",
     "sql:allow-execute",
+    "core:window:allow-set-title",
     {
       "identifier": "http:default",
       "allow": [
