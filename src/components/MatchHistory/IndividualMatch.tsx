@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { matchHistory } from '../../core/database/schema'
 import { getCharName, getQueueName } from '../../core/objects/ody'
 import { getRankFromLP } from '../../core/objects/ranks'
 import clsx from 'clsx'
 import { TeamListing } from './TeamListing'
 import { getMapObjectFromID } from '../../core/objects/maps'
-
-type MatchHistoryRow = typeof matchHistory.$inferSelect
+import { MatchHistoryTable } from '../../types/database'
 
 function formatRelativeTime(date: Date): string {
   const diff = (Date.now() - date.getTime()) / 1000
@@ -18,7 +16,7 @@ function formatRelativeTime(date: Date): string {
   return date.toLocaleDateString()
 }
 
-export default function IndividualMatch({ row, myUsername }: { row: MatchHistoryRow; myUsername: string }) {
+export default function IndividualMatch({ row, myUsername }: { row: MatchHistoryTable; myUsername: string }) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const myPlayer = row.players.find(p => p.name === myUsername)
@@ -66,7 +64,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
         onClick={() => setIsExpanded(!isExpanded)}
         className="relative w-full px-4 py-3 cursor-pointer overflow-hidden shadow-lg">
         <img
-          src={mapObject.image}
+          src={mapObject.image!} // will fail silently if not found
           alt=""
           aria-hidden
           className="absolute inset-0 w-full h-full object-cover opacity-10 brightness-65 pointer-events-none select-none"

@@ -96,7 +96,7 @@ export function Dropdown({ items, open, onClose, className, triggerRef }: Dropdo
                   'transition-colors duration-100 outline-none cursor-pointer',
                   item.variant === 'danger'
                     ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
-                    : 'text-char-subtle hover:bg-surface-raised hover:text-char'
+                    : 'text-char hover:bg-surface-raised hover:text-char-accent'
                 )}
               >
                 {item.icon && (

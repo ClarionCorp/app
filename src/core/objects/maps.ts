@@ -1,25 +1,27 @@
 import {
   BuildingsIcon,
   FlaskIcon,
-  CubeIcon,
-  DeviceMobileIcon,
-  MusicNoteIcon,
-  MicrophoneIcon,
   MoonIcon,
   EyeIcon,
-  HouseIcon,
-  TargetIcon,
-  WavesIcon,
-  BookOpenIcon,
-  type Icon,
   QuestionIcon,
+  CopyIcon,
+  HurricaneIcon,
+  ArrowUUpLeftIcon,
+  FrameCornersIcon,
+  ArrowsClockwiseIcon,
+  CircleIcon,
+  SpeakerHifiIcon,
+  WaveformIcon,
+  OnigiriIcon,
+  TrashIcon,
+  type Icon,
 } from '@phosphor-icons/react'
 
 export type MapObject = {
   mapId: string
   mapName: string
   icon: Icon
-  image: string
+  image: string | null
 }
 
 export function getMapObjectFromID(mapId: string | null | undefined): MapObject {
@@ -29,7 +31,7 @@ export function getMapObjectFromID(mapId: string | null | undefined): MapObject 
       mapId: '',
       mapName: 'Unknown',
       icon: QuestionIcon,
-      image: ''
+      image: null
     }
   }
   return target;
@@ -45,31 +47,31 @@ export const MAPS: MapObject[] = [
   {
     mapId: 'GMD_AtlasLab',
     mapName: 'Atlas Lab',
-    icon: FlaskIcon,
+    icon: HurricaneIcon,
     image: '/maps/AtlasLab.webp'
   },
   {
     mapId: 'GMD_ClarionCorp',
     mapName: 'Clarion Test Chamber',
-    icon: CubeIcon,
+    icon: FlaskIcon,
     image: '/maps/ClarionCorp.webp'
   },
   {
     mapId: 'GMD_DigitalWorld',
     mapName: "Ai.Mi's App",
-    icon: DeviceMobileIcon,
+    icon: CircleIcon,
     image: '/maps/AiMiApp.webp'
   },
   {
     mapId: 'GMD_Drums',
     mapName: 'Taiko Temple',
-    icon: MusicNoteIcon,
+    icon: SpeakerHifiIcon,
     image: '/maps/TaikoTemple.webp'
   },
   {
     mapId: 'GMD_MusicStage',
     mapName: 'Demon Dais',
-    icon: MicrophoneIcon,
+    icon: WaveformIcon,
     image: '/maps/DemonDais.webp'
   },
   {
@@ -87,49 +89,43 @@ export const MAPS: MapObject[] = [
   {
     mapId: 'GMD_OniVillage',
     mapName: 'Oni Village',
-    icon: HouseIcon,
+    icon: OnigiriIcon,
     image: '/maps/OniVillage.webp'
-  },
-  {
-    mapId: 'GMD_Practice',
-    mapName: 'Practice',
-    icon: TargetIcon,
-    image: '/maps/NeoOrigins.webp'
   },
   {
     mapId: 'GMD_SummerSplash',
     mapName: "Inky's Splash Zone",
-    icon: WavesIcon,
+    icon: TrashIcon,
     image: '/maps/InkysSplashZone.webp'
   },
   {
     mapId: 'TutorialMap',
     mapName: 'Neo Origins',
-    icon: BookOpenIcon,
+    icon: CopyIcon,
     image: '/maps/NeoOrigins.webp'
   },
   {
     mapId: 'GTD_BackToBackXL',
     mapName: 'Back To Back',
-    icon: BookOpenIcon,
+    icon: HurricaneIcon,
     image: '/maps/BackToBack.webp'
   },
   {
     mapId: 'GTD_AboutFaceXL',
     mapName: 'About Face',
-    icon: BookOpenIcon,
+    icon: ArrowUUpLeftIcon,
     image: '/maps/AboutFace.webp'
   },
   {
     mapId: 'GTD_CornerGoalXL',
     mapName: 'Corner Pocket',
-    icon: BookOpenIcon,
+    icon: FrameCornersIcon,
     image: '/maps/CornerPocket.webp'
   },
   {
     mapId: 'GTD_FlippedXL',
     mapName: 'Map Flipped',
-    icon: BookOpenIcon,
+    icon: ArrowsClockwiseIcon,
     image: '/maps/MapFlipped.webp'
   },
 ]

@@ -8,7 +8,7 @@ export const NAV_ITEMS = [
   },
   {
     label: "Match History",
-    desc: "See stats and make advanced changes",
+    desc: "View your previous games in great detail",
     slug: 'history',
     image: "/backgrounds/Temple.webp"
   },
@@ -21,7 +21,7 @@ export const NAV_ITEMS = [
   },
   {
     label: "Queue Manager",
-    desc: "Queue into some weird game modes",
+    desc: "Queue into private game queues",
     slug: 'cqm',
     image: "/backgrounds/MusicStage.webp",
     online: true,
