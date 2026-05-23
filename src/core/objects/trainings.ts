@@ -22,11 +22,10 @@ export const TRAININGS: Record<string, TrainingInfo> = {
     disabled: true
   },
   "TD_AvoidKnockoutGainSpeed": {
-    awakeningId: "",
+    awakeningId: "T_OmegaInfusedAccelerator",
     image: "/trainings/TD_AvoidKnockoutGainSpeed.webp",
-    name: "Pacifist",
-    description: "Slowly gain Speed and lose Max Stagger until either the round ends or you get knocked out.",
-    disabled: true
+    name: "Omega Infused Accelerator", // Pacifist
+    description: "Slowly gain Speed and lose Max Stagger until either the round ends or you get knocked out."
   },
   "TD_BarrierBuff": {
     awakeningId: "T_Demolitionist",
@@ -358,10 +357,11 @@ export const TRAININGS: Record<string, TrainingInfo> = {
     description: "Takedowns grant stacking Power; lost if K.O.'d"
   },
   "TD_LevelUpSpeedUp": {
-    awakeningId: "T_AdrenalineRush",
+    awakeningId: "",
     image: "/trainings/TD_LevelUpSpeedUp.webp",
     name: "Adrenaline Rush",
-    description: "Shorter cooldowns. Takedowns grant speed and reduced cooldowns."
+    description: "Shorter cooldowns. Takedowns grant speed and reduced cooldowns.",
+    disabled: true
   },
   "TD_MaxStaggerIncrease": {
     awakeningId: "",
@@ -542,11 +542,10 @@ export const TRAININGS: Record<string, TrainingInfo> = {
     disabled: true
   },
   "TD_TakeDownReduceCooldowns": {
-    awakeningId: "",
+    awakeningId: "T_AdrenalineRush",
     image: "/trainings/TD_TakeDownReduceCooldowns.webp",
     name: "Adrenaline Rush",
     description: "Shorter cooldowns. Takedowns grant speed and reduced cooldowns.",
-    disabled: true
   },
   "TD_Template": {
     awakeningId: "",

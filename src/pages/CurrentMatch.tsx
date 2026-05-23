@@ -6,6 +6,7 @@ import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { getAllPossibleTrainings } from '../core/bridgeListener';
+import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -76,6 +77,12 @@ export default function CurrentMatchPage() {
               initial="hidden"
               animate="show"
             >
+              <AvailableTrainings allTrainings={allTrainings} />
+
+              <div className="flex items-center gap-3 py-1">
+                <div className="flex-1 h-px bg-background-border" />
+              </div>
+
               {players.length > 0 ? (
                 <>
                   <div className="space-y-3">
