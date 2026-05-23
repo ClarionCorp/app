@@ -18,7 +18,7 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
           )}
         >
           {/* Character + Username */}
-          <div className="flex items-center gap-2 min-w-0 max-w-1/5">
+          <div className="flex items-center gap-2 w-40 shrink-0">
             <img
               src={`/characters/portrait/${p.characterId}.webp`}
               alt={getCharName(p.characterId) ?? p.characterId}

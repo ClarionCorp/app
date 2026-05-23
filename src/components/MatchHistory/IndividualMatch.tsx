@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { matchHistory } from '../../core/database/schema'
-import { getMapName, getCharName, getQueueName } from '../../core/objects/ody'
+import { getCharName, getQueueName } from '../../core/objects/ody'
 import { getRankFromLP } from '../../core/objects/ranks'
 import clsx from 'clsx'
 import { TeamListing } from './TeamListing'
@@ -64,12 +64,12 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
       {/* Compact Summary */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="relative w-full px-4 py-3 cursor-pointer overflow-hidden">
+        className="relative w-full px-4 py-3 cursor-pointer overflow-hidden shadow-lg">
         <img
           src={mapObject.image}
           alt=""
           aria-hidden
-          className="absolute inset-0 w-full h-full object-cover opacity-5 pointer-events-none select-none"
+          className="absolute inset-0 w-full h-full object-cover opacity-10 brightness-65 pointer-events-none select-none"
         />
         <div className="flex items-center justify-between gap-4">
           {/* Left side */}
