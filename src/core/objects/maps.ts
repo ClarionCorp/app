@@ -87,4 +87,24 @@ export const MAPS: MapObject[] = [
     mapName: 'Neo Origins',
     icon: BookOpenIcon,
   },
+  {
+    mapId: 'GTD_BackToBackXL',
+    mapName: 'Back To Back',
+    icon: BookOpenIcon,
+  },
+  {
+    mapId: 'GTD_AboutFaceXL',
+    mapName: 'About Face',
+    icon: BookOpenIcon,
+  },
+  {
+    mapId: 'GTD_CornerGoalXL',
+    mapName: 'Corner Pocket',
+    icon: BookOpenIcon,
+  },
+  {
+    mapId: 'GTD_FlippedXL',
+    mapName: 'Map Flipped',
+    icon: BookOpenIcon,
+  },
 ]

@@ -18,13 +18,11 @@ async function fetchOnlineCount(username: string, gameState: string): Promise<nu
 
 export default function TopBar() {
   const [online, setOnline] = useState(0);
-  const [gameState, setGameState] = useState<string | null>(null);
 
   useEffect(() => {
     async function tick() {
       const match = await getCurrentMatch();
       const state = match?.gameState;
-      setGameState(state);
 
       const user = await getUser();
       const username = user?.username;

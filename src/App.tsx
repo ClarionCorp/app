@@ -84,7 +84,7 @@ function App() {
       let cMatch = await upsertCurrentMatch({
         gameState: data.phase,
         map: data.map,
-        queue: data.queue,
+        ...(data.queue !== null && { queue: data.queue }), // mod reports null before game ends
         teamNum: data.my_team,
         teamOnePts: data.t1_goals,
         teamTwoPts: data.t2_goals,

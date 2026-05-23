@@ -42,6 +42,10 @@ const MAP_DEV_NAMES: Record<string, string> = {
   'GMD_RGM': 'Tea Time Tussle',
   'GMD_SummerSplash': "Inky's Splash Zone",
   'TutorialMap': 'Neo Origins',
+  'GTD_CornerGoalXL': 'Corner Pocket',
+  'GTD_AboutFaceXL': 'About Face',
+  'GTD_BackToBackXL': 'Back To Back',
+  'GTD_FlippedXL': 'Map Flipped',
 }
 
 export function getMapName(map: string): string {

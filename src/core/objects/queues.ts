@@ -42,13 +42,8 @@ export const QUEUES: QueueObject[] = [
     icon: RobotIcon,
   },
   {
-    queueId: 'queue:custom',
-    queueName: 'Customs',
-    icon: SlidersHorizontalIcon,
-  },
-  {
     queueId: 'queue:custom:NvM',
-    queueName: 'Customs (NvM)',
+    queueName: 'Customs',
     icon: SlidersHorizontalIcon,
   },
   {
