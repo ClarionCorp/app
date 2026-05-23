@@ -12,6 +12,7 @@ import ErrorBoundary from './components/Navigation/ErrorBoundry';
 import ComingSoonPage from './pages/ComingSoon';
 import DebugPage from './pages/DebugPage';
 import { ThemeProvider } from './components/UI/Theme/ThemeProvider';
+import CurrentMatchPage from './pages/CurrentMatch';
 
 const router = createHashRouter([
   {
@@ -21,6 +22,7 @@ const router = createHashRouter([
     children: [
       { index: true,              element: <InitPage /> },
       { path: "home",             element: <HomePage /> },
+      { path: "match",            element: <CurrentMatchPage /> },
       { path: "mods",             element: <ComingSoonPage /> },
       { path: "settings",         element: <ComingSoonPage /> },
       { path: "account",          element: <ComingSoonPage /> },

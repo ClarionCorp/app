@@ -1,16 +1,16 @@
 export const NAV_ITEMS = [
   {
-    label: "My Account",
+    label: "Current Match",
+    desc: "View details about the match and its players",
+    slug: 'match',
+    image: "/backgrounds/Temple.webp",
+    // online: true,
+  },
+  {
+    label: "Match History",
     desc: "See stats and make advanced changes",
     slug: 'account',
     image: "/backgrounds/Strikers.webp"
-  },
-  {
-    label: "Rank Checker",
-    desc: "Auto fetch the ranks of everyone in game",
-    slug: 'rankchecker',
-    image: "/backgrounds/Temple.webp",
-    online: true,
   },
   {
     label: "Custom Games Manager",

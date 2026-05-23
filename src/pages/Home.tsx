@@ -24,14 +24,14 @@ const itemVariants: Variants = {
 
 export default function HomePage() {
   const { navigate, connectedToOdy } = useOutletContext<AppContextType>();
-  const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type;
-  const wasReloaded = navType === "reload" && sessionStorage.getItem("reloadHandled") !== "true";
+  // const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type;
+  // const wasReloaded = navType === "reload" && sessionStorage.getItem("reloadHandled") !== "true";
 
-  if (wasReloaded) {
-    throw new Error(`App doesn't currently support forced refresh. Please Restart.`);
-  }
+  // if (wasReloaded) {
+  //   throw new Error(`App doesn't currently support forced refresh. Please Restart.`);
+  // }
 
-  sessionStorage.removeItem("reloadHandled");
+  // sessionStorage.removeItem("reloadHandled");
 
 
   return (

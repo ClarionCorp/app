@@ -14,7 +14,7 @@ import { NAV_ITEMS } from '../../core/objects/navigation';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   account:     <UserIcon size={18} weight="duotone" />,
-  rankchecker: <ChartBarIcon size={18} weight="duotone" />,
+  match:       <ChartBarIcon size={18} weight="duotone" />,
   cgm:         <GameControllerIcon size={18} weight="duotone" />,
   cqm:         <QueueIcon size={18} weight="duotone" />,
   mods:        <PuzzlePieceIcon size={18} weight="duotone" />,

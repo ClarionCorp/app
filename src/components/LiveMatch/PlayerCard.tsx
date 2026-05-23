@@ -1,20 +1,16 @@
 import { motion } from 'framer-motion';
-import { RankedQuery } from '../../types/odyssey';
 import { getRankFromLP } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
 import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { MatchPlayersTable } from '../../types/database';
 
-interface PlayerCardProps {
-  player: RankedQuery;
-  index: number;
-}
 
-export function PlayerCard({ player, index }: PlayerCardProps) {
+export function PlayerCard({ player, index }: { player: MatchPlayersTable, index: number }) {
   const rankInfo = getRankFromLP(player.rating);
-  const winRate = player.games > 0
-    ? ((player.wins / player.games) * 100).toFixed(1)
-    : '0.0';
+  // const winRate = player.games > 0
+  //   ? ((player.wins / player.games) * 100).toFixed(1)
+  //   : '0.0';
 
   return (
     <motion.div
@@ -30,7 +26,7 @@ export function PlayerCard({ player, index }: PlayerCardProps) {
         <div className="flex items-center gap-4">
           {/* Rank icon */}
           <div className="shrink-0">
-            <RankIcon rating={player.rating} size="lg" />
+            <RankIcon rating={player.rating ?? 0} size="lg" />
           </div>
 
           {/* Info */}
@@ -51,9 +47,9 @@ export function PlayerCard({ player, index }: PlayerCardProps) {
               </span>
               <span
                 className="text-zinc-500 shrink-0"
-                title={`${player.topRole} Main`}
+                title={`${player.role}`}
               >
-                {player.topRole === 'Forward'
+                {player.role === 'Forward'
                   ? <SwordIcon size={16} weight="duotone" />
                   : <ShieldIcon size={16} weight="duotone" />}
               </span>
@@ -63,7 +59,7 @@ export function PlayerCard({ player, index }: PlayerCardProps) {
               <span>
                 <span className="text-zinc-300 font-medium">{player.rating}</span> LP
               </span>
-              <span>
+              {/* <span>
                 Rank <span className="text-zinc-300 font-medium">#{player.rank.toLocaleString()}</span>
               </span>
               <span>
@@ -71,7 +67,7 @@ export function PlayerCard({ player, index }: PlayerCardProps) {
               </span>
               <span>
                 <span className="text-zinc-300 font-medium">{player.games}</span> games
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
