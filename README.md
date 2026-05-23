@@ -5,6 +5,7 @@ The **Ai.Mi App** is a companion app that runs alongside **[Omega Strikers](http
 
 The goal is to provide you with additional insight into your game. Though keep in mind, it is __NOT__ intended to give players an unfair advantage, just nice-to-haves (QoL).
 
+---
 # Features
 
 ## Live Match Summary
