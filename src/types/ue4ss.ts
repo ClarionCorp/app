@@ -15,7 +15,7 @@ export type PlayerFinderJSON = {
   timestamp: number, // keeps tauri updating even if data is the same
 };
 
-export type PlayerAwakenings = {
+export type PlayerTrainings = {
   username: string,
   trainings: string[],
 }
@@ -53,7 +53,7 @@ export type MatchPlayer = {
   level: number,
   role: 'Forward' | 'Goalie',
   team: 1 | 2,
-  awakenings: string[],
+  trainings: string[],
   goals: string,
   redirects: string,
   kos: string,
@@ -68,11 +68,11 @@ export type MatchPlayer = {
 export function mergeMatchPlayers(
   players: MatchPlayersTable[],
   postGameStats: PostGameStatsJSON,
-  awakenings: PlayerAwakenings[]
+  trainings: PlayerTrainings[]
 ): MatchPlayer[] {
   return players.map(player => {
     const stats = postGameStats.find(s => s.name === player.username);
-    const playerAwakenings = awakenings.find(a => a.username === player.username);
+    const playerTrainings = trainings.find(a => a.username === player.username);
 
     return {
       name: player.username,
@@ -81,7 +81,7 @@ export function mergeMatchPlayers(
       level: getLevelFromXP(player.xp ?? 0),
       role: player.role ?? 'Forward',
       team: player.teamNum ?? 1,
-      awakenings: playerAwakenings?.trainings ?? [],
+      trainings: playerTrainings?.trainings ?? [],
       goals: stats?.goals ?? '0',
       redirects: stats?.redirects ?? '0',
       kos: stats?.kos ?? '0',

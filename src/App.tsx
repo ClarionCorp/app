@@ -4,7 +4,7 @@ import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { getPlayerAwakenings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, refreshLatestMatchStart } from './core/bridgeListener';
+import { getPlayerTrainings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, refreshLatestMatchStart } from './core/bridgeListener';
 import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating } from './core/database/queries';
 import { GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
@@ -50,7 +50,7 @@ function App() {
       const data = JSON.parse(payload.content) as PlayerFinderJSON;
       const currentUser = await getUser();
 
-      const players = await setMatchPlayers(data.players.map(p => ({
+      const players = await setMatchPlayers(data.players.filter(p => p.name !== 'Player').map(p => ({
         username: p.name,
         teamNum: p.team,
         role: p.role,
@@ -101,15 +101,15 @@ function App() {
       await refreshLatestMatchStart();
       const stats = JSON.parse(payload.content) as PostGameStatsJSON;
 
-      const [match, currentUser, matchPlayers, awakenings] = await Promise.all([
+      const [match, currentUser, matchPlayers, trainings] = await Promise.all([
         getCurrentMatch(),
         getUser(),
         getMatchPlayers(),
-        getPlayerAwakenings(),
+        getPlayerTrainings(),
       ]);
       if (!match || !currentUser) return;
 
-      const players = mergeMatchPlayers(matchPlayers, stats, awakenings);
+      const players = mergeMatchPlayers(matchPlayers, stats, trainings);
       const myPlayer = players.find(p => p.name === currentUser.username);
       if (!myPlayer) return;
 
