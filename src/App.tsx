@@ -11,6 +11,7 @@ import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { matchPlayers } from './core/database/schema';
 import { fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
+import { getQueueName } from './core/objects/ody';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -121,6 +122,7 @@ function App() {
         players,
         mapId: match.map ?? '',
         duration: diffSeconds(match.startedAt!, new Date()),
+        queue: getQueueName(match.queue ?? 'queue:none'),
         myTeam,
         t1_sets: match.teamOneSets ?? 0,
         t2_sets: match.teamTwoSets ?? 0,

@@ -55,7 +55,8 @@ const QUEUE_DEV_NAMES: Record<string, string> = {
   'queue:custom:NvM': 'Customs',
   'queue:practice': 'Practice',
   'queue:quickplay': 'Quick Play',
-  'queue:ranked:3v3': 'Ranked'
+  'queue:ranked:3v3': 'Ranked',
+  'queue:none': 'Unknown'
 }
 
 export function getQueueName(queue: string): string {

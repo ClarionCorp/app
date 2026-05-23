@@ -48,7 +48,8 @@
   --color-char-secondary: var(--theme-char-secondary);
   --color-char-subtle: var(--theme-char-subtle);
   --color-char-accent: var(--theme-char-accent);
-  --color-online: var(--theme-online);
+  --color-match-win: var(--theme-match-win);
+  --color-match-loss: var(--theme-match-loss);
 }
 
 /* AiMi (dark, default) */
@@ -70,6 +71,8 @@
   --theme-char-secondary: #A0A0B0;
   --theme-char-subtle: #606070;
   --theme-char-accent: #dd77dd;
+  --theme-match-win: #51FFB8;
+  --theme-match-loss: #FF7979;
 }
 
 /* Clarion (dark, wip) */

@@ -44,6 +44,10 @@ export async function getMyMatchPlayer() {
   return db.select().from(matchPlayers).where(eq(matchPlayers.isMe, true)).limit(1).then(r => r[0] ?? null);
 }
 
+export async function getMatchHistory() {
+  return db.select().from(matchHistory);
+}
+
 
 //
 // Setters

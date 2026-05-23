@@ -71,6 +71,7 @@ export const matchHistory = sqliteTable("matchHistory", {
 
   mapId: text("mapId").notNull(),
   duration: integer("duration").notNull(),
+  queue: text("queue").notNull(),
 
   players: text("players", { mode: 'json' }).$type<MatchPlayer[]>().notNull().default([]),
 
