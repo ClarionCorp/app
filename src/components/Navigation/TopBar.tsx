@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { getCurrentMatch, getUser } from '../../core/database/queries';
 import { AiMiAPI } from '../../core/constants';
 
-const POLL_INTERVAL = 5 * 60 * 1000;
+// Add back dynamic coloring when app gets bigger.
+// const onlineColor = (n: number) => n >= 100 ? 'text-green-400' : n >= 50 ? 'text-yellow-400' : 'text-red-400';
 
 async function fetchOnlineCount(username: string, gameState: string): Promise<number> {
   const res = await fetch(`${AiMiAPI}/v1/online`, {
@@ -35,7 +36,7 @@ export default function TopBar() {
     }
 
     tick();
-    const interval = setInterval(tick, POLL_INTERVAL);
+    const interval = setInterval(tick, 300_000); // 5 minutes in ms
     return () => clearInterval(interval);
   }, []);
 
@@ -43,7 +44,7 @@ export default function TopBar() {
     <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-6 bg-surface-subtle border-b border-background-border">
       {/* Left */}
       <div className="flex items-center gap-4">
-        <p className="text-xs text-char-subtle">{online} Online</p>
+        <p className={`text-xs text-char-subtle`}>Online: {online}</p>
       </div>
 
       {/* Right */}
