@@ -4,14 +4,18 @@ import { getPlayerTrainings } from '../../core/bridgeListener';
 import { TRAININGS } from '../../core/objects/trainings';
 import type { Awakenings } from '../../types/clarion';
 
-const POLL_MS = 3000;
-const HOVER_LEAVE_DELAY = 150;
-
 // training id -> awakening id
-const TRAINING_TO_AWAKENING: Record<string, string> = Object.fromEntries(
+const training_to_awakening: Record<string, string> = Object.fromEntries(
   Object.entries(TRAININGS)
     .filter(([, info]) => info.awakeningId)
     .map(([id, info]) => [id, info.awakeningId])
+);
+
+// awakening id -> description
+const awakening_description: Record<string, string> = Object.fromEntries(
+  Object.values(TRAININGS)
+    .filter(info => info.awakeningId && info.description)
+    .map(info => [info.awakeningId, info.description])
 );
 
 export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[] }) {
@@ -24,7 +28,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[
       const playerTrainings = await getPlayerTrainings();
       const claimedTrainingIds = new Set(playerTrainings.flatMap(p => p.trainings));
       const awakeningIds = new Set(
-        Object.entries(TRAINING_TO_AWAKENING)
+        Object.entries(training_to_awakening)
           .filter(([trainingId]) => claimedTrainingIds.has(trainingId))
           .map(([, awakeningId]) => awakeningId)
       );
@@ -32,7 +36,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[
     }
 
     refresh();
-    const id = setInterval(refresh, POLL_MS);
+    const id = setInterval(refresh, 3000); // refresh every 3s
     return () => clearInterval(id);
   }, [allTrainings]);
 
@@ -52,7 +56,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[
       <div
         className="flex flex-wrap gap-1"
         onMouseLeave={() => {
-          leaveTimer.current = setTimeout(() => setHoveredId(null), HOVER_LEAVE_DELAY);
+          leaveTimer.current = setTimeout(() => setHoveredId(null), 150); // 150ms delay
         }}
       >
         {displayable.map(awakening => {
@@ -101,7 +105,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[
                     {hovered.name}
                     {hoveredIsTaken && <span className="text-xs font-bold text-red-400">(TAKEN)</span>}
                   </p>
-                  <p className="text-xs text-char-subtle mt-1 leading-snug">{hovered.description}</p>
+                  <p className="text-xs text-char-subtle mt-1 leading-snug">{awakening_description[hovered.id] ?? hovered.description}</p>
                 </div>
               </motion.div>
             </AnimatePresence>
