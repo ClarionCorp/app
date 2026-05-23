@@ -39,7 +39,7 @@ export function PlayerCard({ player, index, isBlue = false }: { player: MatchPla
             <div
               aria-hidden
               className="absolute inset-y-0 right-0 w-full pointer-events-none select-none"
-              style={{ background: 'linear-gradient(to right, var(--color-surface) 80%, transparent 90%)' }}
+              style={{ background: 'linear-gradient(to right, var(--color-surface) 70%, transparent 90%)' }}
             />
           </>
         )}
@@ -78,7 +78,7 @@ export function PlayerCard({ player, index, isBlue = false }: { player: MatchPla
 
             <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span>
-                Playing: <span className="text-zinc-300 font-medium">{player.charName}</span>
+                Playing: <span className="text-zinc-300 font-medium">{player.charName ?? '—'}</span>
               </span>
               <span>
                 Rating: <span className="text-zinc-300 font-medium">{player.rating}</span>

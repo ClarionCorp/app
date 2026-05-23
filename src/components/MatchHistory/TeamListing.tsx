@@ -18,7 +18,7 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
           )}
         >
           {/* Character + Username */}
-          <div className="flex items-center gap-2 w-40 shrink-0">
+          <div className="flex items-center gap-2 w-35 shrink-0">
             <img
               src={`/characters/portrait/${p.characterId}.webp`}
               alt={getCharName(p.characterId) ?? p.characterId}
@@ -43,7 +43,7 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
                 )}
               </div>
             </BasicPopover>
-            <div className="flex flex-col items-center min-w-11">
+            <div className="flex flex-col items-center min-w-10">
               <span className="text-char-subtle text-[10px] leading-tight">Level</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.level}</span>
             </div>
@@ -51,31 +51,31 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
               <span className="text-char-subtle text-[10px] leading-tight">Goals</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.goals}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-10', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Assists</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.assists}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-10', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Saves</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.saves}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-10', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">KOs</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.kos}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-10', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Damage</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.damage}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-10', p.role === 'Forward' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Shots</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.shots}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-10', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Redirects</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.redirects}</span>
             </div>
-            <div className={clsx('flex flex-col items-center min-w-11', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
+            <div className={clsx('flex flex-col items-center min-w-10', p.role === 'Goalie' ? 'opacity-100' : 'opacity-50')}>
               <span className="text-char-subtle text-[10px] leading-tight">Orbs</span>
               <span className="text-xs lg:text-sm font-semibold leading-tight">{p.orbs}</span>
             </div>

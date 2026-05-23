@@ -45,6 +45,15 @@ export default function CurrentMatchPage() {
     load();
   }, []);
 
+  useEffect(() => {
+    if (loading) return;
+    const id = setInterval(async () => {
+      const playersDb = await getMatchPlayers();
+      setPlayers(playersDb);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [loading]);
+
   const myTeamNum = players.find(p => p.isMe)?.teamNum ?? 1;
   const blueTeam = players
     .filter(p => p.teamNum === myTeamNum)

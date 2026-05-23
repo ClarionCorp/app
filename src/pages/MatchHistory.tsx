@@ -91,7 +91,7 @@ export default function MatchHistoryPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-2">
         <p className="text-sm text-char-subtle">No matches recorded yet.</p>
-        <p className="text-xs text-char-subtle">Play a game with the companion mod active to start tracking.</p>
+        <p className="text-xs text-char-subtle">Play a game with the app open to start tracking.</p>
       </div>
     )
   }
