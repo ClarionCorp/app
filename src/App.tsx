@@ -78,7 +78,13 @@ function App() {
     onGameStateChanged(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
       const data = JSON.parse(payload.content) as GameStateJSON;
-      if (data.phase == 'None') { await db.delete(matchPlayers).run(); }; // remove matchPlayers table entries for next game
+
+      // remove matchPlayers table entries for next game
+      if (data.phase == 'None' || data.phase == 'PreGame') {
+        console.info('Clearing matchPlayers table for next match...');
+        await db.delete(matchPlayers).run();
+      }; 
+
       await refreshLatestMatchStart();
 
       let cMatch = await upsertCurrentMatch({
