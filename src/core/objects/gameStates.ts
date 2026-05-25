@@ -1,6 +1,6 @@
 // This file should match what the AMA API expects
 
-type OnlineStatus = 'IDLING' | 'STARTING' | 'IN_GAME' | 'OFFLINE'
+type OnlineStatus = 'IDLING' | 'SETUP' | 'STARTING' | 'IN_GAME' | 'OFFLINE'
 
 const gameStateMap: Record<string, OnlineStatus> = {
   'Unknown':                'IDLING',
@@ -8,12 +8,13 @@ const gameStateMap: Record<string, OnlineStatus> = {
   'PostGameCelebration':    'IDLING',
   'PostGameSummary':        'IDLING',
 
-  'PreGame':                'STARTING',
-  'ArenaOverview':          'STARTING',
-  'CharacterPreSelect':     'STARTING',
-  'BanSelect':              'STARTING',
-  'LoadoutSelect':          'STARTING',
-  'CharacterSelect':        'STARTING',
+  'PreGame':                'SETUP',
+  'ArenaOverview':          'SETUP',
+  'CharacterPreSelect':     'SETUP',
+  'BanSelect':              'SETUP',
+  'LoadoutSelect':          'SETUP',
+  'CharacterSelect':        'SETUP',
+  
   'VersusScreen':           'STARTING',
 
   'InGame':                 'IN_GAME',

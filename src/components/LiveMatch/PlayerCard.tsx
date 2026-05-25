@@ -15,7 +15,12 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
   //   ? ((player.wins / player.games) * 100).toFixed(1)
   //   : '0.0';
 
-  // We need to make sure the game has either started or isn't going
+  const borderClass = player.isMe
+    ? 'border-blue-500/30 hover:border-blue-500/50'
+    : isBlue
+      ? 'border-background-border hover:border-blue-500/50'
+      : 'border-background-border hover:border-primary/20';
+
   const queue = getQueueFromDb(match?.queue).queueName;
   const games = queue == 'Normal' || queue == 'Quick Play' ? player.normGames : player.rankedGames;
   const winrate = queue == 'Normal' || queue == 'Quick Play' ? player.normWR : player.rankedWR;
@@ -29,15 +34,11 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
       <button
         onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
         title='Click to open profile on ClarionCorp'
-        className={`relative w-full text-left bg-surface border rounded-xl p-4 transition-colors cursor-pointer group shadow-xl overflow-hidden ${
-          isBlue
-            ? 'border-blue-500/30 hover:border-blue-500/50'
-            : 'border-background-border hover:border-primary/20'
-        }`}
+        className={`relative w-full text-left bg-surface border rounded-xl p-4 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
-        {/* We need to make sure the game has either started or isn't going */}
-        {player.charId && match && getGameStatus(match.gameState) !== 'STARTING' && (
+        {/* We need to make sure the game isn't in the setup phase */}
+        {player.charId && match && getGameStatus(match.gameState) !== 'SETUP' && (
           <>
             <img
               src={`/characters/goalscore/${player.charId}.webp`}
