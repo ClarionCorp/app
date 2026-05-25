@@ -59,9 +59,14 @@ export const QUEUES: QueueObject[] = [
   },
 ]
 
-export function getQueueObject(queueId: string | null | undefined): QueueObject {
-  if (!queueId) { return QUEUES.find(q => q.queueId === 'queue:custom:NvM')! };
-  return QUEUES.find(q => q.queueId === queueId) ?? QUEUES.find(q => q.queueId === 'queue:custom:NvM')!;
+export function getQueueObjectFromID(queueId: string | null | undefined): QueueObject {
+  if (!queueId) { return QUEUES.find(q => q.queueId === 'queue:none')! };
+  return QUEUES.find(q => q.queueId === queueId) ?? QUEUES.find(q => q.queueId === 'queue:none')!;
+}
+
+export function getQueueObjectFromName(queueName: string | null | undefined): QueueObject {
+  if (!queueName) { return QUEUES.find(q => q.queueName === 'Unknown')! };
+  return QUEUES.find(q => q.queueName === queueName) ?? QUEUES.find(q => q.queueName === 'Unknown')!;
 }
 
 // In order. 0 = Unknown, Idle, Queued, FoundMatch, StartingGame, InGame, EMatchmakingStateV2_MAX

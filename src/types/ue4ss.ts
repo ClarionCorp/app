@@ -83,11 +83,9 @@ export type MatchPlayer = {
 export function mergeMatchPlayers(
   players: MatchPlayersTable[],
   postGameStats: PostGameStatsJSON,
-  trainings: PlayerTrainings[]
 ): MatchPlayer[] {
   return players.map(player => {
     const stats = postGameStats.find(s => s.name === player.username);
-    const playerTrainings = trainings.find(a => a.username === player.username);
 
     return {
       name: player.username,
@@ -96,7 +94,7 @@ export function mergeMatchPlayers(
       level: getLevelFromXP(player.xp ?? 0),
       role: player.role ?? 'Forward',
       team: player.teamNum ?? 1,
-      trainings: [...new Set(playerTrainings?.trainings ?? [])],
+      trainings: player.trainings,
       goals: stats?.goals ?? '0',
       redirects: stats?.redirects ?? '0',
       kos: stats?.kos ?? '0',

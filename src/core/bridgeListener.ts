@@ -1,7 +1,6 @@
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { upsertCurrentMatch } from './database/queries';
-import { PlayerTrainings } from '../types/ue4ss';
 
 export interface FileChangePayload {
   file: string;
@@ -47,11 +46,6 @@ export async function onSessionUpdated(
   return listen<FileChangePayload>('ue4ss-session-changed', (event) => {
     handler(event.payload);
   });
-}
-
-export async function getPlayerTrainings(): Promise<PlayerTrainings[]> {
-  const result = await invoke<PlayerTrainings[]>('get_player_awakenings'); // just leave the invoke and mod as "awakenings" even tho its technically wrong
-  return result;
 }
 
 export async function isProcessRunning(name: string): Promise<boolean> {

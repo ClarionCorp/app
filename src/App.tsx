@@ -4,14 +4,14 @@ import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { getPlayerTrainings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
+import { onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
 import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo } from './core/database/queries';
 import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { currentMatch } from './core/database/schema';
 import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
-import { getQueueObject, QUEUE_STATES_ARRAY } from './core/objects/queues';
+import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
@@ -109,7 +109,7 @@ function App() {
       if (payload.kind === 'removed' || !payload.content) return;
       const data = JSON.parse(payload.content) as GameSessionJSON;
 
-      const queueObj = getQueueObject(data.queue_name);
+      const queueObj = getQueueObjectFromID(data.queue_name);
       const queueState = QUEUE_STATES_ARRAY[data.mm_state];
 
       console.log(`Updating Matchmaking to: (${queueState}: ${queueObj.queueName})`);
@@ -133,36 +133,39 @@ function App() {
     onPostGameStatsChanged(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
       console.debug(`Match Ended! Saving...`)
-      await refreshLatestMatchStart();
-      const stats = JSON.parse(payload.content) as PostGameStatsJSON;
+      try { // if any matches fail to save, it'll be easier to debug lol (im leaving this here after I needed it)
+        await refreshLatestMatchStart();
+        const stats = JSON.parse(payload.content) as PostGameStatsJSON;
 
-      const [match, currentUser, matchPlayers, trainings] = await Promise.all([
-        getCurrentMatch(),
-        getUser(),
-        getMatchPlayers(),
-        getPlayerTrainings(),
-      ]);
-      if (!match || !currentUser) return;
+        const [match, currentUser, matchPlayers] = await Promise.all([
+          getCurrentMatch(),
+          getUser(),
+          getMatchPlayers(),
+        ]);
+        if (!match || !currentUser) return;
 
-      const players = mergeMatchPlayers(matchPlayers, stats, trainings);
-      const myPlayer = players.find(p => p.name === currentUser.username);
-      if (!myPlayer) return;
+        const players = mergeMatchPlayers(matchPlayers, stats);
+        const myPlayer = players.find(p => p.name === currentUser.username);
+        if (!myPlayer) return;
 
-      const myTeam = match.teamNum ?? 1;
-      const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
-      const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
+        const myTeam = match.teamNum ?? 1;
+        const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
+        const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
 
-      await insertMatchHistory({
-        players,
-        mapId: match.map ?? '',
-        duration: diffSeconds(match.startedAt!, new Date()),
-        queue: match.queue ?? 'queue:none',
-        myTeam,
-        t1_sets: match.teamOneSets ?? 0,
-        t2_sets: match.teamTwoSets ?? 0,
-        wonGame: myScore > enemyScore,
-        createdAt: new Date(),
-      });
+        await insertMatchHistory({
+          players,
+          mapId: match.map ?? '',
+          duration: diffSeconds(match.startedAt!, new Date()),
+          queue: match.queue ?? 'queue:none',
+          myTeam,
+          t1_sets: match.teamOneSets ?? 0,
+          t2_sets: match.teamTwoSets ?? 0,
+          wonGame: myScore > enemyScore,
+          createdAt: new Date(),
+        });
+      } catch (e) {
+        console.error('Something went wrong while saving the match!', e);
+      }
     }),
   ]);
 

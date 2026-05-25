@@ -101,13 +101,13 @@ export default function MatchHistoryPage() {
       {/* Filter bar */}
       <div className="flex items-center gap-2 mb-4">
         <FilterButton
-          label={QUEUES.find(q => q.queueId === queueFilter)?.queueName ?? 'All Queues'}
+          label={QUEUES.find(q => q.queueName === queueFilter)?.queueName ?? 'All Queues'}
           active={queueFilter !== null}
           onClear={() => setQueueFilter(null)}
           items={QUEUES.map(q => ({
             label: q.queueName,
             icon: <q.icon size={14} />,
-            onClick: () => setQueueFilter(q.queueId === queueFilter ? null : q.queueId),
+            onClick: () => setQueueFilter(q.queueName === queueFilter ? null : q.queueName),
           }))}
         />
 
