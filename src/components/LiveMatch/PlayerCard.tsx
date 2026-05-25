@@ -7,6 +7,7 @@ import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { getGameStatus } from '../../core/objects/gameStates';
 import { TRAININGS } from '../../core/objects/trainings';
 import { getQueueFromDb } from '../../core/objects/queues';
+import { getPlayerChar } from '../../core/database/queries';
 
 
 export function PlayerCard({ player, match, index, isBlue = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean }) {
@@ -22,8 +23,11 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
       : 'border-background-border hover:border-primary/20';
 
   const queue = getQueueFromDb(match?.queue).queueName;
-  const games = queue == 'Normal' || queue == 'Quick Play' ? player.normGames : player.rankedGames;
-  const winrate = queue == 'Normal' || queue == 'Quick Play' ? player.normWR : player.rankedWR;
+  const charQueue: 'Normal' | 'Ranked' = queue === 'Ranked' || queue === 'Customs' ? 'Ranked' : 'Normal';
+  const games = charQueue === 'Normal' ? player.normGames : player.rankedGames;
+  const winrate = charQueue === 'Normal' ? player.normWR : player.rankedWR;
+  const bestChar = getPlayerChar(player.bestChar, player.role, charQueue);
+  const favChar = getPlayerChar(player.favChar, player.role, charQueue);
 
   return (
     <motion.div
@@ -84,6 +88,13 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                   ? <SwordIcon size={16} weight="duotone" />
                   : <ShieldIcon size={16} weight="duotone" />}
               </span>
+              {player.charId && (
+                bestChar?.characterId === player.charId
+                  ? <span className="text-xs font-medium text-purple-400">Playing Best Striker</span>
+                  : favChar?.characterId === player.charId
+                    ? <span className="text-xs font-medium text-blue-400">Playing Main Striker</span>
+                    : null
+              )}
             </div>
 
             <div className="flex items-center gap-4 text-xs text-zinc-500">

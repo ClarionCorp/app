@@ -147,7 +147,7 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
 
   for (const { role, queue } of slots) {
     const candidates = stats.characterStats
-      .filter(c => (c.ratingName === 'RankedInitial' ? 'Ranked' : 'Normal') === queue)
+      .filter(c => c.ratingName !== 'None' && (c.ratingName === 'RankedInitial' ? 'Ranked' : 'Normal') === queue)
       .map(c => ({
         characterId: c.characterId,
         queue,
@@ -185,4 +185,17 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
     })
     .where(eq(matchPlayers.username, username))
     .returning();
+}
+
+// 
+// Helpers
+// 
+
+export function getPlayerChar(
+  chars: PlayerCharJSON[],
+  role: PlayerCharJSON['role'] | null | undefined,
+  queue: PlayerCharJSON['queue'] | null | undefined,
+): PlayerCharJSON | undefined {
+  if (!role || !queue) return undefined;
+  return chars.find(c => c.queue === queue && c.role === role);
 }
