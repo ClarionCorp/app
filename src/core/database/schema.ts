@@ -44,6 +44,7 @@ export const currentMatch = sqliteTable("currentMatch", {
   map: text("map"),
   queue: text("queue"), // Ranked, Norms, Customs, etc.
   teamNum: integer("teamNum").$type<1 | 2>(),
+  trainings: text("trainings", { mode: "json" }).$type<string[]>().notNull().default([]),
 
   teamOnePts: integer("teamOnePts"),
   teamTwoPts: integer("teamTwoPts"),
@@ -55,7 +56,7 @@ export const currentMatch = sqliteTable("currentMatch", {
 
 // Saves data sent from PlayerFinderMod (multi-row)
 export const matchPlayers = sqliteTable("matchPlayers", {
-  username: text("username").notNull().unique(),
+  username: text("username").notNull().unique().primaryKey(),
   teamNum: integer("teamNum").$type<1 | 2>(), // can be null if not on a team yet
   role: text("role").$type<'Forward' | 'Goalie'>(),
   charName: text("charName"),

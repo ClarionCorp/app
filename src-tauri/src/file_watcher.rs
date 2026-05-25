@@ -8,6 +8,7 @@ use tauri::{AppHandle, Emitter};
 const DEBOUNCE: Duration = Duration::from_millis(100);
 
 const WATCHED_FILES: &[(&str, &str)] = &[
+    ("ue4ss_shown_trainings.json", "ue4ss-trainings-changed"),
     ("ue4ss_players.json", "ue4ss-players-changed"),
     ("ue4ss_gamestate.json", "ue4ss-gamestate-changed"),
     ("PostGameStats.json", "postgame-stats-changed"),

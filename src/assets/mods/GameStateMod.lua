@@ -1,9 +1,9 @@
 local ModName = "GameStateMod"
-local ModVersion = "1.4.0"
+local ModVersion = "1.4.2"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
-local STATE_FILE          = os.getenv("TEMP") .. "\\ue4ss_gamestate.json"
+local STATE_FILE = os.getenv("TEMP") .. "\\ue4ss_gamestate.json"
 local SHOWN_TRAININGS_FILE = os.getenv("TEMP") .. "\\ue4ss_shown_trainings.json"
 print(string.format("[%s] Writing state to: %s", ModName, STATE_FILE))
 print(string.format("[%s] Writing shown trainings to: %s", ModName, SHOWN_TRAININGS_FILE))
@@ -19,21 +19,16 @@ local MatchPhaseNames = {
 local LastState = {}
 local CapturedQueueId = nil
 
-local ShownTrainings = {}
-local LastPhase = nil
-local IntermissionPhases = { [8]=true, [9]=true, [10]=true, [22]=true }
-local MatchStartPhases   = { [1]=true, [15]=true }
+local LastTrainingSnapshot = ""
+local IntermissionPhases = { [8]=true, [9]=true, [10]=true, [15]=true, [22]=true }
 
-local function WriteShownTrainings()
-    local ids = {}
-    for id in pairs(ShownTrainings) do table.insert(ids, id) end
-    table.sort(ids)
+local function WriteCurrentTrainings(ids)
     local parts = {}
     for _, id in ipairs(ids) do
         table.insert(parts, '    "' .. id .. '"')
     end
     local body = string.format(
-        '{\n  "shown_trainings": [\n%s\n  ]\n}\n',
+        '{\n  "trainings": [\n%s\n  ]\n}\n',
         table.concat(parts, ",\n")
     )
     local f = io.open(SHOWN_TRAININGS_FILE, "w")
@@ -41,7 +36,7 @@ local function WriteShownTrainings()
 end
 
 local function ReadCommonTrainings(gs)
-    local added = false
+    local ids = {}
     pcall(function()
         local trainings = gs.CommonTrainings
         for i = 1, #trainings do
@@ -49,16 +44,20 @@ local function ReadCommonTrainings(gs)
                 local td = trainings[i].TrainingData
                 if td and td:IsValid() then
                     local ok, id = pcall(function() return td:GetFName():ToString() end)
-                    if ok and id and id ~= "" and id ~= "None" and not ShownTrainings[id] then
-                        ShownTrainings[id] = true
-                        added = true
-                        print(string.format("[%s] Shown training: %s", ModName, id))
+                    if ok and id and id ~= "" and id ~= "None" then
+                        table.insert(ids, id)
                     end
                 end
             end)
         end
     end)
-    return added
+    table.sort(ids)
+    local snapshot = table.concat(ids, ",")
+    if snapshot ~= LastTrainingSnapshot then
+        LastTrainingSnapshot = snapshot
+        WriteCurrentTrainings(ids)
+        print(string.format("[%s] Trainings updated (%d): %s", ModName, #ids, snapshot))
+    end
 end
 
 local function GetLocalTeam()
@@ -75,9 +74,9 @@ local function GetMapInfo(gs)
         local md = gs.CurrentMapData
         if not md or not md:IsValid() then return nil, nil end
         local okName, n = pcall(function() return md.Name:ToString() end)
-        local okId,   i = pcall(function() return md:GetFName():ToString() end)
+        local okId, i = pcall(function() return md:GetFName():ToString() end)
         local name = (okName and n and n ~= "" and n ~= "None") and n or nil
-        local id   = (okId   and i and i ~= "" and i ~= "None") and i or nil
+        local id  = (okId   and i and i ~= "" and i ~= "None") and i or nil
         return name, id
     end)
     if not ok then return nil, nil end
@@ -89,9 +88,9 @@ local function GetTerrainInfo(gs)
         local td = gs.CurrentTerrainData
         if not td or not td:IsValid() then return nil, nil end
         local okName, n = pcall(function() return td.Name:ToString() end)
-        local okId,   i = pcall(function() return td:GetFName():ToString() end)
+        local okId, i = pcall(function() return td:GetFName():ToString() end)
         local name = (okName and n and n ~= "" and n ~= "None") and n or nil
-        local id   = (okId   and i and i ~= "" and i ~= "None") and i or nil
+        local id = (okId   and i and i ~= "" and i ~= "None") and i or nil
         return name, id
     end)
     if not ok then return nil, nil end
@@ -162,18 +161,9 @@ local function LogMatchState()
             if LastState[k] ~= v then changed = true break end
         end
 
-        -- Reset shown trainings on match start phases
-        if MatchStartPhases[phase] and not MatchStartPhases[LastPhase] then
-            ShownTrainings = {}
-            WriteShownTrainings()
-            print(string.format("[%s] New match — shown trainings reset", ModName))
-        end
-        LastPhase = phase
-
-        -- Accumulate shown trainings during intermission phases
+        -- Write current training pool during intermission phases
         if IntermissionPhases[phase] then
-            local added = ReadCommonTrainings(GameState)
-            if added then WriteShownTrainings() end
+            ReadCommonTrainings(GameState)
         end
 
         if changed then
@@ -190,12 +180,12 @@ local function LogMatchState()
                 queueId or "null"))
             print(string.format("========================================\n"))
 
-            local resolvedMap   = (mapId == "GMD_RGM") and terrainName or mapName
+            local resolvedMap = (mapId == "GMD_RGM") and terrainName or mapName
             local resolvedMapId = (mapId == "GMD_RGM") and terrainId   or mapId
-            local mapStr        = resolvedMap   and ('"' .. resolvedMap   .. '"') or "null"
-            local mapIdStr      = resolvedMapId and ('"' .. resolvedMapId .. '"') or "null"
-            local terrainStr    = terrainName   and ('"' .. terrainName   .. '"') or "null"
-            local terrainIdStr  = terrainId     and ('"' .. terrainId     .. '"') or "null"
+            local mapStr = resolvedMap and ('"' .. resolvedMap .. '"') or "null"
+            local mapIdStr = resolvedMapId and ('"' .. resolvedMapId .. '"') or "null"
+            local terrainStr = terrainName and ('"' .. terrainName .. '"') or "null"
+            local terrainIdStr = terrainId and ('"' .. terrainId .. '"') or "null"
             local queueStr = queueId and ('"' .. queueId .. '"') or "null"
             WriteState(string.format(
                 '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"terrain":%s,"terrain_id":%s,"queue":%s,"timestamp":%d}',

@@ -4,12 +4,12 @@ import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { getPlayerTrainings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, refreshLatestMatchStart } from './core/bridgeListener';
-import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating } from './core/database/queries';
-import { GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON } from './types/ue4ss';
+import { getPlayerTrainings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
+import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables } from './core/database/queries';
+import { GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
-import { matchPlayers } from './core/database/schema';
+import { currentMatch } from './core/database/schema';
 import { fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
@@ -80,12 +80,9 @@ function App() {
       const data = JSON.parse(payload.content) as GameStateJSON;
 
       // remove matchPlayers table entries for next game
-      if (data.phase == 'None' || data.phase == 'PreGame') {
-        console.info('Clearing matchPlayers table for next match...');
-        await db.delete(matchPlayers).run();
-      }; 
+      if (data.phase == 'None' || data.phase == 'PreGame') { await resetLocalTables(); }; 
 
-      await refreshLatestMatchStart();
+      await refreshLatestMatchStart(); // might be deprecated soon
 
       let cMatch = await upsertCurrentMatch({
         gameState: data.phase,
@@ -100,6 +97,15 @@ function App() {
       });
 
       await tryUpdateDiscordRPC(cMatch); // Ask Discord Helper to try and update
+    }),
+    onTrainingsChanged(async (payload) => {
+      if (payload.kind === 'removed' || !payload.content) return;
+      const data = JSON.parse(payload.content) as TrainingsChangedJSON;
+
+      // ADD new trainings to the match storage
+      console.log(`Updating shown awakenings list...`);
+      const [row] = await db.select({ trainings: currentMatch.trainings }).from(currentMatch);
+      await db.update(currentMatch).set({ trainings: [...row.trainings, ...data.trainings] });
     }),
     onPostGameStatsChanged(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;

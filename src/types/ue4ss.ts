@@ -34,6 +34,10 @@ export type GameStateJSON = {
   timestamp: number, // keeps tauri updating even if data is the same
 }
 
+export type TrainingsChangedJSON = {
+  trainings: string[]
+}
+
 // In order, just because
 export type PostGameStatsJSON = [{
   id: string,
