@@ -46,10 +46,6 @@ export async function getPlayerTrainings(): Promise<PlayerTrainings[]> {
   return result;
 }
 
-export async function getAllPossibleTrainings(): Promise<string[]> {
-  return invoke<string[]>('get_all_possible_trainings');
-}
-
 export async function isProcessRunning(name: string): Promise<boolean> {
   return invoke<boolean>('is_process_running', { name });
 }

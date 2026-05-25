@@ -51,8 +51,6 @@ pub fn run() {
             reset_local_database,
             is_process_running,
             log_watcher::get_latest_match_timestamp,
-            log_watcher::get_player_awakenings,
-            log_watcher::get_all_possible_trainings
             ]
         )
         .run(tauri::generate_context!())

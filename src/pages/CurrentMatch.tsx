@@ -87,7 +87,7 @@ export default function CurrentMatchPage() {
               initial="hidden"
               animate="show"
             >
-              <AvailableTrainings allTrainings={allTrainings} />
+              <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
 
               <div className="flex items-center gap-3 py-1">
                 <div className="flex-1 h-px bg-background-border" />

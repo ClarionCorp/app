@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { getPlayerTrainings } from '../../core/bridgeListener';
 import { TRAININGS } from '../../core/objects/trainings';
 import type { Awakenings } from '../../types/clarion';
+import type { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 
 // training id -> awakening id
 const training_to_awakening: Record<string, string> = Object.fromEntries(
@@ -18,35 +18,37 @@ const awakening_description: Record<string, string> = Object.fromEntries(
     .map(info => [info.awakeningId, info.description])
 );
 
-export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[] }) {
-  const [claimedAwakeningIds, setClaimedAwakeningIds] = useState<Set<string>>(new Set());
+interface Props {
+  allTrainings: Awakenings[];
+  match: CurrentMatchTable | null | undefined;
+  players: MatchPlayersTable[];
+}
+
+export function AvailableTrainings({ allTrainings, match, players }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    async function refresh() {
-      const playerTrainings = await getPlayerTrainings();
-      const claimedTrainingIds = new Set(playerTrainings.flatMap(p => p.trainings));
-      const awakeningIds = new Set(
-        Object.entries(training_to_awakening)
-          .filter(([trainingId]) => claimedTrainingIds.has(trainingId))
-          .map(([, awakeningId]) => awakeningId)
-      );
-      setClaimedAwakeningIds(awakeningIds);
-    }
+  const shownAwakeningIds = new Set(
+    (match?.trainings ?? [])
+      .map(id => training_to_awakening[id])
+      .filter(Boolean)
+  );
 
-    refresh();
-    const id = setInterval(refresh, 3000); // refresh every 3s
-    return () => clearInterval(id);
-  }, [allTrainings]);
+  const takenAwakeningIds = new Set(
+    players
+      .flatMap(p => p.trainings)
+      .map(id => training_to_awakening[id])
+      .filter(Boolean)
+  );
 
   const displayable = allTrainings
     .filter(a => a.active && !a.gear)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const availableCount = displayable.filter(a => !claimedAwakeningIds.has(a.id)).length;
+  const availableCount = displayable.filter(a => !takenAwakeningIds.has(a.id)).length;
   const hovered = hoveredId ? displayable.find(a => a.id === hoveredId) ?? null : null;
-  const hoveredIsTaken = hoveredId ? claimedAwakeningIds.has(hoveredId) : false;
+  const hoveredIsTaken = hoveredId ? takenAwakeningIds.has(hoveredId) : false;
+  const hoveredIsShown = hoveredId ? shownAwakeningIds.has(hoveredId) : false;
 
   return (
     <div className="bg-surface border border-background-border rounded-xl p-4">
@@ -60,7 +62,8 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[
         }}
       >
         {displayable.map(awakening => {
-          const isTaken = claimedAwakeningIds.has(awakening.id);
+          const isTaken = takenAwakeningIds.has(awakening.id);
+          const isShown = shownAwakeningIds.has(awakening.id);
           return (
             <div
               key={awakening.id}
@@ -73,7 +76,7 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[
               <img
                 src={awakening.image}
                 alt={awakening.name}
-                className={`w-10 h-10 rounded cursor-pointer transition-all ${isTaken ? 'grayscale brightness-50' : ''} ${hoveredId && hoveredId !== awakening.id ? 'opacity-40' : 'opacity-100'}`}
+                className={`w-10 h-10 rounded cursor-pointer transition-all ${isTaken || isShown ? 'grayscale brightness-50' : ''} ${hoveredId && hoveredId !== awakening.id ? 'opacity-40' : 'opacity-100'}`}
               />
             </div>
           );
@@ -99,11 +102,12 @@ export function AvailableTrainings({ allTrainings }: { allTrainings: Awakenings[
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                <img src={hovered.image} alt={hovered.name} className={`w-16 h-16 rounded-lg shrink-0 ${hoveredIsTaken ? 'grayscale brightness-50' : ''}`} />
+                <img src={hovered.image} alt={hovered.name} className={`w-16 h-16 rounded-lg shrink-0 ${hoveredIsTaken || hoveredIsShown ? 'grayscale brightness-50' : ''}`} />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-char flex items-center gap-2">
                     {hovered.name}
                     {hoveredIsTaken && <span className="text-xs font-bold text-red-400">(TAKEN)</span>}
+                    {!hoveredIsTaken && hoveredIsShown && <span className="text-xs font-bold text-yellow-400">(SHOWN)</span>}
                   </p>
                   <p className="text-xs text-char-subtle mt-1 leading-snug">{awakening_description[hovered.id] ?? hovered.description}</p>
                 </div>
