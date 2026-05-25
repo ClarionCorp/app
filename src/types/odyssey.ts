@@ -29,6 +29,64 @@ export type RankedQuery = {
   currentDivisionId: string, // usually "WORLD"
 }
 
+export type StatsQuery = {
+  timestamp: Date,
+  playerId: string,
+  playerStats: {
+    playerId: string, // same as above
+    ratingName: 'None' | 'NormalInitial' | 'RankedInitial',
+    roleStats: {
+      Forward: {
+        assists: number,
+        games: number,
+        knockouts: number,
+        losses: number,
+        mvp: number,
+        saves: number,
+        scores: number,
+        wins: number,
+      },
+      Goalie: {
+        assists: number,
+        games: number,
+        knockouts: number,
+        losses: number,
+        mvp: number,
+        saves: number,
+        scores: number,
+        wins: number,
+      }
+    }
+  }[],
+  characterStats: {
+    playerId: string, // same as above
+    characterId: string, // CD_AngelicSupport = Atlas
+    ratingName: 'None' | 'NormalInitial' | 'RankedInitial',
+    roleStats: {
+      Forward: {
+        assists: number,
+        games: number,
+        knockouts: number,
+        losses: number,
+        mvp: number,
+        saves: number,
+        scores: number,
+        wins: number,
+      },
+      Goalie: {
+        assists: number,
+        games: number,
+        knockouts: number,
+        losses: number,
+        mvp: number,
+        saves: number,
+        scores: number,
+        wins: number,
+      }
+    }
+  }[]
+}
+
 export type SelfQuery = {
   username: string,
   playerId: string,

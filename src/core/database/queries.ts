@@ -1,5 +1,5 @@
-import { AuthTable, UserTable } from "../../types/database";
-import { SelfQuery } from "../../types/odyssey";
+import { AuthTable, PlayerCharJSON, UserTable } from "../../types/database";
+import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
 import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory } from "./schema";
 import { eq, sql } from "drizzle-orm";
@@ -121,7 +121,68 @@ export async function insertMatchHistory(data: Omit<typeof matchHistory.$inferIn
 
 // Moved here in case we need to add more
 export async function resetLocalTables() {
-  console.info('Clearing local tables for next match...');
+  console.log('Clearing local tables for next match...');
   await db.delete(matchPlayers).run();
   await db.update(currentMatch).set({ trainings: [] });
+}
+
+// Only runs once upon loading players, so it should be fine to run this heavy function lol
+export async function calcAndSetPlayerStats(username: string, stats: StatsQuery | null) {
+  if (!stats) {
+    return db.update(matchPlayers)
+      .set({ favChar: [], bestChar: [], normWR: 0, rankedWR: 0, normGames: 0, rankedGames: 0 })
+      .where(eq(matchPlayers.username, username))
+      .returning();
+  }
+
+  const slots = [
+    { role: 'Forward', queue: 'Normal' },
+    { role: 'Forward', queue: 'Ranked' },
+    { role: 'Goalie', queue: 'Normal' },
+    { role: 'Goalie', queue: 'Ranked' },
+  ] as const;
+
+  const favChar: PlayerCharJSON[] = [];
+  const bestChar: PlayerCharJSON[] = [];
+
+  for (const { role, queue } of slots) {
+    const candidates = stats.characterStats
+      .filter(c => (c.ratingName === 'RankedInitial' ? 'Ranked' : 'Normal') === queue)
+      .map(c => ({
+        characterId: c.characterId,
+        queue,
+        role,
+        games: c.roleStats[role].games,
+        winrate: c.roleStats[role].games > 0
+          ? c.roleStats[role].wins / c.roleStats[role].games
+          : 0,
+      }))
+      .filter(c => c.games > 0);
+
+    const byGames = candidates.reduce((best, c) => c.games > best.games ? c : best, candidates[0]);
+    const byWinrate = candidates.reduce((best, c) => c.winrate > best.winrate ? c : best, candidates[0]);
+
+    if (byGames) favChar.push(byGames);
+    if (byWinrate) bestChar.push(byWinrate);
+  }
+
+  let normGames = 0, normWins = 0, rankedGames = 0, rankedWins = 0;
+  for (const ps of stats.playerStats) {
+    const g = ps.roleStats.Forward.games + ps.roleStats.Goalie.games;
+    const w = ps.roleStats.Forward.wins + ps.roleStats.Goalie.wins;
+    if (ps.ratingName === 'RankedInitial') { rankedGames += g; rankedWins += w; }
+    else { normGames += g; normWins += w; }
+  }
+
+  return db.update(matchPlayers)
+    .set({
+      favChar,
+      bestChar,
+      normWR: normGames > 0 ? normWins / normGames : 0,
+      rankedWR: rankedGames > 0 ? rankedWins / rankedGames : 0,
+      normGames,
+      rankedGames,
+    })
+    .where(eq(matchPlayers.username, username))
+    .returning();
 }

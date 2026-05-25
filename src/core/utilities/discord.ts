@@ -100,7 +100,7 @@ export async function stopRpc() {
 }
 
 async function _updateActivity(options: RpcActivityOptions) {
-  console.info(`Received request to change rich presence...`);
+  console.log(`Received request to change rich presence...`);
   console.debug(`DRPC Options: ${JSON.stringify(options, null, 1)}`);
 
   try {
@@ -158,7 +158,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
     return await tryUpdateDiscordRPC(currentMatch);
   }
 
-  console.info(`GameState Changed! (${currentMatch.gameState})`);
+  console.log(`GameState Changed! (${currentMatch.gameState})`);
 
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);

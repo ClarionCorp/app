@@ -1,4 +1,4 @@
-import { RankedQuery, SelfQuery, UserQuery } from "../../types/odyssey";
+import { RankedQuery, SelfQuery, StatsQuery, UserQuery } from "../../types/odyssey";
 import { OdyAPI } from "../constants";
 import { db } from "../database/driver";
 import { getUser } from "../database/queries";
@@ -25,13 +25,13 @@ export async function fetchUsernameQuery(username: string): Promise<UserQuery | 
     });
 
     const data: QueryJSON = await res.json();
-    if (!res.ok || data.matches.length == 0 || !data.matches[0]?.playerId) { throw new Error(`API Unreachable or Player not found (${res.status})`) };
+    if (!res.ok || data.matches.length == 0 || !data.matches[0]?.playerId) { throw new Error(`[UserQuery] API Unreachable or Player not found (${res.status})`) };
 
     return data.matches[0];
   } catch (error) {
     console.debug(error);
     console.warn(`Player '${username}' returned no data!`);
-    return null
+    return null;
   }
 }
 
@@ -47,13 +47,35 @@ export async function fetchRankQuery(playerId: string): Promise<RankedQuery | nu
     });
 
     const data: RankedJSON = await res.json();
-    if (!res.ok || data.players.length == 0 || !data.players[0] ) { throw new Error(`API Unreachable or Player not found (${res.status})`) };
+    if (!res.ok || data.players.length == 0 || !data.players[0] ) { throw new Error(`[RankQuery] API Unreachable or Player not found (${res.status})`) };
 
     return data.players[0];
   } catch (error) {
     console.debug(error);
     console.warn(`Player '${playerId}' returned no data!`);
-    return null
+    return null;
+  }
+}
+
+export async function fetchPlayerStats(playerId: string): Promise<StatsQuery | null> {
+  const { jwt, rft } = await readIdentity();
+  try {
+    const res = await fetch(`${OdyAPI}/v1/stats/player-stats/${playerId}`, {
+      method: 'GET',
+      headers: {
+        'X-Authorization': `Bearer ${jwt}`,
+        'X-Refresh-Token': `${rft}`
+      }
+    });
+
+    const data: StatsQuery = await res.json();
+    if (!res.ok || !data.playerStats ) { throw new Error(`[StatQuery] API Unreachable or Player not found (${res.status})`) };
+
+    return data;
+  } catch (error) {
+    console.debug(error);
+    console.warn(`Player '${playerId}' returned no statistical data!`);
+    return null;
   }
 }
 

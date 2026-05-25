@@ -1,5 +1,6 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer } from "../../types/ue4ss";
+import { PlayerCharJSON } from "../../types/database";
 
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
@@ -65,6 +66,12 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
   xp: integer("xp").default(0),
   trainings: text("trainings", { mode: "json" }).$type<string[]>().notNull().default([]),
+  favChar: text("favChar", { mode: "json" }).$type<PlayerCharJSON[]>().notNull().default([]), // most games played
+  bestChar: text("bestChar", { mode: "json" }).$type<PlayerCharJSON[]>().notNull().default([]), // highest WR
+  normWR: real("normWR"),
+  rankedWR: real("rankedWR"),
+  normGames: integer("normGames"),
+  rankedGames: integer("rankedGames"),
 });
 
 // Basic list of previous matches for local match history

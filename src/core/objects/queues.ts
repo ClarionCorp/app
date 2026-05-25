@@ -57,3 +57,8 @@ export const QUEUES: QueueObject[] = [
     icon: QuestionIcon,
   },
 ]
+
+export function getQueueFromDb(queueId: string | null | undefined): QueueObject {
+  if (!queueId) { return QUEUES.find(q => q.queueId === 'queue:custom:NvM')! };
+  return QUEUES.find(q => q.queueId === queueId) ?? QUEUES.find(q => q.queueId === 'queue:custom:NvM')!;
+}

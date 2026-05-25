@@ -5,3 +5,12 @@ export type AuthTable = typeof auth.$inferSelect;
 export type CurrentMatchTable = typeof currentMatch.$inferSelect;
 export type MatchPlayersTable = typeof matchPlayers.$inferSelect;
 export type MatchHistoryTable = typeof matchHistory.$inferSelect;
+
+
+export type PlayerCharJSON = {
+  characterId: string,
+  queue: 'Normal' | 'Ranked',
+  role: 'Forward' | 'Goalie',
+  games: number,
+  winrate: number,
+}

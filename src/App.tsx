@@ -5,12 +5,12 @@ import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { getPlayerTrainings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
-import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables } from './core/database/queries';
+import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats } from './core/database/queries';
 import { GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { currentMatch } from './core/database/schema';
-import { fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
+import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -57,17 +57,18 @@ function App() {
         charName: p.character_name,
         charId: p.character_id,
         isMe: p.name === currentUser?.username,
-        rating: p.name === currentUser?.username ? currentUser.rating : null,
         xp: p.level,
         trainings: p.trainings,
       })));
 
       for (const player of players.filter(p => p.rating === null)) {
-        // fetch and set ratings (if empty)
-        console.info(`Fetching rank data for ${player.username}...`)
+        // fetch and set ratings and other stats (if empty)
+        console.log(`Fetching statistical data for ${player.username}...`)
         try {
           const user = await fetchUsernameQuery(player.username);
           const ranked = await fetchRankQuery(user!.playerId);
+          const stats = await fetchPlayerStats(user!.playerId);
+          await calcAndSetPlayerStats(player.username, stats); // run first since it really shouldn't fail as much as rating
           await updatePlayerRating(player.username, ranked!.rating);
         } catch (e) {
           console.warn(`No rank data could be found for ${player.username}.`);

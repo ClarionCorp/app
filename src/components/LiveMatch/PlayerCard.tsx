@@ -6,6 +6,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { getGameStatus } from '../../core/objects/gameStates';
 import { TRAININGS } from '../../core/objects/trainings';
+import { getQueueFromDb } from '../../core/objects/queues';
 
 
 export function PlayerCard({ player, match, index, isBlue = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean }) {
@@ -16,6 +17,9 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
 
   // We need to make sure the game has either started or isn't going
   const charName = match && getGameStatus(match.gameState) !== 'STARTING' ? (player.charName ?? '—') : '—';
+  const queue = getQueueFromDb(match?.queue).queueName;
+  const games = queue == 'Normal' || queue == 'Quick Play' ? player.normGames : player.rankedGames;
+  const winrate = queue == 'Normal' || queue == 'Quick Play' ? player.normWR : player.rankedWR;
 
   return (
     <motion.div
@@ -84,10 +88,13 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
 
             <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span>
-                Playing: <span className="text-zinc-300 font-medium">{charName}</span>
+                Rating: <span className="text-zinc-300 font-medium">{player.rating}</span>
               </span>
               <span>
-                Rating: <span className="text-zinc-300 font-medium">{player.rating}</span>
+                Games: <span className="text-zinc-300 font-medium">{games == null ? '—' : games}</span>
+              </span>
+              <span>
+                Winrate: <span className="text-zinc-300 font-medium">{winrate == null ? '—' : `${winrate * 100}%`}</span>
               </span>
             </div>
 
