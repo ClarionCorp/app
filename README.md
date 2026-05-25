@@ -20,16 +20,24 @@ The app will automatically save completed games and be viewable completely in-ap
 
 <!-- Add comparison graph here at some point -->
 
+## 🗣️ Discord Rich Presence
+The default OS Rich Presence kind of sucks. Just says you're playing OS and for how long. Our custom Rich Presence is fully dynamic based on what you are doing. Whether it's queuing, playing (live score!), or just sitting in the lobby, your friends on discord will be updated on it!
+
+<!-- Add some preview images here at some point -->
+
 ## 👥 Online Player Counter
-Everyone using the app will have their gamestate periodically sent to the Ai.Mi API. This way, we can show a counter inside the app for how many people are currently playing. :)
+Everyone using the app will have their gamestate periodically sent to the Ai.Mi API. This way, we can show a counter inside the app for how many people are currently playing. 😃
 
 We plan to add an option in settings in the future (before v2 release) to opt-out since we know some people don't like that sort of thing very much. 🩷
+
 
 ## 🔎 Mod Manager (planned)
 No more fussing around with manually keeping track of your pak files. With this, you can view your currently installed mods, as well as download new ones straight from [GameBanana](https://gamebanana.com/games/17234).
 
+
 ## ⚙️ Local Custom Game Manager (planned)
 Custom Game Manager is a tool currently hosted on [ClarionCorp](https://clarioncorp.net/custom-games). Though, prepping the Auth file can be annoying, so we're bringing CGM to the Ai.Mi App to do it all automatically!
+
 
 ## 🖥️ Custom Queue Manager (planned)
 Explore other queues that are available in the game for some reason. We also may work with Event Organizers to introduce custom queues or matchmaking.
