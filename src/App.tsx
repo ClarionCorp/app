@@ -59,6 +59,7 @@ function App() {
         isMe: p.name === currentUser?.username,
         rating: p.name === currentUser?.username ? currentUser.rating : null,
         xp: p.level,
+        trainings: p.trainings,
       })));
 
       for (const player of players.filter(p => p.rating === null)) {

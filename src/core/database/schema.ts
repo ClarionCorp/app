@@ -64,6 +64,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   rating: integer("rating"),
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
   xp: integer("xp").default(0),
+  trainings: text("trainings", { mode: "json" }).$type<string[]>().notNull().default([]),
 });
 
 // Basic list of previous matches for local match history
