@@ -1,156 +1,177 @@
 
 local ModName = "PostGameStatsMod"
-local ModVersion = "2.0.0"
+local ModVersion = "3.0.0"
 
-print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
-print("Outputting to: " .. os.getenv("TEMP") .. "\\PostGameStats.json")
+print(string.format("\n=== %s v%s Loaded ===", ModName, ModVersion))
+print("[PGSM] Output -> " .. os.getenv("TEMP") .. "\\PostGameStats.json")
 
-local statsCollected = false
 local hookRegistered = false
 
+local function fname(v)
+    if not v then return "" end
+    local ok, s = pcall(function() return v:ToString() end)
+    return ok and s or ""
+end
+
+local function buildPlayerMap()
+    local map = {}
+    local states = FindAllOf("PMPlayerState")
+    if not states then return map end
+    for _, ps in ipairs(states) do
+        if ps and ps:IsValid() then
+            pcall(function()
+                local id = fname(ps.PMPlayerId)
+                if id == "" then return end
+                local name = ""
+                pcall(function() name = ps.PMDisplayName:ToString() end)
+                if name == "" then
+                    pcall(function() name = ps.PlayerName:ToString() end)
+                end
+                map[id] = { name = name, team = tostring(ps.AssignedTeam) }
+            end)
+        end
+    end
+    return map
+end
+
+local function collectStats(log)
+    local stats = {}
+
+    local function get(id)
+        if id == "" then return nil end
+        if not stats[id] then
+            stats[id] = { goals=0, assists=0, saves=0, kos=0, redirects=0, damage=0, shots=0, orbs=0 }
+        end
+        return stats[id]
+    end
+
+    pcall(function()
+        for i = 1, #log.GoalsScored do
+            local ev = log.GoalsScored[i]
+            local s = get(fname(ev.InstigatingPlayerId))
+            if s then s.goals = s.goals + 1 end
+            pcall(function()
+                for j = 1, #ev.AssistingPlayerIds do
+                    local a = get(fname(ev.AssistingPlayerIds[j]))
+                    if a then a.assists = a.assists + 1 end
+                end
+            end)
+        end
+    end)
+
+    pcall(function()
+        for i = 1, #log.GoalsSaved do
+            local s = get(fname(log.GoalsSaved[i].DefendingPlayerId))
+            if s then s.saves = s.saves + 1 end
+        end
+    end)
+
+    pcall(function()
+        for i = 1, #log.CharactersKnockedOut do
+            local s = get(fname(log.CharactersKnockedOut[i].InstigatingPlayerId))
+            if s then s.kos = s.kos + 1 end
+        end
+    end)
+
+    pcall(function()
+        for i = 1, #log.PlayerMatchEvents do
+            local perMatch = log.PlayerMatchEvents[i]
+            local s = get(fname(perMatch.PlayerId))
+            if s then
+                pcall(function()
+                    local ev = perMatch.PlayerMatchEvents
+                    s.redirects = ev.RedirectRock
+                    s.damage = ev.DamageDoneToPlayers
+                    s.shots = ev.HitRockIntoGoalArea
+                    s.orbs = ev.PowerUpsPickedUpCount
+                end)
+            end
+        end
+    end)
+
+    return stats
+end
+
 local function writeStats(players)
-    local json = "[\n"
-    for i, p in ipairs(players) do
-        json = json .. "  {\n"
-        local entries = {}
-        for k, v in pairs(p) do
-            table.insert(entries, string.format('    "%s": "%s"', k, tostring(v)))
-        end
-        json = json .. table.concat(entries, ",\n") .. "\n  }"
-        if i < #players then json = json .. "," end
-        json = json .. "\n"
+    local rows = {}
+    for _, p in ipairs(players) do
+        table.insert(rows, string.format(
+            '  {"id":"%s","name":"%s","team":"%s","goals":%d,"assists":%d,"saves":%d,"kos":%d,"redirects":%d,"damage":%d,"shots":%d,"orbs":%d}',
+            p.id, p.name:gsub('"', '\\"'), p.team,
+            p.goals, p.assists, p.saves, p.kos, p.redirects, p.damage, p.shots, p.orbs
+        ))
     end
-    json = json .. "]\n"
 
-    local filePath = os.getenv("TEMP") .. "\\PostGameStats.json"
-    local file = io.open(filePath, "w")
-    if file then
-        file:write(json)
-        file:close()
-        print("[PGSM] Wrote stats to " .. filePath)
+    local path = os.getenv("TEMP") .. "\\PostGameStats.json"
+    local f = io.open(path, "w")
+    if f then
+        f:write("[\n" .. table.concat(rows, ",\n") .. "\n]\n")
+        f:close()
+        print("[PGSM] Wrote stats for " .. #players .. " players → " .. path)
     else
-        print("[PGSM] Failed to write stats file")
+        print("[PGSM] ERROR: Could not open " .. path)
     end
 end
-
-local function collectStats()
-    print(string.format("\n[PGSM] Attempting to collect stats..."))
-    
-    local rows = FindAllOf("WBP_EndOfGame_PlayerStatRow_C")
-    
-    if not rows or #rows == 0 then
-        print("[PGSM] No rows found")
-        return false
-    end
-    
-    print(string.format("[PGSM] Found %d stat rows", #rows))
-    
-    local players = {}
-    for _, row in ipairs(rows) do
-        local ok, player = pcall(function()
-            if not row.Redirects or not row.Redirects:IsValid() then return nil end
-            
-            local name = row.PlayerName:GetText():ToString()
-            if name == "PlayerName" then return nil end
-            name = name:gsub("<[^>]+>", "")
-            
-            local goals, assists = row.GoalsPlusAssists:GetText():ToString():match("(%d+)%+(%d+)")
-            
-            return {
-                name = name,
-                goals = goals or "0",
-                assists = assists or "0",
-                saves = row.Saves:GetText():ToString(),
-                kos = row.KOs:GetText():ToString(),
-                redirects = row.Redirects:GetText():ToString(),
-                shots = row.Shots:GetText():ToString(),
-                damage = row.Damage:GetText():ToString():gsub(",", ""),
-                orbs = row.Orbs:GetText():ToString(),
-            }
-        end)
-        
-        if ok and player then
-            print(string.format("  > %s", player.name))
-            table.insert(players, player)
-        end
-    end
-    
-    if #players > 0 then
-        print(string.format("\n[PGSM] Successfully collected %d players!", #players))
-        writeStats(players)
-        statsCollected = true
-        return true
-    else
-        print("[PGSM] No valid players found")
-        return false
-    end
-end
-
--- Try to register MatchSummary hook (with polling)
-print("Attempting to register MatchSummary hook...")
 
 local function tryRegisterHook()
     if hookRegistered then return true end
-    
-    local success = pcall(function()
+
+    local ok = pcall(function()
         RegisterHook(
             "/Game/Prometheus/Blueprints/Core/GameState_Game.GameState_Game_C:MatchSummary",
-            function(self, MatchEventLog)
-                print("\n")
-                print("[PGSM] Match Summary Event Called!")
-                print("[PGSM] Will start checking for stats in 15 seconds... (waiting for mvp screen to finish)")
-                print("")
-                
-                statsCollected = false
-                
-                local attempts = 0
-                local maxAttempts = 10
-                
-                local function tryCollect()
-                    attempts = attempts + 1
-                    print(string.format("\n[PGSM] Collection attempt %d/%d", attempts, maxAttempts))
-                    
-                    local success = collectStats()
-                    
-                    if not success and attempts < maxAttempts then
-                        ExecuteWithDelay(10000, tryCollect) -- Try again in 15 seconds
-                    elseif not success then
-                        print("[PGSM] (!) Gave up after max attempts")
-                    end
+            function(self, MatchEventLogParam)
+                print("\n[PGSM] MatchSummary fired! Collecting from event log...")
+
+                local ok, log = pcall(function() return MatchEventLogParam:get() end)
+                if not ok or not log then
+                    print("[PGSM] ERROR: Could not unwrap MatchEventLog param")
+                    return
                 end
-                
-                -- Wait 15 seconds before first attempt
-                ExecuteWithDelay(15000, tryCollect)
+
+                local playerMap = buildPlayerMap()
+                local stats = collectStats(log)
+
+                local players = {}
+                for id, s in pairs(stats) do
+                    local info = playerMap[id] or {}
+                    table.insert(players, {
+                        id = id,
+                        name  = info.name or id,
+                        team = info.team or "0",
+                        goals = s.goals,
+                        assists = s.assists,
+                        saves = s.saves,
+                        kos = s.kos,
+                        redirects = s.redirects,
+                        damage = s.damage,
+                        shots = s.shots,
+                        orbs = s.orbs,
+                    })
+                end
+
+                print(string.format("[PGSM] Collected %d players", #players))
+                writeStats(players)
             end
         )
     end)
-    
-    if success then
+
+    if ok then
         hookRegistered = true
-        print("[PGSM] MatchSummary hook registered successfully!")
+        print("[PGSM] Hook registered")
         return true
-    else
-        return false
     end
+    return false
 end
 
--- Try immediately
 if not tryRegisterHook() then
-    print("[PGSM] Hook not available yet (not in a match)")
-    print("[PGSM] Will retry every 30 seconds...")
-    
-    -- Retry every 30 seconds
-    local retryCount = 0
+    print("[PGSM] Hook not available yet, retrying every 30s...")
+    local attempts = 0
     local function retry()
-        retryCount = retryCount + 1
-        print(string.format("\n[PGSM] Hook registration attempt #%d...", retryCount))
-        
+        attempts = attempts + 1
+        print(string.format("[PGSM] Registration attempt #%d", attempts))
         if not tryRegisterHook() then
-            ExecuteWithDelay(30000, retry) -- Retry every 30 seconds
+            ExecuteWithDelay(30000, retry)
         end
     end
-    
     ExecuteWithDelay(30000, retry)
-else
-    print("[PGSM] Hook registered on startup (already in match)")
 end
