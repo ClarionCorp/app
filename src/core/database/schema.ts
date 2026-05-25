@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer } from "../../types/ue4ss";
-import { PlayerCharJSON } from "../../types/database";
+import { PlayerCharJSON, QueueStates } from "../../types/database";
 
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
@@ -97,5 +97,7 @@ export const sessionInfo = sqliteTable("sessionInfo", {
   id: integer("id").primaryKey(),
   partySize: integer("partySize").notNull().default(0),
   maxPartySize: integer("maxPartySize").notNull().default(3),
+  queueState: text("queueState").$type<QueueStates>(),
+  queueName: text("queueName"),
   // eventually add session rating tracking here :)
 });

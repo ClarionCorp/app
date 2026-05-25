@@ -41,6 +41,14 @@ export async function onTrainingsChanged(
   });
 }
 
+export async function onSessionUpdated(
+  handler: (payload: FileChangePayload) => void
+): Promise<UnlistenFn> {
+  return listen<FileChangePayload>('ue4ss-session-changed', (event) => {
+    handler(event.payload);
+  });
+}
+
 export async function getPlayerTrainings(): Promise<PlayerTrainings[]> {
   const result = await invoke<PlayerTrainings[]>('get_player_awakenings'); // just leave the invoke and mod as "awakenings" even tho its technically wrong
   return result;

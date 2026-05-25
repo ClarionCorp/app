@@ -30,7 +30,14 @@ export type GameStateJSON = {
   t2_sets: number,
   map: string,
   map_id: string,
-  queue: string,
+  timestamp: number, // keeps tauri updating even if data is the same
+}
+
+export type GameSessionJSON = {
+  party_size: number,
+  max_party_size: number,
+  mm_state: 0 | 1 | 2 | 3 | 4 | 5 | 6, // Unknown, Idle, Queued, FoundMatch, StartingGame, InGame, EMatchmakingStateV2_MAX
+  queue_name: string | null,
   timestamp: number, // keeps tauri updating even if data is the same
 }
 

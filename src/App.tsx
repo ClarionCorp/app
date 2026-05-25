@@ -4,13 +4,15 @@ import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { getPlayerTrainings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
-import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats } from './core/database/queries';
-import { GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
+import { getPlayerTrainings, onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
+import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo } from './core/database/queries';
+import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { currentMatch } from './core/database/schema';
 import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
+import { getQueueObject, QUEUE_STATES_ARRAY } from './core/objects/queues';
+import { getGameStatus } from './core/objects/gameStates';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -85,11 +87,13 @@ function App() {
       if (data.phase == 'None' || data.phase == 'PreGame') { await resetLocalTables(); }; 
 
       await refreshLatestMatchStart(); // might be deprecated soon
+      const session = await getGameSession();
+      const gameStatus = getGameStatus(data.phase);
 
       let cMatch = await upsertCurrentMatch({
         gameState: data.phase,
         map: data.map_id,
-        ...(data.queue !== null && { queue: data.queue }), // mod reports null before game ends
+        queue: gameStatus == 'IDLING' ? session.queueName : undefined,
         teamNum: data.my_team,
         teamOnePts: data.t1_goals,
         teamTwoPts: data.t2_goals,
@@ -98,7 +102,24 @@ function App() {
         // startedAt: data.phase == 'VersusScreen' ? new Date() : undefined
       });
 
-      await tryUpdateDiscordRPC(cMatch); // Ask Discord Helper to try and update
+      console.log(`GameState Changed! (${data.phase})`);
+      if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(cMatch); } // Ask Discord RPC to try and update score
+    }),
+    onSessionUpdated(async (payload) => {
+      if (payload.kind === 'removed' || !payload.content) return;
+      const data = JSON.parse(payload.content) as GameSessionJSON;
+
+      const queueObj = getQueueObject(data.queue_name);
+      const queueState = QUEUE_STATES_ARRAY[data.mm_state];
+
+      console.log(`Updating Matchmaking to: (${queueState}: ${queueObj.queueName})`);
+      const session = await updateSessionInfo({
+        partySize: data.party_size,
+        maxPartySize: data.max_party_size,
+        queueName: queueObj.queueName,
+        queueState: QUEUE_STATES_ARRAY[data.mm_state] ?? 'Unknown',
+      });
+      await tryUpdateDiscordRPC(undefined, session); // Ask Discord RPC to update
     }),
     onTrainingsChanged(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;

@@ -100,6 +100,14 @@ export async function upsertCurrentMatch(data: Omit<typeof currentMatch.$inferIn
   return rows[0];
 }
 
+export async function updateSessionInfo(data: Omit<typeof sessionInfo.$inferInsert, "id">) {
+  const rows = await db.insert(sessionInfo).values({ id: 1, ...data }).onConflictDoUpdate({
+    target: sessionInfo.id,
+    set: data,
+  }).returning();
+  return rows[0];
+}
+
 export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[]) {
   if (players.length === 0) return [];
   return db.insert(matchPlayers).values(players).onConflictDoUpdate({

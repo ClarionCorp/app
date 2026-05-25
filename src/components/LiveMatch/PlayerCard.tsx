@@ -6,7 +6,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { getGameStatus } from '../../core/objects/gameStates';
 import { TRAININGS } from '../../core/objects/trainings';
-import { getQueueFromDb } from '../../core/objects/queues';
+import { getQueueObject } from '../../core/objects/queues';
 import { getPlayerChar } from '../../core/database/queries';
 
 
@@ -22,7 +22,7 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
       ? 'border-background-border hover:border-blue-500/50'
       : 'border-background-border hover:border-primary/20';
 
-  const queue = getQueueFromDb(match?.queue).queueName;
+  const queue = getQueueObject(match?.queue).queueName;
   const charQueue: 'Normal' | 'Ranked' = queue === 'Ranked' || queue === 'Customs' ? 'Ranked' : 'Normal';
   const games = charQueue === 'Normal' ? player.normGames : player.rankedGames;
   const winrate = charQueue === 'Normal' ? player.normWR : player.rankedWR;

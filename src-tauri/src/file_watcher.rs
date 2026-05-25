@@ -11,6 +11,7 @@ const WATCHED_FILES: &[(&str, &str)] = &[
     ("ue4ss_shown_trainings.json", "ue4ss-trainings-changed"),
     ("ue4ss_players.json", "ue4ss-players-changed"),
     ("ue4ss_gamestate.json", "ue4ss-gamestate-changed"),
+    ("ue4ss_session.json", "ue4ss-session-changed"),
     ("PostGameStats.json", "postgame-stats-changed"),
 ];
 

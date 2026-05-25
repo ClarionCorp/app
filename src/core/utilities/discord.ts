@@ -1,11 +1,12 @@
 import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
 import { getRankFromLP } from "../objects/ranks";
-import { getQueueName, removeDevCharPrefix } from "../objects/ody";
-import { getGameSession, getMatchPlayers } from "../database/queries";
-import { CurrentMatchTable } from "../../types/database";
+import { removeDevCharPrefix } from "../objects/ody";
+import { getCurrentMatch, getGameSession, getMatchPlayers } from "../database/queries";
 import { refreshRating } from "./odyssey";
 import { getMapObjectFromID } from "../objects/maps";
+import { CurrentMatchTable, SessionTable } from "../../types/database";
+import { getPartyLabel } from "../objects/sessions";
 
 const APP_ID = "1483520798017982707";
 
@@ -153,36 +154,43 @@ async function _clearActivity() {
   await clearActivity();
 }
 
-export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
+export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo?: SessionTable) { // less db reads
+  const currentMatch = match ?? (await getCurrentMatch());
   if (!discordRpc) {
     console.warn(`[DRPC] No DRPC found. Starting a new instance on-the-fly...`);
     await startRpc();
     return await tryUpdateDiscordRPC(currentMatch);
   }
 
-  console.log(`GameState Changed! (${currentMatch.gameState})`);
+  const session = sessionInfo ?? (await getGameSession());
 
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
   const mapObject = getMapObjectFromID(currentMatch.map);
-  const queue = getQueueName(currentMatch.queue!) ?? 'Customs';
+  const partyLabel = getPartyLabel(session.partySize);
 
-  // Not in a match
+  // Not in a match, and not queuing
   if (
-    currentMatch.gameState == null ||
-    currentMatch.gameState == 'null' ||
-    PHASE_GROUPS.out_of_game.some(p => p === currentMatch.gameState)
+    session.queueState == 'Idle'
   ) {
     matchSetupTimestamps = null;
-    const session = await getGameSession();
     await discordRpc.updateActivity({
-      details: 'On the Main Menu',
-      state: `In Party (${session.partySize}/${session.maxPartySize})`,
+      details: 'Idling on the Main Menu',
+      state: `Playing ${partyLabel}`,
       largeImage: DRPC_LOGO_KEY
     });
   }
 
-  // Match found and is starting
+  // Queuing
+  else if (session.queueState == 'Queued' || session.queueState == 'FoundMatch' || session.queueState == 'StartingGame') {
+    await discordRpc.updateActivity({
+      details: `Waiting in ${session.queueName} Queue`,
+      state: `Playing ${partyLabel}`,
+      largeImage: DRPC_LOGO_KEY
+    });
+  }
+
+  // Match found and it's in setup phase
   else if (PHASE_GROUPS.starting.some(p => p === currentMatch.gameState)) {
     if (currentMatch.gameState === 'ArenaOverview') { // Only set on Pre-Game (after resetting match table), to use on other setup phases
       console.debug('New Match! Saving setup timestamp finish...');
@@ -191,7 +199,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
     }
     await refreshRating();
     await discordRpc.updateActivity({
-      details: `${queue} - ${mapObject.mapName}`,
+      details: `${currentMatch.queue} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
       ...matchSetupTimestamps,
     });
@@ -202,10 +210,10 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
     console.debug(`Updating dRPC...`);
     const rankObject = getRankFromLP(myPlayer?.rating);
 
-    let largeImg = 'aimiapp_logo_v2';
+    let largeImg = DRPC_LOGO_KEY;
     if (myPlayer?.charId) { largeImg = removeDevCharPrefix(myPlayer?.charId as string).toLowerCase(); }
     await discordRpc.updateActivity({// cant be null here
-      details: `${queue} - ${mapObject.mapName}`,
+      details: `${currentMatch.queue} - ${mapObject.mapName}`,
       state: formatScore(
         currentMatch.teamOnePts ?? 0,
         currentMatch.teamTwoPts ?? 0,
