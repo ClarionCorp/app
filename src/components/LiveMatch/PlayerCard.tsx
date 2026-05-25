@@ -16,7 +16,6 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
   //   : '0.0';
 
   // We need to make sure the game has either started or isn't going
-  const charName = match && getGameStatus(match.gameState) !== 'STARTING' ? (player.charName ?? '—') : '—';
   const queue = getQueueFromDb(match?.queue).queueName;
   const games = queue == 'Normal' || queue == 'Quick Play' ? player.normGames : player.rankedGames;
   const winrate = queue == 'Normal' || queue == 'Quick Play' ? player.normWR : player.rankedWR;
@@ -94,7 +93,15 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                 Games: <span className="text-zinc-300 font-medium">{games == null ? '—' : games}</span>
               </span>
               <span>
-                Winrate: <span className="text-zinc-300 font-medium">{winrate == null ? '—' : `${winrate * 100}%`}</span>
+                Winrate: <span className={
+                  `font-medium
+                  ${winrate == null ? 'text-zinc-300'
+                    : winrate >= 0.6 ? 'text-green-400'
+                    : winrate <= 0.4 ? 'text-red-400'
+                    : 'text-yellow-400'}
+                  `}>
+                  {winrate == null ? '—' : `${(winrate * 100).toFixed(0)}%`
+                  }</span>
               </span>
             </div>
 
