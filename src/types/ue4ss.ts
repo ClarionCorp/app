@@ -10,7 +10,8 @@ export type PlayerFinderJSON = {
     role: 'Forward' | 'Goalie',
     character_id: string, // CD_NimbleBlaster
     character_name: string, // "Drek'ar"
-    level: number
+    level: number,
+    trainings: string[]
   }[],
   timestamp: number, // keeps tauri updating even if data is the same
 };

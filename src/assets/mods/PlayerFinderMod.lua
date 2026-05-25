@@ -1,5 +1,5 @@
 local ModName = "PlayerFinderMod"
-local ModVersion = "1.0.0"
+local ModVersion = "1.1.0"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -14,6 +14,23 @@ local function GetCharacter(ps)
     local ok1, id   = pcall(function() return cd:GetFName():ToString() end)
     local ok2, name = pcall(function() return cd.InGameName:ToString() end)
     return ok1 and id or nil, ok2 and name or nil
+end
+
+local function GetTrainings(ps)
+    local ids = {}
+    pcall(function()
+        local trainings = ps.EquippedTrainings
+        for i = 1, #trainings do
+            local t = trainings[i]
+            if t and t:IsValid() then
+                local ok, id = pcall(function() return t:GetFName():ToString() end)
+                if ok and id ~= "" then
+                    table.insert(ids, id)
+                end
+            end
+        end
+    end)
+    return ids
 end
 
 local function PollPlayers()
@@ -33,8 +50,9 @@ local function PollPlayers()
                 local ok, isGoalie = pcall(function() return ps:IsGoalie() end)
                 local role = (ok and isGoalie) and "Goalie" or "Forward"
                 local level = ps.Level
+                local trainings = GetTrainings(ps)
                 if name == "" or name == "nil" then return nil end
-                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level }
+                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level, trainings = trainings }
             end)
             if ok and entry then
                 table.insert(players, entry)
@@ -42,16 +60,9 @@ local function PollPlayers()
         end
     end
 
-    -- Build JSON and snapshot string for change detection
-    local parts = {}
+    -- Build snapshot string for change detection
     local snapshot = ""
     for _, p in ipairs(players) do
-        local charIdStr   = p.charId   and ('"' .. p.charId   .. '"') or "null"
-        local charNameStr = p.charName and ('"' .. p.charName .. '"') or "null"
-        table.insert(parts, string.format(
-            '{"name":"%s","team":%s,"role":"%s","character_id":%s,"character_name":%s,"level":%s}',
-            p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level)
-        ))
         snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId) .. "|" .. tostring(p.level) .. ";"
     end
 
@@ -63,7 +74,34 @@ local function PollPlayers()
             print(string.format("  Team %s | %-8s | Lv%-3s | %s | %s (%s)", tostring(p.team), p.role, tostring(p.level), p.name, p.charName or "null", p.charId or "null"))
         end
 
-        local json = string.format('{"timestamp":%d,"players":[%s]}', os.time(), table.concat(parts, ","))
+        local playerParts = {}
+        for _, p in ipairs(players) do
+            local charIdStr   = p.charId   and ('"' .. p.charId .. '"') or "null"
+            local charNameStr = p.charName and ('"' .. p.charName .. '"') or "null"
+            local trainingStrs = {}
+            for _, tid in ipairs(p.trainings) do
+                table.insert(trainingStrs, '        "' .. tid .. '"')
+            end
+            local trainingsJson = "[\n" .. table.concat(trainingStrs, ",\n") .. "\n      ]"
+            if #p.trainings == 0 then trainingsJson = "[]" end
+            table.insert(playerParts, string.format(
+                '    {\n' ..
+                '      "name": "%s",\n' ..
+                '      "team": %s,\n' ..
+                '      "role": "%s",\n' ..
+                '      "character_id": %s,\n' ..
+                '      "character_name": %s,\n' ..
+                '      "level": %s,\n' ..
+                '      "trainings": %s\n' ..
+                '    }',
+                p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level), trainingsJson
+            ))
+        end
+
+        local json = string.format(
+            '{\n  "timestamp": %d,\n  "players": [\n%s\n  ]\n}\n',
+            os.time(), table.concat(playerParts, ",\n")
+        )
         local f = io.open(PLAYERS_FILE, "w")
         if f then f:write(json) f:close() end
     end
