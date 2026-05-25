@@ -64,9 +64,10 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
         onClick={() => setIsExpanded(!isExpanded)}
         className="relative w-full px-4 py-3 cursor-pointer overflow-hidden shadow-lg">
         <img
-          src={mapObject.image!} // will fail silently if not found
+          src={mapObject.image!}
           alt=""
           aria-hidden
+          onError={(e) => console.error(`Failed to load map image at: ${mapObject.image}`, e)}
           className="absolute inset-0 w-full h-full object-cover opacity-10 brightness-65 pointer-events-none select-none"
         />
         <div className="flex items-center justify-between gap-4">

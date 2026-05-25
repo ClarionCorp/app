@@ -49,31 +49,31 @@ export const MAPS: MapObject[] = [
     mapId: 'GMD_AtlasLab',
     mapName: 'Atlas Lab',
     icon: HurricaneIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_AtlasLab.webp`
+    image: `${ClarionAPI}/assets/maps/GTD_Lab.webp`
   },
   {
     mapId: 'GMD_ClarionCorp',
     mapName: 'Clarion Test Chamber',
     icon: FlaskIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_ClarionCorp.webp`
+    image: `${ClarionAPI}/assets/maps/GTD_ClarionCorpDefault.webp`
   },
   {
     mapId: 'GMD_DigitalWorld',
     mapName: "Ai.Mi's App",
     icon: CircleIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_AiMiApp.webp`
+    image: `${ClarionAPI}/assets/maps/GTD_DigitalWorld.webp`
   },
   {
     mapId: 'GMD_Drums',
     mapName: 'Taiko Temple',
     icon: SpeakerHifiIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_TaikoTemple.webp`
+    image: `${ClarionAPI}/assets/maps/GTD_Drums.webp`
   },
   {
     mapId: 'GMD_MusicStage',
     mapName: 'Demon Dais',
     icon: WaveformIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_DemonDais.webp`
+    image: `${ClarionAPI}/assets/maps/GTD_MusicStage.webp`
   },
   {
     mapId: 'GMD_NightMarket',
@@ -85,7 +85,7 @@ export const MAPS: MapObject[] = [
     mapId: 'GMD_Obscura',
     mapName: 'Gates of Obscura',
     icon: EyeIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_GatesOfObscura.webp`
+    image: `${ClarionAPI}/assets/maps/GTD_Obscura.webp`
   },
   {
     mapId: 'GMD_OniVillage',
@@ -97,7 +97,7 @@ export const MAPS: MapObject[] = [
     mapId: 'GMD_SummerSplash',
     mapName: "Inky's Splash Zone",
     icon: TrashIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_InkysSplashZone.webp`
+    image: `${ClarionAPI}/assets/maps/GTD_SummerSplash.webp`
   },
   {
     mapId: 'TutorialMap',

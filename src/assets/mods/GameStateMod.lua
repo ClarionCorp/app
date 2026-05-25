@@ -1,5 +1,5 @@
 local ModName = "GameStateMod"
-local ModVersion = "1.4.2"
+local ModVersion = "1.5.0"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -17,8 +17,6 @@ local MatchPhaseNames = {
 }
 
 local LastState = {}
-local CapturedQueueId = nil
-
 local LastTrainingSnapshot = ""
 local IntermissionPhases = { [8]=true, [9]=true, [10]=true, [15]=true, [22]=true }
 
@@ -97,35 +95,6 @@ local function GetTerrainInfo(gs)
     return terrainName, terrainId
 end
 
-local function RegisterMatchmakingHook()
-    local ok = pcall(function()
-        RegisterHook(
-            "/Script/Prometheus.PMMatchmakingUIData:HandleMatchmakingStatusChanged",
-            function(self, MatchmakingStatus)
-                pcall(function()
-                    local s = MatchmakingStatus:get()
-                    local state = s.State
-                    if state == 1 then -- Idle
-                        CapturedQueueId = nil
-                    elseif state == 2 then -- Queued: only safe union member to read
-                        local ok2, v = pcall(function() return s.Queued.Queue:ToString() end)
-                        if ok2 and v and v ~= "" and v ~= "None" then
-                            CapturedQueueId = v
-                            print(string.format("[%s] Queue captured: %s", ModName, v))
-                        end
-                    end
-                    -- 3 (FoundMatch), 4 (StartingGame), 5 (InGame): leave CapturedQueueId as-is
-                end)
-            end
-        )
-    end)
-    if ok then
-        print(string.format("[%s] Matchmaking hook registered", ModName))
-    else
-        print(string.format("[%s] Matchmaking hook unavailable (queue will be null)", ModName))
-    end
-end
-
 local function WriteState(body)
     local f = io.open(STATE_FILE, "w")
     if not f then print("[" .. ModName .. "] Failed to write state file") return end
@@ -144,7 +113,6 @@ local function LogMatchState()
 
         local mapName, mapId = GetMapInfo(GameState)
         local terrainName, terrainId = GetTerrainInfo(GameState)
-        local queueId = CapturedQueueId
 
         local cur = {
             phase = phase,
@@ -153,7 +121,6 @@ local function LogMatchState()
             t2g = t2.NumGoalsThisSet, t2s = t2.NumSetsThisMatch,
             map = mapName, mapId = mapId,
             terrain = terrainName, terrainId = terrainId,
-            queue = queueId,
         }
 
         local changed = false
@@ -175,9 +142,8 @@ local function LogMatchState()
             print(string.format("[%s] Phase: %s | Team: %s", ModName, phaseName, myTeam and ("Team "..myTeam) or "Unknown"))
             print(string.format("[%s] T1: %d goals, %d sets", ModName, t1.NumGoalsThisSet, t1.NumSetsThisMatch))
             print(string.format("[%s] T2: %d goals, %d sets", ModName, t2.NumGoalsThisSet, t2.NumSetsThisMatch))
-            print(string.format("[%s] Map: %s (%s) | Terrain: %s (%s) | Queue: %s",
-                ModName, mapName or "null", mapId or "null", terrainName or "null", terrainId or "null",
-                queueId or "null"))
+            print(string.format("[%s] Map: %s (%s) | Terrain: %s (%s)",
+                ModName, mapName or "null", mapId or "null", terrainName or "null", terrainId or "null"))
             print(string.format("========================================\n"))
 
             local resolvedMap = (mapId == "GMD_RGM") and terrainName or mapName
@@ -186,21 +152,19 @@ local function LogMatchState()
             local mapIdStr = resolvedMapId and ('"' .. resolvedMapId .. '"') or "null"
             local terrainStr = terrainName and ('"' .. terrainName .. '"') or "null"
             local terrainIdStr = terrainId and ('"' .. terrainId .. '"') or "null"
-            local queueStr = queueId and ('"' .. queueId .. '"') or "null"
             WriteState(string.format(
-                '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"terrain":%s,"terrain_id":%s,"queue":%s,"timestamp":%d}',
+                '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"terrain":%s,"terrain_id":%s,"timestamp":%d}',
                 phaseName,
                 myTeam and tostring(myTeam) or "null",
                 t1.NumGoalsThisSet, t1.NumSetsThisMatch,
                 t2.NumGoalsThisSet, t2.NumSetsThisMatch,
-                mapStr, mapIdStr, terrainStr, terrainIdStr, queueStr,
+                mapStr, mapIdStr, terrainStr, terrainIdStr,
                 os.time()
             ))
         end
     end
 
-    ExecuteWithDelay(1000, LogMatchState)
+    ExecuteWithDelay(2000, LogMatchState)
 end
 
-RegisterMatchmakingHook()
 ExecuteWithDelay(3000, LogMatchState)
