@@ -6,7 +6,10 @@ import { PlayerCharJSON, QueueStates } from "../../types/database";
 export const appSettings = sqliteTable("appSettings", {
   id: integer("id").primaryKey(),
   gameDirectory: text("gameDirectory"),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  drpcEnabled: integer("drpcEnabled", { mode: "boolean" }).notNull().default(true),
+  notifyQueuePop: integer("notifyQueuePop", { mode: "boolean" }).notNull().default(false), // i don't want to annoy anyone :P
+  queuePopVol: integer("queuePopVol").notNull().default(50),
+  createdAt: integer("created_at", { mode: "timestamp" }),
 });
 
 // Only one row that stores basic, refetchable user data

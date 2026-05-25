@@ -2,7 +2,7 @@ import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
 import { getRankFromLP } from "../objects/ranks";
 import { removeDevCharPrefix } from "../objects/ody";
-import { getCurrentMatch, getGameSession, getMatchPlayers } from "../database/queries";
+import { getAppSettings, getCurrentMatch, getGameSession, getMatchPlayers } from "../database/queries";
 import { refreshRating } from "./odyssey";
 import { getMapObjectFromID } from "../objects/maps";
 import { CurrentMatchTable, SessionTable } from "../../types/database";
@@ -72,11 +72,11 @@ let matchSetupTimestamps: { startTimestamp: number; endTimestamp: number } | nul
 
 export async function startRpc() {
   // Add back some sort of disabling dRPC later
-  // const appSettings = await getTelemetrySettings();
-  // if (appSettings.play_state == false) {
-  //   console.warn(`Ignoring call to start dRPC since it is disabled.`);
-  //   return;
-  // };
+  const appSettings = await getAppSettings();
+  if (appSettings.drpcEnabled == false) {
+    console.warn(`Ignoring call to start dRPC since it is disabled.`);
+    return;
+  };
   try {
     console.log(`Starting new Discord RPC...`);
     await start(APP_ID);
@@ -155,6 +155,9 @@ async function _clearActivity() {
 }
 
 export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo?: SessionTable) { // less db reads
+  const appSetts = await getAppSettings();
+  if (appSetts.drpcEnabled == false) { return; }
+
   const currentMatch = match ?? (await getCurrentMatch());
   if (!discordRpc) {
     console.warn(`[DRPC] No DRPC found. Starting a new instance on-the-fly...`);
