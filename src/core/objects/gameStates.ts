@@ -12,6 +12,7 @@ const gameStateMap: Record<string, OnlineStatus> = {
   'ArenaOverview':          'SETUP',
   'CharacterPreSelect':     'SETUP',
   'BanSelect':              'SETUP',
+  'BanCelebration':         'SETUP',
   'LoadoutSelect':          'SETUP',
   'CharacterSelect':        'SETUP',
   

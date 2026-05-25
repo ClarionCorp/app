@@ -21,6 +21,7 @@ export const PHASE_GROUPS = {
     'ArenaOverview',
     'CharacterPreSelect',
     'BanSelect',
+    'BanCelebration',
     'LoadoutSelect',
     'CharacterSelect',
     'VersusScreen',
@@ -66,6 +67,7 @@ export const DEFAULT_ACTIVITY: RpcActivityOptions = {
 }
 
 export let discordRpc: DiscordRpc | null = null;
+let matchSetupTimestamps: { startTimestamp: number; endTimestamp: number } | null = null;
 
 export async function startRpc() {
   // Add back some sort of disabling dRPC later
@@ -163,23 +165,28 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
   const mapObject = getMapObjectFromID(currentMatch.map);
+  const queue = getQueueName(currentMatch.queue!) ?? 'Customs';
 
   if (
     currentMatch.gameState == null ||
     currentMatch.gameState == 'null' ||
-    currentMatch.queue == null ||
     PHASE_GROUPS.out_of_game.some(p => p === currentMatch.gameState)
   ) {
+    matchSetupTimestamps = null;
     await discordRpc.updateActivity(DEFAULT_ACTIVITY);
   }
 
   else if (PHASE_GROUPS.starting.some(p => p === currentMatch.gameState)) {
+    if (currentMatch.gameState === 'ArenaOverview') { // Only set on Pre-Game (after resetting match table), to use on other setup phases
+      console.debug('New Match! Saving setup timestamp finish...');
+      const now = Date.now();
+      matchSetupTimestamps = { startTimestamp: now, endTimestamp: now + 95 * 1000 }; // technically done in 90s, but +5s for padding
+    }
     await refreshRating();
     await discordRpc.updateActivity({
-      details: `${getQueueName(currentMatch.queue!)} - ${mapObject.mapName}`,
+      details: `${queue} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
-      startTimestamp: new Date().getTime(), //uhh fix this later lol, save timestamp in memory or db so we aren't sending the same one over and over again
-      endTimestamp: new Date().getTime() + 60 * 1000,
+      ...matchSetupTimestamps,
     });
   }
 
@@ -194,7 +201,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
     let largeImg = 'aimiapp_logo_v2';
     if (myPlayer?.charId) { largeImg = removeDevCharPrefix(myPlayer?.charId as string).toLowerCase(); }
     await discordRpc.updateActivity({// cant be null here
-      details: `${getQueueName(currentMatch.queue!)} - ${mapObject.mapName}`,
+      details: `${queue} - ${mapObject.mapName}`,
       state: formatScore(
         currentMatch.teamOnePts ?? 0,
         currentMatch.teamTwoPts ?? 0,
