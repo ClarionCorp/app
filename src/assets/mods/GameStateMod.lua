@@ -76,7 +76,7 @@ local function GetMapInfo(gs)
         local okName, n = pcall(function() return md.Name:ToString() end)
         local okId, i = pcall(function() return md:GetFName():ToString() end)
         local name = (okName and n and n ~= "" and n ~= "None") and n or nil
-        local id  = (okId   and i and i ~= "" and i ~= "None") and i or nil
+        local id = (okId and i and i ~= "" and i ~= "None") and i or nil
         return name, id
     end)
     if not ok then return nil, nil end
@@ -90,7 +90,7 @@ local function GetTerrainInfo(gs)
         local okName, n = pcall(function() return td.Name:ToString() end)
         local okId, i = pcall(function() return td:GetFName():ToString() end)
         local name = (okName and n and n ~= "" and n ~= "None") and n or nil
-        local id = (okId   and i and i ~= "" and i ~= "None") and i or nil
+        local id = (okId and i and i ~= "" and i ~= "None") and i or nil
         return name, id
     end)
     if not ok then return nil, nil end
@@ -199,7 +199,7 @@ local function LogMatchState()
         end
     end
 
-    ExecuteWithDelay(3000, LogMatchState)
+    ExecuteWithDelay(1000, LogMatchState)
 end
 
 RegisterMatchmakingHook()

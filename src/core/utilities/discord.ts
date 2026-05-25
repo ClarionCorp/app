@@ -2,7 +2,7 @@ import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
 import { getRankFromLP } from "../objects/ranks";
 import { getQueueName, removeDevCharPrefix } from "../objects/ody";
-import { getMatchPlayers } from "../database/queries";
+import { getGameSession, getMatchPlayers } from "../database/queries";
 import { CurrentMatchTable } from "../../types/database";
 import { refreshRating } from "./odyssey";
 import { getMapObjectFromID } from "../objects/maps";
@@ -26,17 +26,15 @@ export const PHASE_GROUPS = {
     'CharacterSelect',
     'VersusScreen',
   ],
-  waiting: [
-    'IntermissionOutro',
-    'GoalScore',
-  ],
   in_game: [
     'InGame',
     'FaceOffIntro',
     'FaceOffCountdown',
+    'GoalScore',
     'GoalCelebration',
     'IntermissionMvp',
     'IntermissionIntro',
+    'IntermissionOutro',
     'Intermission'
   ],
 } as const;
@@ -59,10 +57,12 @@ export interface DiscordRpc {
   stop: () => Promise<void>;
 }
 
+export const DRPC_LOGO_KEY = 'aimiapp_logo_v2';
+
 export const DEFAULT_ACTIVITY: RpcActivityOptions = {
   details: "Idling on Main Menu",
   state: "Powered by Ai.Mi App",
-  largeImage: "aimiapp_logo_v2",
+  largeImage: DRPC_LOGO_KEY,
   // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
 }
 
@@ -109,7 +109,7 @@ async function _updateActivity(options: RpcActivityOptions) {
     const {
       details,
       state,
-      largeImage = "aimiapp_logo_v2",
+      largeImage = DRPC_LOGO_KEY,
       largeText = "Ai.Mi App",
       smallImage,
       smallText,
@@ -167,15 +167,22 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
   const mapObject = getMapObjectFromID(currentMatch.map);
   const queue = getQueueName(currentMatch.queue!) ?? 'Customs';
 
+  // Not in a match
   if (
     currentMatch.gameState == null ||
     currentMatch.gameState == 'null' ||
     PHASE_GROUPS.out_of_game.some(p => p === currentMatch.gameState)
   ) {
     matchSetupTimestamps = null;
-    await discordRpc.updateActivity(DEFAULT_ACTIVITY);
+    const session = await getGameSession();
+    await discordRpc.updateActivity({
+      details: 'On the Main Menu',
+      state: `In Party (${session.partySize}/${session.maxPartySize})`,
+      largeImage: DRPC_LOGO_KEY
+    });
   }
 
+  // Match found and is starting
   else if (PHASE_GROUPS.starting.some(p => p === currentMatch.gameState)) {
     if (currentMatch.gameState === 'ArenaOverview') { // Only set on Pre-Game (after resetting match table), to use on other setup phases
       console.debug('New Match! Saving setup timestamp finish...');
@@ -190,10 +197,7 @@ export async function tryUpdateDiscordRPC(currentMatch: CurrentMatchTable) {
     });
   }
 
-  else if (PHASE_GROUPS.waiting.some(p => p === currentMatch.gameState)) {
-    return;
-  }
-
+  // In a Match
   else if (PHASE_GROUPS.in_game.some(p => p === currentMatch.gameState)) {
     console.debug(`Updating dRPC...`);
     const rankObject = getRankFromLP(myPlayer?.rating);

@@ -91,3 +91,11 @@ export const matchHistory = sqliteTable("matchHistory", {
 
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
+
+// Table should reset when game is reopened.
+export const sessionInfo = sqliteTable("sessionInfo", {
+  id: integer("id").primaryKey(),
+  partySize: integer("partySize").notNull().default(0),
+  maxPartySize: integer("maxPartySize").notNull().default(3),
+  // eventually add session rating tracking here :)
+});
