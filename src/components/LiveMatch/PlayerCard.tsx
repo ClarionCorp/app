@@ -5,6 +5,7 @@ import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { getGameStatus } from '../../core/objects/gameStates';
+import { TRAININGS } from '../../core/objects/trainings';
 
 
 export function PlayerCard({ player, match, index, isBlue = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean }) {
@@ -89,6 +90,25 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                 Rating: <span className="text-zinc-300 font-medium">{player.rating}</span>
               </span>
             </div>
+
+            {/* Training icons */}
+            {player.trainings.length > 0 && (
+              <div className="flex items-center gap-1 pl-0.5">
+                {player.trainings.slice(0, 5).map(id => {
+                  const training = TRAININGS[id];
+                  if (!training) return null;
+                  return (
+                    <img
+                      key={id}
+                      src={training.image}
+                      alt={training.name}
+                      title={training.name}
+                      className="w-7 h-7 rounded"
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </button>
