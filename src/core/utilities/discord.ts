@@ -61,8 +61,8 @@ export interface DiscordRpc {
 export const DRPC_LOGO_KEY = 'aimiapp_logo_v2';
 
 export const DEFAULT_ACTIVITY: RpcActivityOptions = {
-  details: "Idling on Main Menu",
-  state: "Powered by Ai.Mi App",
+  details: "Using the Ai.Mi App",
+  state: "without the game open", // lmao update this later
   largeImage: DRPC_LOGO_KEY,
   // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
 }

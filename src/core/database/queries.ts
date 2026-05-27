@@ -15,7 +15,7 @@ export async function getAppSettings() {
   return rows[0] ?? null;
 }
 
-export async function upsertAppSettings(data: Partial<Pick<typeof appSettings.$inferInsert, 'gameDirectory'>>) {
+export async function upsertAppSettings(data: Partial<Pick<typeof appSettings.$inferInsert, 'gameDirectory' | 'drpcEnabled' | 'notifyQueuePop' | 'queuePopVol'>>) {
   return db.insert(appSettings).values({ id: 1, createdAt: new Date(), ...data }).onConflictDoUpdate({
     target: appSettings.id,
     set: data,

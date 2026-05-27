@@ -28,7 +28,7 @@ export function Slider({ min, max, value, onChange, stops, unit, disabled }: Sli
     <div className="flex flex-col gap-3">
       {/* Track + thumb */}
       <div className="relative flex items-center h-6">
-        {/* Track background — inset by 8px (half thumb) on each side to align with thumb center */}
+        {/* Track background: inset by 8px (half thumb) on each side to align with thumb center */}
         <div className="absolute inset-x-2 h-1.5 rounded-full bg-surface-overlay" />
         {/* Filled portion */}
         <div
@@ -108,11 +108,16 @@ export function Slider({ min, max, value, onChange, stops, unit, disabled }: Sli
         </div>
       )}
 
-      {/* Current value display */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-char-subtle">{min}{unit}</span>
-        <span className="text-sm font-semibold text-char tabular-nums">{value}{unit}</span>
-        <span className="text-xs text-char-subtle">{max}{unit}</span>
+      {/* Current value display — value tracks the thumb, min/max anchored to track ends */}
+      <div className="relative h-5">
+        <span className="absolute left-0 text-xs text-char-subtle leading-5">{min}{unit}</span>
+        <span
+          className="absolute text-sm font-semibold text-char tabular-nums leading-5 -translate-x-1/2"
+          style={{ left: `calc(8px + (100% - 16px) * ${pct} / 100)` }}
+        >
+          {value}{unit}
+        </span>
+        <span className="absolute right-0 text-xs text-char-subtle leading-5">{max}{unit}</span>
       </div>
     </div>
   );

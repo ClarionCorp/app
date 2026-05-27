@@ -41,6 +41,7 @@
   --color-primary: var(--theme-primary);
   --color-secondary: var(--theme-secondary);
   --color-tertiary: var(--theme-tertiary);
+  --color-success: var(--theme-success);
   --color-error: var(--theme-error);
   --color-pink: var(--theme-pink);
   --color-blurple: var(--theme-blurple);
@@ -61,11 +62,12 @@
   --theme-surface-subtle: #09010a;
   --theme-surface-raised: #1a1a1a;
   --theme-surface-overlay: #202020;
-  --theme-surface-active: #1c0a1f;
+  --theme-surface-active: #1d1a1d;
   --theme-primary: #f258d8;
   --theme-secondary: #cf4da8;
   --theme-tertiary: #ad408d;
-  --theme-error: #FF5E4F;
+  --theme-success: #20c035;
+  --theme-error: #d33c2f;
   --theme-pink: #F763E4;
   --theme-char: #F2F2F4;
   --theme-char-secondary: #A0A0B0;
