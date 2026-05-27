@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
-import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
-import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
+import { CurrentMatchTable, MatchPlayersTable, SessionTable } from '../types/database';
+import { getCurrentMatch, getGameSession, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
+import { MapRotation } from '../components/LiveMatch/MapRotation';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 
@@ -21,6 +22,7 @@ export default function CurrentMatchPage() {
   const [match, setMatchData] = useState<CurrentMatchTable>();
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
   const [allTrainings, setTrainings] = useState<Awakenings[]>([]);
+  const [session, setSession] = useState<SessionTable>();
 
   useEffect(() => {
     async function load() {
@@ -34,6 +36,9 @@ export default function CurrentMatchPage() {
         setPlayers(playersDb);
 
         setTrainings(await getCurrentAwakeningRotation());
+
+        const sessionDb = await getGameSession();
+        setSession(sessionDb);
         setRetryMessage(null);
         setLoading(false);
       } catch (e) {
@@ -52,6 +57,8 @@ export default function CurrentMatchPage() {
       setPlayers(playersDb);
       const matchDb = await getCurrentMatch();
       setMatchData(matchDb);
+      const sessionDb = await getGameSession();
+      setSession(sessionDb);
     }, 5000);
     return () => clearInterval(id);
   }, [loading]);
@@ -93,7 +100,7 @@ export default function CurrentMatchPage() {
                 <div className="flex-1 h-px bg-background-border" />
               </div>
 
-              {players.length > 0 ? (
+              {players.length > 0 && session?.queueState !== 'Queued' ? (
                 <>
                   <div className="space-y-3">
                     {blueTeam.map((player, index) => (
@@ -114,12 +121,8 @@ export default function CurrentMatchPage() {
                   </div>
                 </>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-16 text-char-subtle text-sm"
-                >
-                  No player data available.
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <MapRotation />
                 </motion.div>
               )}
             </motion.div>

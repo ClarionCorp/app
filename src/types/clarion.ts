@@ -45,3 +45,16 @@ export type Awakenings = {
   gear: boolean,
   rotatedIn?: Date
 }
+
+export type Map = {
+  id: string, // GTD_
+  name: string,
+  imageUrl: string,
+  active: boolean,
+  rotatedAt: Date
+}
+
+export type Maps = {
+  active: Map[],
+  all: Map[]
+}
