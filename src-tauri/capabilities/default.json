@@ -24,24 +24,21 @@
         { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" },
         { "path": "$TEMP/**" },
-        { "path": "C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers/**" },
-        { "path": "D:/SteamLibrary/steamapps/common/OmegaStrikers/**" }
+        { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
       ]
     },
     {
       "identifier": "fs:allow-write-file",
       "allow": [
         { "path": "$TEMP/**" },
-        { "path": "C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
-        { "path": "D:/SteamLibrary/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
+        { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
       ]
     },
     {
       "identifier": "fs:allow-read-file",
       "allow": [
         { "path": "$TEMP/**" },
-        { "path": "C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
-        { "path": "D:/SteamLibrary/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
+        { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
       ]
     },
     "fs:allow-read-dir",
@@ -49,8 +46,7 @@
     {
       "identifier": "fs:allow-remove",
       "allow": [
-        { "path": "C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
-        { "path": "D:/SteamLibrary/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
+        { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
       ]
     },
     {
