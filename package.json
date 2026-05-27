@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "regen": "drizzle-kit push",
-    "studio": "drizzle-kit studio"
+    "studio": "drizzle-kit studio",
+    "gen": "drizzle-kit generate"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -30,7 +31,8 @@
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.1",
     "tailwind-merge": "^3.5.0",
-    "tauri-plugin-drpc": "^1.0.3"
+    "tauri-plugin-drpc": "^1.0.3",
+    "tauri-plugin-libsql-api": "^0.1.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",
