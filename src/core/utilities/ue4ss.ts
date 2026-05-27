@@ -74,9 +74,10 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
 
       // Overwrite the default mods.txt with a cut-down version
       onProgress?.('installing', 45, 'Setting up defaults...');
+      // Disable ConsoleEnabledMod in full release lol
       await writeTextFile(
         await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods/mods.txt'),
-        `ConsoleCommandsMod : 0\nConsoleEnablerMod : 0\n\n; Built-in keybinds, do not move up!\nKeybinds : 1\n`
+        `ConsoleCommandsMod : 0\nConsoleEnablerMod : 1\n\n; Built-in keybinds, do not move up!\nKeybinds : 1\n`
       );
     }
 
