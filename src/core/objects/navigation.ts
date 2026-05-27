@@ -4,7 +4,6 @@ export const NAV_ITEMS = [
     desc: "View details about the match and its players",
     slug: 'match',
     image: "/backgrounds/Strikers.webp",
-    online: true,
   },
   {
     label: "Match History",
