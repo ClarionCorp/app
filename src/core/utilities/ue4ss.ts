@@ -94,14 +94,17 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
         onProgress?.('installing', percent, `Installing ${mod.name} v${mod.version}...`);
         await mkdir(scriptDir, { recursive: true });
         await writeTextFile(installedPath, mod.source);
+        console.log(`Installed ${mod.name} v${mod.version}`);
       } else {
         const installedContent = await readTextFile(installedPath);
         const installedVersion = parseVersion(installedContent);
         if (installedVersion !== mod.version) {
           onProgress?.('updating', percent, `Updating ${mod.name} ${installedVersion} -> ${mod.version}...`);
           await writeTextFile(installedPath, mod.source);
+          console.log(`Updated ${mod.name} to v${mod.version}`);
         }
         // this mod is up to date, continue
+        console.debug(`Mod ${mod.name} is up-to-date (v${mod.version})`);
       }
 
       await ensureModEnabled(mod.name, await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods'));
@@ -118,7 +121,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
 
 
 // Mod Handling
-const modFiles = import.meta.glob('./mods/*.lua', { as: 'raw', eager: true });
+const modFiles = import.meta.glob('../../assets/mods/*.lua', { as: 'raw', eager: true });
 
 const parseVersion = (lua: string) =>
   lua.match(/local ModVersion\s*=\s*"([^"]+)"/)?.[1] ?? '0.0.0';

@@ -9,14 +9,8 @@
     "core:default",
     "opener:default",
     "fs:default",
-    {
-      "identifier": "fs:allow-read-text-file",
-      "allow": [
-        { "path": "$HOME/Desktop/**" },
-        { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
-        { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" }
-      ]
-    },
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
     {
       "identifier": "fs:allow-exists",
       "allow": [

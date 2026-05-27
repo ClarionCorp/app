@@ -1,5 +1,9 @@
 use sysinfo::System;
 use tauri::Manager;
+use zip::ZipArchive;
+use std::path::{Path};
+use std::fs;
+use std::io;
 
 mod file_watcher;
 mod log_watcher;
@@ -12,6 +16,30 @@ fn is_process_running(name: &str) -> bool {
     sys.processes().values().any(|p| {
         p.name().to_string_lossy().eq_ignore_ascii_case(name)
     })
+}
+
+// Extracts a zip file
+#[tauri::command]
+fn extract_zip(zip_path: String, dest_dir: String) -> Result<(), String> {
+    let file = fs::File::open(&zip_path).map_err(|e| e.to_string())?;
+    let mut archive = ZipArchive::new(file).map_err(|e| e.to_string())?;
+
+    for i in 0..archive.len() {
+        let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
+        let out_path = Path::new(&dest_dir).join(entry.mangled_name());
+
+        if entry.is_dir() {
+            fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
+        } else {
+            if let Some(parent) = out_path.parent() {
+                fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+            }
+            let mut out_file = fs::File::create(&out_path).map_err(|e| e.to_string())?;
+            io::copy(&mut entry, &mut out_file).map_err(|e| e.to_string())?;
+        }
+    }
+
+    Ok(())
 }
 
 
@@ -38,6 +66,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             is_process_running,
+            extract_zip,
             log_watcher::get_latest_match_timestamp,
         ])
         .run(tauri::generate_context!())
