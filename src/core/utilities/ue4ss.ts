@@ -33,6 +33,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
       ue4ss_installed = false;
       // We need to download and install UE4SS before continuing
       onProgress?.('downloading', 10, 'Fetching UE4SS from GitHub...');
+      console.log(`Installing UE4SS..`);
 
       // Fetch UE4SS download binaries
       const ue4ss_response = await fetch('https://github.com/UE4SS-RE/RE-UE4SS/releases/download/v3.0.1/UE4SS_v3.0.1.zip', { method: 'GET' });
@@ -79,6 +80,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
         await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods/mods.txt'),
         `ConsoleCommandsMod : 0\nConsoleEnablerMod : 1\n\n; Built-in keybinds, do not move up!\nKeybinds : 1\n`
       );
+      console.log(`Finished UE4SS installation script.`);
     }
 
     // Check for mod updates (or force it if ue4ss_installed is false)
@@ -122,7 +124,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
 
 
 // Mod Handling
-const modFiles = import.meta.glob('../../assets/mods/*.lua', { as: 'raw', eager: true });
+const modFiles = import.meta.glob('../../assets/mods/*.lua', { query: '?raw', import: 'default', eager: true })
 
 const parseVersion = (lua: string) =>
   lua.match(/local ModVersion\s*=\s*"([^"]+)"/)?.[1] ?? '0.0.0';
