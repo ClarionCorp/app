@@ -8,13 +8,15 @@ import { getGameStatus } from '../../core/objects/gameStates';
 import { TRAININGS } from '../../core/objects/trainings';
 import { getPlayerChar } from '../../core/database/queries';
 import { PlaystyleType } from '../../types/clarion';
+import clsx from 'clsx';
 
-const PLAYSTYLE_COLORS: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
-  'Brawler': '#f97316',
-  'Midfielder': '#22c55e',
-  'Hard Forward': '#ef4444',
-  'Offensive Goalie': '#f59e0b',
-  'Defensive Goalie': '#3b82f6',
+// Maybe move to theme at some point?
+const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
+  'Brawler': 'text-orange-500',
+  'Midfielder': 'text-green-500',
+  'Hard Forward': 'text-red-500',
+  'Offensive Goalie': 'text-amber-500',
+  'Defensive Goalie': 'text-blue-500',
 };
 
 
@@ -38,8 +40,8 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
   const favChar = getPlayerChar(player.favChar, player.role, charQueue);
   const roleKey = (player.role?.toLowerCase() ?? null) as 'forward' | 'goalie' | null;
   const playstyleType = roleKey ? player.playstyle?.[roleKey]?.type : undefined;
-  const playstyleColor = playstyleType && playstyleType in PLAYSTYLE_COLORS
-    ? PLAYSTYLE_COLORS[playstyleType as keyof typeof PLAYSTYLE_COLORS]
+  const playstyleClass = playstyleType && playstyleType in PLAYSTYLE_CLASSES
+    ? PLAYSTYLE_CLASSES[playstyleType as keyof typeof PLAYSTYLE_CLASSES]
     : null;
 
   return (
@@ -94,8 +96,8 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                 {rankInfo.name}
               </span>
               <span
-                className="text-zinc-500 shrink-0"
-                title={`${player.role}`}
+                className={clsx('shrink-0', playstyleClass ?? 'text-zinc-500')}
+                title={playstyleType ?? `${player.role}`}
               >
                 {player.role === 'Forward'
                   ? <SwordIcon size={16} weight="duotone" />
@@ -107,18 +109,6 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                   : favChar?.characterId === player.charId
                     ? <span className="text-xs font-medium text-blue-400">Playing Main Striker</span>
                     : null
-              )}
-              {playstyleColor && playstyleType && (
-                <span
-                  className="text-xs font-medium px-2 py-0.5 rounded-md shrink-0"
-                  style={{
-                    color: playstyleColor,
-                    backgroundColor: `${playstyleColor}1A`,
-                    border: `1px solid ${playstyleColor}30`,
-                  }}
-                >
-                  {playstyleType}
-                </span>
               )}
             </div>
 
