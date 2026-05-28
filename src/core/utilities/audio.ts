@@ -1,3 +1,6 @@
+import { QueuePopType } from "../../pages/Settings";
+import { AiMiQueuePops, ESQueuePops } from "../objects/sounds";
+
 /**
  * Plays an audio file at a given volume.
  * @param filePath - Path to the audio asset (e.g. /sounds/foo.mp3).
@@ -23,6 +26,16 @@ export function stopAudio(audio: HTMLAudioElement): void {
 }
 
 
-export function selectRandomQueuePop(array: string[]): string {
+export function selectRandomQueuePop(type: QueuePopType): string {
+  let array: string[] = [];
+  switch (type) {
+    case 'Ai.Mi':
+      array = AiMiQueuePops;
+      break;
+    case 'Generic':
+      array = ESQueuePops;
+      break;
+  };
+
   return array[Math.floor(Math.random() * array.length)];
 }

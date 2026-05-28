@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { FireIcon, FolderOpenIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, FireIcon, FolderOpenIcon } from "@phosphor-icons/react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { dirname } from "@tauri-apps/api/path";
 import { getAppSettings, upsertAppSettings } from "../core/database/queries";
@@ -8,13 +8,17 @@ import { Toggle } from "../components/UI/Toggle";
 import { Slider } from "../components/UI/Slider";
 import { Button } from "../components/UI/Button";
 import { Input } from "../components/UI/Input";
+import { Dropdown } from "../components/UI/Dropdown";
 import { discordRpc, startRpc, stopRpc, DEFAULT_ACTIVITY } from "../core/utilities/discord";
+
+export type QueuePopType = 'Ai.Mi' | 'Generic';
 
 type Settings = {
   gameDirectory: string | null;
   drpcEnabled: boolean;
   notifyQueuePop: boolean;
   queuePopVol: number;
+  queuePopType: QueuePopType;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -22,10 +26,13 @@ const DEFAULT_SETTINGS: Settings = {
   drpcEnabled: true,
   notifyQueuePop: false,
   queuePopVol: 50,
+  queuePopType: 'Ai.Mi',
 };
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [queuePopTypeOpen, setQueuePopTypeOpen] = useState(false);
+  const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     getAppSettings().then(s => {
@@ -35,6 +42,7 @@ export default function SettingsPage() {
         drpcEnabled: s.drpcEnabled,
         notifyQueuePop: s.notifyQueuePop,
         queuePopVol: s.queuePopVol,
+        queuePopType: (s.queuePopType as QueuePopType) ?? 'Ai.Mi',
       });
     });
   }, []);
@@ -127,6 +135,32 @@ export default function SettingsPage() {
             enabled={settings.notifyQueuePop}
             onChange={v => update({ notifyQueuePop: v })}
           />
+        </SettingRow>
+
+        <SettingRow
+          title="Queue Pop Sound"
+          subtitle="The sound pack used for queue pop notifications."
+          disabled={!settings.notifyQueuePop}
+        >
+          <div className="relative">
+            <button
+              ref={queuePopTypeTriggerRef}
+              onClick={() => setQueuePopTypeOpen(o => !o)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-background-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer"
+            >
+              {settings.queuePopType}
+              <CaretDownIcon size={12} className="opacity-60" />
+            </button>
+            <Dropdown
+              triggerRef={queuePopTypeTriggerRef}
+              open={queuePopTypeOpen}
+              onClose={() => setQueuePopTypeOpen(false)}
+              items={[
+                { label: 'Ai.Mi', onClick: () => update({ queuePopType: 'Ai.Mi' }) },
+                { label: 'Generic', onClick: () => update({ queuePopType: 'Generic' }) },
+              ]}
+            />
+          </div>
         </SettingRow>
 
         <SettingRow

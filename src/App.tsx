@@ -14,7 +14,7 @@ import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/uti
 import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
-import { ESQueuePops } from './core/objects/sounds';
+import { QueuePopType } from './pages/Settings';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -38,9 +38,12 @@ function App() {
 
   // Debug Page
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    const onKey = async (e: KeyboardEvent) => {
       if (e.key === 'F9') navigate('/debug');
-      if (e.key === 'F8') playAudio(selectRandomQueuePop(ESQueuePops), 50);
+      if (e.key === 'F8') {
+        const setting = await getAppSettings();
+        await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
+      };
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -128,8 +131,7 @@ function App() {
       if (prevSession.queueState == 'Queued' && (session.queueState == 'FoundMatch' || session.queueState == 'StartingGame')) {
         const settings = await getAppSettings();
         if (settings.notifyQueuePop) {
-          const randomSound = selectRandomQueuePop(ESQueuePops);
-          await playAudio(randomSound, settings.queuePopVol);
+          await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
         }
       }
     }),

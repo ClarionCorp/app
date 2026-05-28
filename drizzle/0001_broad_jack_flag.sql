@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `queuePopType` text DEFAULT 'Ai.Mi' NOT NULL;

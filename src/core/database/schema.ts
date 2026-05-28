@@ -9,6 +9,7 @@ export const appSettings = sqliteTable("appSettings", {
   drpcEnabled: integer("drpcEnabled", { mode: "boolean" }).notNull().default(true),
   notifyQueuePop: integer("notifyQueuePop", { mode: "boolean" }).notNull().default(false), // i don't want to annoy anyone :P
   queuePopVol: integer("queuePopVol").notNull().default(50),
+  queuePopType: text("queuePopType").notNull().default("Ai.Mi"),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 
