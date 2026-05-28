@@ -11,9 +11,11 @@ export const themeScript = `
 (function () {
   try {
     var theme = localStorage.getItem('theme');
-    if (theme === 'aimi' || theme === 'clarion') {
+    if (theme === 'Ai.Mi' || theme === 'Clarion') {
       document.documentElement.setAttribute('data-theme', theme);
     }
   } catch (_) {}
 })();
 `.trim();
+
+export const themes = ['Ai.Mi', 'Clarion'];

@@ -59,7 +59,7 @@
 }
 
 /* AiMi (dark, default) */
-:root[data-theme="aimi"] {
+:root[data-theme="Ai.Mi"] {
   --theme-background: #080108;
   --theme-background-border: #191a1b;
   --theme-slate: #0A0A0A;
@@ -88,7 +88,7 @@
 }
 
 /* Clarion (dark, wip) */
-:root[data-theme="clarion"] {
+:root[data-theme="Clarion"] {
   --theme-background: #010801;
   --theme-background-border: #191a1b;
   --theme-slate: #0A0A0A;

@@ -10,7 +10,6 @@ import { getPlayerChar } from '../../core/database/queries';
 import { PlaystyleType } from '../../types/clarion';
 import clsx from 'clsx';
 
-// Maybe move to theme at some point?
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
   'Midfielder': 'text-match-midfielder',

@@ -10,6 +10,8 @@ import { Button } from "../components/UI/Button";
 import { Input } from "../components/UI/Input";
 import { Dropdown } from "../components/UI/Dropdown";
 import { discordRpc, startRpc, stopRpc, DEFAULT_ACTIVITY } from "../core/utilities/discord";
+import { useTheme } from "../components/UI/Theme/ThemeProvider";
+import { themes } from "../core/styles/theme";
 
 export type QueuePopType = 'Ai.Mi' | 'Generic';
 
@@ -33,6 +35,9 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [queuePopTypeOpen, setQueuePopTypeOpen] = useState(false);
   const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const themeTriggerRef = useRef<HTMLButtonElement>(null);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     getAppSettings().then(s => {
@@ -125,6 +130,28 @@ export default function SettingsPage() {
               }
             }}
           />
+        </SettingRow>
+
+        <SettingRow
+          title="Theme"
+          subtitle="Color theme for the app."
+        >
+          <div className="relative">
+            <button
+              ref={themeTriggerRef}
+              onClick={() => setThemeOpen(o => !o)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-background-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer capitalize"
+            >
+              {theme}
+              <CaretDownIcon size={12} className="opacity-60" />
+            </button>
+            <Dropdown
+              triggerRef={themeTriggerRef}
+              open={themeOpen}
+              onClose={() => setThemeOpen(false)}
+              items={themes.map(t => ({ label: t, onClick: () => setTheme(t as typeof theme) }))}
+            />
+          </div>
         </SettingRow>
 
         <SettingRow

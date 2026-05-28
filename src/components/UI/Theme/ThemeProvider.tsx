@@ -1,36 +1,34 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-
-type Theme = 'aimi' | 'clarion';
+import { themes } from '../../../core/styles/theme';
 
 interface ThemeContextValue {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: string;
+  setTheme: (theme: string) => void;
 }
 
 // Context
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = 'theme';
-const DEFAULT_THEME: Theme = 'aimi';
+const DEFAULT_THEME = themes[0];
 
 // Provider
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
+  const [theme, setThemeState] = useState<string>(DEFAULT_THEME);
 
   // On mount, read from localStorage (or initialize it with the default)
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const valid: Theme[] = ['aimi', 'clarion'];
-    const active = stored && valid.includes(stored) ? stored : DEFAULT_THEME;
+    const stored = localStorage.getItem(STORAGE_KEY) as string | null;
+    const active = stored && themes.includes(stored) ? stored : DEFAULT_THEME;
     if (!stored) localStorage.setItem(STORAGE_KEY, active);
     applyTheme(active);
     setThemeState(active);
   }, []);
 
-  function applyTheme(next: Theme) {
+  function applyTheme(next: string) {
     document.documentElement.setAttribute('data-theme', next);
   }
 
-  function setTheme(next: Theme) {
+  function setTheme(next: string) {
     applyTheme(next);
     setThemeState(next);
     localStorage.setItem(STORAGE_KEY, next);
