@@ -86,7 +86,7 @@ function NavButton({ item, disabled, onClick }: NavButtonProps) {
     <motion.button
       onClick={onClick}
       disabled={disabled}
-      className={`relative h-32 w-full rounded-2xl overflow-hidden border border-background-border group focus:outline-none p-2 shadow-lg ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary cursor-pointer"}`}
+      className={`relative h-32 w-full rounded-2xl overflow-hidden border border-surface-border group focus:outline-none p-2 shadow-lg ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary cursor-pointer"}`}
       whileHover={disabled ? {} : { scale: 1.03 }}
       whileTap={disabled ? {} : { scale: 0.97 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
@@ -96,7 +96,7 @@ function NavButton({ item, disabled, onClick }: NavButtonProps) {
         style={{ backgroundImage: `url(${item.image})` }}
       />
 
-      <div className="absolute -inset-2 bg-black/80" />
+      <div className="absolute -inset-2 bg-overlay/80" />
 
       <div>
         <p className="relative z-10 text-sm font-bold tracking-wide text-zinc-200">

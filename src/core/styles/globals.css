@@ -32,8 +32,10 @@
   /* Colors reference --theme-* vars so runtime overrides work */
   --color-background: var(--theme-background);
   --color-background-border: var(--theme-background-border);
+  --color-overlay: var(--theme-overlay); /* Should be black or white */
   --color-slate: var(--theme-slate);
   --color-surface: var(--theme-surface);
+  --color-surface-border: var(--theme-surface-border);
   --color-surface-subtle: var(--theme-surface-subtle);
   --color-surface-raised: var(--theme-surface-raised);
   --color-surface-overlay: var(--theme-surface-overlay);
@@ -50,6 +52,7 @@
   --color-char-subtle: var(--theme-char-subtle);
   --color-char-accent: var(--theme-char-accent);
   --color-match-win: var(--theme-match-win);
+  --color-match-mid: var(--theme-match-mid);
   --color-match-loss: var(--theme-match-loss);
   --color-match-brawler: var(--theme-match-brawler);
   --color-match-midfielder: var(--theme-match-midfielder);
@@ -62,8 +65,10 @@
 :root[data-theme="Ai.Mi"] {
   --theme-background: #080108;
   --theme-background-border: #191a1b;
+  --theme-overlay: #000000;
   --theme-slate: #0A0A0A;
   --theme-surface: #0f090f;
+  --theme-surface-border: #191a1b;
   --theme-surface-subtle: #09010a;
   --theme-surface-raised: #1a1a1a;
   --theme-surface-overlay: #202020;
@@ -79,6 +84,7 @@
   --theme-char-subtle: #606070;
   --theme-char-accent: #dd77dd;
   --theme-match-win: #51FFB8;
+  --theme-match-mid: #d7e747;
   --theme-match-loss: #FF7979;
   --theme-match-brawler: #F97316;
   --theme-match-midfielder: #14B8A6;
@@ -87,27 +93,92 @@
   --theme-match-defgoalie: #3B82F6;
 }
 
-/* Clarion (dark, wip) */
+/* Clarion (dark) */
 :root[data-theme="Clarion"] {
-  --theme-background: #010801;
+  --theme-background: #070707;
   --theme-background-border: #191a1b;
+  --theme-overlay: #000000;
   --theme-slate: #0A0A0A;
   --theme-surface: #0e0e0e;
+  --theme-surface-border: #191a1b;
   --theme-surface-subtle: #09010a;
   --theme-surface-raised: #1a1a1a;
   --theme-surface-overlay: #202020;
-  --theme-surface-active: #1c0a1f;
-  --theme-primary: #58f258;
-  --theme-secondary: #4dcf63;
-  --theme-tertiary: #40ad40;
-  --theme-error: #FF5E4F;
+  --theme-surface-active: #111111;
+  --theme-primary: #3bdd3b;
+  --theme-secondary: #2eaa42;
+  --theme-tertiary: #279427;
+  --theme-error: #ee4839;
   --theme-pink: #F763E4;
   --theme-char: #F2F2F4;
   --theme-char-secondary: #A0A0B0;
   --theme-char-subtle: #606070;
-  --theme-char-accent: #A899FF;
-  --theme-match-win: #51FFB8;
+  --theme-char-accent: #58f258;
+  --theme-match-win: #51ff7d;
+  --theme-match-mid: #d7e747;
   --theme-match-loss: #FF7979;
+  --theme-match-brawler: #F97316;
+  --theme-match-midfielder: #14B8A6;
+  --theme-match-hardfwd: #EF4444;
+  --theme-match-offgoalie: #EF4444;
+  --theme-match-defgoalie: #3B82F6;
+}
+
+/* Ai.Mi Light (light, wip) */
+:root[data-theme="Ai.Mi-L"] {
+  --theme-background: #ebeae4;
+  --theme-background-border: #c7c7c7;
+  --theme-overlay: rgba(0, 0, 0, 0.5);
+  --theme-slate: #cecbcb;
+  --theme-surface: #cccaca;
+  --theme-surface-border: #a3a3a3;
+  --theme-surface-subtle: #d4d4d4;
+  --theme-surface-raised: #e4dde5;
+  --theme-surface-overlay: #d4d2d4;
+  --theme-surface-active: #b6b6b6;
+  --theme-primary: #dd52cb;
+  --theme-secondary: #ce4cbc;
+  --theme-tertiary: #b840a8;
+  --theme-error: #ee4839;
+  --theme-pink: #F763E4;
+  --theme-char: #131313;
+  --theme-char-secondary: #66666b;
+  --theme-char-subtle: #606070;
+  --theme-char-accent: #c711d8;
+  --theme-match-win: #44c464;
+  --theme-match-mid: #d7e747;
+  --theme-match-loss: #f53d3d;
+  --theme-match-brawler: #F97316;
+  --theme-match-midfielder: #14B8A6;
+  --theme-match-hardfwd: #EF4444;
+  --theme-match-offgoalie: #EF4444;
+  --theme-match-defgoalie: #3B82F6;
+}
+
+/* Clarion Light (light, wip) */
+:root[data-theme="Clarion-L"] {
+  --theme-background: #ebeae4;
+  --theme-background-border: #c7c7c7;
+  --theme-overlay: rgba(0, 0, 0, 0.5);
+  --theme-slate: #cecbcb;
+  --theme-surface: #cccaca;
+  --theme-surface-border: #a3a3a3;
+  --theme-surface-subtle: #d4d2d4;
+  --theme-surface-raised: #dde5dd;
+  --theme-surface-overlay: #d4d2d4;
+  --theme-surface-active: #c5c5c5;
+  --theme-primary: #109910;
+  --theme-secondary: #2eaa42;
+  --theme-tertiary: #279427;
+  --theme-error: #ee4839;
+  --theme-pink: #F763E4;
+  --theme-char: #131313;
+  --theme-char-secondary: #66666b;
+  --theme-char-subtle: #606070;
+  --theme-char-accent: #11d811;
+  --theme-match-win: #50ca6f;
+  --theme-match-mid: #d7e747;
+  --theme-match-loss: #f53d3d;
   --theme-match-brawler: #F97316;
   --theme-match-midfielder: #14B8A6;
   --theme-match-hardfwd: #EF4444;

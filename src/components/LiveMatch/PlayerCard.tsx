@@ -81,7 +81,7 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
           {/* Info */}
           <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold text-white truncate">
+              <span className="text-base font-semibold text-char truncate">
                 {player.username}
               </span>
               <span
@@ -95,7 +95,7 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                 {rankInfo.name}
               </span>
               <span
-                className={clsx('shrink-0', playstyleClass ?? 'text-zinc-500')}
+                className={clsx('shrink-0', playstyleClass ?? 'text-char-secondary')}
                 title={playstyleType ?? `${player.role}`}
               >
                 {player.role === 'Forward'
@@ -111,20 +111,20 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
               )}
             </div>
 
-            <div className="flex items-center gap-4 text-xs text-zinc-500">
+            <div className="flex items-center gap-4 text-xs text-char-secondary">
               <span>
-                Rating: <span className="text-zinc-300 font-medium">{player.rating}</span>
+                Rating: <span className="text-char-subtle font-medium">{player.rating}</span>
               </span>
               <span>
-                Games: <span className="text-zinc-300 font-medium">{games == null ? '—' : games}</span>
+                Games: <span className="text-char-subtle font-medium">{games == null ? '—' : games}</span>
               </span>
               <span>
                 Winrate: <span className={
                   `font-medium
-                  ${winrate == null ? 'text-zinc-300'
-                    : winrate >= 0.6 ? 'text-green-400'
-                    : winrate <= 0.4 ? 'text-red-400'
-                    : 'text-yellow-400'}
+                  ${winrate == null ? 'text-char-subtle'
+                    : winrate >= 0.6 ? 'text-match-win'
+                    : winrate <= 0.4 ? 'text-match-loss'
+                    : 'text-match-mid'}
                   `}>
                   {winrate == null ? '—' : `${(winrate * 100).toFixed(0)}%`
                   }</span>

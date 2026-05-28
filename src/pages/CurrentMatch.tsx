@@ -135,7 +135,7 @@ export default function CurrentMatchPage() {
 
                 <div className="hidden lg:block w-px mx-4 self-stretch" />
 
-                <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto">
+                <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
                   {myChar ? (
                     myChar.abilities.map(ability => (
                       <AbilityCard key={ability.type} ability={ability} />

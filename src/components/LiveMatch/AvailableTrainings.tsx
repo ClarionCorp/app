@@ -51,7 +51,7 @@ export function AvailableTrainings({ allTrainings, match, players }: Props) {
   const hoveredIsShown = hoveredId ? shownAwakeningIds.has(hoveredId) : false;
 
   return (
-    <div className="bg-surface border border-background-border rounded-xl p-4">
+    <div className="bg-surface border border-surface-border rounded-xl p-4 shadow-lg">
       <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
         Available Awakenings in Rotation ({availableCount})
       </p>
