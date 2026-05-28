@@ -64,7 +64,7 @@ export const DEFAULT_ACTIVITY: RpcActivityOptions = {
   details: "Using the Ai.Mi App",
   state: "without the game open", // lmao update this later
   largeImage: DRPC_LOGO_KEY,
-  // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
+  buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
 }
 
 export let discordRpc: DiscordRpc | null = null;

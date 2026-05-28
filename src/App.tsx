@@ -5,7 +5,7 @@ import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
-import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo } from './core/database/queries';
+import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo, getAppSettings } from './core/database/queries';
 import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
@@ -13,6 +13,8 @@ import { currentMatch } from './core/database/schema';
 import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
+import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
+import { ESQueuePops } from './core/objects/sounds';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -38,6 +40,7 @@ function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'F9') navigate('/debug');
+      if (e.key === 'F8') playAudio(selectRandomQueuePop(ESQueuePops), 50);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -109,6 +112,7 @@ function App() {
       if (payload.kind === 'removed' || !payload.content) return;
       const data = JSON.parse(payload.content) as GameSessionJSON;
 
+      const prevSession = await getGameSession();
       const queueObj = getQueueObjectFromID(data.queue_name);
       const queueState = QUEUE_STATES_ARRAY[data.mm_state];
 
@@ -120,6 +124,14 @@ function App() {
         queueState: QUEUE_STATES_ARRAY[data.mm_state] ?? 'Unknown',
       });
       await tryUpdateDiscordRPC(undefined, session); // Ask Discord RPC to update
+
+      if (prevSession.queueState == 'Queued' && (session.queueState == 'FoundMatch' || session.queueState == 'StartingGame')) {
+        const settings = await getAppSettings();
+        if (settings.notifyQueuePop) {
+          const randomSound = selectRandomQueuePop(ESQueuePops);
+          await playAudio(randomSound, settings.queuePopVol);
+        }
+      }
     }),
     onTrainingsChanged(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
