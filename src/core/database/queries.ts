@@ -179,13 +179,13 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
     if (byWinrate) bestChar.push(byWinrate);
   }
 
-  let normGames = 0, normWins = 0, rankedGames = 0, rankedWins = 0;
-  for (const ps of stats.playerStats) {
-    const g = ps.roleStats.Forward.games + ps.roleStats.Goalie.games;
-    const w = ps.roleStats.Forward.wins + ps.roleStats.Goalie.wins;
-    if (ps.ratingName === 'RankedInitial') { rankedGames += g; rankedWins += w; }
-    else { normGames += g; normWins += w; }
-  }
+  const ranked = stats.playerStats.find(ps => ps.ratingName === 'RankedInitial');
+  const norm = stats.playerStats.find(ps => ps.ratingName !== 'RankedInitial');
+
+  const rankedGames = ranked ? ranked.roleStats.Forward.games + ranked.roleStats.Goalie.games : 0;
+  const rankedWins = ranked ? ranked.roleStats.Forward.wins + ranked.roleStats.Goalie.wins : 0;
+  const normGames = norm ? norm.roleStats.Forward.games + norm.roleStats.Goalie.games : 0;
+  const normWins = norm ? norm.roleStats.Forward.wins + norm.roleStats.Goalie.wins : 0;
 
   return db.update(matchPlayers)
     .set({
