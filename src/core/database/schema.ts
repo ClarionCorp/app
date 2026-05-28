@@ -1,6 +1,7 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer } from "../../types/ue4ss";
 import { PlayerCharJSON, QueueStates } from "../../types/database";
+import { Playstyle } from "../../types/clarion";
 
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
@@ -76,6 +77,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   rankedWR: real("rankedWR"),
   normGames: integer("normGames"),
   rankedGames: integer("rankedGames"),
+  playstyle: text("playstyle", { mode: "json" }).$type<Playstyle>(),
 });
 
 // Basic list of previous matches for local match history

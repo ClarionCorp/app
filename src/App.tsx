@@ -9,12 +9,14 @@ import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCu
 import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
-import { currentMatch } from './core/database/schema';
+import { currentMatch, matchPlayers } from './core/database/schema';
 import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
+import { fetchPlayerPlayerstyle } from './core/utilities/clarion';
+import { eq } from 'drizzle-orm';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -76,8 +78,10 @@ function App() {
           const user = await fetchUsernameQuery(player.username);
           const ranked = await fetchRankQuery(user!.playerId);
           const stats = await fetchPlayerStats(user!.playerId);
+          const playstyle = await fetchPlayerPlayerstyle(player.username);
           await calcAndSetPlayerStats(player.username, stats); // run first since it really shouldn't fail as much as rating
           await updatePlayerRating(player.username, ranked!.rating);
+          await db.update(matchPlayers).set({ playstyle }).where(eq(matchPlayers.username, player.username));
         } catch (e) {
           console.warn(`No rank data could be found for ${player.username}.`);
           updatePlayerRating(player.username, 0); // set to 0 to prevent refetching (and failing again)

@@ -15,6 +15,13 @@
       "when": 1779947229994,
       "tag": "0001_broad_jack_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1779953478402,
+      "tag": "0002_early_meggan",
+      "breakpoints": true
     }
   ]
 }

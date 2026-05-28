@@ -58,3 +58,31 @@ export type Maps = {
   active: Map[],
   all: Map[]
 }
+
+type RoleCategoryPS = {
+  multiplier: number,
+  avgPerGame: number
+}
+
+export type PlaystyleType = 
+  'Brawler' |
+  'Midfielder' |
+  'Hard Forward' |
+  'Offensive Goalie' |
+  'Defensive Goalie' |
+  'Generic Goalie' |
+  'Generic Forward'
+;
+
+type RolePlaystyle = {
+  type?: PlaystyleType
+  assists: RoleCategoryPS
+  knockouts: RoleCategoryPS
+  scores: RoleCategoryPS
+  saves: RoleCategoryPS
+}
+
+export type Playstyle = {
+  forward: RolePlaystyle,
+  goalie: RolePlaystyle
+}

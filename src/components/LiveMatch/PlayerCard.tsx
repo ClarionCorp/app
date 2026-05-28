@@ -7,6 +7,15 @@ import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { getGameStatus } from '../../core/objects/gameStates';
 import { TRAININGS } from '../../core/objects/trainings';
 import { getPlayerChar } from '../../core/database/queries';
+import { PlaystyleType } from '../../types/clarion';
+
+const PLAYSTYLE_COLORS: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
+  'Brawler': '#f97316',
+  'Midfielder': '#22c55e',
+  'Hard Forward': '#ef4444',
+  'Offensive Goalie': '#f59e0b',
+  'Defensive Goalie': '#3b82f6',
+};
 
 
 export function PlayerCard({ player, match, index, isBlue = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean }) {
@@ -27,6 +36,11 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
   const winrate = charQueue === 'Normal' ? player.normWR : player.rankedWR;
   const bestChar = getPlayerChar(player.bestChar, player.role, charQueue);
   const favChar = getPlayerChar(player.favChar, player.role, charQueue);
+  const roleKey = (player.role?.toLowerCase() ?? null) as 'forward' | 'goalie' | null;
+  const playstyleType = roleKey ? player.playstyle?.[roleKey]?.type : undefined;
+  const playstyleColor = playstyleType && playstyleType in PLAYSTYLE_COLORS
+    ? PLAYSTYLE_COLORS[playstyleType as keyof typeof PLAYSTYLE_COLORS]
+    : null;
 
   return (
     <motion.div
@@ -93,6 +107,18 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                   : favChar?.characterId === player.charId
                     ? <span className="text-xs font-medium text-blue-400">Playing Main Striker</span>
                     : null
+              )}
+              {playstyleColor && playstyleType && (
+                <span
+                  className="text-xs font-medium px-2 py-0.5 rounded-md shrink-0"
+                  style={{
+                    color: playstyleColor,
+                    backgroundColor: `${playstyleColor}1A`,
+                    border: `1px solid ${playstyleColor}30`,
+                  }}
+                >
+                  {playstyleType}
+                </span>
               )}
             </div>
 

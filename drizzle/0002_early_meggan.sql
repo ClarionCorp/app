@@ -1,0 +1,1 @@
+ALTER TABLE `matchPlayers` ADD `playstyle` text;
