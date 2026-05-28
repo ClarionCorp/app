@@ -106,4 +106,11 @@
   --theme-char-secondary: #A0A0B0;
   --theme-char-subtle: #606070;
   --theme-char-accent: #A899FF;
+  --theme-match-win: #51FFB8;
+  --theme-match-loss: #FF7979;
+  --theme-match-brawler: #F97316;
+  --theme-match-midfielder: #14B8A6;
+  --theme-match-hardfwd: #EF4444;
+  --theme-match-offgoalie: #EF4444;
+  --theme-match-defgoalie: #3B82F6;
 }
