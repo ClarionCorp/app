@@ -7,8 +7,10 @@ import { getCurrentMatch, getGameSession, getMatchPlayers } from '../core/databa
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { MapRotation } from '../components/LiveMatch/MapRotation';
+import { AbilityCard } from '../components/LiveMatch/AbilityCard';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
+import { characters } from '../core/objects/characters';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -63,7 +65,9 @@ export default function CurrentMatchPage() {
     return () => clearInterval(id);
   }, [loading]);
 
-  const myTeamNum = players.find(p => p.isMe)?.teamNum ?? 1;
+  const myPlayer = players.find(p => p.isMe);
+  const myChar = characters.find(c => c.id === myPlayer?.charId);
+  const myTeamNum = myPlayer?.teamNum ?? 1;
   const blueTeam = players
     .filter(p => p.teamNum === myTeamNum)
     .sort((a) => (a.role === 'Goalie' ? -1 : 1));
@@ -100,31 +104,49 @@ export default function CurrentMatchPage() {
                 <div className="flex-1 h-px bg-background-border" />
               </div>
 
-              {players.length > 0 && session?.queueState !== 'Queued' ? (
-                <>
-                  <div className="space-y-3">
-                    {blueTeam.map((player, index) => (
-                      <PlayerCard key={player.username} player={player} match={match} index={index} isBlue />
-                    ))}
-                  </div>
+              <div className="flex flex-col lg:flex-row lg:gap-0">
+                <div className="flex-1 min-w-0 space-y-3">
+                  {players.length > 0 && session?.queueState !== 'Queued' ? (
+                    <>
+                      <div className="space-y-3">
+                        {blueTeam.map((player, index) => (
+                          <PlayerCard key={player.username} player={player} match={match} index={index} isBlue />
+                        ))}
+                      </div>
 
-                  <div className="flex items-center gap-3 py-1">
-                    <div className="flex-1 h-px bg-background-border" />
-                    <span className="text-xs text-zinc-500">vs</span>
-                    <div className="flex-1 h-px bg-background-border" />
-                  </div>
+                      <div className="flex items-center gap-3 py-1">
+                        <div className="flex-1 h-px bg-background-border" />
+                        <span className="text-xs text-zinc-500">vs</span>
+                        <div className="flex-1 h-px bg-background-border" />
+                      </div>
 
-                  <div className="space-y-3">
-                    {redTeam.map((player, index) => (
-                      <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <MapRotation />
-                </motion.div>
-              )}
+                      <div className="space-y-3">
+                        {redTeam.map((player, index) => (
+                          <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} />
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <MapRotation />
+                    </motion.div>
+                  )}
+                </div>
+
+                <div className="hidden lg:block w-px mx-4 self-stretch" />
+
+                <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto">
+                  {myChar ? (
+                    myChar.abilities.map(ability => (
+                      <AbilityCard key={ability.type} ability={ability} />
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-48">
+                      No character data
+                    </div>
+                  )}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
