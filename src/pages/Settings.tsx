@@ -166,7 +166,7 @@ export default function SettingsPage() {
 
         <SettingRow
           title="Queue Pop Sound"
-          subtitle="The sound pack used for queue pop notifications."
+          subtitle="The sound pack used for when your queue pops. Press F8 to test."
           disabled={!settings.notifyQueuePop}
         >
           <div className="relative">
