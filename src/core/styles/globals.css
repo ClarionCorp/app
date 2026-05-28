@@ -51,6 +51,11 @@
   --color-char-accent: var(--theme-char-accent);
   --color-match-win: var(--theme-match-win);
   --color-match-loss: var(--theme-match-loss);
+  --color-match-brawler: var(--theme-match-brawler);
+  --color-match-midfielder: var(--theme-match-midfielder);
+  --color-match-hardfwd: var(--theme-match-hardfwd);
+  --color-match-offgoalie: var(--theme-match-offgoalie);
+  --color-match-defgoalie: var(--theme-match-defgoalie);
 }
 
 /* AiMi (dark, default) */
@@ -75,6 +80,11 @@
   --theme-char-accent: #dd77dd;
   --theme-match-win: #51FFB8;
   --theme-match-loss: #FF7979;
+  --theme-match-brawler: #F97316;
+  --theme-match-midfielder: #14B8A6;
+  --theme-match-hardfwd: #EF4444;
+  --theme-match-offgoalie: #EF4444;
+  --theme-match-defgoalie: #3B82F6;
 }
 
 /* Clarion (dark, wip) */

@@ -12,11 +12,11 @@ import clsx from 'clsx';
 
 // Maybe move to theme at some point?
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
-  'Brawler': 'text-orange-500',
-  'Midfielder': 'text-green-500',
-  'Hard Forward': 'text-red-500',
-  'Offensive Goalie': 'text-amber-500',
-  'Defensive Goalie': 'text-blue-500',
+  'Brawler': 'text-match-brawler',
+  'Midfielder': 'text-match-midfielder',
+  'Hard Forward': 'text-match-hardfwd',
+  'Offensive Goalie': 'text-match-offgoalie',
+  'Defensive Goalie': 'text-match-defgoalie',
 };
 
 
