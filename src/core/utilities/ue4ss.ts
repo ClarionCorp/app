@@ -78,7 +78,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
       // Disable ConsoleEnabledMod in full release lol
       await writeTextFile(
         await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods/mods.txt'),
-        `ConsoleCommandsMod : 0\nConsoleEnablerMod : 1\n\n; Built-in keybinds, do not move up!\nKeybinds : 1\n`
+        `ConsoleCommandsMod : 0 \nConsoleEnablerMod : 1 \n\n; Built-in keybinds, do not move up! \nKeybinds : 1 \n`
       );
       console.log(`Finished UE4SS installation script.`);
     }
@@ -174,7 +174,7 @@ async function ensureModEnabled(modName: string, modsFolder: string) {
     lines.push(entry);
   }
 
-  await writeTextFile(modsFilePath, lines.join('\n'));
+  await writeTextFile(modsFilePath, lines.join(' \n'));
 }
 
 export async function unInstallUE4SS(gameDirectory: string, onProgress?: UnInstallProgressCallback) {

@@ -3,6 +3,11 @@ import * as schema from "../database/schema";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { is, Table } from "drizzle-orm";
 import { migrate, createDrizzleProxy, Database } from "tauri-plugin-libsql-api";
+import { appDataDir } from "@tauri-apps/api/path";
+import { mkdir } from "@tauri-apps/plugin-fs";
+
+const dataDir = await appDataDir();
+await mkdir(dataDir, { recursive: true });
 
 await Database.load("sqlite:hyperpop.db");
 
