@@ -20,7 +20,8 @@ type InstallProgressCallback = (stage: 'checking' | 'downloading' | 'installing'
 type UnInstallProgressCallback = (stage: 'checking' | 'removing' | 'cleaning' | 'done', percent: number | null, message: string) => void;
 
 // The main function for checking if UE4SS is installed, and setting it up/updating if it isn't.
-export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProgressCallback) {
+// Returns true if UE4SS was freshly installed (game restart required).
+export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProgressCallback): Promise<boolean> {
   try {
     onProgress?.('checking', 0, 'Checking if UE4SS is installed...');
     let ue4ss_installed = true;
@@ -115,10 +116,11 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
 
     onProgress?.('done', 100, 'UE4SS & Mods Up-to-date!');
     console.log(`Successfully validated UE4SS & Installed Mods.`);
+    return !ue4ss_installed;
 
   } catch (e) {
     console.error(`[UE4SS] Failed to install UE4SS!`, e);
-    return;
+    return false;
   }
 }
 

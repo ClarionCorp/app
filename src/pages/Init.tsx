@@ -4,6 +4,7 @@ import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { readIdentity } from "../core/init";
 import { DEFAULT_ACTIVITY, discordRpc, startRpc, stopRpc } from "../core/utilities/discord";
+import { invoke } from "@tauri-apps/api/core";
 import { dirname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -35,6 +36,7 @@ export default function InitializationPage() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [needsGameDir, setNeedsGameDir] = useState(false);
+  const [needsRestart, setNeedsRestart] = useState(false);
   const [ue4ssMessage, setUe4ssMessage] = useState<string | null>(null);
   const [ue4ssPercent, setUe4ssPercent] = useState<number | null>(null);
 
@@ -80,11 +82,24 @@ export default function InitializationPage() {
         // 1) Check & install/update UE4SS and companion mods
         setStepIndex(0);
         setProgress(STEP_PCTS[0]);
-        await checkUE4SS(gameDir, (_stage, percent, message) => {
+        const wasInstalled = await checkUE4SS(gameDir, (_stage, percent, message) => {
           setUe4ssMessage(message);
           setUe4ssPercent(percent);
         });
         if (cancelled) return;
+        if (wasInstalled) {
+          const gameRunning = await invoke<boolean>('is_process_running', { name: 'OmegaStrikers.exe' });
+          if (gameRunning) {
+            setNeedsRestart(true);
+            while (true) {
+              await new Promise(res => setTimeout(res, 2000));
+              if (cancelled) return;
+              const stillRunning = await invoke<boolean>('is_process_running', { name: 'OmegaStrikers.exe' });
+              if (!stillRunning) break;
+            }
+            setNeedsRestart(false);
+          }
+        }
 
         // 1.5) (Hidden) Purge players table as we'll just fetch a new one anyway
         await db.delete(matchPlayers).run();
@@ -136,6 +151,34 @@ export default function InitializationPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-10 px-6">
+
+      {/* Restart required modal */}
+      <AnimatePresence>
+        {needsRestart && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="flex flex-col gap-4 bg-surface p-6 rounded-xl w-116 shadow-xl"
+              initial={{ scale: 0.95, y: 8 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 8 }}
+            >
+              <p className="text-lg font-semibold text-char">Game Restart Required</p>
+              <p className="text-md text-char-secondary">
+                UE4SS was just installed. Please <span className="text-primary font-semibold">close Omega Strikers</span>. The setup will continue automatically once the game exits.
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-surface-overlay border-t-primary animate-spin shrink-0" />
+                <span className="text-xs text-char-subtle">Waiting for you to restart the game...</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Game directory picker modal */}
       <AnimatePresence>
