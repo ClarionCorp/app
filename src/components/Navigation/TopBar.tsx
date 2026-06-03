@@ -29,7 +29,7 @@ export default function TopBar() {
 
       if (state && username) {
         const count = await fetchOnlineCount(username, state);
-        setOnline(count);
+        setOnline(count + 1);
       }
     }
 

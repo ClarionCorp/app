@@ -68,6 +68,7 @@ pub fn run() {
             is_process_running,
             extract_zip,
             log_watcher::get_latest_match_timestamp,
+            log_watcher::get_latest_region,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

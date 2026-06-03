@@ -4,6 +4,7 @@ import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
 import type { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { TRAININGS } from '../core/objects/trainings';
 import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
+import { getLatestRegion } from '../core/bridgeListener';
 
 function DebugRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -42,6 +43,7 @@ const activeTrainings = Object.entries(TRAININGS).filter(([, info]) => !info.dis
 export default function DebugPage() {
   const [match, setMatch] = useState<CurrentMatchTable | null>(null);
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
+  const [region, setRegion] = useState<string | null>();
   const polling_rate = 2000;
 
   useEffect(() => {
@@ -55,6 +57,14 @@ export default function DebugPage() {
     const id = setInterval(poll, polling_rate);
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    async function fetchOnce() {
+      setRegion(await getLatestRegion());
+    }
+
+    fetchOnce();
+  }, [])
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 sm:px-6">
@@ -76,6 +86,7 @@ export default function DebugPage() {
             <DebugRow label="Queue" value={match?.queue} />
             <DebugRow label="My Team" value={match?.teamNum} />
             <DebugRow label="Started At" value={match?.startedAt?.toLocaleTimeString()} />
+            <DebugRow label="Region" value={region} />
           </div>
 
           <div className="bg-surface-subtle border border-background-border rounded-xl px-4 mt-3">
