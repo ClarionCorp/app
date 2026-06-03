@@ -31,6 +31,7 @@ export const user = sqliteTable("user", {
   gameLiftRegionUrls: text("gamelift_region_urls", { mode: "json" }).$type<{ region: string; url: string }[]>().notNull().default([]),
   discordId: text("discord_id"), // nullable, no connection = null
   rating: integer("rating"),
+  region: text("region"), // grabbed from logs
 });
 
 // Only one row that stores basic, refetchable auth tokens

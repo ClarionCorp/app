@@ -5,11 +5,11 @@ import { AiMiAPI, version } from '../../core/constants';
 // Add back dynamic coloring when app gets bigger.
 // const onlineColor = (n: number) => n >= 100 ? 'text-green-400' : n >= 50 ? 'text-yellow-400' : 'text-red-400';
 
-async function fetchOnlineCount(username: string, gameState: string): Promise<number> {
+async function fetchOnlineCount(username: string, gameState: string, region: string | null): Promise<number> {
   const res = await fetch(`${AiMiAPI}/v1/online`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
-    body: JSON.stringify({ username, gameState }),
+    body: JSON.stringify({ username, gameState, region }),
   });
   if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, gameState }, null, 0)) };
   const data = await res.json() as { online: number };
@@ -28,8 +28,8 @@ export default function TopBar() {
       const username = user?.username;
 
       if (state && username) {
-        const count = await fetchOnlineCount(username, state);
-        setOnline(count + 1);
+        const count = await fetchOnlineCount(username, state, user.region);
+        setOnline(count);
       }
     }
 

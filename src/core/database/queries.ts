@@ -85,6 +85,10 @@ export async function updateRating(rating: number) {
   return db.update(user).set({ rating }).run();
 }
 
+export async function updateRegion(region: string) {
+  return db.update(user).set({ region }).run();
+}
+
 export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
   return db.insert(auth).values({ id: 1, ...data }).onConflictDoUpdate({
     target: auth.id,

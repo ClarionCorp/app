@@ -8,12 +8,13 @@ import { dirname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { getAppSettings, upsertAppSettings, updateRating, upsertUser, resetSessionTable } from "../core/database/queries";
+import { getAppSettings, upsertAppSettings, updateRating, upsertUser, resetSessionTable, updateRegion } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { db } from "../core/database/driver";
 import { matchPlayers } from "../core/database/schema";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { version } from "../core/constants";
+import { getLatestRegion } from "../core/bridgeListener";
 
 const STEPS = [
   "Checking UE4SS...",
@@ -95,6 +96,10 @@ export default function InitializationPage() {
         try {
           const auth = await readIdentity();
           setOdyAuth(auth);
+
+          const region = await getLatestRegion();
+          if (region) await updateRegion(region);
+          
           const selfQuery = await fetchSelfQuery();
           const rankQuery = await fetchRankQuery(selfQuery.playerId);
           if (cancelled) return;
