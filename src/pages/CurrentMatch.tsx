@@ -106,7 +106,7 @@ export default function CurrentMatchPage() {
 
               <div className="flex flex-col lg:flex-row lg:gap-0">
                 <div className="flex-1 min-w-0 space-y-3">
-                  {players.length > 0 && session?.queueState !== 'Queued' ? (
+                  {players.length > 0 && (session?.queueState !== 'Queued' && session?.queueState !== 'FoundMatch') ? (
                     <>
                       <div className="space-y-3">
                         {blueTeam.map((player, index) => (
