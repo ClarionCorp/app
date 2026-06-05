@@ -89,6 +89,7 @@ export function mergeMatchPlayers(
 
     return {
       name: player.username,
+      playerId: player.playerId,
       rating: player.rating,
       characterId: player.charId ?? '',
       level: getLevelFromXP(player.xp ?? 0),

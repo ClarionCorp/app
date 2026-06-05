@@ -66,6 +66,7 @@ export const currentMatch = sqliteTable("currentMatch", {
 // Saves data sent from PlayerFinderMod (multi-row)
 export const matchPlayers = sqliteTable("matchPlayers", {
   username: text("username").notNull().unique().primaryKey(),
+  playerId: text("playerId").unique(),
   teamNum: integer("teamNum").$type<1 | 2>(), // can be null if not on a team yet
   role: text("role").$type<'Forward' | 'Goalie'>(),
   charName: text("charName"),

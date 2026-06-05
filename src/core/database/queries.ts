@@ -22,6 +22,10 @@ export async function upsertAppSettings(data: Partial<Pick<typeof appSettings.$i
   }).run();
 }
 
+export async function getUsers() {
+  return db.select().from(user);
+}
+
 export async function getUser(): Promise<UserTable | null> {
   const rows = await db.select().from(user).where(eq(user.active, true)).limit(1);
   return rows[0] ?? null;
@@ -165,7 +169,7 @@ export async function resetLocalTables() {
 }
 
 // Only runs once upon loading players, so it should be fine to run this heavy function lol
-export async function calcAndSetPlayerStats(username: string, stats: StatsQuery | null) {
+export async function calcAndSetPlayerStats(username: string, stats: StatsQuery | null, playerId: string | undefined) {
   if (!stats) {
     return db.update(matchPlayers)
       .set({ favChar: [], bestChar: [], normWR: 0, rankedWR: 0, normGames: 0, rankedGames: 0 })
@@ -214,6 +218,7 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
 
   return db.update(matchPlayers)
     .set({
+      playerId,
       favChar,
       bestChar,
       normWR: normGames > 0 ? normWins / normGames : 0,
@@ -245,4 +250,22 @@ export function getPlayerChar(
 ): PlayerCharJSON | undefined {
   if (!role || !queue) return undefined;
   return chars.find(c => c.queue === queue && c.role === role);
+}
+
+export async function usernameToPlayerId(username: string): Promise<string | null> {
+  const byUsername = await db
+    .select({ playerId: user.playerId })
+    .from(user)
+    .where(eq(user.username, username))
+    .limit(1);
+
+  if (byUsername.length > 0) return byUsername[0].playerId;
+
+  const byHistory = await db
+    .select({ playerId: user.playerId })
+    .from(user)
+    .where(sql`EXISTS (SELECT 1 FROM json_each(${user.nameHistory}) WHERE value = ${username})`)
+    .limit(1);
+
+  return byHistory[0]?.playerId ?? null;
 }

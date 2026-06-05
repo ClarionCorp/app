@@ -79,7 +79,7 @@ function App() {
           const ranked = await fetchRankQuery(user!.playerId);
           const stats = await fetchPlayerStats(user!.playerId);
           const playstyle = await fetchPlayerPlayerstyle(player.username);
-          await calcAndSetPlayerStats(player.username, stats); // run first since it really shouldn't fail as much as rating
+          await calcAndSetPlayerStats(player.username, stats, user?.playerId); // run first since it really shouldn't fail as much as rating
           await updatePlayerRating(player.username, ranked!.rating);
           await db.update(matchPlayers).set({ playstyle }).where(eq(matchPlayers.username, player.username));
         } catch (e) {
