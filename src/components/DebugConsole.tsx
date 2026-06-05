@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logger, LogEntry, LogLevel } from '../core/logger';
 import { BugIcon, XIcon, TrashIcon, CopySimpleIcon } from '@phosphor-icons/react';
+import { useToast } from './UI/Toast';
 
 const LEVEL_TEXT: Record<LogLevel, string> = {
   debug: 'text-zinc-500',
@@ -39,6 +40,7 @@ export function DebugConsole() {
   const [entries, setEntries] = useState<LogEntry[]>([...logger.getEntries()]);
   const [filter, setFilter] = useState<Filter>('all');
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => logger.subscribe(() => setEntries([...logger.getEntries()])), []);
 
@@ -51,6 +53,7 @@ export function DebugConsole() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === '`') setOpen(v => !v);
+      if (e.key === 'F6') { toast('Copied logs to clipboard!', 'success'); copyAll(); };
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
