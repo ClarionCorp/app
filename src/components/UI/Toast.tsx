@@ -87,7 +87,7 @@ function Toast({ toast, onDismiss }: ToastProps) {
       animate="show"
       exit="exit"
       className={cn(
-        'flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border shadow-lg text-sm min-w-50 max-w-95',
+        'flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border shadow-lg text-sm w-full',
         toastStyles[toast.type]
       )}
     >
@@ -111,7 +111,7 @@ interface ToastContainerProps {
 
 export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-50 items-center pointer-events-none">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-50 items-center pointer-events-none w-120 max-w-[90vw]">
       <AnimatePresence>
         {toasts.map(t => (
           <div key={t.id} className="pointer-events-auto">

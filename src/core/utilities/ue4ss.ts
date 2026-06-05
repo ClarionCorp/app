@@ -209,6 +209,6 @@ export async function unInstallUE4SS(gameDirectory: string, onProgress?: UnInsta
 
   } catch (e) {
     console.error(`[UE4SS] Failed to uninstall UE4SS!`, e);
-    return;
+    throw e;
   }
 }

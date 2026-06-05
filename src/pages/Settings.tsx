@@ -14,6 +14,10 @@ import { useTheme } from "../components/UI/Theme/ThemeProvider";
 import { themes } from "../core/styles/theme";
 import { resetDatabase } from "../core/database/driver";
 import { ConfirmModal } from "../components/UI/ConfirmModal";
+import { ProgressBar } from "../components/UI/ProgressBar";
+import { unInstallUE4SS } from "../core/utilities/ue4ss";
+import { useToast } from "../components/UI/Toast";
+import { exit } from "@tauri-apps/plugin-process";
 
 export type QueuePopType = 'Ai.Mi' | 'Generic';
 
@@ -36,11 +40,15 @@ const DEFAULT_SETTINGS: Settings = {
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [uninstallModalOpen, setUninstallModalOpen] = useState(false);
+  const [uninstalling, setUninstalling] = useState(false);
+  const [uninstallProgress, setUninstallProgress] = useState<{ percent: number | null; message: string } | null>(null);
   const [queuePopTypeOpen, setQueuePopTypeOpen] = useState(false);
   const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
   const [themeOpen, setThemeOpen] = useState(false);
   const themeTriggerRef = useRef<HTMLButtonElement>(null);
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
 
   useEffect(() => {
     getAppSettings().then(s => {
@@ -58,6 +66,23 @@ export default function SettingsPage() {
   const update = async (patch: Partial<Settings>) => {
     setSettings(prev => ({ ...prev, ...patch }));
     await upsertAppSettings(patch);
+  };
+
+  const handleUninstall = async () => {
+    if (!settings.gameDirectory) return;
+    setUninstallModalOpen(false);
+    setUninstalling(true);
+    setUninstallProgress({ percent: null, message: 'Starting...' });
+    try {
+      await unInstallUE4SS(settings.gameDirectory, (_stage, percent, message) => {
+        setUninstallProgress({ percent, message });
+      });
+      await exit(0);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Failed to uninstall UE4SS.', 'error');
+    }
+    setUninstalling(false);
+    setUninstallProgress(null);
   };
 
   const handlePickDir = async () => {
@@ -233,13 +258,25 @@ export default function SettingsPage() {
           <SettingRow
             title="Uninstall UE4SS"
             subtitle="Removes UE4SS and companion mods from your game folder."
+            vertical={uninstalling}
           >
-            <Button variant="danger" size="sm">Uninstall</Button>
+            {uninstalling
+              ? <ProgressBar percent={uninstallProgress?.percent ?? null} message={uninstallProgress?.message} />
+              : <Button variant="danger" size="sm" onClick={() => setUninstallModalOpen(true)}>Uninstall</Button>
+            }
           </SettingRow>
         </div>
       </div>
     </motion.div>
 
+    <ConfirmModal
+      open={uninstallModalOpen}
+      title="Uninstall UE4SS & Close App"
+      description="This will remove UE4SS and all companion mods from OS, then close the App. Are you sure?"
+      confirmLabel="Uninstall"
+      onConfirm={handleUninstall}
+      onCancel={() => setUninstallModalOpen(false)}
+    />
     <ConfirmModal
       open={resetModalOpen}
       title="Reset Local Database"
