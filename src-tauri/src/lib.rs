@@ -64,6 +64,12 @@ pub fn run() {
         .plugin(tauri_plugin_drpc::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // Bring the existing window to focus
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_focus();
+            }
+        }))
         .invoke_handler(tauri::generate_handler![
             is_process_running,
             extract_zip,
