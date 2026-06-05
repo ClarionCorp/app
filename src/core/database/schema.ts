@@ -16,7 +16,7 @@ export const appSettings = sqliteTable("appSettings", {
 
 // Only one row that stores basic, refetchable user data
 export const user = sqliteTable("user", {
-  id: integer("id").primaryKey(), // always 1
+  id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull(),
   playerId: text("player_id").notNull(),
   emoticonId: text("emoticon_id").notNull(),
@@ -32,6 +32,7 @@ export const user = sqliteTable("user", {
   discordId: text("discord_id"), // nullable, no connection = null
   rating: integer("rating"),
   region: text("region"), // grabbed from logs
+  active: integer("active", { mode: "boolean" }).notNull().default(false),
 });
 
 // Only one row that stores basic, refetchable auth tokens
@@ -98,7 +99,6 @@ export const matchHistory = sqliteTable("matchHistory", {
   wonGame: integer("wonGame", { mode: "boolean" }).notNull(),
 
   validated: integer("validated", { mode: "boolean" }).notNull().default(false), // skips checking if already validated
-
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 

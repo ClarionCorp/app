@@ -23,7 +23,7 @@ export async function upsertAppSettings(data: Partial<Pick<typeof appSettings.$i
 }
 
 export async function getUser(): Promise<UserTable | null> {
-  const rows = await db.select().from(user).limit(1);
+  const rows = await db.select().from(user).where(eq(user.active, true)).limit(1);
   return rows[0] ?? null;
 }
 
@@ -63,22 +63,30 @@ export async function upsertUser(data: SelfQuery) {
     ? new Date(data.lastDisplayNameChangeTimestamp)
     : null;
 
-  return db.insert(user).values({
-    id: 1,
-    ...data,
-    tags: data.tags,
-    gameLiftRegionUrls: data.gameLiftRegionUrls,
-    discordId: data.discordConnection?.discordId ?? null,
-    lastDisplayNameChangeTimestamp,
-    rating: null,
-  }).onConflictDoUpdate({
-    target: user.id,
-    set: {
+  return db.transaction(async (tx) => {
+    await tx.update(user).set({ active: false }).run();
+
+    const existing = await tx.select({ id: user.id }).from(user).where(eq(user.username, data.username)).limit(1);
+
+    if (existing.length > 0) {
+      return tx.update(user).set({
+        ...data,
+        discordId: data.discordConnection?.discordId ?? null,
+        lastDisplayNameChangeTimestamp,
+        active: true,
+      }).where(eq(user.id, existing[0].id)).run();
+    }
+
+    return tx.insert(user).values({
       ...data,
+      tags: data.tags,
+      gameLiftRegionUrls: data.gameLiftRegionUrls,
       discordId: data.discordConnection?.discordId ?? null,
       lastDisplayNameChangeTimestamp,
-    },
-  }).run();
+      rating: null,
+      active: true,
+    }).run();
+  });
 }
 
 export async function updateRating(rating: number) {
