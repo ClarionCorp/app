@@ -12,6 +12,8 @@ import { Dropdown } from "../components/UI/Dropdown";
 import { discordRpc, startRpc, stopRpc, DEFAULT_ACTIVITY } from "../core/utilities/discord";
 import { useTheme } from "../components/UI/Theme/ThemeProvider";
 import { themes } from "../core/styles/theme";
+import { resetDatabase } from "../core/database/driver";
+import { ConfirmModal } from "../components/UI/ConfirmModal";
 
 export type QueuePopType = 'Ai.Mi' | 'Generic';
 
@@ -33,6 +35,7 @@ const DEFAULT_SETTINGS: Settings = {
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
   const [queuePopTypeOpen, setQueuePopTypeOpen] = useState(false);
   const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
   const [themeOpen, setThemeOpen] = useState(false);
@@ -68,6 +71,7 @@ export default function SettingsPage() {
   };
 
   return (
+    <>
     <motion.div
       className="flex flex-col px-4 py-6"
       initial={{ opacity: 0, y: 8 }}
@@ -223,7 +227,7 @@ export default function SettingsPage() {
             title="Reset Database"
             subtitle="Wipes all local data. This cannot be undone."
           >
-            <Button variant="danger" size="sm">Reset</Button>
+            <Button variant="danger" size="sm" onClick={() => setResetModalOpen(true)}>Reset</Button>
           </SettingRow>
 
           <SettingRow
@@ -235,6 +239,16 @@ export default function SettingsPage() {
         </div>
       </div>
     </motion.div>
+
+    <ConfirmModal
+      open={resetModalOpen}
+      title="Reset Local Database"
+      description="This will wipe all local data (incl. match history) and cannot be undone. Are you sure?"
+      confirmLabel="Reset"
+      onConfirm={async () => { setResetModalOpen(false); await resetDatabase(); }}
+      onCancel={() => setResetModalOpen(false)}
+    />
+    </>
   );
 }
 
