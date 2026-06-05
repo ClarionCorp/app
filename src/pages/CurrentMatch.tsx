@@ -11,6 +11,7 @@ import { AbilityCard } from '../components/LiveMatch/AbilityCard';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
+import { getGameStatus } from '../core/objects/gameStates';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -107,7 +108,10 @@ export default function CurrentMatchPage() {
               <div className="flex flex-col lg:flex-row lg:gap-0">
                 <div className="flex-1 min-w-0 space-y-3">
                   {/* always show maps (default state) unless in game */}
-                  {players.length == 0 || session?.queueState !== 'InGame' ? (
+                  {
+                    session?.queueState == 'StartingGame' ||
+                    session?.queueState == 'FoundMatch' ||
+                    (getGameStatus(match?.gameState) !== 'IN_GAME' && getGameStatus(match?.gameState) !== 'SETUP' && getGameStatus(match?.gameState) !== 'STARTING')  ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <MapRotation />
                     </motion.div>

@@ -1,5 +1,5 @@
 local ModName = "GameSessionMod"
-local ModVersion = "1.1.0"
+local ModVersion = "1.1.1"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -8,6 +8,7 @@ print(string.format("[%s] Writing party to: %s", ModName, SESSION_FILE))
 
 local cachedQueueName = nil
 local lastWritten = {}
+local forceWrite = false
 
 pcall(function()
     RegisterHook(
@@ -35,7 +36,7 @@ local function LogPartyState()
     local GameState = FindFirstOf("PMGameState")
     local phase = GameState and GameState:IsValid() and GameState.CurrentMatchPhase or 0
 
-    if phase == 0 or phase == 11 then
+    if phase == 0 or phase == 11 or forceWrite then
         local partySize = 1
         local maxPartySize = 3
         pcall(function()
@@ -84,7 +85,8 @@ local function LogPartyState()
             if lastWritten[k] ~= v then changed = true break end
         end
 
-        if changed then
+        if changed or forceWrite then
+            forceWrite = false
             lastWritten = cur
             local queueStr = effectiveQueue and ('"' .. effectiveQueue .. '"') or "null"
             local f = io.open(SESSION_FILE, "w")
@@ -99,5 +101,10 @@ local function LogPartyState()
     end
     ExecuteWithDelay(1000, LogPartyState)
 end
+
+RegisterKeyBind(Key.F5, function()
+    forceWrite = true
+    print(string.format("[%s] Force refresh triggered", ModName))
+end)
 
 ExecuteWithDelay(3000, LogPartyState)

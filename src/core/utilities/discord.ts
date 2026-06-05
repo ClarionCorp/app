@@ -202,7 +202,7 @@ export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo
     }
     await refreshRating();
     await discordRpc.updateActivity({
-      details: `${currentMatch.queue} - ${mapObject.mapName}`,
+      details: `${session.queueName} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
       ...matchSetupTimestamps,
     });
@@ -216,7 +216,7 @@ export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo
     let largeImg = DRPC_LOGO_KEY;
     if (myPlayer?.charId) { largeImg = removeDevCharPrefix(myPlayer?.charId as string).toLowerCase(); }
     await discordRpc.updateActivity({// cant be null here
-      details: `${currentMatch.queue} - ${mapObject.mapName}`,
+      details: `${session.queueName} - ${mapObject.mapName}`,
       state: formatScore(
         currentMatch.teamOnePts ?? 0,
         currentMatch.teamTwoPts ?? 0,
