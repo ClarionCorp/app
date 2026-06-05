@@ -106,7 +106,12 @@ export default function CurrentMatchPage() {
 
               <div className="flex flex-col lg:flex-row lg:gap-0">
                 <div className="flex-1 min-w-0 space-y-3">
-                  {players.length > 0 && (session?.queueState !== 'Queued' && session?.queueState !== 'FoundMatch') ? (
+                  {/* always show maps (default state) unless in game */}
+                  {players.length == 0 || session?.queueState !== 'InGame' ? (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <MapRotation />
+                    </motion.div>
+                  ) : (
                     <>
                       <div className="space-y-3">
                         {blueTeam.map((player, index) => (
@@ -126,10 +131,6 @@ export default function CurrentMatchPage() {
                         ))}
                       </div>
                     </>
-                  ) : (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                      <MapRotation />
-                    </motion.div>
                   )}
                 </div>
 
