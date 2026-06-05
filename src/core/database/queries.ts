@@ -136,6 +136,10 @@ export async function insertMatchHistory(data: Omit<typeof matchHistory.$inferIn
   return db.insert(matchHistory).values(data).run();
 }
 
+export async function updateMatchHistoryUsername(id: number, username: string) {
+  return db.update(matchHistory).set({ username }).where(eq(matchHistory.id, id)).run();
+}
+
 // Moved here in case we need to add more
 export async function resetLocalTables() {
   console.log('Clearing local tables for next match...');

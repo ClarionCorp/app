@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { getMatchHistory, getUser } from '../core/database/queries'
+import { getMatchHistory, getUser, updateMatchHistoryUsername } from '../core/database/queries'
 import { matchHistory } from '../core/database/schema'
 import { MAPS } from '../core/objects/maps'
 import { QUEUES } from '../core/objects/queues'
@@ -59,25 +59,72 @@ export default function MatchHistoryPage() {
   const [matches, setMatches] = useState<MatchHistoryRow[]>([])
   const [myUsername, setMyUsername] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const pageSize = 25;
 
   const [queueFilter, setQueueFilter] = useState<string | null>(null)
   const [mapFilter, setMapFilter] = useState<string | null>(null)
+  const [usernameFilter, setUsernameFilter] = useState<string | null>(null)
+  const [uniqueUsernames, setUniqueUsernames] = useState<string[]>([])
+
+  const [visibleCount, setVisibleCount] = useState(pageSize)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function load() {
       const [history, user] = await Promise.all([getMatchHistory(), getUser()])
-      setMatches([...history].reverse())
+      const reversed = [...history].reverse()
+
+      if (user) {
+        const updates: Promise<unknown>[] = []
+        for (const m of reversed) {
+          if (m.username === null && m.players.some(p => p.name === user.username)) {
+            m.username = user.username
+            updates.push(updateMatchHistoryUsername(m.id, user.username))
+          }
+        }
+        if (updates.length > 0) await Promise.all(updates)
+      }
+
+      setMatches(reversed)
       setMyUsername(user?.username ?? null)
+
+      const counts = new Map<string, number>()
+      for (const m of reversed) {
+        if (m.username !== null) counts.set(m.username, (counts.get(m.username) ?? 0) + 1)
+      }
+      const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([u]) => u)
+      setUniqueUsernames(sorted)
       setLoading(false)
     }
     load()
   }, [])
 
+  useEffect(() => {
+    setVisibleCount(pageSize)
+  }, [queueFilter, mapFilter, usernameFilter])
+
   const filtered = matches.filter(m => {
     if (queueFilter && m.queue !== queueFilter) return false
     if (mapFilter && m.mapId !== mapFilter) return false
+    if (usernameFilter !== null && m.username !== null && m.username !== usernameFilter) return false
     return true
   })
+
+  const visible = filtered.slice(0, visibleCount)
+  const hasMore = visibleCount < filtered.length
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisibleCount(c => c + pageSize) },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasMore])
+
+  const showUsernameFilter = uniqueUsernames.length > 1
 
   if (loading) {
     return (
@@ -122,6 +169,18 @@ export default function MatchHistoryPage() {
           }))}
         />
 
+        {showUsernameFilter && (
+          <FilterButton
+            label={usernameFilter ?? 'Select Account'}
+            active={usernameFilter !== null}
+            onClear={() => setUsernameFilter(null)}
+            items={uniqueUsernames.map(u => ({
+              label: u,
+              onClick: () => setUsernameFilter(u === usernameFilter ? null : u),
+            }))}
+          />
+        )}
+
         <span className="text-xs text-char-subtle ml-auto">
           {filtered.length} of {matches.length} match{matches.length !== 1 ? 'es' : ''}
         </span>
@@ -133,15 +192,18 @@ export default function MatchHistoryPage() {
           <p className="text-sm text-char-subtle">No matches match the current filters.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map(match => (
-            <IndividualMatch
-              key={match.id}
-              row={match}
-              myUsername={myUsername ?? ''}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-3">
+            {visible.map(match => (
+              <IndividualMatch
+                key={match.id}
+                row={match}
+                myUsername={match.username ?? myUsername ?? ''}
+              />
+            ))}
+          </div>
+          {hasMore && <div ref={sentinelRef} className="h-8" />}
+        </>
       )}
     </div>
   )
