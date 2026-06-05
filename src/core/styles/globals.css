@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant short (@media (max-height: 1080px));
+
 ::-webkit-scrollbar {
   display: none;
 }

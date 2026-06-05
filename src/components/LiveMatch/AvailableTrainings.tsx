@@ -56,7 +56,7 @@ export function AvailableTrainings({ allTrainings, match, players }: Props) {
         Available Awakenings in Rotation ({availableCount})
       </p>
       <div
-        className="flex flex-wrap gap-1"
+        className="flex flex-wrap gap-1 short:gap-0"
         onMouseLeave={() => {
           leaveTimer.current = setTimeout(() => setHoveredId(null), 150); // 150ms delay
         }}

@@ -52,7 +52,7 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
       <button
         onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
         title='Click to open profile on ClarionCorp'
-        className={`relative w-full text-left bg-surface border rounded-xl p-4 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
+        className={`relative w-full text-left bg-surface border rounded-xl px-4 py-4 short:py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
         {/* We need to make sure the game isn't in the setup phase */}
@@ -79,7 +79,7 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
           </div>
 
           {/* Info */}
-          <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex-1 min-w-0 space-y-1.5 short:space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-base font-semibold text-char truncate">
                 {player.username}
