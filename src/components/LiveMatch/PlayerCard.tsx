@@ -95,12 +95,15 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                 {rankInfo.name}
               </span>
               <span
-                className={clsx('shrink-0', playstyleClass ?? 'text-char-secondary')}
-                title={playstyleType ?? `${player.role}`}
+                className={clsx(
+                  'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md shrink-0 border border-current/20 bg-current/5',
+                  playstyleClass ?? 'text-char-secondary'
+                )}
               >
                 {player.role === 'Forward'
-                  ? <SwordIcon size={16} weight="duotone" />
-                  : <ShieldIcon size={16} weight="duotone" />}
+                  ? <SwordIcon size={12} weight="duotone" />
+                  : <ShieldIcon size={12} weight="duotone" />}
+                {(playstyleType ?? player.role)?.replace('Generic ', '')}
               </span>
               {player.charId && (
                 bestChar?.characterId === player.charId
