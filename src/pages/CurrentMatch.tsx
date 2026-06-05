@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { CurrentMatchTable, MatchPlayersTable, SessionTable } from '../types/database';
-import { getCurrentMatch, getGameSession, getMatchPlayers } from '../core/database/queries';
+import { getCurrentMatch, getGameSession, getMatchPlayers, upsertCurrentMatch } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { MapRotation } from '../components/LiveMatch/MapRotation';
@@ -32,7 +32,7 @@ export default function CurrentMatchPage() {
       setLoading(true);
       try {
         const matchDb = await getCurrentMatch();
-        if (!matchDb) throw new Error('No active match found');
+        if (!matchDb) { await upsertCurrentMatch({ gameState: 'None' }) };
         setMatchData(matchDb);
 
         const playersDb = await getMatchPlayers();
