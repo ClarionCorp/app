@@ -25,9 +25,10 @@ export async function fetchUsernameQuery(username: string): Promise<UserQuery | 
     });
 
     const data: QueryJSON = await res.json();
-    if (!res.ok || data.matches.length == 0 || !data.matches[0]?.playerId) { throw new Error(`[UserQuery] API Unreachable or Player not found (${res.status})`) };
+    const match = data.matches.find(m => m.username.toLowerCase() === username.toLowerCase());
+    if (!res.ok || !match?.playerId) { throw new Error(`[UserQuery] API Unreachable or Player not found (${res.status})`) };
 
-    return data.matches[0];
+    return match;
   } catch (error) {
     console.debug(error);
     console.warn(`Player '${username}' returned no data!`);
