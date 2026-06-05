@@ -66,15 +66,24 @@ export async function upsertUser(data: SelfQuery) {
   return db.transaction(async (tx) => {
     await tx.update(user).set({ active: false }).run();
 
-    const existing = await tx.select({ id: user.id }).from(user).where(eq(user.username, data.username)).limit(1);
+    const existing = await tx
+      .select({ id: user.id, username: user.username, nameHistory: user.nameHistory })
+      .from(user)
+      .where(eq(user.playerId, data.playerId))
+      .limit(1);
 
     if (existing.length > 0) {
+      const entry = existing[0];
+      const nameHistory = entry.username !== data.username
+        ? [...entry.nameHistory, entry.username]
+        : entry.nameHistory;
       return tx.update(user).set({
         ...data,
         discordId: data.discordConnection?.discordId ?? null,
         lastDisplayNameChangeTimestamp,
+        nameHistory,
         active: true,
-      }).where(eq(user.id, existing[0].id)).run();
+      }).where(eq(user.id, entry.id)).run();
     }
 
     return tx.insert(user).values({

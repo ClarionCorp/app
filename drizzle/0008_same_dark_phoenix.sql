@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `name_history` text DEFAULT '[]' NOT NULL;

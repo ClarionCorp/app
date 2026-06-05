@@ -33,6 +33,7 @@ export const user = sqliteTable("user", {
   rating: integer("rating"),
   region: text("region"), // grabbed from logs
   active: integer("active", { mode: "boolean" }).notNull().default(false),
+  nameHistory: text("name_history", { mode: "json" }).$type<string[]>().notNull().default([]),
 });
 
 // Only one row that stores basic, refetchable auth tokens
