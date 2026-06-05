@@ -5,6 +5,7 @@ import { getCharName } from "../../core/objects/ody";
 import { ShieldIcon, SwordIcon } from "@phosphor-icons/react";
 import { MatchPlayer } from "../../types/ue4ss";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { getRankFromLP } from "../../core/objects/ranks";
 
 export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; myUsername: string }) {
   return (
@@ -18,11 +19,16 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
           )}
         >
           {/* Character + Username */}
-          <div className="flex items-center gap-2 w-35 shrink-0">
+          <div className="flex items-center gap-2 w-full max-w-1/5 shrink-0">
             <img
               src={`/characters/portrait/${p.characterId}.webp`}
               alt={getCharName(p.characterId) ?? p.characterId}
               className="w-8 h-8 rounded object-cover"
+            />
+            <img
+              src={`${getRankFromLP(p.rating).image}`}
+              alt={getCharName(p.characterId) ?? p.characterId}
+              className="w-6 h-6 object-cover"
             />
             <button
               onClick={() => openUrl(`https://clarioncorp.net/pilot/${p.name}`)}

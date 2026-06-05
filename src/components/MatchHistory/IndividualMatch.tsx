@@ -45,7 +45,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
   const durationDisplay = `${minutes}m ${seconds.toFixed(0)}s`;
   const mapObject = getMapObjectFromID(row.mapId);
 
-  const ratings = row.players.map(p => p.rating).filter((r): r is number => r !== null);
+  const ratings = row.players.map(p => p.rating).filter((r): r is number => r !== null && r !== 0);
   const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
   const avgRankData = avgRating != null ? getRankFromLP(avgRating) : null;
   const score = `${row.myTeam === 1 ? row.t1_sets : row.t2_sets} : ${row.myTeam === 1 ? row.t2_sets : row.t1_sets}`;
