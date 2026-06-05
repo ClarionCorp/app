@@ -28,7 +28,7 @@ export async function saveMatchHistoryEntry(match: MatchHistoryTable) {
       }
     }
   }
-  if (!playerId) { console.warn('PlayerID could not be resolved.'); return; };
+  if (!playerId) { console.warn('PlayerID could not be resolved. Skipping entry...'); return; };
 
   const players: POSTMatchHistoryPlayerV1[] = await Promise.all(
     match.players.map(async (p) => ({
@@ -77,4 +77,37 @@ export async function saveMatchHistoryEntry(match: MatchHistoryTable) {
 
   await db.update(matchHistory).set({ validated: data.validated as boolean }).where(eq(matchHistory.id, match.id)).run();
   return data;
+}
+
+type UploadProgressCallback = (stage: 'preparing' | 'individual' | 'done', percent: number | null, message: string) => void;
+export async function uploadAllMatches(onProgress?: UploadProgressCallback) {
+  try {
+    onProgress?.('preparing', null, 'Fetching match history...');
+
+    const entries = await db.select().from(matchHistory).all();
+    const pending = entries.filter(e => !e.validated);
+
+    if (pending.length === 0) {
+      onProgress?.('done', 100, 'All matches already uploaded.');
+      return;
+    }
+
+    let completed = 0;
+    for (const entry of pending) {
+      onProgress?.('individual', Math.round(10 + (completed / pending.length) * 80), `Uploading match ${completed + 1} of ${pending.length}...`);
+
+      try {
+        await saveMatchHistoryEntry(entry);
+      } catch (e) {
+        console.error(`[Sync] Failed to upload match id: ${entry.id}`, e);
+      }
+
+      completed++;
+    }
+
+    onProgress?.('done', 100, `Uploaded ${completed} of ${pending.length} matches.`);
+  } catch (e) {
+    console.error(`[Sync] Failed to upload matches!`, e);
+    throw e;
+  }
 }

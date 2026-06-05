@@ -17,6 +17,7 @@ import { ConfirmModal } from "../components/UI/ConfirmModal";
 import { ProgressBar } from "../components/UI/ProgressBar";
 import { unInstallUE4SS } from "../core/utilities/ue4ss";
 import { useToast } from "../components/UI/Toast";
+import { uploadAllMatches } from "../core/utilities/appAPI";
 import { exit } from "@tauri-apps/plugin-process";
 
 export type QueuePopType = 'Ai.Mi' | 'Generic';
@@ -41,6 +42,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [uninstallModalOpen, setUninstallModalOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<{ percent: number | null; message: string } | null>(null);
   const [uninstalling, setUninstalling] = useState(false);
   const [uninstallProgress, setUninstallProgress] = useState<{ percent: number | null; message: string } | null>(null);
   const [queuePopTypeOpen, setQueuePopTypeOpen] = useState(false);
@@ -66,6 +69,20 @@ export default function SettingsPage() {
   const update = async (patch: Partial<Settings>) => {
     setSettings(prev => ({ ...prev, ...patch }));
     await upsertAppSettings(patch);
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncProgress({ percent: null, message: 'Starting...' });
+    try {
+      await uploadAllMatches((_stage, percent, message) => {
+        setSyncProgress({ percent, message });
+      });
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'Failed to sync match history.', 'error');
+    }
+    setSyncing(false);
+    setSyncProgress(null);
   };
 
   const handleUninstall = async () => {
@@ -132,15 +149,13 @@ export default function SettingsPage() {
         </SettingRow>
         
         <SettingRow
-          title="Sync Match History"
-          subtitle="Uploads current Match History to the Cloud and downloads all previous games."
+          title="Upload Match History"
+          subtitle="Uploads current Match History to CC to be verified."
         >
-          <Button
-            variant="secondary"
-            size="sm"
-          >
-            Sync
-          </Button>
+          {syncing
+            ? <div className="w-44"><ProgressBar percent={syncProgress?.percent ?? null} message={syncProgress?.message} /></div>
+            : <Button variant="secondary" size="sm" onClick={handleSync}>Upload</Button>
+          }
         </SettingRow>
 
         <SettingRow

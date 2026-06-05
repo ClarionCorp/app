@@ -21,20 +21,11 @@ export function ProgressBar({ percent, message, indeterminateLabel = 'This may t
       )}
 
       <div className="h-1.5 rounded-full bg-background-border overflow-hidden">
-        {isIndeterminate ? (
-          <motion.div
-            className="h-full w-1/3 rounded-full bg-primary"
-            animate={{ x: ['−100%', '400%'] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        ) : (
-          <motion.div
-            className="h-full rounded-full bg-primary"
-            initial={{ width: '0%' }}
-            animate={{ width: `${percent}%` }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-          />
-        )}
+        <motion.div
+          className="h-full rounded-full bg-primary"
+          animate={{ width: `${percent ?? 0}%` }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        />
       </div>
 
       {isIndeterminate && indeterminateLabel && (
