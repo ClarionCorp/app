@@ -2,19 +2,26 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { getCurrentMatch, getUser } from '../../core/database/queries';
 import { AiMiAPI, StatusUrl } from '../../core/constants';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { OnlinePlayersV1 } from '../../types/appAPI';
 
 // Add back dynamic coloring when app gets bigger.
 // const onlineColor = (n: number) => n >= 100 ? 'text-green-400' : n >= 50 ? 'text-yellow-400' : 'text-red-400';
 
 async function fetchOnlineCount(username: string, gameState: string, region: string | null): Promise<number> {
+  console.debug(`Fetching online player count...`);
   const res = await fetch(`${AiMiAPI}/v1/online`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-agent': 'aimi-app',
+    },
     body: JSON.stringify({ username, gameState, region }),
   });
   if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, gameState }, null, 0)) };
-  const data = await res.json() as { online: number };
-  return data.online;
+  const data = await res.json() as OnlinePlayersV1;
+  console.debug(`Receieved online players: ${JSON.stringify(data, null, 1)}`);
+  return data.total;
 }
 
 interface Incident {
@@ -138,10 +145,15 @@ export default function TopBar() {
                   </p>
                 </>
               ) : (
-                <div className="flex items-center gap-2">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400" />
-                  <p className="text-xs text-green-400">All systems operational.</p>
-                </div>
+                <>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400" />
+                      <p className="text-xs text-emerald-400">All systems operational.</p>
+                    </div>
+                      <p className="text-xs text-char-subtle mb-2 break-all">Automatically pulls from <a onClick={() => openUrl(`${StatusUrl}/status/aimiapp`)}  className='cursor-pointer hover:underline'>{StatusUrl}</a></p>
+                  </div>
+                </>
               )}
             </motion.div>
           )}
