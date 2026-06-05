@@ -209,6 +209,10 @@ export async function resetSessionTable() {
   await db.insert(sessionInfo).values({ id: 1 });
 }
 
+export async function updateGameState(state: string) {
+  await db.update(currentMatch).set({ gameState: state});
+}
+
 // 
 // Helpers
 // 
