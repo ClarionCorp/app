@@ -9,14 +9,15 @@ import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCu
 import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
-import { currentMatch, matchPlayers } from './core/database/schema';
+import { currentMatch, matchHistory, matchPlayers } from './core/database/schema';
 import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
 import { fetchPlayerPlayerstyle } from './core/utilities/clarion';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
+import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -41,11 +42,17 @@ function App() {
   // Debug Page
   useEffect(() => {
     const onKey = async (e: KeyboardEvent) => {
-      if (e.key === 'F9') navigate('/debug');
       if (e.key === 'F8') {
         const setting = await getAppSettings();
         await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
       };
+      // Upload & Validate last match history entry
+      if (e.ctrlKey && e.key === 'F9') {
+        const lastEntry = await db.select().from(matchHistory).orderBy(desc(matchHistory.id)).limit(1).then(r => r[0] ?? null);
+        console.debug(`Uploading entry:`, JSON.stringify(lastEntry, null, 1));
+        await saveMatchHistoryEntry(lastEntry);
+      }
+      if (e.key === 'F9') navigate('/debug');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

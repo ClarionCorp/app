@@ -63,6 +63,7 @@ export type PostGameStatsJSON = [{
 
 export type MatchPlayer = {
   name: string, // username
+  playerId: string | null, // should really never be null tbh
   rating: number | null,
   characterId: string,
   level: number,
