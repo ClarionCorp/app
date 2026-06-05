@@ -1,0 +1,1 @@
+ALTER TABLE `matchHistory` ADD `validated` integer DEFAULT false NOT NULL;

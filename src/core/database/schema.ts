@@ -97,6 +97,8 @@ export const matchHistory = sqliteTable("matchHistory", {
   myTeam: integer("myTeam").notNull(), // just easier than pathing thru players
   wonGame: integer("wonGame", { mode: "boolean" }).notNull(),
 
+  validated: integer("validated", { mode: "boolean" }).notNull().default(false), // skips checking if already validated
+
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 
