@@ -184,7 +184,7 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
   }
 
   const ranked = stats.playerStats.find(ps => ps.ratingName === 'RankedInitial');
-  const norm = stats.playerStats.find(ps => ps.ratingName !== 'RankedInitial');
+  const norm = stats.playerStats.find(ps => ps.ratingName === 'NormalInitial');
 
   const rankedGames = ranked ? ranked.roleStats.Forward.games + ranked.roleStats.Goalie.games : 0;
   const rankedWins = ranked ? ranked.roleStats.Forward.wins + ranked.roleStats.Goalie.wins : 0;
