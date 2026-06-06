@@ -8,7 +8,6 @@ import { fetch } from "@tauri-apps/plugin-http";
 
 const ue4ssRelativePaths = [
   'OmegaStrikers/Binaries/Win64/Mods',
-  'OmegaStrikers/Binaries/Win64/imgui.ini',
   'OmegaStrikers/Binaries/Win64/UE4SS.dll',
   'OmegaStrikers/Binaries/Win64/UE4SS-settings.ini',
   'OmegaStrikers/Binaries/Win64/dwmapi.dll',
