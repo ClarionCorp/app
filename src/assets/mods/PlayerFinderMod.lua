@@ -1,5 +1,5 @@
 local ModName = "PlayerFinderMod"
-local ModVersion = "1.1.0"
+local ModVersion = "1.2.0"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -7,6 +7,7 @@ local PLAYERS_FILE = os.getenv("TEMP") .. "\\ue4ss_players.json"
 print(string.format("[%s] Writing players to: %s", ModName, PLAYERS_FILE))
 
 local LastSnapshot = ""
+local TrackedStates = {}
 
 local function GetCharacter(ps)
     local cd = ps.ChosenCharacterData
@@ -34,14 +35,17 @@ local function GetTrainings(ps)
 end
 
 local function PollPlayers()
-    local states = FindAllOf("PMPlayerState")
-    if not states then
-        ExecuteWithDelay(3000, PollPlayers)
-        return
+    -- Prune stale references (disconnected players)
+    local valid = {}
+    for _, ps in ipairs(TrackedStates) do
+        if ps and ps:IsValid() then
+            table.insert(valid, ps)
+        end
     end
+    TrackedStates = valid
 
     local players = {}
-    for _, ps in ipairs(states) do
+    for _, ps in ipairs(TrackedStates) do
         if ps and ps:IsValid() then
             local ok, entry = pcall(function()
                 local name = ps.PMDisplayName:ToString()
@@ -114,4 +118,23 @@ RegisterKeyBind(Key.F5, function()
     print(string.format("[%s] Force refresh triggered", ModName))
 end)
 
-ExecuteWithDelay(3000, PollPlayers)
+-- Cache PlayerState refs as they're created so PollPlayers never needs FindAllOf
+NotifyOnNewObject("/Script/Prometheus.PMPlayerState", function(ps)
+    if ps and ps:IsValid() then
+        table.insert(TrackedStates, ps)
+        print(string.format("[%s] New PMPlayerState detected (total tracked: %d)", ModName, #TrackedStates))
+    end
+end)
+
+-- Seed cache with any states that already exist (mod loaded mid-game), then start loop
+ExecuteWithDelay(1000, function()
+    local existing = FindAllOf("PMPlayerState")
+    if existing then
+        for _, ps in ipairs(existing) do
+            if ps and ps:IsValid() then
+                table.insert(TrackedStates, ps)
+            end
+        end
+    end
+    PollPlayers()
+end)
