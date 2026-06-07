@@ -1,11 +1,12 @@
 
 local ModName = "PostGameStatsMod"
-local ModVersion = "3.0.0"
+local ModVersion = "3.1.0"
 
 print(string.format("\n=== %s v%s Loaded ===", ModName, ModVersion))
 print("[PGSM] Output -> " .. os.getenv("TEMP") .. "\\PostGameStats.json")
 
 local hookRegistered = false
+local lastWriteTime = 0
 
 local function fname(v)
     if not v then return "" end
@@ -96,7 +97,19 @@ local function writeStats(players)
     local rows = {}
     for _, p in ipairs(players) do
         table.insert(rows, string.format(
-            '  {"id":"%s","name":"%s","team":"%s","goals":%d,"assists":%d,"saves":%d,"kos":%d,"redirects":%d,"damage":%d,"shots":%d,"orbs":%d}',
+            '  {\n' ..
+            '    "id": "%s",\n' ..
+            '    "name": "%s",\n' ..
+            '    "team": "%s",\n' ..
+            '    "goals": %d,\n' ..
+            '    "assists": %d,\n' ..
+            '    "saves": %d,\n' ..
+            '    "kos": %d,\n' ..
+            '    "redirects": %d,\n' ..
+            '    "damage": %d,\n' ..
+            '    "shots": %d,\n' ..
+            '    "orbs": %d\n' ..
+            '  }',
             p.id, p.name:gsub('"', '\\"'), p.team,
             p.goals, p.assists, p.saves, p.kos, p.redirects, p.damage, p.shots, p.orbs
         ))
@@ -118,9 +131,16 @@ local function tryRegisterHook()
 
     local ok = pcall(function()
         RegisterHook(
-            "/Game/Prometheus/Blueprints/Core/GameState_Game.GameState_Game_C:MatchSummary",
+            "/Script/Prometheus.PMGameStateBase:MatchCompleted_Multicast",
             function(self, MatchEventLogParam)
-                print("\n[PGSM] MatchSummary fired! Collecting from event log...")
+                local now = os.time()
+                if now - lastWriteTime < 5 then
+                    print("[PGSM] Duplicate fire ignored (within 5s cooldown)")
+                    return
+                end
+                lastWriteTime = now
+
+                print("\n[PGSM] MatchCompleted fired! Collecting from event log...")
 
                 local ok, log = pcall(function() return MatchEventLogParam:get() end)
                 if not ok or not log then
