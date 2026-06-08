@@ -14,16 +14,42 @@ The goal is to provide you with additional insight into your game. Though keep i
 
 The live match summary will automatically fetch the Name, Character, Rating, Rank, and WinRate of every player in the game. It will also show what awakenings are currently in rotation, and which ones have already been selected or shown.
 
+<!-- Add updated preview image later -->
 
 ## 📃 Instant Match History
 The app will automatically save completed games and be viewable completely in-app. This process only takes a couple of seconds after a match has finalized, and is much more detailed than its online counterparts.
 
-<!-- Add comparison graph here at some point -->
+|               | **Ai.Mi App** | **[ClarionCorp](https://clarioncorp.net/)** | **[Omega Stats](https://stats.omegastrikers.gg/)** |
+| ------------- | ------------- | ------------------------------------------- | -------------------------------------------------- |
+| Map           | ✅             | ✅                                           | ✅                                                  |
+| Duration      | ✅             | ✅                                           | ✅                                                  |
+| Average Rank  | ✅             | ✅                                           | ✅                                                  |
+| Bans          | ⏳             | ✅                                           | ✅                                                  |
+|               |               |                                             |                                                    |
+| Character     | ✅             | ✅                                           | ✅                                                  |
+| Rank          | ✅             | ❌                                           | ❌                                                  |
+| Username      | ✅             | ✅                                           | ❌                                                  |
+|               |               |                                             |                                                    |
+| Role          | ✅             | ✅                                           | ✅                                                  |
+| MVP           | ❌             | ✅                                           | ✅                                                  |
+| Level         | ✅             | ✅                                           | ✅                                                  |
+| Scores        | ✅             | ✅                                           | ✅                                                  |
+| Assists       | ✅             | ✅                                           | ✅                                                  |
+| Saves         | ✅             | ✅                                           | ✅                                                  |
+| Knockouts     | ✅             | ✅                                           | ✅                                                  |
+| Damage        | ✅             | ❌                                           | ❌                                                  |
+| Shots         | ✅             | ❌                                           | ❌                                                  |
+| Redirects     | ✅             | ❌                                           | ❌                                                  |
+| Orbs          | ✅             | ❌                                           | ❌                                                  |
+| Starting Gear | ✅             | ✅                                           | ✅                                                  |
+| Awakenings    | ✅             | ✅                                           | ✅                                                  |
+|               |               |                                             |                                                    |
+| All Gamemodes | ✅             | ❌                                           | ❌                                                  |
 
 ## 🗣️ Discord Rich Presence
 The default OS Rich Presence kind of sucks. Just says you're playing OS and for how long. Our custom Rich Presence is fully dynamic based on what you are doing. Whether it's queuing, playing (live score!), or just sitting in the lobby, your friends on discord will be updated on it!
 
-<!-- Add some preview images here at some point -->
+![Discord RPC](https://clarioncorp.net/i/app/Discord-RPC.png)
 
 ## 👥 Online Player Counter
 Everyone using the app will have their gamestate periodically sent to the Ai.Mi API. This way, we can show a counter inside the app for how many people are currently playing. 😃
