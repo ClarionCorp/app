@@ -4,7 +4,7 @@ import { matchHistory } from '../core/database/schema'
 import { MAPS } from '../core/objects/maps'
 import { QUEUES } from '../core/objects/queues'
 import { Dropdown, type DropdownItem } from '../components/UI/Dropdown'
-import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
+import { CaretDownIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react'
 import IndividualMatch from '../components/MatchHistory/IndividualMatch'
 
 type MatchHistoryRow = typeof matchHistory.$inferSelect
@@ -63,9 +63,10 @@ export default function MatchHistoryPage() {
 
   const [queueFilter, setQueueFilter] = useState<string | null>(null)
   const [mapFilter, setMapFilter] = useState<string | null>(null)
-  const [usernameFilter, setUsernameFilter] = useState<string | null>(null)
+  const [accountFilter, setAccountFilter] = useState<string | null>(null)
   const [uniqueUsernames, setUniqueUsernames] = useState<string[]>([])
 
+  const [playerSearch, setPlayerSearch] = useState('')
   const [visibleCount, setVisibleCount] = useState(pageSize)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
@@ -101,12 +102,13 @@ export default function MatchHistoryPage() {
 
   useEffect(() => {
     setVisibleCount(pageSize)
-  }, [queueFilter, mapFilter, usernameFilter])
+  }, [queueFilter, mapFilter, accountFilter, playerSearch])
 
   const filtered = matches.filter(m => {
     if (queueFilter && m.queue !== queueFilter) return false
     if (mapFilter && m.mapId !== mapFilter) return false
-    if (usernameFilter !== null && m.username !== null && m.username !== usernameFilter) return false
+    if (accountFilter !== null && m.username !== null && m.username !== accountFilter) return false
+    if (playerSearch && !m.players.some(p => p.name.toLowerCase().includes(playerSearch.toLowerCase()))) return false
     return true
   })
 
@@ -124,7 +126,7 @@ export default function MatchHistoryPage() {
     return () => observer.disconnect()
   }, [hasMore])
 
-  const showUsernameFilter = uniqueUsernames.length > 1
+  const showAccountFilter = uniqueUsernames.length > 1
 
   if (loading) {
     return (
@@ -146,7 +148,7 @@ export default function MatchHistoryPage() {
   return (
     <div className="px-6 py-5 max-w-5xl mx-auto">
       {/* Filter bar */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="relative flex items-center gap-2 mb-4">
         <FilterButton
           label={QUEUES.find(q => q.queueName === queueFilter)?.queueName ?? 'All Queues'}
           active={queueFilter !== null}
@@ -169,23 +171,41 @@ export default function MatchHistoryPage() {
           }))}
         />
 
-        {showUsernameFilter && (
+        {showAccountFilter && (
           <FilterButton
-            label={usernameFilter ?? 'Select Account'}
-            active={usernameFilter !== null}
-            onClear={() => setUsernameFilter(null)}
+            label={accountFilter ?? 'Select Account'}
+            active={accountFilter !== null}
+            onClear={() => setAccountFilter(null)}
             items={uniqueUsernames.map(u => ({
               label: u,
-              onClick: () => setUsernameFilter(u === usernameFilter ? null : u),
+              onClick: () => setAccountFilter(u === accountFilter ? null : u),
             }))}
           />
         )}
 
-        <span className="text-xs text-char-subtle ml-auto">
+        <span className="absolute left-1/2 -translate-x-1/2 text-xs text-char-subtle pointer-events-none">
           {filtered.length} of {matches.length} match{matches.length !== 1 ? 'es' : ''}
         </span>
-      </div>
 
+        <div className="relative ml-auto">
+          <MagnifyingGlassIcon size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-char-subtle pointer-events-none" />
+          <input
+            type="text"
+            value={playerSearch}
+            onChange={e => setPlayerSearch(e.target.value)}
+            placeholder="Search players..."
+            className="pl-7 pr-7 py-1.5 text-xs rounded-lg border border-background-border bg-transparent text-char placeholder:text-char-subtle focus:outline-none focus:border-primary/40 w-44"
+          />
+          {playerSearch && (
+            <button
+              onClick={() => setPlayerSearch('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-char-subtle hover:text-char transition-colors cursor-pointer"
+            >
+              <XIcon size={12} />
+            </button>
+          )}
+        </div>
+      </div>
       {/* Match list */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-40 gap-2">
