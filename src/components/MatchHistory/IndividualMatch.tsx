@@ -93,7 +93,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
             {/* Role */}
             <div className="flex flex-col items-center gap-1 shrink-0">
               <span className="text-[10px] text-char-subtle">Role</span>
-              <span className="text-xs font-semibold">{myPlayer.role}</span>
+              <span className="text-xs font-semibold text-char">{myPlayer.role}</span>
             </div>
 
             {/* Key stats */}
@@ -102,22 +102,22 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
                 <>
                   <div className="flex flex-col items-center">
                     <span className="text-char-subtle">Goals</span>
-                    <span className="font-semibold">{myPlayer.goals}</span>
+                    <span className="font-semibold text-char">{myPlayer.goals}</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="text-char-subtle">KOs</span>
-                    <span className="font-semibold">{myPlayer.kos}</span>
+                    <span className="font-semibold text-char">{myPlayer.kos}</span>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex flex-col items-center">
                     <span className="text-char-subtle">Saves</span>
-                    <span className="font-semibold">{myPlayer.saves}</span>
+                    <span className="font-semibold text-char">{myPlayer.saves}</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="text-char-subtle">Assists</span>
-                    <span className="font-semibold">{myPlayer.assists}</span>
+                    <span className="font-semibold text-char">{myPlayer.assists}</span>
                   </div>
                 </>
               )}
@@ -129,13 +129,13 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
             {/* Map */}
             <div className="flex flex-col items-center gap-1">
               <span className="text-[10px] text-char-subtle">Map</span>
-              <span className="font-semibold">{mapObject.mapName}</span>
+              <span className="font-semibold text-char">{mapObject.mapName}</span>
             </div>
 
             {/* Duration */}
             <div className="hidden sm:flex flex-col items-center gap-1">
               <span className="text-[10px] text-char-subtle">Duration</span>
-              <span className="font-semibold">{durationDisplay}</span>
+              <span className="font-semibold text-char">{durationDisplay}</span>
             </div>
 
             {/* Avg Rank */}
@@ -147,7 +147,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
                     className="w-4 h-4 bg-contain bg-center bg-no-repeat shrink-0"
                     style={{ backgroundImage: `url('${avgRankData.image}')` }}
                   />
-                  <span className="font-semibold">{avgRankData.name}</span>
+                  <span className="font-semibold text-char">{avgRankData.name}</span>
                 </div>
               </div>
             )}

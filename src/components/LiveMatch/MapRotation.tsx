@@ -40,14 +40,14 @@ export function MapRotation() {
               variants={{ hidden: { opacity: 0, scale: 0.92 }, show: { opacity: 1, scale: 1, transition: { duration: 0.2 } } }}
               className="flex flex-col gap-1.5 rounded-lg p-2 bg-surface hover:bg-surface-overlay transition-colors duration-200"
             >
-              <div className="w-full aspect-video overflow-hidden rounded-md bg-background-border">
+              <div className="w-full aspect-video overflow-hidden rounded-md bg-background-border border-surface-border border shadow-md">
                 <img
                   src={map.imageUrl}
                   alt={map.name}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <span className="text-xs font-medium text-zinc-400 truncate leading-tight text-center">
+              <span className="text-xs font-medium text-char-subtle truncate leading-tight text-center">
                 {map.name}
               </span>
             </motion.div>
