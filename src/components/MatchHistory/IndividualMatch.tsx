@@ -167,7 +167,12 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
           >
             {/* Header */}
             <div className="px-4 py-2 bg-surface-raised/20 flex items-center justify-between text-xs">
-              <span className="text-char-subtle">{getQueueName(row.queue)} ({score})</span>
+              <span className="flex items-baseline gap-2">
+                <span className="text-char-subtle">{getQueueName(row.queue)} ({score})</span>
+                {row.validated && (
+                  <span className="text-[10px] text-match-win/70 font-medium">Validated with CC</span>
+                )}
+              </span>
               <span className="text-char-subtle">Played {formatRelativeTime(row.createdAt)}</span>
             </div>
 
