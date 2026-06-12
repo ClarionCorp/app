@@ -1,6 +1,6 @@
 
 local ModName = "PostGameStatsMod"
-local ModVersion = "3.1.0"
+local ModVersion = "3.1.1"
 
 print(string.format("\n=== %s v%s Loaded ===", ModName, ModVersion))
 print("[PGSM] Output -> " .. os.getenv("TEMP") .. "\\PostGameStats.json")
@@ -49,7 +49,8 @@ local function collectStats(log)
     pcall(function()
         for i = 1, #log.GoalsScored do
             local ev = log.GoalsScored[i]
-            local s = get(fname(ev.InstigatingPlayerId))
+            local scorerId = (ev.bHasCreditedPlayer and fname(ev.CreditedPlayerId) ~= "") and fname(ev.CreditedPlayerId) or fname(ev.InstigatingPlayerId)
+            local s = get(scorerId)
             if s then s.goals = s.goals + 1 end
             pcall(function()
                 for j = 1, #ev.AssistingPlayerIds do
