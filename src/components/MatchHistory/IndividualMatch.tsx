@@ -171,7 +171,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
             className="border-t border-background-border overflow-hidden"
           >
             {/* Header */}
-            <div className="px-4 py-2 bg-surface-raised/20 grid grid-cols-3 items-center text-xs">
+            <div className="px-4 py-2 bg-surface-raised/10 grid grid-cols-3 items-center text-xs">
               {/* Bans */}
               <div className="flex items-center gap-2">
                 {row.bans.map(id => (
@@ -216,7 +216,14 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
                 </span>
               </div>
 
-              <span className="text-char-subtle text-right">Played {formatRelativeTime(row.createdAt)}</span>
+              <div className="flex flex-col items-end gap-0.5">
+                <span className="text-char-subtle">Played {formatRelativeTime(row.createdAt)}</span>
+                <span className="text-char-subtle/75 text-[10px]">
+                  {row.createdAt.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  {' @ '}
+                  {row.createdAt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                </span>
+              </div>
             </div>
 
             {/* My team */}
