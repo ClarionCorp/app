@@ -18,12 +18,13 @@ function formatRelativeTime(date: Date): string {
   return date.toLocaleDateString()
 }
 
-export default function IndividualMatch({ row, myUsername }: { row: MatchHistoryTable; myUsername: string }) {
+export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistoryTable; myPlayerId: string | null }) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const myPlayer = row.players.find(p => p.name === myUsername)
+  const myPlayer = row.players.find(p => p.playerId === myPlayerId)
   if (!myPlayer) return null
 
+  const myUsername = myPlayer.name
   const myTeamPlayers = row.players
     .filter(p => p.team === row.myTeam)
     .sort((a, b) => {

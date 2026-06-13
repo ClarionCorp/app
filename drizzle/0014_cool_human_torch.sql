@@ -1,0 +1,1 @@
+ALTER TABLE `matchHistory` RENAME COLUMN "username" TO "playerId";

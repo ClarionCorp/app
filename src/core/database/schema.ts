@@ -94,7 +94,7 @@ export const matchHistory = sqliteTable("matchHistory", {
   duration: integer("duration").notNull(),
   queue: text("queue").notNull(),
   bans: text("bans", { mode: "json" }).$type<string[]>().notNull().default([]),
-  username: text("username"), // null will just show regardless of username filter
+  playerId: text("playerId"), // null will just show regardless of filter
 
   players: text("players", { mode: 'json' }).$type<MatchPlayer[]>().notNull().default([]),
 

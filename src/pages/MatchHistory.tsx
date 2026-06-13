@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { getMatchHistory, getUser, updateMatchHistoryUsername } from '../core/database/queries'
+import { getMatchHistory, getUsers } from '../core/database/queries'
 import { matchHistory } from '../core/database/schema'
+import { UserTable } from '../types/database'
 import { MAPS } from '../core/objects/maps'
 import { QUEUES } from '../core/objects/queues'
 import { Dropdown, type DropdownItem } from '../components/UI/Dropdown'
@@ -57,14 +58,13 @@ function FilterButton({
 
 export default function MatchHistoryPage() {
   const [matches, setMatches] = useState<MatchHistoryRow[]>([])
-  const [myUsername, setMyUsername] = useState<string | null>(null)
+  const [users, setUsers] = useState<UserTable[]>([])
   const [loading, setLoading] = useState(true)
   const pageSize = 25;
 
   const [queueFilter, setQueueFilter] = useState<string | null>(null)
   const [mapFilter, setMapFilter] = useState<string | null>(null)
   const [accountFilter, setAccountFilter] = useState<string | null>(null)
-  const [uniqueUsernames, setUniqueUsernames] = useState<string[]>([])
 
   const [playerSearch, setPlayerSearch] = useState('')
   const [visibleCount, setVisibleCount] = useState(pageSize)
@@ -72,29 +72,9 @@ export default function MatchHistoryPage() {
 
   useEffect(() => {
     async function load() {
-      const [history, user] = await Promise.all([getMatchHistory(), getUser()])
-      const reversed = [...history].reverse()
-
-      if (user) {
-        const updates: Promise<unknown>[] = []
-        for (const m of reversed) {
-          if (m.username === null && m.players.some(p => p.name === user.username)) {
-            m.username = user.username
-            updates.push(updateMatchHistoryUsername(m.id, user.username))
-          }
-        }
-        if (updates.length > 0) await Promise.all(updates)
-      }
-
-      setMatches(reversed)
-      setMyUsername(user?.username ?? null)
-
-      const counts = new Map<string, number>()
-      for (const m of reversed) {
-        if (m.username !== null) counts.set(m.username, (counts.get(m.username) ?? 0) + 1)
-      }
-      const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([u]) => u)
-      setUniqueUsernames(sorted)
+      const [history, allUsers] = await Promise.all([getMatchHistory(), getUsers()])
+      setMatches([...history].reverse())
+      setUsers([...allUsers].sort((a, b) => (a.active === b.active ? 0 : a.active ? -1 : 1)))
       setLoading(false)
     }
     load()
@@ -107,7 +87,7 @@ export default function MatchHistoryPage() {
   const filtered = matches.filter(m => {
     if (queueFilter && m.queue !== queueFilter) return false
     if (mapFilter && m.mapId !== mapFilter) return false
-    if (accountFilter !== null && m.username !== null && m.username !== accountFilter) return false
+    if (accountFilter !== null && m.playerId !== accountFilter) return false
     if (playerSearch && !m.players.some(p => p.name.toLowerCase().includes(playerSearch.toLowerCase()))) return false
     return true
   })
@@ -126,7 +106,8 @@ export default function MatchHistoryPage() {
     return () => observer.disconnect()
   }, [hasMore])
 
-  const showAccountFilter = uniqueUsernames.length > 1
+  const showAccountFilter = users.length > 1
+  const selectedUser = users.find(u => u.playerId === accountFilter)
 
   if (loading) {
     return (
@@ -148,7 +129,7 @@ export default function MatchHistoryPage() {
   return (
     <div className="px-6 py-5 max-w-5xl mx-auto">
       {/* Filter bar */}
-      <div className="relative flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4">
         <FilterButton
           label={QUEUES.find(q => q.queueName === queueFilter)?.queueName ?? 'All Queues'}
           active={queueFilter !== null}
@@ -173,21 +154,21 @@ export default function MatchHistoryPage() {
 
         {showAccountFilter && (
           <FilterButton
-            label={accountFilter ?? 'Select Account'}
+            label={selectedUser?.username ?? 'All Accounts'}
             active={accountFilter !== null}
             onClear={() => setAccountFilter(null)}
-            items={uniqueUsernames.map(u => ({
-              label: u,
-              onClick: () => setAccountFilter(u === accountFilter ? null : u),
+            items={users.map(u => ({
+              label: u.username,
+              onClick: () => setAccountFilter(u.playerId === accountFilter ? null : u.playerId),
             }))}
           />
         )}
 
-        <span className="absolute left-1/2 -translate-x-1/2 text-xs text-char-subtle pointer-events-none">
+        <span className="ml-auto text-xs text-char-subtle whitespace-nowrap">
           {filtered.length} of {matches.length} match{matches.length !== 1 ? 'es' : ''}
         </span>
 
-        <div className="relative ml-auto">
+        <div className="relative">
           <MagnifyingGlassIcon size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-char-subtle pointer-events-none" />
           <input
             type="text"
@@ -218,7 +199,7 @@ export default function MatchHistoryPage() {
               <IndividualMatch
                 key={match.id}
                 row={match}
-                myUsername={match.username ?? myUsername ?? ''}
+                myPlayerId={match.playerId}
               />
             ))}
           </div>

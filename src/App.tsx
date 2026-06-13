@@ -184,7 +184,7 @@ function App() {
           mapId: match.map ?? '',
           duration: diffSeconds(match.startedAt!, new Date()),
           queue: match.queue ?? 'queue:none',
-          username: myPlayer.name,
+          playerId: myPlayer.playerId,
           myTeam,
           bans: match.bans,
           t1_pts: match.teamOnePts ?? 0,
