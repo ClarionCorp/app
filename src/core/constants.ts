@@ -13,3 +13,6 @@ export const windows_identity = 'AppData/Local/OmegaStrikers/identity.json';
 
 // Log File Path (after user home folder)
 export const windows_log = 'AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log';
+
+// How often to heartbeat-check that the active identity hasn't changed (ms)
+export const heartbeat_interval = 300_000;
