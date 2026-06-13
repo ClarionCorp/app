@@ -10,7 +10,7 @@ import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, Po
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { currentMatch, matchHistory, matchPlayers } from './core/database/schema';
-import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
+import { fetchPlayerStats, fetchRankQuery, fetchSelfQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
@@ -18,6 +18,8 @@ import { QueuePopType } from './pages/Settings';
 import { fetchPlayerPlayerstyle } from './core/utilities/clarion';
 import { desc, eq } from 'drizzle-orm';
 import { saveMatchHistoryEntry } from './core/utilities/appAPI';
+import { relaunch } from '@tauri-apps/plugin-process';
+import { heartbeat_interval } from './core/constants';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -56,6 +58,26 @@ function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Identity heartbeat: Relaunch if the active Odyssey account changes
+  useEffect(() => {
+    let firstFire = true;
+    const id = setInterval(async () => {
+      if (firstFire) { firstFire = false; return; }
+      try {
+        console.log('Checking in with Odyssey for routine heartbeat...');
+        const [selfQuery, currentUser] = await Promise.all([fetchSelfQuery(), getUser()]);
+        if (!currentUser) return;
+        if (selfQuery.username !== currentUser.username || selfQuery.playerId !== currentUser.playerId) {
+          console.error('User identity mismatch detected, relaunching...');
+          await relaunch();
+        }
+      } catch {
+        // game may not be running, just skip silently
+      }
+    }, heartbeat_interval);
+    return () => clearInterval(id);
   }, []);
 
   // Rust Mod Bridge Listeners

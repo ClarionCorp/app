@@ -96,8 +96,9 @@ export async function fetchSelfQuery(): Promise<SelfQuery> {
     );
   }
 
-  console.debug('Successfully fetched user data from Odyssey!');
-  return res.json() as Promise<SelfQuery>;
+  const data = await res.json() as SelfQuery;
+  console.debug(`Successfully fetched user data from Odyssey! (${data.username})`);
+  return data;
 }
 
 // refetches and saves the user's current ody rating to the database
