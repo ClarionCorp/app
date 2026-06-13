@@ -187,6 +187,8 @@ function App() {
           username: myPlayer.name,
           myTeam,
           bans: match.bans,
+          t1_pts: match.teamOnePts ?? 0,
+          t2_pts: match.teamTwoPts ?? 0,
           t1_sets: match.teamOneSets ?? 0,
           t2_sets: match.teamTwoSets ?? 0,
           wonGame: myScore > enemyScore,

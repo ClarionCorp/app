@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getCharName, getQueueName } from '../../core/objects/ody'
-import { CheckCircleIcon, CheckIcon } from '@phosphor-icons/react'
+import { CheckIcon } from '@phosphor-icons/react'
 import { getRankFromLP } from '../../core/objects/ranks'
 import clsx from 'clsx'
 import { TeamListing } from './TeamListing'
@@ -49,7 +49,10 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
   const ratings = row.players.map(p => p.rating).filter((r): r is number => r !== null && r !== 0);
   const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
   const avgRankData = avgRating != null ? getRankFromLP(avgRating) : null;
-  const score = `${row.myTeam === 1 ? row.t1_sets : row.t2_sets} : ${row.myTeam === 1 ? row.t2_sets : row.t1_sets}`;
+  const myPts = row.myTeam === 1 ? row.t1_pts : row.t2_pts;
+  const enemyPts = row.myTeam === 1 ? row.t2_pts : row.t1_pts;
+  const mySets = row.myTeam === 1 ? row.t1_sets : row.t2_sets;
+  const enemySets = row.myTeam === 1 ? row.t2_sets : row.t1_sets;
 
   return (
     <div
@@ -189,15 +192,31 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
                 )}
               </div>
 
-              {/* Score + Queue */}
-              <div className="flex flex-col items-center">
-                <span className="text-base font-bold text-char leading-tight">{score}</span>
+              {/* Score */}
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="flex items-center gap-2">
+                  {/* My team set ticks (blue) */}
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className={`w-1.5 h-3.5 rounded-sm -skew-x-6 ${i >= 3 - mySets ? 'bg-match-ally' : 'bg-match-ally/20'}`} />
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-lg font-bold text-match-ally leading-none">{myPts}</span>
+                    <span className="text-char-subtle/60 text-sm leading-none">|</span>
+                    <span className="text-lg font-bold text-match-enemy leading-none">{enemyPts}</span>
+                  </div>
+                  {/* Enemy set ticks (red) */}
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className={`w-1.5 h-3.5 rounded-sm -skew-x-6 ${i < enemySets ? 'bg-match-enemy' : 'bg-match-enemy/20'}`} />
+                    ))}
+                  </div>
+                </div>
                 <span className="flex items-center gap-1 text-[10px] text-char-subtle">
                   {getQueueName(row.queue)}
                   {row.validated && (
-                    <div className="text-match-win/70" title='Validated with CC'>
-                      <CheckIcon size={10} weight="duotone"/>
-                    </div>
+                    <span title="Validated with CC"><CheckIcon size={10} weight="bold" className="text-match-win/70" /></span>
                   )}
                 </span>
               </div>

@@ -182,6 +182,16 @@ export default function DebugPage() {
             <SectionHeader title="Match Colors" />
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-match-ally shrink-0" />
+                <span className="text-xs text-match-ally font-medium">My Team</span>
+                <span className="text-xs text-char-subtle ml-auto font-mono">match-ally</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-match-enemy shrink-0" />
+                <span className="text-xs text-match-enemy font-medium">Their Team</span>
+                <span className="text-xs text-char-subtle ml-auto font-mono">match-enemy</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded bg-match-win shrink-0" />
                 <span className="text-xs text-match-win font-medium">98% Winrate</span>
                 <span className="text-xs text-char-subtle ml-auto font-mono">match-win</span>

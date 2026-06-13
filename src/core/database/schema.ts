@@ -98,6 +98,8 @@ export const matchHistory = sqliteTable("matchHistory", {
 
   players: text("players", { mode: 'json' }).$type<MatchPlayer[]>().notNull().default([]),
 
+  t1_pts: integer("t1_pts").notNull().default(0),
+  t2_pts: integer("t2_pts").notNull().default(0),
   t1_sets: integer("t1_sets").notNull(),
   t2_sets: integer("t2_sets").notNull(),
   myTeam: integer("myTeam").notNull(), // just easier than pathing thru players
