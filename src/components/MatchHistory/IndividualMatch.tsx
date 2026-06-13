@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getCharName, getQueueName } from '../../core/objects/ody'
+import { CheckCircleIcon, CheckIcon } from '@phosphor-icons/react'
 import { getRankFromLP } from '../../core/objects/ranks'
 import clsx from 'clsx'
 import { TeamListing } from './TeamListing'
@@ -167,24 +168,40 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
           >
             {/* Header */}
             <div className="px-4 py-2 bg-surface-raised/20 grid grid-cols-3 items-center text-xs">
-              <span className="flex items-baseline gap-2">
-                <span className="text-char-subtle">{getQueueName(row.queue)} ({score})</span>
-                {row.validated && (
-                  <span className="text-[10px] text-match-win/70 font-medium">Validated with CC</span>
-                )}
-              </span>
-              <div className="flex items-center justify-center gap-3 text-char-subtle">
-                {row.bans.map(id => (
-                  <div key={id} className="flex items-center gap-1.5">
-                    <img
-                      src={`/characters/portrait/${id}.webp`}
-                      alt={getCharName(id) ?? id}
-                      className="w-5 h-5 rounded object-cover grayscale opacity-75"
-                    />
-                    <span className="text-char-subtle/60">{getCharName(id) ?? id}</span>
+              {/* Bans */}
+              <div className="flex items-center gap-2">
+                <span className="text-char-subtle shrink-0">Bans:</span>
+                {row.bans.length === 0 ? (
+                  <span className="text-char-subtle/50">None</span>
+                ) : (
+                  <div className="flex items-center gap-2.5">
+                    {row.bans.map(id => (
+                      <div key={id} className="flex items-center gap-1.5">
+                        <img
+                          src={`/characters/portrait/${id}.webp`}
+                          alt={getCharName(id) ?? id}
+                          className="w-5 h-5 rounded object-cover grayscale opacity-75"
+                        />
+                        <span className="text-char-subtle/60">{getCharName(id) ?? id}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
+
+              {/* Score + Queue */}
+              <div className="flex flex-col items-center">
+                <span className="text-base font-bold text-char leading-tight">{score}</span>
+                <span className="flex items-center gap-1 text-[10px] text-char-subtle">
+                  {getQueueName(row.queue)}
+                  {row.validated && (
+                    <div className="text-match-win/70" title='Validated with CC'>
+                      <CheckIcon size={10} weight="duotone"/>
+                    </div>
+                  )}
+                </span>
+              </div>
+
               <span className="text-char-subtle text-right">Played {formatRelativeTime(row.createdAt)}</span>
             </div>
 
