@@ -77,7 +77,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
             <div className="flex items-center gap-1.5 shrink-0">
               <div className={clsx(
                 'px-3 py-1 rounded text-xs font-bold',
-                row.wonGame ? 'bg-green-400/20 text-green-400' : 'bg-red-400/20 text-red-400'
+                row.wonGame ? 'bg-match-win/20 text-match-win' : 'bg-match-loss/20 text-match-loss'
               )}>
                 {row.wonGame ? 'Victory' : 'Defeat'}
               </div>

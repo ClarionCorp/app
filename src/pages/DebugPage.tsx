@@ -187,6 +187,11 @@ export default function DebugPage() {
                 <span className="text-xs text-char-subtle ml-auto font-mono">match-win</span>
               </div>
               <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-match-mid shrink-0" />
+                <span className="text-xs text-match-mid font-medium">50% Winrate</span>
+                <span className="text-xs text-char-subtle ml-auto font-mono">match-mid</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded bg-match-loss shrink-0" />
                 <span className="text-xs text-match-loss font-medium">24% Winrate</span>
                 <span className="text-xs text-char-subtle ml-auto font-mono">match-loss</span>
