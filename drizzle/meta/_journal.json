@@ -71,6 +71,13 @@
       "when": 1780684321395,
       "tag": "0009_orange_otto_octavius",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1781379612530,
+      "tag": "0010_normal_radioactive_man",
+      "breakpoints": true
     }
   ]
 }

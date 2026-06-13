@@ -1,5 +1,5 @@
 local ModName = "PlayerFinderMod"
-local ModVersion = "1.2.0"
+local ModVersion = "1.3.1"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -7,6 +7,7 @@ local PLAYERS_FILE = os.getenv("TEMP") .. "\\ue4ss_players.json"
 print(string.format("[%s] Writing players to: %s", ModName, PLAYERS_FILE))
 
 local LastSnapshot = ""
+local LastPings = {}
 local TrackedStates = {}
 
 local function GetCharacter(ps)
@@ -55,8 +56,10 @@ local function PollPlayers()
                 local role = (ok and isGoalie) and "Goalie" or "Forward"
                 local level = ps.Level
                 local trainings = GetTrainings(ps)
+                local okPing, ping = pcall(function() return ps:GetPingInMilliseconds() end)
+                local pingMs = (okPing and ping) and math.floor(ping) or nil
                 if name == "" or name == "nil" then return nil end
-                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level, trainings = trainings }
+                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level, trainings = trainings, ping = pingMs }
             end)
             if ok and entry then
                 table.insert(players, entry)
@@ -70,12 +73,27 @@ local function PollPlayers()
         snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId) .. "|" .. tostring(p.level) .. ";"
     end
 
-    if snapshot ~= LastSnapshot then
+    local pingChanged = false
+    for _, p in ipairs(players) do
+        if p.ping ~= nil then
+            local last = LastPings[p.name]
+            if last ~= nil and math.abs(p.ping - last) >= 20 then
+                pingChanged = true
+                break
+            end
+        end
+    end
+
+    if snapshot ~= LastSnapshot or pingChanged then
         LastSnapshot = snapshot
+        LastPings = {}
+        for _, p in ipairs(players) do
+            if p.ping ~= nil then LastPings[p.name] = p.ping end
+        end
 
         print(string.format("\n[%s] Players (%d):", ModName, #players))
         for _, p in ipairs(players) do
-            print(string.format("  Team %s | %-8s | Lv%-3s | %s | %s (%s)", tostring(p.team), p.role, tostring(p.level), p.name, p.charName or "null", p.charId or "null"))
+            print(string.format("  Team %s | %-8s | Lv%-3s |%3sms | %s | %s (%s)", tostring(p.team), p.role, tostring(p.level), tostring(p.ping or "?"), p.name, p.charName or "null", p.charId or "null"))
         end
 
         local playerParts = {}
@@ -88,6 +106,7 @@ local function PollPlayers()
             end
             local trainingsJson = "[\n" .. table.concat(trainingStrs, ",\n") .. "\n      ]"
             if #p.trainings == 0 then trainingsJson = "[]" end
+            local pingStr = p.ping and tostring(p.ping) or "null"
             table.insert(playerParts, string.format(
                 '    {\n' ..
                 '      "name": "%s",\n' ..
@@ -96,9 +115,10 @@ local function PollPlayers()
                 '      "character_id": %s,\n' ..
                 '      "character_name": %s,\n' ..
                 '      "level": %s,\n' ..
+                '      "ping_ms": %s,\n' ..
                 '      "trainings": %s\n' ..
                 '    }',
-                p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level), trainingsJson
+                p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level), pingStr, trainingsJson
             ))
         end
 

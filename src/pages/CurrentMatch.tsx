@@ -62,7 +62,7 @@ export default function CurrentMatchPage() {
       setMatchData(matchDb);
       const sessionDb = await getGameSession();
       setSession(sessionDb);
-    }, 5000);
+    }, 2500);
     return () => clearInterval(id);
   }, [loading]);
 

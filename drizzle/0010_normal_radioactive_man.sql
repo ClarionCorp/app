@@ -1,0 +1,1 @@
+ALTER TABLE `matchPlayers` ADD `ping` integer DEFAULT 0;

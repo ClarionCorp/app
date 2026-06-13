@@ -11,6 +11,7 @@ export type PlayerFinderJSON = {
     character_id: string, // CD_NimbleBlaster
     character_name: string, // "Drek'ar"
     level: number,
+    ping_ms: number,
     trainings: string[]
   }[],
   timestamp: number, // keeps tauri updating even if data is the same
