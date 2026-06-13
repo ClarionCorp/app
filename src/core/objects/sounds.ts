@@ -1,5 +1,5 @@
 export const AiMiQueuePops = [
-  '/sounds/aimi/aimi/Special4.mp3',
+  '/sounds/aimi/Special4.mp3',
   '/sounds/aimi/Special5.mp3',
   '/sounds/aimi/Goal14.mp3',
   '/sounds/aimi/Goal15.mp3',
