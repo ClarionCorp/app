@@ -21,7 +21,11 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPDATA/com.blals.aimiapp/queue_pops/**"]
+      }
     }
   },
   "bundle": {

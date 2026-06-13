@@ -10,6 +10,9 @@ import { Button } from "../components/UI/Button";
 import { Input } from "../components/UI/Input";
 import { Dropdown } from "../components/UI/Dropdown";
 import { discordRpc, startRpc, stopRpc, DEFAULT_ACTIVITY } from "../core/utilities/discord";
+import { getAvailableSoundPacks, SoundPack } from "../core/utilities/soundPacks";
+import { appDataDir, join } from "@tauri-apps/api/path";
+import { openPath } from "@tauri-apps/plugin-opener";
 import { useTheme } from "../components/UI/Theme/ThemeProvider";
 import { themes } from "../core/styles/theme";
 import { resetDatabase } from "../core/database/driver";
@@ -20,14 +23,14 @@ import { useToast } from "../components/UI/Toast";
 import { uploadAllMatches } from "../core/utilities/appAPI";
 import { exit } from "@tauri-apps/plugin-process";
 
-export type QueuePopType = 'Ai.Mi' | 'Generic';
+export type QueuePopType = string;
 
 type Settings = {
   gameDirectory: string | null;
   drpcEnabled: boolean;
   notifyQueuePop: boolean;
   queuePopVol: number;
-  queuePopType: QueuePopType;
+  queuePopType: string;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -46,6 +49,7 @@ export default function SettingsPage() {
   const [syncProgress, setSyncProgress] = useState<{ percent: number | null; message: string } | null>(null);
   const [uninstalling, setUninstalling] = useState(false);
   const [uninstallProgress, setUninstallProgress] = useState<{ percent: number | null; message: string } | null>(null);
+  const [soundPacks, setSoundPacks] = useState<SoundPack[]>([]);
   const [queuePopTypeOpen, setQueuePopTypeOpen] = useState(false);
   const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
   const [themeOpen, setThemeOpen] = useState(false);
@@ -61,10 +65,16 @@ export default function SettingsPage() {
         drpcEnabled: s.drpcEnabled,
         notifyQueuePop: s.notifyQueuePop,
         queuePopVol: s.queuePopVol,
-        queuePopType: (s.queuePopType as QueuePopType) ?? 'Ai.Mi',
+        queuePopType: s.queuePopType ?? 'Ai.Mi',
       });
     });
+    getAvailableSoundPacks().then(setSoundPacks);
   }, []);
+
+  const handleOpenPacksFolder = async () => {
+    const dir = await join(await appDataDir(), 'queue_pops');
+    await openPath(dir);
+  };
 
   const update = async (patch: Partial<Settings>) => {
     setSettings(prev => ({ ...prev, ...patch }));
@@ -210,27 +220,29 @@ export default function SettingsPage() {
 
         <SettingRow
           title="Queue Pop Sound"
-          subtitle="The sound pack used for when your queue pops. Press F8 to test."
+          subtitle="The sound pack used for when your queue pops. Press F8 to test. Add custom packs to AppData/Roaming/com.blals.aimiapp/queue_pops/{packName}/*.mp3"
           disabled={!settings.notifyQueuePop}
         >
-          <div className="relative">
-            <button
-              ref={queuePopTypeTriggerRef}
-              onClick={() => setQueuePopTypeOpen(o => !o)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-background-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer"
-            >
-              {settings.queuePopType}
-              <CaretDownIcon size={12} className="opacity-60" />
-            </button>
-            <Dropdown
-              triggerRef={queuePopTypeTriggerRef}
-              open={queuePopTypeOpen}
-              onClose={() => setQueuePopTypeOpen(false)}
-              items={[
-                { label: 'Ai.Mi', onClick: () => update({ queuePopType: 'Ai.Mi' }) },
-                { label: 'Generic', onClick: () => update({ queuePopType: 'Generic' }) },
-              ]}
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <button
+                ref={queuePopTypeTriggerRef}
+                onClick={() => setQueuePopTypeOpen(o => !o)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-background-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer"
+              >
+                {soundPacks.find(p => p.name === settings.queuePopType) ? settings.queuePopType : '<None>'}
+                <CaretDownIcon size={12} className="opacity-60" />
+              </button>
+              <Dropdown
+                triggerRef={queuePopTypeTriggerRef}
+                open={queuePopTypeOpen}
+                onClose={() => setQueuePopTypeOpen(false)}
+                items={soundPacks.map(p => ({ label: p.name, onClick: () => update({ queuePopType: p.name }) }))}
+              />
+            </div>
+            <Button variant="surface" size="sm" onClick={handleOpenPacksFolder} iconLeft={<FolderOpenIcon size={14} />} className="h-9">
+              Open Folder
+            </Button>
           </div>
         </SettingRow>
 

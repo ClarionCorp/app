@@ -16,14 +16,16 @@ import { matchPlayers } from "../core/database/schema";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { version } from "../core/constants";
 import { getLatestRegion } from "../core/bridgeListener";
+import { checkSetupSoundPacks } from "../core/utilities/soundPacks";
 
 const STEPS = [
   "Checking UE4SS...",
+  "Setting up defaults...",
   "Fetching account info...",
   "Connecting to Discord...",
 ];
 
-const STEP_PCTS = [5, 40, 75, 100];
+const STEP_PCTS = [5, 40, 75, 85, 100];
 
 export default function InitializationPage() {
   const {
@@ -101,14 +103,18 @@ export default function InitializationPage() {
           }
         }
 
-        // 1.5) (Hidden) Purge players table as we'll just fetch a new one anyway
+        // 2) Setup defaults
+        // Purge players table as we'll just fetch a new one anyway
+        setStepIndex(1);
+        setProgress(STEP_PCTS[1]);
         await db.delete(matchPlayers).run();
         await resetSessionTable();
         await updateGameState('None');
+        await checkSetupSoundPacks();
 
-        // 2) Fetch account info from Odyssey
-        setStepIndex(1);
-        setProgress(STEP_PCTS[1]);
+        // 3) Fetch account info from Odyssey
+        setStepIndex(2);
+        setProgress(STEP_PCTS[2]);
         try {
           const auth = await readIdentity();
           setOdyAuth(auth);
@@ -127,9 +133,9 @@ export default function InitializationPage() {
           setConnectedStatus(false);
         }
 
-        // 3) Connect to Discord RPC
-        setStepIndex(2);
-        setProgress(STEP_PCTS[2]);
+        // 4) Connect to Discord RPC
+        setStepIndex(3);
+        setProgress(STEP_PCTS[3]);
         await stopRpc();
         await startRpc();
         await discordRpc?.updateActivity(DEFAULT_ACTIVITY);

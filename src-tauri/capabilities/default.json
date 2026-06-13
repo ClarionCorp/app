@@ -55,6 +55,7 @@
       "identifier": "fs:allow-read-file",
       "allow": [
         { "path": "$TEMP/**" },
+        { "path": "$APPDATA/queue_pops/**" },
         { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
         { "path": "$HOME/.steam/steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**"}
       ]
@@ -83,10 +84,12 @@
     {
       "identifier": "http:default",
       "allow": [
+        { "url": "http://localhost:12240/*" },
         { "url": "https://github.com/*" },
         { "url": "https://api.github.com/*" },
         { "url": "https://api.clarioncorp.net/*" },
-        { "url": "https://clarioncorp.net/api/*" }
+        { "url": "https://clarioncorp.net/api/*" },
+        { "url": "https://api.aimis.app/*" }
       ]
     }
   ]

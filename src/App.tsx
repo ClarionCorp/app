@@ -13,8 +13,7 @@ import { currentMatch, matchHistory, matchPlayers } from './core/database/schema
 import { fetchPlayerStats, fetchRankQuery, fetchSelfQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
-import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
-import { QueuePopType } from './pages/Settings';
+import { playQueuePop } from './core/utilities/soundPacks';
 import { fetchPlayerPlayerstyle } from './core/utilities/clarion';
 import { desc, eq } from 'drizzle-orm';
 import { saveMatchHistoryEntry } from './core/utilities/appAPI';
@@ -46,7 +45,7 @@ function App() {
     const onKey = async (e: KeyboardEvent) => {
       if (e.key === 'F8') {
         const setting = await getAppSettings();
-        await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
+        await playQueuePop(setting.queuePopType, setting.queuePopVol)
       };
       // Upload & Validate last match history entry
       if (e.ctrlKey && e.key === 'F9') {
@@ -166,7 +165,7 @@ function App() {
       if (prevSession.queueState == 'Queued' && (session.queueState == 'FoundMatch' || session.queueState == 'StartingGame')) {
         const settings = await getAppSettings();
         if (settings.notifyQueuePop) {
-          await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
+          await playQueuePop(settings.queuePopType, settings.queuePopVol);
         }
       }
     }),

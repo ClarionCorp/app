@@ -44,6 +44,42 @@ fn extract_zip(zip_path: String, dest_dir: String) -> Result<(), String> {
 }
 
 
+#[derive(serde::Serialize)]
+struct QueuePopPack {
+    name: String,
+    files: Vec<String>,
+}
+
+#[tauri::command]
+fn list_queue_pop_packs(app: tauri::AppHandle) -> Result<Vec<QueuePopPack>, String> {
+    let packs_dir = app.path().app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("queue_pops");
+
+    if !packs_dir.exists() {
+        fs::create_dir_all(&packs_dir).map_err(|e| e.to_string())?;
+        return Ok(vec![]);
+    }
+
+    let mut packs = vec![];
+    for entry in fs::read_dir(&packs_dir).map_err(|e| e.to_string())?.flatten() {
+        if entry.file_type().map(|t| t.is_dir()).unwrap_or(false) {
+            let pack_name = entry.file_name().to_string_lossy().to_string();
+            let mut files = vec![];
+            for file_entry in fs::read_dir(entry.path()).map_err(|e| e.to_string())?.flatten() {
+                let file_path = file_entry.path();
+                if file_path.extension().and_then(|e| e.to_str()) == Some("mp3") {
+                    files.push(file_path.to_string_lossy().into_owned());
+                }
+            }
+            if !files.is_empty() {
+                packs.push(QueuePopPack { name: pack_name, files });
+            }
+        }
+    }
+    Ok(packs)
+}
+
 #[derive(serde::Deserialize)]
 struct LogEntryPayload {
     timestamp: String,
@@ -180,6 +216,7 @@ pub fn run() {
             extract_zip,
             write_log_header,
             flush_logs,
+            list_queue_pop_packs,
             log_watcher::get_latest_match_timestamp,
             log_watcher::get_latest_region,
         ])
