@@ -5,6 +5,7 @@ import { CheckIcon } from '@phosphor-icons/react'
 import { getRankFromLP } from '../../core/objects/ranks'
 import clsx from 'clsx'
 import { TeamListing } from './TeamListing'
+import BasicPopover from './BasicPopover'
 import { getMapObjectFromID } from '../../core/objects/maps'
 import { MatchHistoryTable } from '../../types/database'
 
@@ -173,23 +174,15 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
             <div className="px-4 py-2 bg-surface-raised/20 grid grid-cols-3 items-center text-xs">
               {/* Bans */}
               <div className="flex items-center gap-2">
-                <span className="text-char-subtle shrink-0">Bans:</span>
-                {row.bans.length === 0 ? (
-                  <span className="text-char-subtle/50">None</span>
-                ) : (
-                  <div className="flex items-center gap-2.5">
-                    {row.bans.map(id => (
-                      <div key={id} className="flex items-center gap-1.5">
-                        <img
-                          src={`/characters/portrait/${id}.webp`}
-                          alt={getCharName(id) ?? id}
-                          className="w-5 h-5 rounded object-cover grayscale opacity-75"
-                        />
-                        <span className="text-char-subtle/60">{getCharName(id) ?? id}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {row.bans.map(id => (
+                  <BasicPopover key={id} displayText={`Banned ${getCharName(id) ?? id}`}>
+                    <img
+                      src={`/characters/portrait/${id}.webp`}
+                      alt={getCharName(id) ?? id}
+                      className="w-8 h-8 rounded object-cover grayscale opacity-75"
+                    />
+                  </BasicPopover>
+                ))}
               </div>
 
               {/* Score */}
@@ -213,10 +206,12 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
                     ))}
                   </div>
                 </div>
-                <span className="flex items-center gap-1 text-[10px] text-char-subtle">
+                <span className="flex items-center gap-1 text-xs text-char-subtle">
                   {getQueueName(row.queue)}
                   {row.validated && (
-                    <span title="Validated with CC"><CheckIcon size={10} weight="bold" className="text-match-win/70" /></span>
+                    <BasicPopover displayText="Validated with CC">
+                      <CheckIcon size={10} weight="bold" className="text-match-win/70" />
+                    </BasicPopover>
                   )}
                 </span>
               </div>
