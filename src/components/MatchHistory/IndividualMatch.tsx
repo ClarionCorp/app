@@ -191,7 +191,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
                   {/* My team set ticks (blue) */}
                   <div className="flex items-center gap-0.5">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className={`w-1.5 h-3.5 rounded-sm -skew-x-6 ${i >= 3 - mySets ? 'bg-match-ally' : 'bg-match-ally/20'}`} />
+                      <div key={i} className={`w-1.5 h-3.5 rounded-sm -skew-x-8 ${i >= 3 - mySets ? 'bg-match-ally' : 'bg-match-ally/20'}`} />
                     ))}
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -202,7 +202,7 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
                   {/* Enemy set ticks (red) */}
                   <div className="flex items-center gap-0.5">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className={`w-1.5 h-3.5 rounded-sm -skew-x-6 ${i < enemySets ? 'bg-match-enemy' : 'bg-match-enemy/20'}`} />
+                      <div key={i} className={`w-1.5 h-3.5 rounded-sm skew-x-8 ${i < enemySets ? 'bg-match-enemy' : 'bg-match-enemy/20'}`} />
                     ))}
                   </div>
                 </div>
