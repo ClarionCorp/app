@@ -1,0 +1,1 @@
+ALTER TABLE `currentMatch` ADD `bans` text DEFAULT '[]' NOT NULL;

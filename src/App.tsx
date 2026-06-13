@@ -4,7 +4,7 @@ import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { onGameStateChanged, onPlayersChanged, onPostGameStatsChanged, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
+import { onGameStateChanged, onPlayersChanged, onMatchFinalize, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
 import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo, getAppSettings } from './core/database/queries';
 import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
@@ -112,6 +112,7 @@ function App() {
         gameState: data.phase,
         map: data.map_id,
         queue: gameStatus == 'IDLING' ? session.queueName : undefined,
+        bans: data.banned_characters,
         teamNum: data.my_team,
         teamOnePts: data.t1_goals,
         teamTwoPts: data.t2_goals,
@@ -156,7 +157,7 @@ function App() {
       const [row] = await db.select({ trainings: currentMatch.trainings }).from(currentMatch);
       await db.update(currentMatch).set({ trainings: [...row.trainings, ...data.trainings] });
     }),
-    onPostGameStatsChanged(async (payload) => {
+    onMatchFinalize(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
       console.debug(`Match Ended! Saving...`)
       try { // if any matches fail to save, it'll be easier to debug lol (im leaving this here after I needed it)
@@ -185,6 +186,7 @@ function App() {
           queue: match.queue ?? 'queue:none',
           username: myPlayer.name,
           myTeam,
+          bans: match.bans,
           t1_sets: match.teamOneSets ?? 0,
           t2_sets: match.teamTwoSets ?? 0,
           wonGame: myScore > enemyScore,

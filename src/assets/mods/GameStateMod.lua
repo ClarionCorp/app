@@ -1,5 +1,5 @@
 local ModName = "GameStateMod"
-local ModVersion = "1.5.0"
+local ModVersion = "1.6.0"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -31,6 +31,24 @@ local function WriteCurrentTrainings(ids)
     )
     local f = io.open(SHOWN_TRAININGS_FILE, "w")
     if f then f:write(body) f:close() end
+end
+
+local function ReadBannedCharacters(gs)
+    local ids = {}
+    pcall(function()
+        local data = gs.BannedCharactersData
+        local function tryAdd(cd)
+            if cd and cd:IsValid() then
+                local ok, id = pcall(function() return cd:GetFName():ToString() end)
+                if ok and id and id ~= "" and id ~= "None" then
+                    table.insert(ids, id)
+                end
+            end
+        end
+        tryAdd(data.TeamOneBannedCharacter)
+        tryAdd(data.TeamTwoBannedCharacter)
+    end)
+    return ids
 end
 
 local function ReadCommonTrainings(gs)
@@ -113,6 +131,8 @@ local function LogMatchState()
 
         local mapName, mapId = GetMapInfo(GameState)
         local terrainName, terrainId = GetTerrainInfo(GameState)
+        local bannedIds = ReadBannedCharacters(GameState)
+        local bannedKey = table.concat(bannedIds, ",")
 
         local cur = {
             phase = phase,
@@ -121,6 +141,7 @@ local function LogMatchState()
             t2g = t2.NumGoalsThisSet, t2s = t2.NumSetsThisMatch,
             map = mapName, mapId = mapId,
             terrain = terrainName, terrainId = terrainId,
+            bans = bannedKey,
         }
 
         local changed = false
@@ -144,6 +165,7 @@ local function LogMatchState()
             print(string.format("[%s] T2: %d goals, %d sets", ModName, t2.NumGoalsThisSet, t2.NumSetsThisMatch))
             print(string.format("[%s] Map: %s (%s) | Terrain: %s (%s)",
                 ModName, mapName or "null", mapId or "null", terrainName or "null", terrainId or "null"))
+            print(string.format("[%s] Bans: %s", ModName, bannedKey ~= "" and bannedKey or "none"))
             print(string.format("========================================\n"))
 
             local resolvedMap = (mapId == "GMD_RGM") and terrainName or mapName
@@ -152,13 +174,19 @@ local function LogMatchState()
             local mapIdStr = resolvedMapId and ('"' .. resolvedMapId .. '"') or "null"
             local terrainStr = terrainName and ('"' .. terrainName .. '"') or "null"
             local terrainIdStr = terrainId and ('"' .. terrainId .. '"') or "null"
+            local bannedParts = {}
+            for _, id in ipairs(bannedIds) do
+                table.insert(bannedParts, '"' .. id .. '"')
+            end
+            local bannedJson = "[" .. table.concat(bannedParts, ",") .. "]"
             WriteState(string.format(
-                '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"terrain":%s,"terrain_id":%s,"timestamp":%d}',
+                '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"terrain":%s,"terrain_id":%s,"banned_characters":%s,"timestamp":%d}',
                 phaseName,
                 myTeam and tostring(myTeam) or "null",
                 t1.NumGoalsThisSet, t1.NumSetsThisMatch,
                 t2.NumGoalsThisSet, t2.NumSetsThisMatch,
                 mapStr, mapIdStr, terrainStr, terrainIdStr,
+                bannedJson,
                 os.time()
             ))
         end

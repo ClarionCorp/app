@@ -54,6 +54,7 @@ export const currentMatch = sqliteTable("currentMatch", {
   queue: text("queue"), // Ranked, Norms, Customs, etc.
   teamNum: integer("teamNum").$type<1 | 2>(),
   trainings: text("trainings", { mode: "json" }).$type<string[]>().notNull().default([]),
+  bans: text("bans", { mode: "json" }).$type<string[]>().notNull().default([]),
 
   teamOnePts: integer("teamOnePts"),
   teamTwoPts: integer("teamTwoPts"),
@@ -92,6 +93,7 @@ export const matchHistory = sqliteTable("matchHistory", {
   mapId: text("mapId").notNull(),
   duration: integer("duration").notNull(),
   queue: text("queue").notNull(),
+  bans: text("bans", { mode: "json" }).$type<string[]>().notNull().default([]),
   username: text("username"), // null will just show regardless of username filter
 
   players: text("players", { mode: 'json' }).$type<MatchPlayer[]>().notNull().default([]),

@@ -166,14 +166,26 @@ export default function IndividualMatch({ row, myUsername }: { row: MatchHistory
             className="border-t border-background-border overflow-hidden"
           >
             {/* Header */}
-            <div className="px-4 py-2 bg-surface-raised/20 flex items-center justify-between text-xs">
+            <div className="px-4 py-2 bg-surface-raised/20 grid grid-cols-3 items-center text-xs">
               <span className="flex items-baseline gap-2">
                 <span className="text-char-subtle">{getQueueName(row.queue)} ({score})</span>
                 {row.validated && (
                   <span className="text-[10px] text-match-win/70 font-medium">Validated with CC</span>
                 )}
               </span>
-              <span className="text-char-subtle">Played {formatRelativeTime(row.createdAt)}</span>
+              <div className="flex items-center justify-center gap-3 text-char-subtle">
+                {row.bans.map(id => (
+                  <div key={id} className="flex items-center gap-1.5">
+                    <img
+                      src={`/characters/portrait/${id}.webp`}
+                      alt={getCharName(id) ?? id}
+                      className="w-5 h-5 rounded object-cover grayscale opacity-75"
+                    />
+                    <span className="text-char-subtle/60">{getCharName(id) ?? id}</span>
+                  </div>
+                ))}
+              </div>
+              <span className="text-char-subtle text-right">Played {formatRelativeTime(row.createdAt)}</span>
             </div>
 
             {/* My team */}

@@ -24,7 +24,7 @@ export async function onGameStateChanged(
   });
 }
 
-export async function onPostGameStatsChanged(
+export async function onMatchFinalize(
   handler: (payload: FileChangePayload) => void
 ): Promise<UnlistenFn> {
   return listen<FileChangePayload>('postgame-stats-changed', (event) => {

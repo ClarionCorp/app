@@ -78,6 +78,20 @@
       "when": 1781379612530,
       "tag": "0010_normal_radioactive_man",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1781382510907,
+      "tag": "0011_large_redwing",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1781382621225,
+      "tag": "0012_silky_shard",
+      "breakpoints": true
     }
   ]
 }

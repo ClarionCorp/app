@@ -31,6 +31,7 @@ export type GameStateJSON = {
   t2_sets: number,
   map: string,
   map_id: string,
+  banned_characters: string[],
   timestamp: number, // keeps tauri updating even if data is the same
 }
 
