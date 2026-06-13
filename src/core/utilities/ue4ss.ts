@@ -107,7 +107,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
           console.log(`Updated ${mod.name} to v${mod.version}`);
         }
         // this mod is up to date, continue
-        console.debug(`Mod ${mod.name} is up-to-date (v${mod.version})`);
+        console.info(`Mod ${mod.name} is up-to-date (v${mod.version})`);
       }
 
       await ensureModEnabled(mod.name, await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods'));

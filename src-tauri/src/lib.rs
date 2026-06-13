@@ -3,7 +3,8 @@ use tauri::Manager;
 use zip::ZipArchive;
 use std::path::{Path};
 use std::fs;
-use std::io;
+use std::io::{self, Write};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 mod file_watcher;
 mod log_watcher;
@@ -43,6 +44,110 @@ fn extract_zip(zip_path: String, dest_dir: String) -> Result<(), String> {
 }
 
 
+#[derive(serde::Deserialize)]
+struct LogEntryPayload {
+    timestamp: String,
+    level: String,
+    message: String,
+    detail: Option<String>,
+}
+
+fn secs_to_day(secs: u64) -> u64 {
+    secs / 86400
+}
+
+fn secs_to_datetime_string(secs: u64) -> String {
+    // Civil calendar from days since Unix epoch (Euclidean affine functions algorithm)
+    let z = (secs / 86400) as i64 + 719468;
+    let era = if z >= 0 { z / 146097 } else { (z - 146096) / 146097 };
+    let doe = (z - era * 146097) as u64;
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    let y = yoe as i64 + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = if m <= 2 { y + 1 } else { y };
+    let h = (secs % 86400) / 3600;
+    let min = (secs % 3600) / 60;
+    let s = secs % 60;
+    format!("{:04}-{:02}-{:02}_{:02}-{:02}-{:02}", y, m, d, h, min, s)
+}
+
+fn delete_old_logs(logs_dir: &std::path::Path) {
+    let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let cutoff_day = secs_to_day(now_secs).saturating_sub(7);
+    if let Ok(dir_entries) = fs::read_dir(logs_dir) {
+        for dir_entry in dir_entries.flatten() {
+            let path = dir_entry.path();
+            if path.file_name().and_then(|n| n.to_str()) == Some("latest.log") { continue; }
+            if path.extension().and_then(|e| e.to_str()) != Some("log") { continue; }
+            if let Ok(meta) = path.metadata() {
+                if let Ok(modified) = meta.modified() {
+                    let file_secs = modified.duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+                    if secs_to_day(file_secs) < cutoff_day {
+                        let _ = fs::remove_file(&path);
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[tauri::command]
+fn write_log_header(app: tauri::AppHandle, version: String) -> Result<(), String> {
+    let logs_dir = app.path().app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("logs");
+    fs::create_dir_all(&logs_dir).map_err(|e| e.to_string())?;
+
+    // Always archive the previous session's latest.log on startup
+    let latest_path = logs_dir.join("latest.log");
+    if latest_path.exists() {
+        if let Ok(meta) = latest_path.metadata() {
+            if let Ok(modified) = meta.modified() {
+                let file_secs = modified.duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+                let datetime = secs_to_datetime_string(file_secs);
+                let _ = fs::rename(&latest_path, logs_dir.join(format!("app_{}.log", datetime)));
+            }
+        }
+    }
+
+    delete_old_logs(&logs_dir);
+
+    // Create a fresh latest.log with the session header
+    let mut file = fs::File::create(&latest_path).map_err(|e| e.to_string())?;
+    file.write_all(format!("--- Ai.Mi App v{} ---\n\n", version).as_bytes())
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn flush_logs(app: tauri::AppHandle, entries: Vec<LogEntryPayload>) -> Result<(), String> {
+    if entries.is_empty() {
+        return Ok(());
+    }
+
+    let logs_dir = app.path().app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("logs");
+
+    let mut content = String::new();
+    for entry in &entries {
+        content.push_str(&format!("[{}] [{}] {}\n", entry.timestamp, entry.level.to_uppercase(), entry.message));
+        if let Some(detail) = &entry.detail {
+            for line in detail.lines() {
+                content.push_str(&format!("  {}\n", line));
+            }
+        }
+    }
+    let mut file = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(logs_dir.join("latest.log"))
+        .map_err(|e| e.to_string())?;
+    file.write_all(content.as_bytes()).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -73,6 +178,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             is_process_running,
             extract_zip,
+            write_log_header,
+            flush_logs,
             log_watcher::get_latest_match_timestamp,
             log_watcher::get_latest_region,
         ])

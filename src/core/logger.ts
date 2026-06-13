@@ -1,3 +1,6 @@
+import { invoke } from '@tauri-apps/api/core';
+import { version } from './constants';
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export interface LogEntry {
@@ -13,6 +16,7 @@ const MAX_ENTRIES = 500;
 let _nextId = 0;
 const _entries: LogEntry[] = [];
 const _subscribers = new Set<() => void>();
+const _writeQueue: LogEntry[] = [];
 
 function serialize(data: unknown): string | undefined {
   if (data === undefined) return undefined;
@@ -27,9 +31,32 @@ function serialize(data: unknown): string | undefined {
 
 function push(level: LogLevel, message: string, detail?: string) {
   if (_entries.length >= MAX_ENTRIES) _entries.shift();
-  _entries.push({ id: _nextId++, timestamp: new Date(), level, message, detail });
+  const entry: LogEntry = { id: _nextId++, timestamp: new Date(), level, message, detail };
+  _entries.push(entry);
+  _writeQueue.push(entry);
   _subscribers.forEach(fn => fn());
 }
+
+async function flushToFile() {
+  if (_writeQueue.length === 0) return;
+  const batch = _writeQueue.splice(0);
+  try {
+    await invoke('flush_logs', {
+      entries: batch.map(e => ({
+        timestamp: e.timestamp.toISOString(),
+        level: e.level,
+        message: e.message,
+        detail: e.detail ?? null,
+      })),
+    });
+  } catch {
+    // Silently discard — avoid infinite recursion if logging itself fails
+  }
+}
+
+setInterval(flushToFile, 2000);
+
+invoke('write_log_header', { version }).catch(() => {});
 
 export const logger = {
   debug: (message: string, data?: unknown) => push('debug', message, serialize(data)),
