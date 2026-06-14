@@ -45,15 +45,14 @@ export function AvailableTrainings({ allTrainings, match, players }: Props) {
     .filter(a => a.active && !a.gear)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const availableCount = displayable.filter(a => !takenAwakeningIds.has(a.id)).length;
   const hovered = hoveredId ? displayable.find(a => a.id === hoveredId) ?? null : null;
   const hoveredIsTaken = hoveredId ? takenAwakeningIds.has(hoveredId) : false;
   const hoveredIsShown = hoveredId ? shownAwakeningIds.has(hoveredId) : false;
 
   return (
-    <div className="bg-surface border border-surface-border rounded-xl p-4 shadow-lg">
+    <div className="bg-surface border border-surface-border rounded-xl px-4 py-3 short:py-2 shadow-lg">
       <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
-        Available Awakenings in Rotation ({availableCount})
+        Available Awakenings in Rotation
       </p>
       <div
         className="flex flex-wrap gap-1 short:gap-0"

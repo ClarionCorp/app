@@ -132,18 +132,6 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                   {winrate == null ? '—' : `${(winrate * 100).toFixed(0)}%`
                   }</span>
               </span>
-              {player.ping != null && player.ping > 0 && (() => {
-                const ping = player.ping;
-                const isGood = ping <= 60;
-                const isMid = ping <= 120;
-                const colorClass = isGood ? 'text-match-win/75' : isMid ? 'text-match-mid' : 'text-match-loss';
-                return (
-                  <span className='inline-flex items-center gap-1 font-medium '>
-                    Ping:
-                    <a className={colorClass}> {ping}ms</a>
-                  </span>
-                );
-              })()}
             </div>
 
             {/* Training icons */}

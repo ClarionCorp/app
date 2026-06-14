@@ -9,6 +9,7 @@ import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { MapRotation } from '../components/LiveMatch/MapRotation';
 import { AbilityCard } from '../components/LiveMatch/AbilityCard';
 import { IntermissionPredictions } from '../components/LiveMatch/IntermissionPredictions';
+import { MatchInfo } from '../components/LiveMatch/MatchInfo';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
@@ -85,7 +86,7 @@ export default function CurrentMatchPage() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex-1 overflow-y-auto px-6 py-5">
+      <div className="flex-1 overflow-y-auto px-6 py-3">
         <AnimatePresence mode="wait">
           {loading ? (
             <motion.div
@@ -106,11 +107,13 @@ export default function CurrentMatchPage() {
               initial="hidden"
               animate="show"
             >
+              <MatchInfo match={match} myPlayer={myPlayer} />
+              
               <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
 
               {!showMaps && <IntermissionPredictions players={players} />}
 
-              <div className="flex flex-col lg:flex-row lg:gap-0">
+              <div className="flex flex-col lg:flex-row lg:gap-0 mt-4 mb-8">
                 <div className="flex-1 min-w-0 space-y-3">
                   {showMaps ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -124,7 +127,7 @@ export default function CurrentMatchPage() {
                         ))}
                       </div>
 
-                      <div className="flex items-center gap-3 py-1">
+                      <div className="flex items-center gap-3">
                         <div className="flex-1 h-px bg-background-border" />
                         <span className="text-xs text-zinc-500">vs</span>
                         <div className="flex-1 h-px bg-background-border" />

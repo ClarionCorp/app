@@ -14,7 +14,7 @@ export function IntermissionPredictions({ players }: { players: MatchPlayersTabl
   const slots: (MatchPlayersTable | null)[] = [...sorted, ...Array(Math.max(0, 6 - sorted.length)).fill(null)];
 
   return (
-    <div className="relative flex items-center h-12 px-2">
+    <div className="relative flex items-center h-12 short:h-10 px-2">
       <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-[#e91e8c]/50 rounded-full mx-2" />
       <div className="relative w-full flex justify-between px-8">
         {slots.map((player, index) => {
@@ -31,7 +31,7 @@ export function IntermissionPredictions({ players }: { players: MatchPlayersTabl
               key={player.username}
               displayText={`${player.charName ?? player.username} will be picking ${ordinal(index + 1)}`}
             >
-              <div className={clsx('w-12 h-12 rounded-full overflow-hidden shrink-0 border-[3px]', borderClass)}>
+              <div className={clsx('w-12 h-12 rounded-full overflow-hidden shrink-0 border-[3px] shadow-md', borderClass)}>
                 {player.charId ? (
                   <img
                     src={`/characters/portrait/${player.charId}.webp`}
