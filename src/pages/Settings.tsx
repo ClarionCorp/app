@@ -28,6 +28,7 @@ type Settings = {
   notifyQueuePop: boolean;
   queuePopVol: number;
   queuePopType: QueuePopType;
+  exitOnGameClose: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -36,6 +37,7 @@ const DEFAULT_SETTINGS: Settings = {
   notifyQueuePop: false,
   queuePopVol: 50,
   queuePopType: 'Ai.Mi',
+  exitOnGameClose: false,
 };
 
 export default function SettingsPage() {
@@ -62,6 +64,7 @@ export default function SettingsPage() {
         notifyQueuePop: s.notifyQueuePop,
         queuePopVol: s.queuePopVol,
         queuePopType: (s.queuePopType as QueuePopType) ?? 'Ai.Mi',
+        exitOnGameClose: s.exitOnGameClose,
       });
     });
   }, []);
@@ -173,6 +176,16 @@ export default function SettingsPage() {
                 await stopRpc();
               }
             }}
+          />
+        </SettingRow>
+
+        <SettingRow
+          title="Close on Game Exit"
+          subtitle="Automatically close the app when Omega Strikers is no longer running."
+        >
+          <Toggle
+            enabled={settings.exitOnGameClose}
+            onChange={v => update({ exitOnGameClose: v })}
           />
         </SettingRow>
 

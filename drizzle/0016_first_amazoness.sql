@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `exitOnGameClose` integer DEFAULT false NOT NULL;

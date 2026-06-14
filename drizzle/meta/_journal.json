@@ -113,6 +113,13 @@
       "when": 1781397079059,
       "tag": "0015_lumpy_switch",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1781408957465,
+      "tag": "0016_first_amazoness",
+      "breakpoints": true
     }
   ]
 }

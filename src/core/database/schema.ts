@@ -11,6 +11,7 @@ export const appSettings = sqliteTable("appSettings", {
   notifyQueuePop: integer("notifyQueuePop", { mode: "boolean" }).notNull().default(false), // i don't want to annoy anyone :P
   queuePopVol: integer("queuePopVol").notNull().default(50),
   queuePopType: text("queuePopType").notNull().default("Ai.Mi"),
+  exitOnGameClose: integer("exitOnGameClose", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 

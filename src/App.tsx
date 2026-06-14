@@ -18,7 +18,8 @@ import { QueuePopType } from './pages/Settings';
 import { fetchPlayerPlayerstyle } from './core/utilities/clarion';
 import { desc, eq } from 'drizzle-orm';
 import { saveMatchHistoryEntry } from './core/utilities/appAPI';
-import { relaunch } from '@tauri-apps/plugin-process';
+import { exit, relaunch } from '@tauri-apps/plugin-process';
+import { invoke } from '@tauri-apps/api/core';
 import { heartbeat_interval } from './core/constants';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
@@ -77,6 +78,23 @@ function App() {
         // game may not be running, just skip silently
       }
     }, heartbeat_interval);
+    return () => clearInterval(id);
+  }, []);
+
+  // Auto-close when game exits
+  useEffect(() => {
+    let wasRunning = false;
+    const id = setInterval(async () => {
+      const running = await invoke<boolean>('is_process_running', { name: 'OmegaStrikers.exe' });
+      if (wasRunning && !running) {
+        const settings = await getAppSettings();
+        if (settings?.exitOnGameClose) {
+          console.log(`'exitOnGameClose' is enabled, and the game is no longer detected. Closing app...`);
+          await exit(0);
+        };
+      }
+      wasRunning = running;
+    }, 10_000);
     return () => clearInterval(id);
   }, []);
 
