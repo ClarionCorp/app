@@ -1,5 +1,5 @@
 local ModName = "PlayerFinderMod"
-local ModVersion = "1.3.1"
+local ModVersion = "1.4.0"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -58,8 +58,10 @@ local function PollPlayers()
                 local trainings = GetTrainings(ps)
                 local okPing, ping = pcall(function() return ps:GetPingInMilliseconds() end)
                 local pingMs = (okPing and ping) and math.floor(ping) or nil
+                local okLvls, lvlsGained = pcall(function() return ps:GetCharacterLevelsGainedSinceIntermission() end)
+                local levelsGained = okLvls and lvlsGained or nil
                 if name == "" or name == "nil" then return nil end
-                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level, trainings = trainings, ping = pingMs }
+                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level, trainings = trainings, ping = pingMs, levelsGained = levelsGained }
             end)
             if ok and entry then
                 table.insert(players, entry)
@@ -70,7 +72,7 @@ local function PollPlayers()
     -- Build snapshot string for change detection
     local snapshot = ""
     for _, p in ipairs(players) do
-        snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId) .. "|" .. tostring(p.level) .. ";"
+        snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId) .. "|" .. tostring(p.level) .. "|" .. tostring(p.levelsGained) .. ";"
     end
 
     local pingChanged = false
@@ -93,7 +95,7 @@ local function PollPlayers()
 
         print(string.format("\n[%s] Players (%d):", ModName, #players))
         for _, p in ipairs(players) do
-            print(string.format("  Team %s | %-8s | Lv%-3s |%3sms | %s | %s (%s)", tostring(p.team), p.role, tostring(p.level), tostring(p.ping or "?"), p.name, p.charName or "null", p.charId or "null"))
+            print(string.format("  Team %s | %-8s | Lv%-3s (+%s) |%3sms | %s | %s (%s)", tostring(p.team), p.role, tostring(p.level), tostring(p.levelsGained or "?"), tostring(p.ping or "?"), p.name, p.charName or "null", p.charId or "null"))
         end
 
         local playerParts = {}
@@ -107,6 +109,7 @@ local function PollPlayers()
             local trainingsJson = "[\n" .. table.concat(trainingStrs, ",\n") .. "\n      ]"
             if #p.trainings == 0 then trainingsJson = "[]" end
             local pingStr = p.ping and tostring(p.ping) or "null"
+            local levelsGainedStr = p.levelsGained and tostring(p.levelsGained) or "null"
             table.insert(playerParts, string.format(
                 '    {\n' ..
                 '      "name": "%s",\n' ..
@@ -115,10 +118,11 @@ local function PollPlayers()
                 '      "character_id": %s,\n' ..
                 '      "character_name": %s,\n' ..
                 '      "level": %s,\n' ..
+                '      "intermissionXp": %s,\n' ..
                 '      "ping_ms": %s,\n' ..
                 '      "trainings": %s\n' ..
                 '    }',
-                p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level), pingStr, trainingsJson
+                p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level), levelsGainedStr, pingStr, trainingsJson
             ))
         end
 

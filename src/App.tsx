@@ -97,6 +97,7 @@ function App() {
         charId: p.character_id,
         isMe: p.name === currentUser?.username,
         xp: p.level,
+        gainedXp: p.intermissionXp,
         ping: p.ping_ms,
         trainings: p.trainings,
       })));

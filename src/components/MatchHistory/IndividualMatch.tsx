@@ -5,7 +5,7 @@ import { CheckIcon } from '@phosphor-icons/react'
 import { getRankFromLP } from '../../core/objects/ranks'
 import clsx from 'clsx'
 import { TeamListing } from './TeamListing'
-import BasicPopover from './BasicPopover'
+import BasicPopover from '../UI/BasicPopover'
 import { getMapObjectFromID } from '../../core/objects/maps'
 import { MatchHistoryTable } from '../../types/database'
 

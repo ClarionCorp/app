@@ -5,7 +5,7 @@ import { ShieldIcon, SwordIcon } from "@phosphor-icons/react";
 import { MatchPlayer } from "../../types/ue4ss";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { getRankFromLP } from "../../core/objects/ranks";
-import BasicPopover from "./BasicPopover";
+import BasicPopover from "../UI/BasicPopover";
 
 export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; myUsername: string }) {
   return (

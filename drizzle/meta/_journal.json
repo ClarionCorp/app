@@ -106,6 +106,13 @@
       "when": 1781388123553,
       "tag": "0014_cool_human_torch",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1781397079059,
+      "tag": "0015_lumpy_switch",
+      "breakpoints": true
     }
   ]
 }

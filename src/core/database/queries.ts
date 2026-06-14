@@ -141,6 +141,7 @@ export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[
       charName: sql`excluded.charName`,
       charId: sql`excluded.charId`,
       xp: sql`excluded.xp`,
+      gainedXp: sql`excluded.gainedXp`,
       ping: sql`excluded.ping`,
       trainings: sql`excluded.trainings`,
     },
@@ -156,10 +157,6 @@ export async function updatePlayerRating(username: string, rating: number) {
 
 export async function insertMatchHistory(data: Omit<typeof matchHistory.$inferInsert, "id">) {
   return db.insert(matchHistory).values(data).run();
-}
-
-export async function updateMatchHistoryUsername(id: number, username: string) {
-  return db.update(matchHistory).set({ username }).where(eq(matchHistory.id, id)).run();
 }
 
 // Moved here in case we need to add more

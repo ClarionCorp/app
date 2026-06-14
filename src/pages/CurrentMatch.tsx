@@ -8,6 +8,7 @@ import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { MapRotation } from '../components/LiveMatch/MapRotation';
 import { AbilityCard } from '../components/LiveMatch/AbilityCard';
+import { IntermissionPredictions } from '../components/LiveMatch/IntermissionPredictions';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
@@ -76,6 +77,12 @@ export default function CurrentMatchPage() {
     .filter(p => p.teamNum !== myTeamNum)
     .sort((a) => (a.role === 'Goalie' ? -1 : 1));
 
+  // always show maps (default state) unless in game
+  const showMaps =
+    session?.queueState == 'StartingGame' ||
+    session?.queueState == 'FoundMatch' ||
+    (getGameStatus(match?.gameState) !== 'IN_GAME' && getGameStatus(match?.gameState) !== 'SETUP' && getGameStatus(match?.gameState) !== 'STARTING');
+
   return (
     <div className="flex flex-col">
       <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -101,17 +108,11 @@ export default function CurrentMatchPage() {
             >
               <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
 
-              <div className="flex items-center gap-3 py-1">
-                <div className="flex-1 h-px bg-background-border" />
-              </div>
+              {!showMaps && <IntermissionPredictions players={players} />}
 
               <div className="flex flex-col lg:flex-row lg:gap-0">
                 <div className="flex-1 min-w-0 space-y-3">
-                  {/* always show maps (default state) unless in game */}
-                  {
-                    session?.queueState == 'StartingGame' ||
-                    session?.queueState == 'FoundMatch' ||
-                    (getGameStatus(match?.gameState) !== 'IN_GAME' && getGameStatus(match?.gameState) !== 'SETUP' && getGameStatus(match?.gameState) !== 'STARTING')  ? (
+                  {showMaps ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                       <MapRotation />
                     </motion.div>
