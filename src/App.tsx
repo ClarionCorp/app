@@ -10,8 +10,7 @@ import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, Po
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { currentMatch, matchHistory, matchPlayers } from './core/database/schema';
-import { fetchPlayerStats, fetchRankQuery, fetchUsernameQuery } from './core/utilities/odyssey';
-import { readIdentity } from './core/init';
+import { fetchPlayerStats, fetchRankQuery, fetchSelfQuery, fetchUsernameQuery } from './core/utilities/odyssey';
 import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
@@ -62,22 +61,25 @@ function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // Identity heartbeat: Relaunch if identity.json jwt changes
+  // Identity heartbeat: Relaunch if the active Odyssey account changes
   useEffect(() => {
-    if (!odyAuth) return;
+    let firstFire = true;
     const id = setInterval(async () => {
+      if (firstFire) { firstFire = false; return; }
       try {
-        const { jwt } = await readIdentity();
-        if (jwt !== odyAuth.jwt) {
-          console.error('JWT mismatch detected in identity.json, relaunching...');
+        console.log('Checking in with Odyssey for routine heartbeat...');
+        const [selfQuery, currentUser] = await Promise.all([fetchSelfQuery(), getUser()]);
+        if (!currentUser) return;
+        if (selfQuery.username !== currentUser.username || selfQuery.playerId !== currentUser.playerId) {
+          console.error('User identity mismatch detected, relaunching...');
           await relaunch();
         }
       } catch {
-        // identity.json may be unreadable, skip silently
+        // game may not be running, just skip silently
       }
     }, heartbeat_interval);
     return () => clearInterval(id);
-  }, [odyAuth]);
+  }, []);
 
   // Auto-close when game exits
   useEffect(() => {
