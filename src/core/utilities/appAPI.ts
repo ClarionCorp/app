@@ -5,27 +5,22 @@ import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1 } from "../../types/appAPI
 import { MatchHistoryTable } from "../../types/database";
 import { AiMiAPI } from "../constants";
 import { db } from "../database/driver";
-import { getUsers, usernameToPlayerId } from "../database/queries";
+import { getUsers } from "../database/queries";
 import { matchHistory } from "../database/schema";
 
 // Here we parse the data we have locally before shipping it off to the AppAPI
 export async function saveMatchHistoryEntry(match: MatchHistoryTable) {
   const avgRating = 0;
 
-  let playerId: string | null = null;
-  let ownerName: string | null = match.username ?? null;
-  if (match.username) {
-    playerId = await usernameToPlayerId(match.username);
-  } else {
+  let playerId: string | null = match.playerId ?? null;
+  let ownerName: string | null = null;
+  if (playerId) {
     const users = await getUsers();
-    for (const u of users) {
-      const allNames = [u.username, ...u.nameHistory];
+    const matchedUser = users.find(u => u.playerId === playerId);
+    if (matchedUser) {
+      const allNames = [matchedUser.username, ...matchedUser.nameHistory];
       const matchedPlayer = match.players.find(p => allNames.includes(p.name));
-      if (matchedPlayer) {
-        playerId = u.playerId;
-        ownerName = matchedPlayer.name;
-        break;
-      }
+      if (matchedPlayer) ownerName = matchedPlayer.name;
     }
   }
   if (!playerId) { console.warn('PlayerID could not be resolved. Skipping entry...'); return; };
@@ -64,7 +59,7 @@ export async function saveMatchHistoryEntry(match: MatchHistoryTable) {
     t2_sets: match.t2_sets,
     myTeam: match.myTeam,
     playedAt: Math.floor(match.createdAt.getTime() / 1000),
-    username: match.username,
+    username: ownerName,
   }
 
   const res = await fetch(`${AiMiAPI}/v1/matches`, {
