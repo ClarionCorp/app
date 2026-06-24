@@ -157,7 +157,7 @@ export default function SettingsPage() {
         >
           {syncing
             ? <div className="w-44"><ProgressBar percent={syncProgress?.percent ?? null} message={syncProgress?.message} /></div>
-            : <Button variant="secondary" size="sm" onClick={handleSync}>Upload</Button>
+            : <Button variant="secondary" size="sm" onClick={() => toast("Feature not fully finished yet! Sorry..", 'info')}>Upload</Button>
           }
         </SettingRow>
 
