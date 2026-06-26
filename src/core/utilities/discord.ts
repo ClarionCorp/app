@@ -180,7 +180,8 @@ export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo
     await discordRpc.updateActivity({
       details: 'Idling on the Main Menu',
       state: `Playing ${partyLabel}`,
-      largeImage: DRPC_LOGO_KEY
+      largeImage: DRPC_LOGO_KEY,
+      buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
 
@@ -189,7 +190,8 @@ export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo
     await discordRpc.updateActivity({
       details: `Waiting in ${session.queueName} Queue`,
       state: `Playing ${partyLabel}`,
-      largeImage: DRPC_LOGO_KEY
+      largeImage: DRPC_LOGO_KEY,
+      buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
 
@@ -205,6 +207,7 @@ export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo
       details: `${session.queueName} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
       ...matchSetupTimestamps,
+      buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
 
@@ -228,8 +231,8 @@ export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo
       largeText: myPlayer?.charName ? `Playing ${myPlayer?.charName}` : 'Ai.Mi Companion App',
       smallImage: rankObject.key,
       smallText: rankObject.name,
-      // buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
       startTimestamp: currentMatch.startedAt?.getTime(),
+      buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
 }
