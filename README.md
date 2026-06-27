@@ -24,7 +24,7 @@ The app will automatically save completed games and be viewable completely in-ap
 | Map           | ✅             | ✅                                           | ✅                                                  |
 | Duration      | ✅             | ✅                                           | ✅                                                  |
 | Average Rank  | ✅             | ✅                                           | ✅                                                  |
-| Bans          | ⏳             | ✅                                           | ✅                                                  |
+| Bans          | ✅             | ✅                                           | ✅                                                  |
 |               |               |                                             |                                                    |
 | Character     | ✅             | ✅                                           | ✅                                                  |
 | Rank          | ✅             | ❌                                           | ❌                                                  |
@@ -44,7 +44,7 @@ The app will automatically save completed games and be viewable completely in-ap
 | Starting Gear | ✅             | ✅                                           | ✅                                                  |
 | Awakenings    | ✅             | ✅                                           | ✅                                                  |
 |               |               |                                             |                                                    |
-| All Gamemodes | ✅             | ❌                                           | ❌                                                  |
+| ALL Modes     | ✅             | ❌                                           | ❌                                                  |
 
 ## 🗣️ Discord Rich Presence
 The default OS Rich Presence kind of sucks. Just says you're playing OS and for how long. Our custom Rich Presence is fully dynamic based on what you are doing. Whether it's queuing, playing (live score!), or just sitting in the lobby, your friends on discord will be updated on it!
