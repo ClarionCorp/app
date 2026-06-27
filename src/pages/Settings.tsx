@@ -17,7 +17,7 @@ import { ConfirmModal } from "../components/UI/ConfirmModal";
 import { ProgressBar } from "../components/UI/ProgressBar";
 import { unInstallUE4SS } from "../core/utilities/ue4ss";
 import { useToast } from "../components/UI/Toast";
-import { uploadAllMatches } from "../core/utilities/appAPI";
+// import { uploadAllMatches } from "../core/utilities/appAPI";
 import { exit } from "@tauri-apps/plugin-process";
 
 export type QueuePopType = 'Ai.Mi' | 'Generic';
@@ -75,12 +75,13 @@ export default function SettingsPage() {
   };
 
   const handleSync = async () => {
+    toast("Feature not fully finished yet! Sorry..", 'info');
     setSyncing(true);
     setSyncProgress({ percent: null, message: 'Starting...' });
     try {
-      await uploadAllMatches((_stage, percent, message) => {
-        setSyncProgress({ percent, message });
-      });
+      // await uploadAllMatches((_stage, percent, message) => {
+      //   setSyncProgress({ percent, message });
+      // });
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Failed to sync match history.', 'error');
     }
@@ -157,7 +158,7 @@ export default function SettingsPage() {
         >
           {syncing
             ? <div className="w-44"><ProgressBar percent={syncProgress?.percent ?? null} message={syncProgress?.message} /></div>
-            : <Button variant="secondary" size="sm" onClick={() => toast("Feature not fully finished yet! Sorry..", 'info')}>Upload</Button>
+            : <Button variant="secondary" size="sm" onClick={handleSync}>Upload</Button>
           }
         </SettingRow>
 
