@@ -10,7 +10,7 @@ export function AbilityCard({ ability }: { ability: Ability }) {
       <img
         src={ability.icon}
         alt={ability.title}
-        className="w-14 h-14 rounded-lg shrink-0 object-contain bg-surface-overlay"
+        className="w-14 h-14 rounded-md shrink-0 object-contain bg-surface-overlay"
       />
 
       <div className="flex-1 min-w-0 space-y-2">
