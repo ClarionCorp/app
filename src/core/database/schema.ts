@@ -102,8 +102,8 @@ export const matchHistory = sqliteTable("matchHistory", {
 
   t1_pts: integer("t1_pts").notNull().default(0),
   t2_pts: integer("t2_pts").notNull().default(0),
-  t1_sets: integer("t1_sets").notNull(),
-  t2_sets: integer("t2_sets").notNull(),
+  t1_sets: integer("t1_sets").notNull().default(0),
+  t2_sets: integer("t2_sets").notNull().default(0),
   myTeam: integer("myTeam").notNull(), // just easier than pathing thru players
   wonGame: integer("wonGame", { mode: "boolean" }).notNull(),
 

@@ -9,7 +9,7 @@ import { mkdir } from "@tauri-apps/plugin-fs";
 const dataDir = await appDataDir();
 await mkdir(dataDir, { recursive: true });
 
-await Database.load("sqlite:hyperpop.db");
+await Database.load("sqlite:cosmicexpanse.db");
 
 // Vite inlines the SQL at build time
 const migrations = import.meta.glob<string>("../../../drizzle/*.sql", {
@@ -18,9 +18,9 @@ const migrations = import.meta.glob<string>("../../../drizzle/*.sql", {
   import: "default",
 });
 
-await migrate("sqlite:hyperpop.db", migrations);
+await migrate("sqlite:cosmicexpanse.db", migrations);
 
-export const db = drizzle(createDrizzleProxy("sqlite:hyperpop.db"), { schema });
+export const db = drizzle(createDrizzleProxy("sqlite:cosmicexpanse.db"), { schema });
 
 export async function resetDatabase() {
   const tables = Object.values(schema).filter((t) => is(t, Table));
