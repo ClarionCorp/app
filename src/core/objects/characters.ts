@@ -25,7 +25,8 @@ export type Ability = {
 type Character = {
   id: string,
   name: string,
-  abilities: Ability[]
+  abilities: Ability[],
+  pagination?: boolean,
 }
 
 export const characters: Character[] = [
@@ -450,6 +451,7 @@ export const characters: Character[] = [
   {
     id: 'CD_UmbrellaUser',
     name: 'Kazan',
+    pagination: true,
     abilities: [
       {
         type: 'Closed Strike',
@@ -500,17 +502,9 @@ export const characters: Character[] = [
         description: "Float up in the air, becoming Elusive. Elusive targets are invulnerable and untargetable."
       },
       {
-        type: 'Special',
-        title: "Pop / Retract",
-        icon: '/characters/abilities/Kazan/closed_special.webp',
-        tags: [],
-        cooldown: 1,
-        description: "Pop open or Retract the Umbrella, unlocking a different set of abilities per form."
-      },
-      {
         type: 'Closed Special',
         title: "Pop-Up",
-        icon: '/characters/abilities/Kazan/open_special.webp',
+        icon: '/characters/abilities/Kazan/closed_special.webp',
         tags: ['Melee', 'Impact'],
         cooldown: 1,
         description: "During The Slip, popping the Umbrella will hit all nearby enemies and stop the dash."
@@ -518,10 +512,18 @@ export const characters: Character[] = [
       {
         type: 'Open Special',
         title: "Maddening Descent",
-        icon: '/characters/abilities/Kazan/open_dive.webp',
+        icon: '/characters/abilities/Kazan/open_special.webp',
         tags: ['Dash', 'Melee', 'Impact'],
         cooldown: 1,
         description: "Leap higher and then dive down, slamming all enemies when landing."
+      },
+      {
+        type: 'Special',
+        title: "Pop / Retract",
+        icon: '/characters/abilities/Kazan/special.webp',
+        tags: [],
+        cooldown: 1,
+        description: "Pop open or Retract the Umbrella, unlocking a different set of abilities per form."
       }
     ]
   },

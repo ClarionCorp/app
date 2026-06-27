@@ -1,9 +1,9 @@
 import { Ability } from '../../core/objects/characters';
 
-const UNLABELED_TYPES = new Set<Ability['type']>(['Strike']);
+const UNLABELED_TYPES = new Set<Ability['type']>(['Strike', 'Open Strike']);
 
 export function AbilityCard({ ability }: { ability: Ability }) {
-  const typeLabel = UNLABELED_TYPES.has(ability.type) ? null : ability.type;
+  const typeLabel = UNLABELED_TYPES.has(ability.type) ? null : ability.type.replace(/^(Open|Closed) /, '');
 
   return (
     <div className="bg-surface border border-surface-border rounded-xl p-4 flex gap-4 shadow-lg">
