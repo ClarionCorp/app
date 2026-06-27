@@ -146,8 +146,8 @@ export default function CurrentMatchPage() {
 
                 <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
                   {myChar ? (
-                    myChar.abilities.map(ability => (
-                      <AbilityCard key={ability.type} ability={ability} />
+                    myChar.abilities.map((ability, index) => (
+                      <AbilityCard key={`${ability.type}-${index}`} ability={ability} />
                     ))
                   ) : (
                     <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-48">

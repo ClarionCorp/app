@@ -1,14 +1,9 @@
 import { Ability } from '../../core/objects/characters';
 
-const TYPE_LABEL: Record<Ability['type'], string | null> = {
-  Strike: null,
-  Primary: 'Primary',
-  Secondary: 'Secondary',
-  Special: 'Special',
-};
+const UNLABELED_TYPES = new Set<Ability['type']>(['Strike']);
 
 export function AbilityCard({ ability }: { ability: Ability }) {
-  const typeLabel = TYPE_LABEL[ability.type];
+  const typeLabel = UNLABELED_TYPES.has(ability.type) ? null : ability.type;
 
   return (
     <div className="bg-surface border border-surface-border rounded-xl p-4 flex gap-4 shadow-lg">
