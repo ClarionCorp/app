@@ -109,7 +109,7 @@ export default function CurrentMatchPage() {
               initial="hidden"
               animate="show"
             >
-              <MatchInfo match={match} myPlayer={myPlayer} />
+              {match?.queue !== null && <MatchInfo match={match} myPlayer={myPlayer} />}
               
               <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
 
