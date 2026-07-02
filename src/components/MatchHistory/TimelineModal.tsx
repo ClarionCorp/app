@@ -5,7 +5,16 @@ import { XIcon } from '@phosphor-icons/react'
 import { MatchPlayer, TimelineEntry } from '../../types/ue4ss'
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler)
+
 const CHART_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#a78bfa', '#fb923c']
+
+function formatElapsed(start: Date | string, end: Date | string): string {
+  const diff = Math.round((new Date(end).getTime() - new Date(start).getTime()) / 1000)
+  if (diff < 60) return `${diff}s`
+  const m = Math.floor(diff / 60)
+  const s = diff % 60
+  return s > 0 ? `${m}m ${s}s` : `${m}m`
+}
 
 interface TimelineChartProps {
   players: MatchPlayer[]
@@ -14,35 +23,74 @@ interface TimelineChartProps {
 }
 
 function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
-  const goalEvents = (timeline ?? []).filter(e => e.event === 'GOAL_SCORE')
+  const safeTimeline = timeline ?? []
+  const gameStart = safeTimeline.find(e => e.event === 'GAME_START')
+
+  // Walk the timeline to collect goal events and flag which ones won a set
+  const goalEvents: TimelineEntry[] = []
+  const setWinnerGoals = new Set<number>()
+  for (let i = 0; i < safeTimeline.length; i++) {
+    if (safeTimeline[i].event === 'GOAL_SCORE') {
+      const idx = goalEvents.length
+      goalEvents.push(safeTimeline[i])
+      if (safeTimeline[i + 1]?.event === 'WON_SET') setWinnerGoals.add(idx)
+    }
+  }
+
   const maxGoals = Math.max(...players.map(p => (p.xpGoals ?? []).length), 0)
-  const labels = Array.from({ length: maxGoals }, (_, i) => `G${i + 1}`)
+
+  const labels = Array.from({ length: maxGoals }, (_, i) => {
+    const event = goalEvents[i]
+    if (!event || !gameStart) return `G${i + 1}`
+    const t = formatElapsed(gameStart.when, event.when)
+    return setWinnerGoals.has(i) ? `${t} (Set)` : t
+  })
+
   const tickColors = labels.map((_, i) => {
     const event = goalEvents[i]
     if (!event) return 'rgba(255,255,255,0.4)'
     return event.team === myTeam ? '#60a5fa' : '#f87171'
   })
 
+  const pointRadii = Array.from({ length: maxGoals }, (_, i) =>
+    setWinnerGoals.has(i) ? 5 : 4
+  )
+
   return (
     <Line
       data={{
         labels,
-        datasets: players.map((p, i) => ({
-          label: p.name,
-          data: p.xpGoals ?? [],
-          borderColor: CHART_COLORS[i % CHART_COLORS.length],
-          backgroundColor: CHART_COLORS[i % CHART_COLORS.length] + '22',
-          borderWidth: 2,
-          pointRadius: 4,
-          tension: 0.3,
-          fill: false,
-        })),
+        datasets: players.map((p, i) => {
+          const color = CHART_COLORS[i % CHART_COLORS.length]
+          const pointBg = Array.from({ length: maxGoals }, (_, j) =>
+            setWinnerGoals.has(j) ? color : 'transparent'
+          )
+          return {
+            label: p.name,
+            data: p.xpGoals ?? [],
+            borderColor: color,
+            backgroundColor: color + '22',
+            borderWidth: 2,
+            pointRadius: pointRadii,
+            pointBorderColor: color,
+            pointBackgroundColor: pointBg,
+            pointBorderWidth: 2,
+            tension: 0.3,
+            fill: false,
+          }
+        }),
       }}
       options={{
         responsive: true,
         plugins: {
           legend: { display: false },
-          tooltip: { mode: 'index', intersect: false },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString() ?? '—'} XP`,
+            },
+          },
         },
         scales: {
           x: {
@@ -50,6 +98,7 @@ function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
             ticks: { color: tickColors, font: { size: 10 } },
           },
           y: {
+            title: { display: true, text: 'XP', color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
             grid: { color: 'rgba(255,255,255,0.05)' },
             ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
           },
@@ -87,7 +136,10 @@ export function TimelineModal({ open, onClose, players, timeline, myTeam }: Time
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-char">Match Timeline</span>
+              <div>
+                <span className="text-sm font-semibold text-char">Match Timeline</span>
+                <p className="text-[11px] text-char-subtle mt-0.5">XP gained per player at each goal</p>
+              </div>
               <button onClick={onClose} className="text-char-subtle hover:text-char transition-colors">
                 <XIcon size={16} />
               </button>
@@ -110,6 +162,10 @@ export function TimelineModal({ open, onClose, players, timeline, myTeam }: Time
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#f87171]" />
                   Enemy goal
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-char-subtle shrink-0" />
+                  Set win
                 </div>
               </div>
             </div>
