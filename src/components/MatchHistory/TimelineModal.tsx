@@ -2,14 +2,26 @@ import { Line } from 'react-chartjs-2'
 import { Chart, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js'
 import { motion, AnimatePresence } from 'framer-motion'
 import { XIcon } from '@phosphor-icons/react'
-import { MatchPlayer } from '../../types/ue4ss'
+import { MatchPlayer, TimelineEntry } from '../../types/ue4ss'
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler)
 const CHART_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#a78bfa', '#fb923c']
 
-function XpLineChart({ players }: { players: MatchPlayer[] }) {
+interface TimelineChartProps {
+  players: MatchPlayer[]
+  timeline: TimelineEntry[]
+  myTeam: number
+}
+
+function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
+  const goalEvents = (timeline ?? []).filter(e => e.event === 'GOAL_SCORE')
   const maxGoals = Math.max(...players.map(p => (p.xpGoals ?? []).length), 0)
-  const labels = Array.from({ length: maxGoals }, (_, i) => `Goal ${i + 1}`)
+  const labels = Array.from({ length: maxGoals }, (_, i) => `G${i + 1}`)
+  const tickColors = labels.map((_, i) => {
+    const event = goalEvents[i]
+    if (!event) return 'rgba(255,255,255,0.4)'
+    return event.team === myTeam ? '#60a5fa' : '#f87171'
+  })
 
   return (
     <Line
@@ -35,7 +47,7 @@ function XpLineChart({ players }: { players: MatchPlayer[] }) {
         scales: {
           x: {
             grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+            ticks: { color: tickColors, font: { size: 10 } },
           },
           y: {
             grid: { color: 'rgba(255,255,255,0.05)' },
@@ -47,7 +59,15 @@ function XpLineChart({ players }: { players: MatchPlayer[] }) {
   )
 }
 
-export function XpGainModal({ open, onClose, players }: { open: boolean; onClose: () => void; players: MatchPlayer[] }) {
+interface TimelineModalProps {
+  open: boolean
+  onClose: () => void
+  players: MatchPlayer[]
+  timeline: TimelineEntry[]
+  myTeam: number
+}
+
+export function TimelineModal({ open, onClose, players, timeline, myTeam }: TimelineModalProps) {
   return (
     <AnimatePresence>
       {open && (
@@ -67,19 +87,31 @@ export function XpGainModal({ open, onClose, players }: { open: boolean; onClose
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-char">XP Gain per Goal</span>
+              <span className="text-sm font-semibold text-char">Match Timeline</span>
               <button onClick={onClose} className="text-char-subtle hover:text-char transition-colors">
                 <XIcon size={16} />
               </button>
             </div>
-            <XpLineChart players={players} />
-            <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-              {players.map((p, pi) => (
-                <div key={p.name} className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: CHART_COLORS[pi % CHART_COLORS.length] }} />
-                  <span className="text-xs text-char-subtle">{p.name}</span>
+            <TimelineChart players={players} timeline={timeline} myTeam={myTeam} />
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                {players.map((p, pi) => (
+                  <div key={p.name} className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: CHART_COLORS[pi % CHART_COLORS.length] }} />
+                    <span className="text-xs text-char-subtle">{p.name}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 shrink-0 text-xs text-char-subtle">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#60a5fa]" />
+                  Ally goal
                 </div>
-              ))}
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#f87171]" />
+                  Enemy goal
+                </div>
+              </div>
             </div>
           </motion.div>
         </motion.div>
