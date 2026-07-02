@@ -77,6 +77,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
   xp: integer("xp").default(0),
   gainedXp: integer("gainedXp").default(0), // intermissionXp
+  xpGoals: text("xpGoals", { mode: "json" }).$type<number[]>().notNull().default([]),
   ping: integer("ping").default(0),
   trainings: text("trainings", { mode: "json" }).$type<string[]>().notNull().default([]),
   favChar: text("favChar", { mode: "json" }).$type<PlayerCharJSON[]>().notNull().default([]), // most games played

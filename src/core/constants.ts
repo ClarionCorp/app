@@ -4,7 +4,8 @@
 export const version = '2.0.0-pre6';
 export const ClarionAPI = 'https://api.clarioncorp.net';
 export const OdyAPI = 'https://prometheus-proxy.odysseyinteractive.gg/api';
-export const AiMiAPI = 'https://api.aimis.app';
+// export const AiMiAPI = 'https://api.aimis.app';
+export const AiMiAPI = 'http://localhost:12240';
 export const StatusUrl = 'https://status.blals.com';
 
 

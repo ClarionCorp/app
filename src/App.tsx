@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
@@ -21,6 +21,7 @@ import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { heartbeat_interval } from './core/constants';
+import { useDialogue } from './components/UI/DialogueToast';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -38,6 +39,8 @@ function App() {
   const [odyAuth, setOdyAuth] = useState<OdyAuth>();
   const [connectedToOdy, setConnectedStatus] = useState<boolean>(false);
   const navigate = useNavigate();
+  const { show: showDialogue } = useDialogue();
+  const demoIndexRef = useRef(0);
 
   const location = useLocation();
   const showSidebar = !['/', '/home', '/setup'].includes(location.pathname);
@@ -45,6 +48,47 @@ function App() {
   // Debug Page
   useEffect(() => {
     const onKey = async (e: KeyboardEvent) => {
+      if (e.key === 'F4') {
+        const demos = [
+          {
+            variant: 'success' as const,
+            message: 'Match accepted! Loading into the arena...',
+            image: '/aimi/Free.png',
+            autoDismiss: 4000,
+          },
+          {
+            variant: 'info' as const,
+            message: 'Your ranked season resets in 3 days. Check your standing before it ends.',
+            image: '/aimi/Yapping.gif',
+            buttons: [
+              { label: 'View Rank', variant: 'primary' as const, onClick: () => {}, dismisses: true },
+              { label: 'Dismiss', dismisses: true },
+            ],
+            dismissible: false,
+          },
+          {
+            variant: 'warning' as const,
+            message: 'Your rank protection expires after this match. A loss will affect your rating.',
+            image: '/aimi/Free.png',
+            autoDismiss: 6000,
+          },
+          {
+            variant: 'error' as const,
+            message: 'Failed to sync match data. Your stats may not be up to date.',
+            image: '/aimi/Free.png',
+            buttons: [{ label: 'Retry', variant: 'danger' as const, dismisses: true }],
+          },
+          {
+            variant: 'danger' as const,
+            message: 'AFK detected. You will be removed from the match in 30 seconds.',
+            image: '/aimi/Free.png',
+            dismissible: false,
+            buttons: [{ label: "I'm here!", variant: 'primary' as const, dismisses: true }],
+          },
+        ];
+        showDialogue(demos[demoIndexRef.current % demos.length]);
+        demoIndexRef.current++;
+      }
       if (e.key === 'F8') {
         const setting = await getAppSettings();
         await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
@@ -148,6 +192,7 @@ function App() {
       await refreshLatestMatchStart(); // might be deprecated soon
       const session = await getGameSession();
       const gameStatus = getGameStatus(data.phase);
+      const currentState = await getCurrentMatch();
 
       let cMatch = await upsertCurrentMatch({
         gameState: data.phase,
@@ -164,6 +209,23 @@ function App() {
 
       console.log(`GameState Changed! (${data.phase})`);
       if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(cMatch); } // Ask Discord RPC to try and update score
+      console.log(`t1_pts: ${currentState.teamOnePts} | t2_pts: ${currentState.teamTwoPts}`);
+      console.log(`t1_goals: ${data.t1_goals} | t2_goals: ${data.t2_goals}`);
+      if ( // Keep track of xp over each goal
+          currentState &&
+          currentState.teamOnePts !== null &&
+          currentState.teamTwoPts !== null &&
+          (
+            currentState.teamOnePts < data.t1_goals ||
+            currentState.teamTwoPts < data.t2_goals
+          )
+        ) {
+        console.warn(`Saving each player's xp differences...`);
+        const players = await getMatchPlayers();
+        for (const player of players) {
+          await db.update(matchPlayers).set({ xpGoals: [...player.xpGoals, player.xp ?? 0] }).where(eq(matchPlayers.username, player.username));
+        }
+      }
     }),
     onSessionUpdated(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
