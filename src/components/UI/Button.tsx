@@ -5,7 +5,7 @@ import { motion, HTMLMotionProps, type Transition } from 'framer-motion';
 import { CircleNotchIcon } from '@phosphor-icons/react';
 import { cn } from '../../core/styles/theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'surface' | 'success' | 'ghost' | 'danger' | 'danger-ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'surface' | 'success' | 'ghost' | 'danger' | 'danger-ghost' | 'secondary-ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
@@ -23,6 +23,7 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
 const variantStyles: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-white border border-secondary hover:bg-tertiary hover:shadow-accent active:bg-secondary',
   secondary: 'bg-secondary text-white border border-secondary hover:bg-tertiary hover:shadow-accent active:bg-tertiary',
+  'secondary-ghost': 'bg-transparent text-secondary/80 border border-transparent hover:border-secondary',
   surface: 'bg-surface-active text-char border border-background-border hover:bg-surface-overlay active:bg-surface-raised',
   success: 'bg-success/80 text-white hover:bg-success/60 hover:shadow-accent active:bg-success/50',
   ghost: 'bg-transparent text-char-secondary border border-transparent hover:bg-surface-active hover:text-char active:bg-surface-raised',

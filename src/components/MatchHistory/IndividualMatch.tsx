@@ -8,6 +8,8 @@ import { TeamListing } from './TeamListing'
 import BasicPopover from '../UI/BasicPopover'
 import { getMapObjectFromID } from '../../core/objects/maps'
 import { MatchHistoryTable } from '../../types/database'
+import { Button } from '../UI/Button'
+import { XpGainModal } from './XpGainModal'
 
 function formatRelativeTime(date: Date): string {
   const diff = (Date.now() - date.getTime()) / 1000
@@ -20,6 +22,7 @@ function formatRelativeTime(date: Date): string {
 
 export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistoryTable; myPlayerId: string | null }) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [xpModalOpen, setXpModalOpen] = useState(false)
 
   const myPlayer = row.players.find(p => p.playerId === myPlayerId)
   if (!myPlayer) return null
@@ -51,6 +54,8 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
   const ratings = row.players.map(p => p.rating).filter((r): r is number => r !== null && r !== 0);
   const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
   const avgRankData = avgRating != null ? getRankFromLP(avgRating) : null;
+  const hasXpData = myTeamPlayers.some(p => (p.xpGoals ?? []).length > 0)
+
   const myPts = row.myTeam === 1 ? row.t1_pts : row.t2_pts;
   const enemyPts = row.myTeam === 1 ? row.t2_pts : row.t1_pts;
   const mySets = row.myTeam === 1 ? row.t1_sets : row.t2_sets;
@@ -229,7 +234,10 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
 
             {/* My team */}
             <div className="px-4 py-3 space-y-2">
-              <div className="text-xs font-semibold text-char-subtle mb-2">Your Team</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-semibold text-char-subtle">Your Team</div>
+                {hasXpData && <Button variant="secondary-ghost" size="sm" onClick={() => setXpModalOpen(true)}>View XP Gain</Button>}
+              </div>
               <div className="space-y-1">
                 <TeamListing players={myTeamPlayers} myUsername={myUsername} />
               </div>
@@ -245,6 +253,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
           </motion.div>
         )}
       </AnimatePresence>
+      <XpGainModal open={xpModalOpen} onClose={() => setXpModalOpen(false)} players={myTeamPlayers} />
     </div>
   )
 }
