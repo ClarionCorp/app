@@ -1,5 +1,5 @@
 local ModName = "GameStateMod"
-local ModVersion = "1.6.0"
+local ModVersion = "1.7.0"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -122,77 +122,84 @@ end
 
 local function LogMatchState()
     local GameState = FindFirstOf("PMGameState")
-    if GameState and GameState:IsValid() then
-        local phase = GameState.CurrentMatchPhase
-        local scoreInfo = GameState.MatchScoreInfo
-        local t1 = scoreInfo.TeamOneInfo
-        local t2 = scoreInfo.TeamTwoInfo
-        local myTeam = GetLocalTeam()
+    if not (GameState and GameState:IsValid()) then return end
 
-        local mapName, mapId = GetMapInfo(GameState)
-        local terrainName, terrainId = GetTerrainInfo(GameState)
-        local bannedIds = ReadBannedCharacters(GameState)
-        local bannedKey = table.concat(bannedIds, ",")
+    local phase = GameState.CurrentMatchPhase
+    local scoreInfo = GameState.MatchScoreInfo
+    local t1 = scoreInfo.TeamOneInfo
+    local t2 = scoreInfo.TeamTwoInfo
+    local myTeam = GetLocalTeam()
 
-        local cur = {
-            phase = phase,
-            myTeam = myTeam,
-            t1g = t1.NumGoalsThisSet, t1s = t1.NumSetsThisMatch,
-            t2g = t2.NumGoalsThisSet, t2s = t2.NumSetsThisMatch,
-            map = mapName, mapId = mapId,
-            terrain = terrainName, terrainId = terrainId,
-            bans = bannedKey,
-        }
+    local mapName, mapId = GetMapInfo(GameState)
+    local terrainName, terrainId = GetTerrainInfo(GameState)
+    local bannedIds = ReadBannedCharacters(GameState)
+    local bannedKey = table.concat(bannedIds, ",")
 
-        local changed = false
-        for k, v in pairs(cur) do
-            if LastState[k] ~= v then changed = true break end
-        end
+    local cur = {
+        phase = phase,
+        myTeam = myTeam,
+        t1g = t1.NumGoalsThisSet, t1s = t1.NumSetsThisMatch,
+        t2g = t2.NumGoalsThisSet, t2s = t2.NumSetsThisMatch,
+        map = mapName, mapId = mapId,
+        terrain = terrainName, terrainId = terrainId,
+        bans = bannedKey,
+    }
 
-        -- Write current training pool during intermission phases
-        if IntermissionPhases[phase] then
-            ReadCommonTrainings(GameState)
-        end
-
-        if changed then
-            LastState = cur
-
-            local phaseName = MatchPhaseNames[phase] or tostring(phase)
-
-            print(string.format("\n========================================"))
-            print(string.format("[%s] Phase: %s | Team: %s", ModName, phaseName, myTeam and ("Team "..myTeam) or "Unknown"))
-            print(string.format("[%s] T1: %d goals, %d sets", ModName, t1.NumGoalsThisSet, t1.NumSetsThisMatch))
-            print(string.format("[%s] T2: %d goals, %d sets", ModName, t2.NumGoalsThisSet, t2.NumSetsThisMatch))
-            print(string.format("[%s] Map: %s (%s) | Terrain: %s (%s)",
-                ModName, mapName or "null", mapId or "null", terrainName or "null", terrainId or "null"))
-            print(string.format("[%s] Bans: %s", ModName, bannedKey ~= "" and bannedKey or "none"))
-            print(string.format("========================================\n"))
-
-            local resolvedMap = (mapId == "GMD_RGM") and terrainName or mapName
-            local resolvedMapId = (mapId == "GMD_RGM") and terrainId   or mapId
-            local mapStr = resolvedMap and ('"' .. resolvedMap .. '"') or "null"
-            local mapIdStr = resolvedMapId and ('"' .. resolvedMapId .. '"') or "null"
-            local terrainStr = terrainName and ('"' .. terrainName .. '"') or "null"
-            local terrainIdStr = terrainId and ('"' .. terrainId .. '"') or "null"
-            local bannedParts = {}
-            for _, id in ipairs(bannedIds) do
-                table.insert(bannedParts, '"' .. id .. '"')
-            end
-            local bannedJson = "[" .. table.concat(bannedParts, ",") .. "]"
-            WriteState(string.format(
-                '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"terrain":%s,"terrain_id":%s,"banned_characters":%s,"timestamp":%d}',
-                phaseName,
-                myTeam and tostring(myTeam) or "null",
-                t1.NumGoalsThisSet, t1.NumSetsThisMatch,
-                t2.NumGoalsThisSet, t2.NumSetsThisMatch,
-                mapStr, mapIdStr, terrainStr, terrainIdStr,
-                bannedJson,
-                os.time()
-            ))
-        end
+    local changed = false
+    for k, v in pairs(cur) do
+        if LastState[k] ~= v then changed = true break end
     end
 
-    ExecuteWithDelay(2000, LogMatchState)
+    if IntermissionPhases[phase] then
+        ReadCommonTrainings(GameState)
+    end
+
+    if changed then
+        LastState = cur
+
+        local phaseName = MatchPhaseNames[phase] or tostring(phase)
+
+        print(string.format("\n========================================"))
+        print(string.format("[%s] Phase: %s | Team: %s", ModName, phaseName, myTeam and ("Team "..myTeam) or "Unknown"))
+        print(string.format("[%s] T1: %d goals, %d sets", ModName, t1.NumGoalsThisSet, t1.NumSetsThisMatch))
+        print(string.format("[%s] T2: %d goals, %d sets", ModName, t2.NumGoalsThisSet, t2.NumSetsThisMatch))
+        print(string.format("[%s] Map: %s (%s) | Terrain: %s (%s)",
+            ModName, mapName or "null", mapId or "null", terrainName or "null", terrainId or "null"))
+        print(string.format("[%s] Bans: %s", ModName, bannedKey ~= "" and bannedKey or "none"))
+        print(string.format("========================================\n"))
+
+        local resolvedMap = (mapId == "GMD_RGM") and terrainName or mapName
+        local resolvedMapId = (mapId == "GMD_RGM") and terrainId   or mapId
+        local mapStr = resolvedMap and ('"' .. resolvedMap .. '"') or "null"
+        local mapIdStr = resolvedMapId and ('"' .. resolvedMapId .. '"') or "null"
+        local terrainStr = terrainName and ('"' .. terrainName .. '"') or "null"
+        local terrainIdStr = terrainId and ('"' .. terrainId .. '"') or "null"
+        local bannedParts = {}
+        for _, id in ipairs(bannedIds) do
+            table.insert(bannedParts, '"' .. id .. '"')
+        end
+        local bannedJson = "[" .. table.concat(bannedParts, ",") .. "]"
+        WriteState(string.format(
+            '{"phase":"%s","my_team":%s,"t1_goals":%d,"t1_sets":%d,"t2_goals":%d,"t2_sets":%d,"map":%s,"map_id":%s,"terrain":%s,"terrain_id":%s,"banned_characters":%s,"timestamp":%d}',
+            phaseName,
+            myTeam and tostring(myTeam) or "null",
+            t1.NumGoalsThisSet, t1.NumSetsThisMatch,
+            t2.NumGoalsThisSet, t2.NumSetsThisMatch,
+            mapStr, mapIdStr, terrainStr, terrainIdStr,
+            bannedJson,
+            os.time()
+        ))
+    end
 end
 
-ExecuteWithDelay(3000, LogMatchState)
+pcall(function()
+    RegisterHook("/Script/Prometheus.PMPlayerControllerGame:MatchPhaseChanged",
+        function(self, OldPhase, NewPhase)
+            pcall(LogMatchState)
+        end
+    )
+    print(string.format("[%s] MatchPhaseChanged hook registered", ModName))
+end)
+
+-- Capture state on mod load (hook won't fire for the current phase)
+ExecuteWithDelay(3000, function() pcall(LogMatchState) end)
