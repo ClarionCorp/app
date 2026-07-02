@@ -38,22 +38,25 @@ function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
   }
 
   const maxGoals = Math.max(...players.map(p => (p.xpGoals ?? []).length), 0)
+  const totalPoints = maxGoals + 1 // +1 for Start
 
-  const labels = Array.from({ length: maxGoals }, (_, i) => {
-    const event = goalEvents[i]
-    if (!event || !gameStart) return `G${i + 1}`
+  const labels = Array.from({ length: totalPoints }, (_, i) => {
+    if (i === 0) return 'Start'
+    const event = goalEvents[i - 1]
+    if (!event || !gameStart) return `G${i}`
     const t = formatElapsed(gameStart.when, event.when)
-    return setWinnerGoals.has(i) ? `${t} (Set)` : t
+    return setWinnerGoals.has(i - 1) ? `${t} (Set)` : t
   })
 
   const tickColors = labels.map((_, i) => {
-    const event = goalEvents[i]
+    if (i === 0) return 'rgba(255,255,255,0.4)'
+    const event = goalEvents[i - 1]
     if (!event) return 'rgba(255,255,255,0.4)'
     return event.team === myTeam ? '#60a5fa' : '#f87171'
   })
 
-  const pointRadii = Array.from({ length: maxGoals }, (_, i) =>
-    setWinnerGoals.has(i) ? 5 : 4
+  const pointRadii = Array.from({ length: totalPoints }, (_, i) =>
+    i > 0 && setWinnerGoals.has(i - 1) ? 5 : 4
   )
 
   return (
@@ -62,12 +65,12 @@ function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
         labels,
         datasets: players.map((p, i) => {
           const color = CHART_COLORS[i % CHART_COLORS.length]
-          const pointBg = Array.from({ length: maxGoals }, (_, j) =>
-            setWinnerGoals.has(j) ? color : 'transparent'
+          const pointBg = Array.from({ length: totalPoints }, (_, j) =>
+            j > 0 && setWinnerGoals.has(j - 1) ? color : 'transparent'
           )
           return {
             label: p.name,
-            data: p.xpGoals ?? [],
+            data: [0, ...(p.xpGoals ?? [])],
             borderColor: color,
             backgroundColor: color + '22',
             borderWidth: 2,

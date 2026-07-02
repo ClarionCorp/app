@@ -164,7 +164,7 @@ export async function insertMatchHistory(data: Omit<typeof matchHistory.$inferIn
 export async function resetLocalTables() {
   console.log('Clearing local tables for next match...');
   await db.delete(matchPlayers).run();
-  await db.update(currentMatch).set({ trainings: [] });
+  await db.update(currentMatch).set({ trainings: [], timeline: [] });
 }
 
 // Only runs once upon loading players, so it should be fine to run this heavy function lol

@@ -210,9 +210,15 @@ function App() {
 
       console.log(`GameState Changed! (${data.phase})`);
       if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(cMatch); } // Ask Discord RPC to try and update score
+      
       console.log(`t1_pts: ${currentState.teamOnePts} | t2_pts: ${currentState.teamTwoPts}`);
       console.log(`t1_goals: ${data.t1_goals} | t2_goals: ${data.t2_goals}`);
-      if (gameStatus == 'IN_GAME') { await checkSaveTimelineEntries(currentState, data) };
+      if (
+        data.phase == 'GoalScore' ||
+        data.phase == 'GoalCelebration' ||
+        data.phase == 'InGame'
+      ) { await checkSaveTimelineEntries(currentState, data) };
+      if (data.phase == 'FaceOffIntro') { await markMatchStartIfNone(); };
     }),
     onSessionUpdated(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
@@ -236,7 +242,6 @@ function App() {
         if (settings.notifyQueuePop) {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
         }
-        await markMatchStartIfNone();
       }
     }),
     onTrainingsChanged(async (payload) => {
