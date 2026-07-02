@@ -1,6 +1,7 @@
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { upsertCurrentMatch } from './database/queries';
+import { markMatchStartIfNone } from './timeline';
 
 export interface FileChangePayload {
   file: string;
@@ -64,4 +65,5 @@ export async function refreshLatestMatchStart(): Promise<void> {
   const [, year, month, day, hour, min, sec, ms] = m;
   const startedAt = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(min), Number(sec), Number(ms)));
   await upsertCurrentMatch({ startedAt });
+  await markMatchStartIfNone();
 }

@@ -22,7 +22,7 @@ import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { heartbeat_interval } from './core/constants';
 import { useDialogue } from './components/UI/DialogueToast';
-import { checkSaveTimelineEntries } from './core/timeline';
+import { checkSaveTimelineEntries, markMatchStartIfNone } from './core/timeline';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -236,6 +236,7 @@ function App() {
         if (settings.notifyQueuePop) {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
         }
+        await markMatchStartIfNone();
       }
     }),
     onTrainingsChanged(async (payload) => {

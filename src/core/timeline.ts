@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { CurrentMatchTable } from "../types/database";
 import { GameStateJSON } from "../types/ue4ss";
-import { appendTimelineEntry, getMatchPlayers } from "./database/queries";
+import { appendTimelineEntry, getCurrentMatch, getMatchPlayers } from "./database/queries";
 import { matchPlayers } from "./database/schema";
 import { db } from "./database/driver";
 
@@ -46,4 +46,16 @@ export async function checkSaveTimelineEntries(oldState: CurrentMatchTable, newS
 
   // Won Game is saved + determined while saving match history.
   // It's never saved to the currentMatch table.
+}
+
+export async function markMatchStartIfNone() {
+  const currentMatch = await getCurrentMatch();
+  const gameStart = currentMatch.timeline.find(e => e.event === 'GAME_START');
+  if (gameStart) { return };
+  
+  console.log(`Marking Game Start in Timeline...`);
+  await appendTimelineEntry({
+    when: new Date(),
+    event: 'GAME_START',
+  })
 }
