@@ -1,7 +1,7 @@
 import { Line } from 'react-chartjs-2'
 import { Chart, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js'
 import { motion, AnimatePresence } from 'framer-motion'
-import { XIcon } from '@phosphor-icons/react'
+import { CircleIcon, XIcon } from '@phosphor-icons/react'
 import { MatchPlayer, TimelineEntry } from '../../types/ue4ss'
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler)
@@ -42,10 +42,12 @@ function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
 
   const labels = Array.from({ length: totalPoints }, (_, i) => {
     if (i === 0) return 'Start'
-    const event = goalEvents[i - 1]
+    const goalIdx = i - 1
+    const event = goalEvents[goalIdx]
     if (!event || !gameStart) return `G${i}`
     const t = formatElapsed(gameStart.when, event.when)
-    return setWinnerGoals.has(i - 1) ? `${t} (Set)` : t
+    if (setWinnerGoals.has(goalIdx)) return `${t} (${event.team === myTeam ? 'Won' : 'Lost'} Set)`
+    return t
   })
 
   const tickColors = labels.map((_, i) => {
@@ -130,9 +132,9 @@ export function TimelineModal({ open, onClose, players, timeline, myTeam }: Time
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
         >
-          <div className="absolute inset-0 bg-overlay/60" onClick={onClose} />
+          <div className="absolute inset-0 bg-overlay/80" onClick={onClose} />
           <motion.div
-            className="relative z-10 w-135 max-w-[95vw] rounded-xl bg-surface border border-background-border shadow-xl p-5 flex flex-col gap-4"
+            className="relative z-10 w-3xl max-w-[95vw] rounded-xl bg-surface border border-background-border shadow-xl p-5 flex flex-col gap-4"
             initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 8 }}
@@ -143,7 +145,7 @@ export function TimelineModal({ open, onClose, players, timeline, myTeam }: Time
                 <span className="text-sm font-semibold text-char">Match Timeline</span>
                 <p className="text-[11px] text-char-subtle mt-0.5">XP gained per player at each goal</p>
               </div>
-              <button onClick={onClose} className="text-char-subtle hover:text-char transition-colors">
+              <button onClick={onClose} className="text-char-subtle hover:text-char transition-colors cursor-pointer">
                 <XIcon size={16} />
               </button>
             </div>
@@ -158,17 +160,17 @@ export function TimelineModal({ open, onClose, players, timeline, myTeam }: Time
                 ))}
               </div>
               <div className="flex items-center gap-3 shrink-0 text-xs text-char-subtle">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#60a5fa]" />
-                  Ally goal
+                <div className="flex items-center gap-1">
+                  <CircleIcon size={12} weight='bold' className='text-[#60a5fa]' />
+                  Our Goals
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#f87171]" />
-                  Enemy goal
+                <div className="flex items-center gap-1">
+                  <CircleIcon size={12} weight='bold' className='text-[#f87171]' />
+                  Enemy Goals
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-char-subtle shrink-0" />
-                  Set win
+                <div className="flex items-center gap-1">
+                  <CircleIcon size={12} weight='fill' className='text-char-subtle' />
+                  Sets
                 </div>
               </div>
             </div>
