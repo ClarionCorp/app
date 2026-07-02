@@ -63,6 +63,12 @@ export type PostGameStatsJSON = [{
   orbs: string,
 }]
 
+export type TimelineEventType = 'GOAL_SCORE' | 'WON_SET' | 'WON_GAME';
+export type TimelineEntry = {
+  event: TimelineEventType,
+  team: 1 | 2,
+  when: Date,
+}
 
 export type MatchPlayer = {
   name: string, // username

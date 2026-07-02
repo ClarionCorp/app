@@ -6,7 +6,7 @@ import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { onGameStateChanged, onPlayersChanged, onMatchFinalize, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
 import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo, getAppSettings } from './core/database/queries';
-import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
+import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TimelineEntry, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { currentMatch, matchHistory, matchPlayers } from './core/database/schema';
@@ -22,6 +22,7 @@ import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { heartbeat_interval } from './core/constants';
 import { useDialogue } from './components/UI/DialogueToast';
+import { checkSaveTimelineEntries } from './core/timeline';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -211,21 +212,7 @@ function App() {
       if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(cMatch); } // Ask Discord RPC to try and update score
       console.log(`t1_pts: ${currentState.teamOnePts} | t2_pts: ${currentState.teamTwoPts}`);
       console.log(`t1_goals: ${data.t1_goals} | t2_goals: ${data.t2_goals}`);
-      if ( // Keep track of xp over each goal
-          currentState &&
-          currentState.teamOnePts !== null &&
-          currentState.teamTwoPts !== null &&
-          (
-            currentState.teamOnePts < data.t1_goals ||
-            currentState.teamTwoPts < data.t2_goals
-          )
-        ) {
-        console.warn(`Saving each player's xp differences...`);
-        const players = await getMatchPlayers();
-        for (const player of players) {
-          await db.update(matchPlayers).set({ xpGoals: [...player.xpGoals, player.xp ?? 0] }).where(eq(matchPlayers.username, player.username));
-        }
-      }
+      if (gameStatus == 'IN_GAME') { await checkSaveTimelineEntries(currentState, data) };
     }),
     onSessionUpdated(async (payload) => {
       if (payload.kind === 'removed' || !payload.content) return;
@@ -281,6 +268,11 @@ function App() {
         const myTeam = match.teamNum ?? 1;
         const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
         const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
+        const wonTimelineEntry: TimelineEntry = {
+          when: new Date(),
+          event: 'WON_GAME',
+          team: (match.teamOneSets ?? 0) > (match.teamTwoSets ?? 0) ? 1 : 2,
+        }
 
         await insertMatchHistory({
           players,
@@ -295,6 +287,7 @@ function App() {
           t1_sets: match.teamOneSets ?? 0,
           t2_sets: match.teamTwoSets ?? 0,
           wonGame: myScore > enemyScore,
+          timeline: [...match.timeline, wonTimelineEntry],
           createdAt: new Date(),
         });
       } catch (e) {

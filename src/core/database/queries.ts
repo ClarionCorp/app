@@ -1,4 +1,5 @@
 import { AuthTable, PlayerCharJSON, UserTable } from "../../types/database";
+import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
 import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, sessionInfo } from "./schema";
@@ -235,6 +236,12 @@ export async function resetSessionTable() {
 
 export async function updateGameState(state: string) {
   await db.update(currentMatch).set({ gameState: state});
+}
+
+export async function appendTimelineEntry(entry: TimelineEntry) {
+  await db.update(currentMatch)
+    .set({ timeline: sql`json_insert(timeline, '$[#]', json(${JSON.stringify(entry)}))` })
+    .where(eq(currentMatch.id, 1));
 }
 
 // 

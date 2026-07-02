@@ -127,6 +127,13 @@
       "when": 1782993889032,
       "tag": "0017_wide_kid_colt",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1782998674550,
+      "tag": "0018_elite_retro_girl",
+      "breakpoints": true
     }
   ]
 }

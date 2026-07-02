@@ -236,7 +236,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
             <div className="px-4 py-3 space-y-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="text-xs font-semibold text-char-subtle">Your Team</div>
-                {hasXpData && <Button variant="secondary-ghost" size="sm" onClick={() => setXpModalOpen(true)}>View XP Gain</Button>}
+                {hasXpData && <Button variant="secondary-ghost" size="sm" onClick={() => setXpModalOpen(true)}>View Timeline</Button>}
               </div>
               <div className="space-y-1">
                 <TeamListing players={myTeamPlayers} myUsername={myUsername} />

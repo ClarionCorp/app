@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
-import { MatchPlayer } from "../../types/ue4ss";
+import { MatchPlayer, TimelineEntry } from "../../types/ue4ss";
 import { PlayerCharJSON, QueueStates } from "../../types/database";
 import { Playstyle } from "../../types/clarion";
 
@@ -56,6 +56,7 @@ export const currentMatch = sqliteTable("currentMatch", {
   teamNum: integer("teamNum").$type<1 | 2>(),
   trainings: text("trainings", { mode: "json" }).$type<string[]>().notNull().default([]),
   bans: text("bans", { mode: "json" }).$type<string[]>().notNull().default([]),
+  timeline: text("timeline", { mode: 'json' }).$type<TimelineEntry[]>().notNull().default([]),
 
   teamOnePts: integer("teamOnePts"),
   teamTwoPts: integer("teamTwoPts"),
@@ -100,6 +101,7 @@ export const matchHistory = sqliteTable("matchHistory", {
   playerId: text("playerId"), // null will just show regardless of filter
 
   players: text("players", { mode: 'json' }).$type<MatchPlayer[]>().notNull().default([]),
+  timeline: text("timeline", { mode: 'json' }).$type<TimelineEntry[]>().notNull().default([]),
 
   t1_pts: integer("t1_pts").notNull().default(0),
   t2_pts: integer("t2_pts").notNull().default(0),
