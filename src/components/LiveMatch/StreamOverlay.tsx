@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { XIcon, CopySimpleIcon, CheckIcon } from '@phosphor-icons/react';
 import { getAppSettings, upsertAppSettings, getUser } from '../../core/database/queries';
@@ -8,11 +8,11 @@ import { UserTable } from '../../types/database';
 
 const overlay_components = [
   { id: 'queue', label: 'Queue Information' },          // queue, party size
+  { id: 'timeline', label: 'XP Timeline' },             // xpGoals timeline graph
   { id: 'bans', label: 'Banned Characters' },           // banned characters (ranked & customs only)
   { id: 'trainings', label: 'Player Awakenings' },      // each player's awakenings
-  { id: 'ranks', label: 'Player Ranks' },               // each player's ranks
-  { id: 'timeline', label: 'XP Timeline' },             // xpGoals timeline graph
   { id: 'duration', label: 'Match Duration' },          // match timer
+  { id: 'ranks', label: 'Player Ranks' },               // each player's ranks
   // { id: 'rating', label: 'Session Rating History' },    // CCUI's live rating history (but better)
 ];
 
@@ -33,6 +33,18 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
   });
   const [copied, setCopied] = useState(false);
   const [user, setUser] = useState<UserTable | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(1);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(entries => {
+      setPreviewScale(entries[0].contentRect.width / 1920);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [open, sendMatchData]);
 
   useEffect(() => {
     if (!open) return;
@@ -43,6 +55,8 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
 
   const activeComponents = Object.entries(enabled).filter(([, v]) => v).map(([k]) => k).join(',');
   const overlayUrl = `https://clarioncorp.net/app/overlay/${user?.username}?components=${activeComponents}`;
+  const previewUrl = `https://clarioncorp.net/app/overlay/${user?.username}?preview=true&components=${activeComponents}`;
+  // const previewUrl = `http://localhost:3000/app/overlay/${user?.username}?preview=true&components=${activeComponents}`;
 
   function handleCopy() {
     navigator.clipboard.writeText(overlayUrl);
@@ -96,8 +110,15 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
 
             {sendMatchData === true && (
               <>
-                <div className="aspect-video w-full rounded-lg bg-surface-raised overflow-hidden relative">
-                  <div className="absolute inset-0 bg-surface-overlay animate-pulse" />
+                <div ref={containerRef} className="aspect-video w-full rounded-lg overflow-hidden relative">
+                  <img src="/overlay_preview.jpg" alt="Overlay layers" className="absolute inset-0 w-full h-full object-cover" />
+                  <div style={{ width: 1920, height: 1080, transformOrigin: 'top left', transform: `scale(${previewScale})`, position: 'absolute', top: 0, left: 0 }}>
+                    <iframe
+                      src={previewUrl}
+                      style={{ width: 1920, height: 1080, border: 'none' }}
+                      title="Stream Overlay Preview"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-x-6 gap-y-2">
@@ -117,8 +138,8 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
                     {overlayUrl}
                   </div>
                   <Button
-                    variant="surface"
-                    size="sm"
+                    variant='success'
+                    size="md"
                     iconLeft={copied ? <CheckIcon size={14} /> : <CopySimpleIcon size={14} />}
                     onClick={handleCopy}
                   >

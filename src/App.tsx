@@ -6,7 +6,7 @@ import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { onGameStateChanged, onPlayersChanged, onMatchFinalize, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
 import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo, getAppSettings, appendTimelineEntry } from './core/database/queries';
-import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TimelineEntry, TrainingsChangedJSON } from './types/ue4ss';
+import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { currentMatch, matchHistory, matchPlayers } from './core/database/schema';
