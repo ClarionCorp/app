@@ -20,9 +20,10 @@ import { desc, eq } from 'drizzle-orm';
 import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
-import { heartbeat_interval } from './core/constants';
+import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { useDialogue } from './components/UI/DialogueToast';
 import { checkSaveTimelineEntries, markMatchStartIfNone } from './core/timeline';
+import { formatLiveMatchInfo } from './core/overlay';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -123,6 +124,27 @@ function App() {
         // game may not be running, just skip silently
       }
     }, heartbeat_interval);
+    return () => clearInterval(id);
+  }, []);
+
+  // Periodic match data upload (every 30s)
+  useEffect(() => {
+    const uploadMatchData = async () => {
+      const buildData = await formatLiveMatchInfo();
+      if (!buildData) { console.debug("Skipping live sync due to incomplete object data!"); return; };
+
+      const res = await fetch(`${AiMiAPI}/v1/overlay/sync`, {
+        method: 'POST',
+        headers: { "x-user-agent": "aimi-app", "Content-Type": "application/json" },
+        body: JSON.stringify(buildData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) { console.warn(`Live Sync with AppAPI failed! (${res.status} ${res.statusText})`, data); return; };
+      console.debug(`Successfully synced live match data with AppAPI.`); // turn off later, might get spammy lol
+      return;
+    };
+    const id = setInterval(uploadMatchData, 30_000);
     return () => clearInterval(id);
   }, []);
 
