@@ -12,6 +12,7 @@ export const appSettings = sqliteTable("appSettings", {
   queuePopVol: integer("queuePopVol").notNull().default(50),
   queuePopType: text("queuePopType").notNull().default("Ai.Mi"),
   exitOnGameClose: integer("exitOnGameClose", { mode: "boolean" }).notNull().default(false),
+  sendMatchData: integer("sendMatchData", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 

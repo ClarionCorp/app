@@ -29,6 +29,7 @@ type Settings = {
   queuePopVol: number;
   queuePopType: QueuePopType;
   exitOnGameClose: boolean;
+  sendMatchData: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -38,6 +39,7 @@ const DEFAULT_SETTINGS: Settings = {
   queuePopVol: 50,
   queuePopType: 'Ai.Mi',
   exitOnGameClose: false,
+  sendMatchData: false,
 };
 
 export default function SettingsPage() {
@@ -65,6 +67,7 @@ export default function SettingsPage() {
         queuePopVol: s.queuePopVol,
         queuePopType: (s.queuePopType as QueuePopType) ?? 'Ai.Mi',
         exitOnGameClose: s.exitOnGameClose,
+        sendMatchData: s.sendMatchData,
       });
     });
   }, []);
@@ -210,6 +213,16 @@ export default function SettingsPage() {
               items={themes.map(t => ({ label: t, onClick: () => setTheme(t as typeof theme) }))}
             />
           </div>
+        </SettingRow>
+
+        <SettingRow
+          title="Upload Live Match Data"
+          subtitle="Automatically upload current match data to AppAPI for the OBS Overlay."
+        >
+          <Toggle
+            enabled={settings.sendMatchData}
+            onChange={v => update({ sendMatchData: v })}
+          />
         </SettingRow>
 
         <SettingRow

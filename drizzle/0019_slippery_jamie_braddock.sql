@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `sendMatchData` integer DEFAULT false NOT NULL;

@@ -134,6 +134,13 @@
       "when": 1782998674550,
       "tag": "0018_elite_retro_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1783097124116,
+      "tag": "0019_slippery_jamie_braddock",
+      "breakpoints": true
     }
   ]
 }

@@ -127,9 +127,12 @@ function App() {
     return () => clearInterval(id);
   }, []);
 
-  // Periodic match data upload (every 30s)
+  // Periodic match data upload (every 30s) [only if allowed by settings]
   useEffect(() => {
     const uploadMatchData = async () => {
+      const settings = await getAppSettings();
+      if (settings.sendMatchData == false) { return };
+
       const buildData = await formatLiveMatchInfo();
       if (!buildData) { console.debug("Skipping live sync due to incomplete object data!"); return; };
 
@@ -148,7 +151,7 @@ function App() {
     return () => clearInterval(id);
   }, []);
 
-  // Auto-close when game exits
+  // Auto-close when game exits (if enabled in settings)
   useEffect(() => {
     let wasRunning = false;
     const id = setInterval(async () => {
