@@ -253,7 +253,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
           </motion.div>
         )}
       </AnimatePresence>
-      <TimelineModal open={timelineModalOpen} onClose={() => setTimelineModalOpen(false)} players={myTeamPlayers} timeline={row.timeline ?? []} myTeam={row.myTeam} />
+      <TimelineModal open={timelineModalOpen} onClose={() => setTimelineModalOpen(false)} players={row.players} timeline={row.timeline ?? []} myTeam={row.myTeam} myPlayerId={myPlayerId} />
     </div>
   )
 }

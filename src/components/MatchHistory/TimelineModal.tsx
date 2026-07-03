@@ -6,7 +6,19 @@ import { MatchPlayer, TimelineEntry } from '../../types/ue4ss'
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler)
 
-const CHART_COLORS = ['#60a5fa', '#34d399', '#f59e0b', '#f472b6', '#a78bfa', '#fb923c']
+const MY_COLOR = '#34d399'
+const ALLY_COLORS = ['#60a5fa', '#93c5fd', '#38bdf8']
+const ENEMY_COLORS = ['#f87171', '#fca5a5', '#fb923c']
+
+function getPlayerColors(players: MatchPlayer[], myTeam: number, myPlayerId: string | null): string[] {
+  let allyIdx = 0
+  let enemyIdx = 0
+  return players.map(p => {
+    if (p.playerId === myPlayerId) return MY_COLOR
+    if (p.team === myTeam) return ALLY_COLORS[allyIdx++ % ALLY_COLORS.length]
+    return ENEMY_COLORS[enemyIdx++ % ENEMY_COLORS.length]
+  })
+}
 
 function formatElapsed(start: Date | string, end: Date | string): string {
   const diff = Math.round((new Date(end).getTime() - new Date(start).getTime()) / 1000)
@@ -18,11 +30,12 @@ function formatElapsed(start: Date | string, end: Date | string): string {
 
 interface TimelineChartProps {
   players: MatchPlayer[]
+  colors: string[]
   timeline: TimelineEntry[]
   myTeam: number
 }
 
-function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
+function TimelineChart({ players, colors, timeline, myTeam }: TimelineChartProps) {
   const safeTimeline = timeline ?? []
   const gameStart = safeTimeline.find(e => e.event === 'GAME_START')
 
@@ -57,29 +70,19 @@ function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
     return event.team === myTeam ? '#60a5fa' : '#f87171'
   })
 
-  const pointRadii = Array.from({ length: totalPoints }, (_, i) =>
-    i > 0 && setWinnerGoals.has(i - 1) ? 5 : 4
-  )
-
   return (
     <Line
       data={{
         labels,
         datasets: players.map((p, i) => {
-          const color = CHART_COLORS[i % CHART_COLORS.length]
-          const pointBg = Array.from({ length: totalPoints }, (_, j) =>
-            j > 0 && setWinnerGoals.has(j - 1) ? color : 'transparent'
-          )
+          const color = colors[i]
           return {
             label: p.name,
             data: [0, ...(p.xpGoals ?? [])],
             borderColor: color,
             backgroundColor: color + '22',
             borderWidth: 2,
-            pointRadius: pointRadii,
-            pointBorderColor: color,
-            pointBackgroundColor: pointBg,
-            pointBorderWidth: 2,
+            pointRadius: 0,
             tension: 0.3,
             fill: false,
           }
@@ -99,7 +102,14 @@ function TimelineChart({ players, timeline, myTeam }: TimelineChartProps) {
         },
         scales: {
           x: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
+            grid: {
+              color: (ctx: { index: number }) => {
+                const i = ctx.index
+                const c = tickColors[i]
+                if (!c || c === 'rgba(255,255,255,0.4)') return 'rgba(255,255,255,0.05)'
+                return c + (setWinnerGoals.has(i - 1) ? '66' : '33')
+              },
+            },
             ticks: { color: tickColors, font: { size: 10 } },
           },
           y: {
@@ -119,9 +129,12 @@ interface TimelineModalProps {
   players: MatchPlayer[]
   timeline: TimelineEntry[]
   myTeam: number
+  myPlayerId: string | null
 }
 
-export function TimelineModal({ open, onClose, players, timeline, myTeam }: TimelineModalProps) {
+export function TimelineModal({ open, onClose, players, timeline, myTeam, myPlayerId }: TimelineModalProps) {
+  const playerColors = getPlayerColors(players, myTeam, myPlayerId)
+
   return (
     <AnimatePresence>
       {open && (
@@ -149,28 +162,24 @@ export function TimelineModal({ open, onClose, players, timeline, myTeam }: Time
                 <XIcon size={16} />
               </button>
             </div>
-            <TimelineChart players={players} timeline={timeline} myTeam={myTeam} />
+            <TimelineChart players={players} colors={playerColors} timeline={timeline} myTeam={myTeam} />
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-wrap gap-x-4 gap-y-1.5">
                 {players.map((p, pi) => (
                   <div key={p.name} className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: CHART_COLORS[pi % CHART_COLORS.length] }} />
+                    <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: playerColors[pi] }} />
                     <span className="text-xs text-char-subtle">{p.name}</span>
                   </div>
                 ))}
               </div>
               <div className="flex items-center gap-3 shrink-0 text-xs text-char-subtle">
                 <div className="flex items-center gap-1">
-                  <CircleIcon size={12} weight='bold' className='text-[#60a5fa]' />
+                  <CircleIcon size={12} weight='fill' className='text-[#60a5fa]' />
                   Our Goals
                 </div>
                 <div className="flex items-center gap-1">
-                  <CircleIcon size={12} weight='bold' className='text-[#f87171]' />
+                  <CircleIcon size={12} weight='fill' className='text-[#f87171]' />
                   Enemy Goals
-                </div>
-                <div className="flex items-center gap-1">
-                  <CircleIcon size={12} weight='fill' className='text-char-subtle' />
-                  Sets
                 </div>
               </div>
             </div>
