@@ -29,17 +29,19 @@ export function MatchInfo({ match, myPlayer }: { match: CurrentMatchTable | unde
             <span className="text-char-secondary">— {getMapObjectFromID(match.map).mapName}</span>
           )}
         </div>
-        {(runningObs || runningMeld) && (
-          <Button variant="surface" size="sm" onClick={() => setModalOpen(true)}>
-            Stream Overlay
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {(runningObs || runningMeld) && (
+            <Button variant="surface" size="sm" onClick={() => setModalOpen(true)}>
+              Stream Overlay
+            </Button>
+          )}
+          {ping != null && ping > 0 && (
+            <span className="inline-flex items-center gap-1 text-char-secondary">
+              Latency: <span className={pingColorClass}>{ping}ms</span>
+            </span>
+          )}
+        </div>
         <StreamOverlayModal open={modalOpen} onClose={() => setModalOpen(false)} />
-        {ping != null && ping > 0 && (
-          <span className="inline-flex items-center gap-1 text-char-secondary">
-            Latency: <span className={pingColorClass}>{ping}ms</span>
-          </span>
-        )}
       </div>
     </div>
   );

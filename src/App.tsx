@@ -5,7 +5,7 @@ import { DebugConsole } from './components/DebugConsole';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { onGameStateChanged, onPlayersChanged, onMatchFinalize, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
-import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo, getAppSettings } from './core/database/queries';
+import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo, getAppSettings, appendTimelineEntry } from './core/database/queries';
 import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TimelineEntry, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
@@ -299,11 +299,11 @@ function App() {
         const myTeam = match.teamNum ?? 1;
         const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
         const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
-        const wonTimelineEntry: TimelineEntry = {
+        await appendTimelineEntry({
           when: new Date(),
           event: 'WON_GAME',
           team: (match.teamOneSets ?? 0) > (match.teamTwoSets ?? 0) ? 1 : 2,
-        }
+        })
 
         await insertMatchHistory({
           players,
@@ -318,7 +318,7 @@ function App() {
           t1_sets: match.teamOneSets ?? 0,
           t2_sets: match.teamTwoSets ?? 0,
           wonGame: myScore > enemyScore,
-          timeline: [...match.timeline, wonTimelineEntry],
+          timeline: match.timeline,
           createdAt: new Date(),
         });
       } catch (e) {

@@ -1,5 +1,6 @@
 import { getCurrentMatch, getGameSession, getMatchPlayers, getUser } from "./database/queries";
 import { PlaystyleType } from "../types/clarion";
+import { TimelineEntry } from "../types/ue4ss";
 
 // Matches what AppAPI expects
 export type POSTLiveMatchV1 = {
@@ -15,6 +16,7 @@ export type POSTLiveMatchV1 = {
   teamTwoPts: number,
   teamOneSets: number,
   teamTwoSets: number,
+  timeline: TimelineEntry[],
   players: LiveMatchPlayer[],
   startedAt: Date,
 }
@@ -110,6 +112,7 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
     teamTwoPts: currentMatch.teamTwoPts ?? 0,
     teamOneSets: currentMatch.teamOneSets ?? 0,
     teamTwoSets: currentMatch.teamTwoSets ?? 0,
+    timeline: currentMatch.timeline,
     players: formattedPlayers,
     startedAt: currentMatch.startedAt,
   }
