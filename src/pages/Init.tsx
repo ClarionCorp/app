@@ -17,7 +17,6 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { version } from "../core/constants";
 import { getLatestRegion } from "../core/bridgeListener";
 import { checkForUpdates } from "../core/utilities/appAPI";
-import { useToast } from "../components/UI/Toast";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
 

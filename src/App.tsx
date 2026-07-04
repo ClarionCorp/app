@@ -55,7 +55,7 @@ function App() {
           {
             variant: 'success' as const,
             message: 'Match accepted! Loading into the arena...',
-            image: '/aimi/Free.png',
+            image: '/aimi/Laser.png',
             autoDismiss: 4000,
           },
           {
@@ -63,7 +63,7 @@ function App() {
             message: 'Your ranked season resets in 3 days. Check your standing before it ends.',
             image: '/aimi/Yapping.gif',
             buttons: [
-              { label: 'View Rank', variant: 'primary' as const, onClick: () => {}, dismisses: true },
+              { label: 'View Rank', onClick: () => {}, dismisses: true },
               { label: 'Dismiss', dismisses: true },
             ],
             dismissible: false,
@@ -71,13 +71,13 @@ function App() {
           {
             variant: 'warning' as const,
             message: 'Your rank protection expires after this match. A loss will affect your rating.',
-            image: '/aimi/Free.png',
+            image: '/aimi/Pat.png',
             autoDismiss: 6000,
           },
           {
             variant: 'error' as const,
             message: 'Failed to sync match data. Your stats may not be up to date.',
-            image: '/aimi/Free.png',
+            image: '/aimi/Shock.png',
             buttons: [{ label: 'Retry', variant: 'danger' as const, dismisses: true }],
           },
           {
@@ -85,7 +85,7 @@ function App() {
             message: 'AFK detected. You will be removed from the match in 30 seconds.',
             image: '/aimi/Free.png',
             dismissible: false,
-            buttons: [{ label: "I'm here!", variant: 'primary' as const, dismisses: true }],
+            buttons: [{ label: "I'm here!", dismisses: true }],
           },
         ];
         showDialogue(demos[demoIndexRef.current % demos.length]);

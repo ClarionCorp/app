@@ -90,19 +90,19 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
 }
 
 const variantBg: Record<DialogueVariant, string> = {
-  info: 'bg-blue-200',
-  warning: 'bg-yellow-100',
-  danger: 'bg-orange-100',
-  error: 'bg-red-100',
-  success: 'bg-green-100',
+  info: 'bg-dialogue-info-surface',
+  warning: 'bg-dialogue-warning-surface',
+  danger: 'bg-dialogue-danger-surface',
+  error: 'bg-dialogue-error-surface',
+  success: 'bg-dialogue-success-surface',
 };
 
 const variantBorder: Record<DialogueVariant, string> = {
-  info: 'border-blue-400',
-  warning: 'border-yellow-400',
-  danger: 'border-orange-500',
-  error: 'border-red-500',
-  success: 'border-green-500',
+  info: 'border-dialogue-info',
+  warning: 'border-dialogue-warning',
+  danger: 'border-dialogue-danger',
+  error: 'border-dialogue-error',
+  success: 'border-dialogue-success',
 };
 
 const variantShadow: Record<DialogueVariant, string> = {
@@ -114,27 +114,27 @@ const variantShadow: Record<DialogueVariant, string> = {
 };
 
 const variantDivider: Record<DialogueVariant, string> = {
-  info: 'border-blue-300',
-  warning: 'border-yellow-200',
-  danger: 'border-orange-200',
-  error: 'border-red-200',
-  success: 'border-green-200',
+  info: 'border-dialogue-info-subtle',
+  warning: 'border-dialogue-warning-subtle',
+  danger: 'border-dialogue-danger-subtle',
+  error: 'border-dialogue-error-subtle',
+  success: 'border-dialogue-success-subtle',
 };
 
 const variantTitleColor: Record<DialogueVariant, string> = {
-  info: 'text-blue-900',
-  warning: 'text-yellow-900',
-  danger: 'text-orange-900',
-  error: 'text-red-900',
-  success: 'text-green-900',
+  info: 'text-dialogue-info-char',
+  warning: 'text-dialogue-warning-char',
+  danger: 'text-dialogue-danger-char',
+  error: 'text-dialogue-error-char',
+  success: 'text-dialogue-success-char',
 };
 
 const variantIcons: Record<DialogueVariant, ReactNode> = {
-  info: <InfoIcon size={22} weight="fill" className="text-blue-600 shrink-0" />,
-  warning: <WarningIcon size={22} weight="fill" className="text-yellow-600 shrink-0" />,
-  danger: <WarningOctagonIcon size={22} weight="fill" className="text-orange-600 shrink-0" />,
-  error: <WarningCircleIcon size={22} weight="fill" className="text-red-600 shrink-0" />,
-  success: <CheckCircleIcon size={22} weight="fill" className="text-green-600 shrink-0" />,
+  info: <InfoIcon size={22} weight="fill" className="text-dialogue-info shrink-0" />,
+  warning: <WarningIcon size={22} weight="fill" className="text-dialogue-warning shrink-0" />,
+  danger: <WarningOctagonIcon size={22} weight="fill" className="text-dialogue-danger shrink-0" />,
+  error: <WarningCircleIcon size={22} weight="fill" className="text-dialogue-error shrink-0" />,
+  success: <CheckCircleIcon size={22} weight="fill" className="text-dialogue-success shrink-0" />,
 };
 
 const variantLabel: Record<DialogueVariant, string> = {
@@ -200,7 +200,7 @@ function DialogueBox({
               {showX && (
                 <button
                   onClick={() => onDismiss(dialogue.id)}
-                  className="text-gray-500 hover:text-gray-800 transition-colors cursor-pointer ml-2 shrink-0"
+                  className="text-char-subtle hover:text-char transition-colors cursor-pointer ml-2 shrink-0"
                 >
                   <XIcon size={14} weight="bold" />
                 </button>
@@ -211,7 +211,7 @@ function DialogueBox({
             <div className={cn('border-t', variantDivider[dialogue.variant])} />
 
             {/* Message */}
-            <p className={cn('px-4 text-sm text-gray-700 leading-relaxed', hasButtons ? 'pt-2 pb-2' : 'py-3')}>
+            <p className={cn('px-4 text-sm text-char-secondary leading-relaxed', hasButtons ? 'pt-2 pb-2' : 'py-3')}>
               {dialogue.message}
             </p>
 
@@ -221,7 +221,7 @@ function DialogueBox({
                 {dialogue.buttons!.map((btn, i) => (
                   <Button
                     key={i}
-                    variant={btn.variant ?? 'primary'}
+                    variant={btn.variant ?? 'secondary'}
                     size="sm"
                     className="flex-1"
                     onClick={() => {
