@@ -18,6 +18,8 @@ import { version } from "../core/constants";
 import { getLatestRegion } from "../core/bridgeListener";
 import { checkForUpdates } from "../core/utilities/appAPI";
 import { useToast } from "../components/UI/Toast";
+import { useDialogue } from "../components/UI/DialogueToast";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const STEPS = [
   "Checking UE4SS...",
@@ -43,7 +45,7 @@ export default function InitializationPage() {
   const [ue4ssMessage, setUe4ssMessage] = useState<string | null>(null);
   const [ue4ssPercent, setUe4ssPercent] = useState<number | null>(null);
   const gameDirResolveRef = useRef<((dir: string) => void) | null>(null);
-  const { toast } = useToast();
+  const { show: showDialogue } = useDialogue();
 
   const handlePickExe = async () => {
     const selected = await open({
@@ -135,7 +137,24 @@ export default function InitializationPage() {
         setProgress(STEP_PCTS[2]);
         const updateCheck = await checkForUpdates();
         if (updateCheck.updateAvailable) {
-          toast(`Update Available! (${version} ->${updateCheck.latest})`, 'info');
+          showDialogue({
+            variant: 'info' as const,
+            title: 'Update Available!',
+            message: `The latest version is ${updateCheck.latest} and this app is on ${version}. Grab the new version for new features and the latest fixes!`,
+            image: '/aimi/Yapping.gif',
+            buttons: [
+              {
+                label: 'View Release',
+                variant: 'primary' as const,
+                onClick: () => {
+                  openUrl(updateCheck.release?.html_url ?? 'https://github.com/ClarionCorp/app/releases')
+                },
+                dismisses: true
+              },
+              { label: 'Dismiss', dismisses: true },
+            ],
+            dismissible: false,
+          });
         }
 
         // 4) Connect to Discord RPC
