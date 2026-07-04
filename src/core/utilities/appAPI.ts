@@ -1,9 +1,9 @@
 // This refers to the Ai.Mi App API at https://api.aimis.app.
 
 import { eq } from "drizzle-orm";
-import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1 } from "../../types/appAPI";
+import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1, VersionCheck } from "../../types/appAPI";
 import { MatchHistoryTable } from "../../types/database";
-import { AiMiAPI } from "../constants";
+import { AiMiAPI, version } from "../constants";
 import { db } from "../database/driver";
 import { getUsers } from "../database/queries";
 import { matchHistory } from "../database/schema";
@@ -104,5 +104,25 @@ export async function uploadAllMatches(onProgress?: UploadProgressCallback) {
   } catch (e) {
     console.error(`[Sync] Failed to upload matches!`, e);
     throw e;
+  }
+}
+
+export async function checkForUpdates(): Promise<VersionCheck> {
+  try {
+    const res = await fetch(`${AiMiAPI}/v1/update/check?currentVer=${version}&channel=beta`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await res.json() as VersionCheck;
+    if (data.release?.author.id !== 89052946) { throw new Error("Release author ID doesn't match blals!") }; // I'll remove later but I'm paranoid rn lol
+    if (data.updateAvailable) { console.log(`Update Available! (${version} ->${data.latest})`) }
+    else { console.log(`App is up-to-date!`) };
+
+    return data;
+
+  } catch (e) {
+    console.error(`Failed to fetch new updates!`, e);
+    return { updateAvailable: false, latest: version }
   }
 }

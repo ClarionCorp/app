@@ -1,5 +1,7 @@
 // This refers to the Ai.Mi App API at https://api.aimis.app.
 
+import { GithubRelease } from "./github"
+
 export type OnlinePlayersV1 = {
   total: number,
   in_game: number,
@@ -43,4 +45,10 @@ export type POSTMatchHistoryPlayerV1 = {
   redirects: number,
   orbs: number,
   mvp: boolean, // unused for now, just leave omitted
+}
+
+export type VersionCheck = {
+  updateAvailable: boolean,
+  latest: string, // tag/version name
+  release?: GithubRelease
 }

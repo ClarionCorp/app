@@ -16,14 +16,17 @@ import { matchPlayers } from "../core/database/schema";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { version } from "../core/constants";
 import { getLatestRegion } from "../core/bridgeListener";
+import { checkForUpdates } from "../core/utilities/appAPI";
+import { useToast } from "../components/UI/Toast";
 
 const STEPS = [
   "Checking UE4SS...",
   "Fetching account info...",
+  "Checking for updates...",
   "Connecting to Discord...",
 ];
 
-const STEP_PCTS = [5, 40, 75, 100];
+const STEP_PCTS = [5, 40, 60, 75, 100];
 
 export default function InitializationPage() {
   const {
@@ -39,8 +42,8 @@ export default function InitializationPage() {
   const [needsRestart, setNeedsRestart] = useState(false);
   const [ue4ssMessage, setUe4ssMessage] = useState<string | null>(null);
   const [ue4ssPercent, setUe4ssPercent] = useState<number | null>(null);
-
   const gameDirResolveRef = useRef<((dir: string) => void) | null>(null);
+  const { toast } = useToast();
 
   const handlePickExe = async () => {
     const selected = await open({
@@ -127,9 +130,17 @@ export default function InitializationPage() {
           setConnectedStatus(false);
         }
 
-        // 3) Connect to Discord RPC
+        // 3) Check for updates
         setStepIndex(2);
         setProgress(STEP_PCTS[2]);
+        const updateCheck = await checkForUpdates();
+        if (updateCheck.updateAvailable) {
+          toast(`Update Available! (${version} ->${updateCheck.latest})`, 'info');
+        }
+
+        // 4) Connect to Discord RPC
+        setStepIndex(3);
+        setProgress(STEP_PCTS[3]);
         await stopRpc();
         await startRpc();
         await discordRpc?.updateActivity(DEFAULT_ACTIVITY);

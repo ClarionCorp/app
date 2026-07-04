@@ -32,7 +32,7 @@ export interface ReleaseAsset {
   content_type: string; // e.g. "application/zip"
   state: "uploaded" | "draft";
   size: number; // in bytes
-  digest: string | null; // SHA‑1 hash if present
+  digest: string | null; // SHA‑1 or SHA256 hash if present
   download_count: number;
   created_at: string; // ISO8601 datetime
   updated_at: string; // ISO8601 datetime
