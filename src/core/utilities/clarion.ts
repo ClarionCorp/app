@@ -1,4 +1,4 @@
-import { Awakenings, Playstyle } from "../../types/clarion";
+import { Awakenings, Playstyle, SmurfResult } from "../../types/clarion";
 import { ClarionAPI, version } from "../constants";
 
 
@@ -27,6 +27,23 @@ export async function fetchPlayerPlayerstyle(username: string): Promise<Playstyl
     });
 
     const data: Playstyle = await res.json();
+    if (!res.ok) { throw new Error(`CC is currently unreachable! Please contact blals ASAP! (${res.status})`) };
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null
+  }
+}
+
+export async function fetchPlayerSmurfEstimate(username: string): Promise<SmurfResult | null> {
+  try {
+    const res = await fetch(`${ClarionAPI}/v2/tools/smurf/${username}`, {
+      method: 'GET',
+      headers: { 'User-Agent': `AiMisApp v${version}` }
+    });
+
+    const data: SmurfResult = await res.json();
     if (!res.ok) { throw new Error(`CC is currently unreachable! Please contact blals ASAP! (${res.status})`) };
 
     return data;

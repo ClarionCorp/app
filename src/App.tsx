@@ -15,7 +15,7 @@ import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues'
 import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
-import { fetchPlayerPlayerstyle } from './core/utilities/clarion';
+import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from './core/utilities/clarion';
 import { desc, eq } from 'drizzle-orm';
 import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
@@ -199,9 +199,10 @@ function App() {
           const ranked = await fetchRankQuery(user!.playerId);
           const stats = await fetchPlayerStats(user!.playerId);
           const playstyle = await fetchPlayerPlayerstyle(player.username);
+          const smurf = await fetchPlayerSmurfEstimate(player.username);
           await calcAndSetPlayerStats(player.username, stats, user?.playerId); // run first since it really shouldn't fail as much as rating
           await updatePlayerRating(player.username, ranked!.rating);
-          await db.update(matchPlayers).set({ playstyle }).where(eq(matchPlayers.username, player.username));
+          await db.update(matchPlayers).set({ playstyle, smurfProbability: smurf?.confidence }).where(eq(matchPlayers.username, player.username));
         } catch (e) {
           console.warn(`No rank data could be found for ${player.username}.`);
           updatePlayerRating(player.username, 0); // set to 0 to prevent refetching (and failing again)

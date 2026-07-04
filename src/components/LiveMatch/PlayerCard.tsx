@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { getRankFromLP } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
-import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
+import { ShieldIcon, SwordIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { getGameStatus } from '../../core/objects/gameStates';
@@ -9,6 +9,7 @@ import { TRAININGS } from '../../core/objects/trainings';
 import { getPlayerChar } from '../../core/database/queries';
 import { PlaystyleType } from '../../types/clarion';
 import clsx from 'clsx';
+import BasicPopover from '../UI/BasicPopover';
 
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
@@ -111,6 +112,19 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                   : favChar?.characterId === player.charId
                     ? <span className="text-xs font-medium text-blue-400">Playing Main Striker</span>
                     : null
+              )}
+              {player.smurfProbability !== 'none' && (
+                <BasicPopover displayText={`Possible Smurf Detected! (${player.smurfProbability.toLocaleUpperCase()})`}>
+                  <WarningIcon
+                    size={14}
+                    weight="duotone"
+                    className={
+                      player.smurfProbability === 'high' ? 'text-red-500'
+                      : player.smurfProbability === 'medium' ? 'text-orange-400'
+                      : 'text-yellow-400'
+                    }
+                  />
+                </BasicPopover>
               )}
             </div>
 

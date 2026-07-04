@@ -1,0 +1,1 @@
+ALTER TABLE `matchPlayers` ADD `smurfProbability` text DEFAULT 'none' NOT NULL;

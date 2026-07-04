@@ -86,3 +86,14 @@ export type Playstyle = {
   forward: RolePlaystyle,
   goalie: RolePlaystyle
 }
+
+export type SmurfConfidence = 'none' | 'low' | 'medium' | 'high';
+export type SmurfResult = {
+  username: string,
+  confidence: SmurfConfidence,
+  signals: {
+    youngAccount: boolean,
+    lowLevel: boolean,
+    abnormalWinrate: boolean,
+  }
+}
