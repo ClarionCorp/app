@@ -24,7 +24,8 @@ export async function upsertAppSettings(
     'queuePopVol' |
     'queuePopType' |
     'exitOnGameClose' |
-    'sendMatchData'
+    'sendMatchData' |
+    'seenWelcome'
   >>
 ) {
   return db.insert(appSettings).values({ id: 1, createdAt: new Date(), ...data }).onConflictDoUpdate({

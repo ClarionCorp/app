@@ -4,6 +4,8 @@ import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { isProcessRunning } from "../core/bridgeListener";
 import { NAV_ITEMS } from "../core/objects/navigation";
+import { getAppSettings, getUser, upsertAppSettings } from "../core/database/queries";
+import { useDialogue } from "../components/UI/DialogueToast";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -27,9 +29,49 @@ const itemVariants: Variants = {
 export default function HomePage() {
   const { navigate } = useOutletContext<AppContextType>();
   const [gameRunning, setGameRunning] = useState(false);
+  const { showQueue } = useDialogue();
 
   useEffect(() => {
     isProcessRunning('OmegaStrikers-Win64-Shipping.exe').then(setGameRunning);
+  }, []);
+  
+  // Welcome dialogue for new users
+  useEffect(() => {
+    const checkNewUser = async () => {
+      const settings = await getAppSettings();
+      if (!settings || settings.seenWelcome) return;
+      let usernameText = 'new user';
+      const user = await getUser();
+      if (user && user?.username) { usernameText = user.username};
+      await upsertAppSettings({ seenWelcome: true });
+      showQueue([
+        {
+          variant: 'info',
+          title: `Hello, ${usernameText}! (1/3)`,
+          message: "Welcome to the new Ai.Mi App! I'm Ai.Mi, and I'll be your assistant while playing Omega Strikers.",
+          image: '/aimi/NOM.png',
+          buttons: [{ label: 'Okay!', dismisses: true }],
+        },
+        {
+          variant: 'info',
+          title: 'Need Help? (2/3)',
+          message: "You can call me from any page at any time by pressing F6 (or Fn + F6) on your keyboard!",
+          image: '/aimi/Yapping.gif',
+          buttons: [{ label: 'Got it, thanks!', dismisses: true }],
+        },
+        {
+          variant: 'info',
+          title: 'Customization (3/3)',
+          message: "One last thing before I go, I recommend heading to Settings to really make the app your own!",
+          image: '/aimi/Noted.gif',
+          buttons: [
+            { label: 'Open Settings', onClick: () => { navigate('/settings') }, dismisses: true },
+            { label: 'Close', dismisses: true },
+          ],
+        }
+      ]);
+    };
+    checkNewUser();
   }, []);
 
   return (

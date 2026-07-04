@@ -45,6 +45,7 @@ interface DialogueData extends DialogueConfig {
 
 interface DialogueContextValue {
   show: (config: DialogueConfig) => string;
+  showQueue: (configs: DialogueConfig[]) => void;
   dismiss: (id: string) => void;
 }
 
@@ -59,26 +60,48 @@ export function useDialogue(): DialogueContextValue {
 export function DialogueProvider({ children }: { children: ReactNode }) {
   const [dialogue, setDialogue] = useState<DialogueData | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queueRef = useRef<DialogueConfig[]>([]);
+  const dismissRef = useRef<(id: string) => void>(() => {});
 
   const dismiss = useCallback((id: string) => {
-    setDialogue(prev => (prev?.id === id ? null : prev));
+    if (timerRef.current) clearTimeout(timerRef.current);
+    const next = queueRef.current.shift() ?? null;
+    const nextId = next ? Math.random().toString(36).slice(2) : null;
+    setDialogue(prev => {
+      if (prev?.id !== id) return prev;
+      return next && nextId ? { ...next, id: nextId } : null;
+    });
+    if (next?.autoDismiss && nextId) {
+      timerRef.current = setTimeout(() => dismissRef.current(nextId), next.autoDismiss);
+    }
   }, []);
+  dismissRef.current = dismiss;
 
-  const show = useCallback(
-    (config: DialogueConfig) => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      const id = Math.random().toString(36).slice(2);
-      setDialogue({ ...config, id });
-      if (config.autoDismiss) {
-        timerRef.current = setTimeout(() => dismiss(id), config.autoDismiss);
-      }
-      return id;
-    },
-    [dismiss],
-  );
+  const show = useCallback((config: DialogueConfig) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    queueRef.current = [];
+    const id = Math.random().toString(36).slice(2);
+    setDialogue({ ...config, id });
+    if (config.autoDismiss) {
+      timerRef.current = setTimeout(() => dismiss(id), config.autoDismiss);
+    }
+    return id;
+  }, [dismiss]);
+
+  const showQueue = useCallback((configs: DialogueConfig[]) => {
+    if (!configs.length) return;
+    const [first, ...rest] = configs;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    queueRef.current = rest;
+    const id = Math.random().toString(36).slice(2);
+    setDialogue({ ...first, id });
+    if (first.autoDismiss) {
+      timerRef.current = setTimeout(() => dismiss(id), first.autoDismiss);
+    }
+  }, [dismiss]);
 
   return (
-    <DialogueContext.Provider value={{ show, dismiss }}>
+    <DialogueContext.Provider value={{ show, showQueue, dismiss }}>
       {children}
       <AnimatePresence>
         {dialogue && (
@@ -193,7 +216,7 @@ function DialogueBox({
             <div className="flex items-center justify-between px-4 pt-3 pb-2">
               <div className="flex items-center gap-2">
                 {variantIcons[dialogue.variant]}
-                <span className={cn('text-xl font-black uppercase tracking-wide', variantTitleColor[dialogue.variant])}>
+                <span className={cn('text-xl font-black tracking-wide', variantTitleColor[dialogue.variant])}>
                   {dialogue.title ?? variantLabel[dialogue.variant]}
                 </span>
               </div>

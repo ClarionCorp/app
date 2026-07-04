@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `seenWelcome` integer DEFAULT false NOT NULL;

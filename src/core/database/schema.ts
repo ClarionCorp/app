@@ -6,6 +6,7 @@ import { Playstyle, SmurfConfidence } from "../../types/clarion";
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
   id: integer("id").primaryKey(),
+  seenWelcome: integer("seenWelcome", { mode: "boolean" }).notNull().default(false),
   gameDirectory: text("gameDirectory"),
   drpcEnabled: integer("drpcEnabled", { mode: "boolean" }).notNull().default(true),
   notifyQueuePop: integer("notifyQueuePop", { mode: "boolean" }).notNull().default(false), // i don't want to annoy anyone :P
