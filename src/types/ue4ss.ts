@@ -13,7 +13,8 @@ export type PlayerFinderJSON = {
     level: number,
     intermissionXp: number,
     ping_ms: number,
-    trainings: string[]
+    trainings: string[],
+    knockouts: number,
   }[],
   timestamp: number, // keeps tauri updating even if data is the same
 };

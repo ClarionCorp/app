@@ -155,6 +155,7 @@ export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[
       gainedXp: sql`excluded.gainedXp`,
       ping: sql`excluded.ping`,
       trainings: sql`excluded.trainings`,
+      knockouts: sql`excluded.knockouts`,
     },
   }).returning();
 }

@@ -141,6 +141,13 @@
       "when": 1783097124116,
       "tag": "0019_slippery_jamie_braddock",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1783129061440,
+      "tag": "0020_neat_clint_barton",
+      "breakpoints": true
     }
   ]
 }

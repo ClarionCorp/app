@@ -89,6 +89,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   normGames: integer("normGames"),
   rankedGames: integer("rankedGames"),
   playstyle: text("playstyle", { mode: "json" }).$type<Playstyle>(),
+  knockouts: integer("knockouts"),
 });
 
 // Basic list of previous matches for local match history

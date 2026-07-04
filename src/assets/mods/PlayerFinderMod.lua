@@ -1,5 +1,5 @@
 local ModName = "PlayerFinderMod"
-local ModVersion = "1.4.0"
+local ModVersion = "1.5.0"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -9,6 +9,13 @@ print(string.format("[%s] Writing players to: %s", ModName, PLAYERS_FILE))
 local LastSnapshot = ""
 local LastPings = {}
 local TrackedStates = {}
+local KoCounts = {}  -- keyed by PMPlayerId string; reset on PreGame
+
+local function fname(v)
+    if not v then return "" end
+    local ok, s = pcall(function() return v:ToString() end)
+    return ok and s or ""
+end
 
 local function GetCharacter(ps)
     local cd = ps.ChosenCharacterData
@@ -35,7 +42,8 @@ local function GetTrainings(ps)
     return ids
 end
 
-local function PollPlayers()
+-- forceWrite=true skips snapshot check and skips rescheduling (used by KO hook)
+local function PollPlayers(forceWrite)
     -- Prune stale references (disconnected players)
     local valid = {}
     for _, ps in ipairs(TrackedStates) do
@@ -60,8 +68,10 @@ local function PollPlayers()
                 local pingMs = (okPing and ping) and math.floor(ping) or nil
                 local okLvls, lvlsGained = pcall(function() return ps:GetCharacterLevelsGainedSinceIntermission() end)
                 local levelsGained = okLvls and lvlsGained or nil
+                local pid = fname(ps.PMPlayerId)
+                local kos = KoCounts[pid] or 0
                 if name == "" or name == "nil" then return nil end
-                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level, trainings = trainings, ping = pingMs, levelsGained = levelsGained }
+                return { name = name, team = team, charId = charId, charName = charName, role = role, level = level, trainings = trainings, ping = pingMs, levelsGained = levelsGained, pid = pid, kos = kos }
             end)
             if ok and entry then
                 table.insert(players, entry)
@@ -69,10 +79,10 @@ local function PollPlayers()
         end
     end
 
-    -- Build snapshot string for change detection
+    -- Build snapshot string for change detection (includes kos)
     local snapshot = ""
     for _, p in ipairs(players) do
-        snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId) .. "|" .. tostring(p.level) .. "|" .. tostring(p.levelsGained) .. ";"
+        snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId) .. "|" .. tostring(p.level) .. "|" .. tostring(p.levelsGained) .. "|" .. tostring(p.kos) .. ";"
     end
 
     local pingChanged = false
@@ -86,7 +96,7 @@ local function PollPlayers()
         end
     end
 
-    if snapshot ~= LastSnapshot or pingChanged then
+    if snapshot ~= LastSnapshot or pingChanged or forceWrite then
         LastSnapshot = snapshot
         LastPings = {}
         for _, p in ipairs(players) do
@@ -95,7 +105,7 @@ local function PollPlayers()
 
         print(string.format("\n[%s] Players (%d):", ModName, #players))
         for _, p in ipairs(players) do
-            print(string.format("  Team %s | %-8s | Lv%-3s (+%s) |%3sms | %s | %s (%s)", tostring(p.team), p.role, tostring(p.level), tostring(p.levelsGained or "?"), tostring(p.ping or "?"), p.name, p.charName or "null", p.charId or "null"))
+            print(string.format("  Team %s | %-8s | Lv%-3s (+%s) |%3sms | KOs:%-2d | %s | %s (%s)", tostring(p.team), p.role, tostring(p.level), tostring(p.levelsGained or "?"), tostring(p.ping or "?"), p.kos, p.name, p.charName or "null", p.charId or "null"))
         end
 
         local playerParts = {}
@@ -120,9 +130,10 @@ local function PollPlayers()
                 '      "level": %s,\n' ..
                 '      "intermissionXp": %s,\n' ..
                 '      "ping_ms": %s,\n' ..
+                '      "knockouts": %d,\n' ..
                 '      "trainings": %s\n' ..
                 '    }',
-                p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level), levelsGainedStr, pingStr, trainingsJson
+                p.name, tostring(p.team), p.role, charIdStr, charNameStr, tostring(p.level), levelsGainedStr, pingStr, p.kos, trainingsJson
             ))
         end
 
@@ -134,8 +145,40 @@ local function PollPlayers()
         if f then f:write(json) f:close() end
     end
 
-    ExecuteWithDelay(3000, PollPlayers)
+    if not forceWrite then
+        ExecuteWithDelay(3000, PollPlayers)
+    end
 end
+
+pcall(function()
+    RegisterHook("/Script/Prometheus.PMGameState:ShowKnockoutInfo_Multicast",
+        function(self, InstigatingPlayer, KnockedOutPlayer, UtcTimestamp)
+            pcall(function()
+                local ins = InstigatingPlayer:get()
+                if not ins or not ins:IsValid() then return end
+                local pid = fname(ins.PMPlayerId)
+                if pid == "" then return end
+                KoCounts[pid] = (KoCounts[pid] or 0) + 1
+                print(string.format("[%s] KO! %s → %d total", ModName, fname(ins.PMDisplayName), KoCounts[pid]))
+                PollPlayers(true)
+            end)
+        end
+    )
+    print(string.format("[%s] KO hook registered", ModName))
+end)
+
+pcall(function()
+    RegisterHook("/Script/Prometheus.PMPlayerControllerGame:MatchPhaseChanged",
+        function(self, OldPhase, NewPhase)
+            if NewPhase:get() == 1 then  -- PreGame = new match starting
+                KoCounts = {}
+                LastSnapshot = ""
+                print(string.format("[%s] PreGame — KO counts reset", ModName))
+            end
+        end
+    )
+    print(string.format("[%s] MatchPhaseChanged hook registered", ModName))
+end)
 
 RegisterKeyBind(Key.F5, function()
     LastSnapshot = ""

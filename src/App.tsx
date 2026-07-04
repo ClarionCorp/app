@@ -134,7 +134,7 @@ function App() {
       if (settings.sendMatchData == false) { return };
 
       const buildData = await formatLiveMatchInfo();
-      if (!buildData) { console.debug("Skipping live sync due to incomplete object data!"); return; };
+      if (!buildData) { console.debug("Skipping live sync due to incomplete object data!"); return; }; // kinda spammy
 
       const res = await fetch(`${AiMiAPI}/v1/overlay/sync`, {
         method: 'POST',
@@ -144,7 +144,7 @@ function App() {
 
       const data = await res.json();
       if (!res.ok) { console.warn(`Live Sync with AppAPI failed! (${res.status} ${res.statusText})`, data); return; };
-      console.debug(`Successfully synced live match data with AppAPI.`); // turn off later, might get spammy lol
+      // console.debug(`Successfully synced live match data with AppAPI.`); // turn off later, might get spammy lol
       return;
     };
     const id = setInterval(uploadMatchData, 30_000);
@@ -188,6 +188,7 @@ function App() {
         gainedXp: p.intermissionXp,
         ping: p.ping_ms,
         trainings: p.trainings,
+        knockouts: p.knockouts,
       })));
 
       for (const player of players.filter(p => p.rating === null)) {

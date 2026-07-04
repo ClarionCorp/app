@@ -132,6 +132,9 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                   {winrate == null ? '—' : `${(winrate * 100).toFixed(0)}%`
                   }</span>
               </span>
+              <span>
+                Current KOs: <span className="text-char/80 font-medium">{player.knockouts == null ? '—' : player.knockouts}</span>
+              </span>
             </div>
 
             {/* Training icons */}
