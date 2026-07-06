@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logger, LogEntry, LogLevel } from '../core/logger';
 import { BugIcon, XIcon, TrashIcon, CopySimpleIcon } from '@phosphor-icons/react';
-import { useToast } from './UI/Toast';
+import { HelpModal } from './HelpModal';
 
 const LEVEL_TEXT: Record<LogLevel, string> = {
   debug: 'text-zinc-500',
@@ -37,10 +37,10 @@ function entryText(e: LogEntry): string {
 
 export function DebugConsole() {
   const [open, setOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [entries, setEntries] = useState<LogEntry[]>([...logger.getEntries()]);
   const [filter, setFilter] = useState<Filter>('all');
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
 
   useEffect(() => logger.subscribe(() => setEntries([...logger.getEntries()])), []);
 
@@ -53,7 +53,7 @@ export function DebugConsole() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === '`') setOpen(v => !v);
-      if (e.key === 'F6') { toast('Copied logs to clipboard!', 'success'); copyAll(); };
+      if (e.key === 'F6') setHelpOpen(true);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -69,6 +69,8 @@ export function DebugConsole() {
   }
 
   return (
+    <>
+    <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} onCopyLogs={copyAll} />
     <div className="fixed bottom-0 right-0 z-200 flex flex-col items-end pointer-events-none">
       {/* Panel */}
       <AnimatePresence>
@@ -173,5 +175,6 @@ export function DebugConsole() {
         {!open && warnCount > 0  && <span className="text-amber-400">{warnCount}W</span>}
       </button>
     </div>
+    </>
   );
 }
