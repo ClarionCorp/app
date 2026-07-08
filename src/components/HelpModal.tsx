@@ -111,7 +111,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
     onClose();
   }
 
-  function redeemAllCodes() {}
+  function redeemAllCodes() { toast('Feature not implemented yet, sorry!', 'warning'); };
 
   async function submitBugReport(report: BugReport) {
     const bundled = {
