@@ -61,7 +61,7 @@ export type Maps = {
 
 type RoleCategoryPS = {
   multiplier: number,
-  avgPerGame: number
+  avgPerGame: number | null
 }
 
 export type PlaystyleType = 
