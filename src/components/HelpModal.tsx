@@ -3,7 +3,6 @@ import { AnimatePresence, motion, type Transition } from 'framer-motion';
 import {
   CopySimpleIcon,
   KeyboardIcon,
-  ArrowsClockwiseIcon,
   GiftIcon,
   BugIcon,
   ChatCircleDotsIcon,

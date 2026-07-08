@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { OdyAuth } from './types/odyssey';
 import { DebugConsole } from './components/DebugConsole';
@@ -21,7 +21,6 @@ import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
-import { useDialogue } from './components/UI/DialogueToast';
 import { checkSaveTimelineEntries, markMatchStartIfNone } from './core/timeline';
 import { formatLiveMatchInfo } from './core/overlay';
 
@@ -41,8 +40,6 @@ function App() {
   const [odyAuth, setOdyAuth] = useState<OdyAuth>();
   const [connectedToOdy, setConnectedStatus] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { show: showDialogue } = useDialogue();
-  const demoIndexRef = useRef(0);
 
   const location = useLocation();
   const showSidebar = !['/', '/home', '/setup'].includes(location.pathname);
@@ -50,47 +47,6 @@ function App() {
   // Debug Page
   useEffect(() => {
     const onKey = async (e: KeyboardEvent) => {
-      if (e.key === 'F4') {
-        const demos = [
-          {
-            variant: 'success' as const,
-            message: 'Match accepted! Loading into the arena...',
-            image: '/aimi/Laser.png',
-            autoDismiss: 4000,
-          },
-          {
-            variant: 'info' as const,
-            message: 'Your ranked season resets in 3 days. Check your standing before it ends.',
-            image: '/aimi/Yapping.gif',
-            buttons: [
-              { label: 'View Rank', onClick: () => {}, dismisses: true },
-              { label: 'Dismiss', dismisses: true },
-            ],
-            dismissible: false,
-          },
-          {
-            variant: 'warning' as const,
-            message: 'Your rank protection expires after this match. A loss will affect your rating.',
-            image: '/aimi/Pat.png',
-            autoDismiss: 6000,
-          },
-          {
-            variant: 'error' as const,
-            message: 'Failed to sync match data. Your stats may not be up to date.',
-            image: '/aimi/Shock.png',
-            buttons: [{ label: 'Retry', variant: 'danger' as const, dismisses: true }],
-          },
-          {
-            variant: 'danger' as const,
-            message: 'AFK detected. You will be removed from the match in 30 seconds.',
-            image: '/aimi/Free.png',
-            dismissible: false,
-            buttons: [{ label: "I'm here!", dismisses: true }],
-          },
-        ];
-        showDialogue(demos[demoIndexRef.current % demos.length]);
-        demoIndexRef.current++;
-      }
       if (e.key === 'F8') {
         const setting = await getAppSettings();
         await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
