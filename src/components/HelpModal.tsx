@@ -9,7 +9,14 @@ import {
   ChatCircleDotsIcon,
   XIcon,
   CaretLeftIcon,
+  CaretDownIcon,
 } from '@phosphor-icons/react';
+import { Dropdown, type DropdownItem } from './UI/Dropdown';
+import { Checkbox } from './UI/Checkbox';
+import { BugReport } from '../types/help';
+import { AiMiAPI, version } from '../core/constants';
+import { getUser } from '../core/database/queries';
+import { useToast } from './UI/Toast';
 
 type View = 'home' | 'keybinds' | 'bug-report' | 'feedback';
 
@@ -26,7 +33,7 @@ interface HelpModalProps {
   onCopyLogs: () => void;
 }
 
-const KEYBINDS = [
+const keybinds = [
   { keys: ['Ctrl', '`'], description: 'Toggle Debug Console' },
   { keys: ['F6'], description: 'Open Help' },
   { keys: ['F8'], description: 'Preview Queue Pop SFX', debug: false },
@@ -34,27 +41,38 @@ const KEYBINDS = [
   { keys: ['Ctrl', 'F9'], description: 'Upload last match to API', debug: true },
 ];
 
-const VIEW_TITLES: Record<Exclude<View, 'home'>, string> = {
+const pageTitles: Record<Exclude<View, 'home'>, string> = {
   keybinds: 'Keybinds',
   'bug-report': 'Submit Bug Report',
   feedback: 'Submit Feedback',
 };
 
-const VIEW_IMAGES: Record<View, string> = {
+const flavorImages: Record<View, string> = {
   home: '/aimi/Pat.png',
   keybinds: '/aimi/Keyboard.gif',
   'bug-report': '/aimi/Sweat.gif',
   feedback: '/aimi/Yapping.gif',
 };
 
-const tapTrans: Transition = { duration: 0.06, ease: [0.16, 1, 0.3, 1] };
+const buttonTap: Transition = { duration: 0.06, ease: [0.16, 1, 0.3, 1] };
 
 export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   const [view, setView] = useState<View>('home');
   const [direction, setDirection] = useState(1);
+  const [bugPage, setBugPage] = useState<string | null>(null);
+  const [bugDescription, setBugDescription] = useState('');
+  const [bugDropOpen, setBugDropOpen] = useState(false);
+  const [creditMe, setCreditMe] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (!open) setView('home');
+    if (!open) {
+      setView('home');
+      setBugPage(null);
+      setBugDescription('');
+      setBugDropOpen(false);
+      setCreditMe(false);
+    }
   }, [open]);
 
   function navigate(next: View) {
@@ -78,8 +96,47 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
 
   function refreshPlayerRanks() {}
   function redeemAllCodes() {}
-  function submitBugReport() {}
+
+  async function submitBugReport(report: BugReport) {
+    toast(`Sending bug report...`, 'info');
+    const user = await getUser();
+    const bundled = {
+        report,
+        version,
+        username: user?.username,
+        playerId: user?.playerId,
+        discordId: user?.discordId,
+    }
+    console.debug(`Submitting bug report:`, bundled);
+
+    const res = await fetch(`${AiMiAPI}/v1/bugs/report`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json", "x-user-agent": "aimi-app" },
+      body: JSON.stringify(bundled)
+    });
+
+    const response = await res?.json();
+
+    if (!res.ok) {
+      console.error(`Failed to send bug report! Error:`, response?.error);
+      toast(`Bug report failed to send! (Error: ${res.status})`, 'error');
+      return;
+    };
+
+    toast(`Submitted bug report #${response.id} successfully!`, 'success');
+    console.log(`Submitted bug report successfully.`);
+    return;
+  }
+
   function submitFeedbackReport() {}
+
+  const bugPageItems: DropdownItem[] = 
+    ['Home', 'Current Match', 'Match History', 'Stream Overlay', 'Settings', 'Other']
+    .map(page => ({
+      label: page,
+      onClick: () => setBugPage(page),
+    })
+  );
 
   const actions: HelpAction[] = [
     { icon: <CopySimpleIcon size={24} />, label: 'Copy Logs', onClick: onCopyLogs },
@@ -141,7 +198,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                 {view === 'home' && (
                   <>
                     <div className="flex flex-col items-center gap-2">
-                      <img src={VIEW_IMAGES[view]} alt="Aimi" className="size-28 rounded-xl object-cover" />
+                      <img src={flavorImages[view]} alt="Aimi" className="size-28 rounded-xl object-cover" />
                       <span className="text-base font-semibold text-char">
                         What seems to be the <a className="text-primary font-bold">problem</a>?
                       </span>
@@ -160,7 +217,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                             }
                           }}
                           whileTap={{ scale: 0.96 }}
-                          transition={tapTrans}
+                          transition={buttonTap}
                           className="flex flex-col items-center justify-center gap-2.5 py-5 rounded-lg border border-background-border bg-surface-active hover:bg-surface-overlay hover:border-primary/40 text-char-secondary hover:text-char transition-all duration-150 cursor-pointer group"
                         >
                           <span className="text-primary/70 group-hover:text-primary transition-colors">
@@ -173,21 +230,23 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                   </>
                 )}
 
+                {/* Virtual Pages */}
                 {view !== 'home' && (
                   <>
                     <div className="flex flex-col items-center gap-2">
-                      <img src={VIEW_IMAGES[view]} alt="Aimi" className="size-28 rounded-xl object-cover" />
-                      <span className="text-base font-semibold text-char">{VIEW_TITLES[view]}</span>
+                      <img src={flavorImages[view]} alt="Aimi" className="size-28 rounded-xl object-cover" />
+                      <span className="text-base font-semibold text-char">{pageTitles[view]}</span>
                     </div>
 
+                    {/* Keybind Page */}
                     {view === 'keybinds' && (
                       <div className="flex flex-col gap-1">
-                        {KEYBINDS.map(bind => (
+                        {keybinds.map(bind => (
                           <motion.button
                             key={bind.keys.join('+')}
                             onClick={() => simulateKey(bind.keys)}
                             whileTap={{ scale: 0.97 }}
-                            transition={tapTrans}
+                            transition={buttonTap}
                             className="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-active hover:bg-tertiary/20 cursor-pointer transition-colors w-full"
                           >
                             <span className={`text-sm ${bind.debug ? 'text-char-subtle' : 'text-char-secondary'}`}>
@@ -210,20 +269,64 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                       </div>
                     )}
 
-                    {(view === 'bug-report' || view === 'feedback') && (
+                    {/* Bug Reporting Page */}
+                    {view === 'bug-report' && (
+                      <div className="flex flex-col gap-3">
+                        <div className="relative">
+                          <button
+                            onClick={() => setBugDropOpen(v => !v)}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-surface-active border border-background-border text-sm hover:border-primary/60 transition-colors cursor-pointer"
+                          >
+                            <span className={bugPage ? 'text-char' : 'text-char-subtle'}>
+                              {bugPage ?? 'Which page does this occur on?'}
+                            </span>
+                            <CaretDownIcon size={14} className="text-char-subtle shrink-0" />
+                          </button>
+                          <Dropdown
+                            open={bugDropOpen}
+                            onClose={() => setBugDropOpen(false)}
+                            items={bugPageItems}
+                          />
+                        </div>
+
+                        <textarea
+                          placeholder="Describe the bug..."
+                          value={bugDescription}
+                          onChange={e => setBugDescription(e.target.value)}
+                          className="w-full h-28 resize-none rounded-lg bg-surface-active border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
+                        />
+
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <Checkbox checked={creditMe} onChange={setCreditMe} label="Credit Me" description='Display my username in the patch notes when this gets fixed.' />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end">
+                          <motion.button
+                            onClick={() => { submitBugReport({ page: bugPage ?? '', content: bugDescription, credit: creditMe }); onClose(); }}
+                            whileTap={{ scale: 0.96 }}
+                            transition={buttonTap}
+                            className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-secondary transition-colors cursor-pointer"
+                          >
+                            Submit
+                          </motion.button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Feedback Page */}
+                    {view === 'feedback' && (
                       <div className="flex flex-col gap-3">
                         <textarea
-                          placeholder={view === 'bug-report' ? 'Describe the bug...' : 'Share your feedback...'}
+                          placeholder="Share your feedback..."
                           className="w-full h-32 resize-none rounded-lg bg-surface-active border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
                         />
                         <div className="flex justify-end">
                           <motion.button
-                            onClick={() => {
-                              view === 'bug-report' ? submitBugReport() : submitFeedbackReport();
-                              onClose();
-                            }}
+                            onClick={() => { submitFeedbackReport(); onClose(); }}
                             whileTap={{ scale: 0.96 }}
-                            transition={tapTrans}
+                            transition={buttonTap}
                             className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-secondary transition-colors cursor-pointer"
                           >
                             Submit
