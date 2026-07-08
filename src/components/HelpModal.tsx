@@ -18,6 +18,7 @@ import { UserTable } from '../types/database';
 import { AiMiAPI, version } from '../core/constants';
 import { getUser } from '../core/database/queries';
 import { useToast } from './UI/Toast';
+import { useDialogue } from './UI/DialogueToast';
 
 type View = 'home' | 'keybinds' | 'bug-report' | 'feedback';
 
@@ -69,6 +70,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   const [feedbackIsReview, setFeedbackIsReview] = useState(false);
   const [feedbackCreditMe, setFeedbackCreditMe] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserTable | null>(null);
+  const { show: showDialogue } = useDialogue();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -112,13 +114,12 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   function redeemAllCodes() {}
 
   async function submitBugReport(report: BugReport) {
-    toast(`Sending bug report...`, 'info');
     const bundled = {
-        report,
-        version,
-        username: currentUser?.username,
-        playerId: currentUser?.playerId,
-        discordId: currentUser?.discordId,
+      report,
+      version,
+      username: currentUser?.username,
+      playerId: currentUser?.playerId,
+      discordId: currentUser?.discordId,
     }
     console.debug(`Submitting bug report:`, bundled);
 
@@ -136,18 +137,24 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
       return;
     };
 
-    toast(`Submitted bug report #${response.id} successfully!`, 'success');
+    showDialogue({
+      variant: 'success',
+      title: `SUCCESS!`,
+      message: `Your bug report was submitted successfully! (#${response.id}) Thank you for improving the app!`,
+      image: '/aimi/Noted.gif',
+      autoDismiss: 4000
+    })
     console.log(`Submitted bug report successfully.`);
     return;
   }
 
   async function submitFeedbackReport(submission: Feedback) {
     const bundled = {
-        submission,
-        version,
-        username: currentUser?.username,
-        playerId: currentUser?.playerId,
-        discordId: currentUser?.discordId,
+      submission,
+      version,
+      username: currentUser?.username,
+      playerId: currentUser?.playerId,
+      discordId: currentUser?.discordId,
     }
     console.debug(`Submitting feedback:`, bundled);
 
@@ -165,7 +172,13 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
       return;
     };
 
-    toast(`Submitted feedback successfully!`, 'success');
+    showDialogue({
+      variant: 'success',
+      title: `SUCCESS!`,
+      message: "Your feedback was delivered successfully! Thank you~!",
+      image: '/aimi/Pat.png',
+      autoDismiss: 3000
+    })
     console.log(`Submitted feedback successfully.`);
     return;
   }
