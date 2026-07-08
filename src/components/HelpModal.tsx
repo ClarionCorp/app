@@ -29,9 +29,8 @@ interface HelpModalProps {
 const KEYBINDS = [
   { keys: ['Ctrl', '`'], description: 'Toggle Debug Console' },
   { keys: ['F6'], description: 'Open Help' },
-  { keys: ['F4'], description: 'Cycle demo dialog', debug: true },
-  { keys: ['F8'], description: 'Play queue pop sound', debug: true },
-  { keys: ['F9'], description: 'Debug page', debug: true },
+  { keys: ['F8'], description: 'Preview Queue Pop SFX', debug: false },
+  { keys: ['F9'], description: 'Open Debug Page', debug: true },
   { keys: ['Ctrl', 'F9'], description: 'Upload last match to API', debug: true },
 ];
 
@@ -66,6 +65,15 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   function goBack() {
     setDirection(-1);
     setView('home');
+  }
+
+  function simulateKey(keys: string[]) {
+    const key = keys[keys.length - 1];
+    const ctrlKey = keys.includes('Ctrl');
+    const altKey = keys.includes('Alt');
+    const shiftKey = keys.includes('Shift');
+    window.dispatchEvent(new KeyboardEvent('keydown', { key, ctrlKey, altKey, shiftKey, bubbles: true }));
+    onClose();
   }
 
   function refreshPlayerRanks() {}
@@ -175,9 +183,12 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                     {view === 'keybinds' && (
                       <div className="flex flex-col gap-1">
                         {KEYBINDS.map(bind => (
-                          <div
+                          <motion.button
                             key={bind.keys.join('+')}
-                            className="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-active"
+                            onClick={() => simulateKey(bind.keys)}
+                            whileTap={{ scale: 0.97 }}
+                            transition={tapTrans}
+                            className="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-active hover:bg-tertiary/20 cursor-pointer transition-colors w-full"
                           >
                             <span className={`text-sm ${bind.debug ? 'text-char-subtle' : 'text-char-secondary'}`}>
                               {bind.description}
@@ -194,7 +205,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                                 </span>
                               ))}
                             </div>
-                          </div>
+                          </motion.button>
                         ))}
                       </div>
                     )}
