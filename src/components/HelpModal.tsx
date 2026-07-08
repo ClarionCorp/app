@@ -10,6 +10,7 @@ import {
   XIcon,
   CaretLeftIcon,
   CaretDownIcon,
+  TerminalWindowIcon,
 } from '@phosphor-icons/react';
 import { Dropdown, type DropdownItem } from './UI/Dropdown';
 import { Checkbox } from './UI/Checkbox';
@@ -50,10 +51,10 @@ const pageTitles: Record<Exclude<View, 'home'>, string> = {
 };
 
 const flavorImages: Record<View, string> = {
-  home: '/aimi/Pat.png',
+  home: '/aimi/Yapping.gif',
   keybinds: '/aimi/Keyboard.gif',
   'bug-report': '/aimi/Sweat.gif',
-  feedback: '/aimi/Yapping.gif',
+  feedback: '/aimi/Pat.png',
 };
 
 const buttonTap: Transition = { duration: 0.06, ease: [0.16, 1, 0.3, 1] };
@@ -110,7 +111,6 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
     onClose();
   }
 
-  function refreshPlayerRanks() {}
   function redeemAllCodes() {}
 
   async function submitBugReport(report: BugReport) {
@@ -192,9 +192,9 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   );
 
   const actions: HelpAction[] = [
+    { icon: <TerminalWindowIcon size={24} />, label: 'Show Console', onClick: () => simulateKey(['Ctrl', '`'])},
     { icon: <CopySimpleIcon size={24} />, label: 'Copy Logs', onClick: onCopyLogs },
     { icon: <KeyboardIcon size={24} />, label: 'View Keybinds', navigateTo: 'keybinds' },
-    { icon: <ArrowsClockwiseIcon size={24} />, label: 'Refresh Player Ranks', onClick: refreshPlayerRanks },
     { icon: <GiftIcon size={24} />, label: 'Redeem All Codes', onClick: redeemAllCodes },
     { icon: <BugIcon size={24} />, label: 'Submit Bug Report', navigateTo: 'bug-report' },
     { icon: <ChatCircleDotsIcon size={24} />, label: 'Submit Feedback', navigateTo: 'feedback' },
