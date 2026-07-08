@@ -13,7 +13,8 @@ import {
 } from '@phosphor-icons/react';
 import { Dropdown, type DropdownItem } from './UI/Dropdown';
 import { Checkbox } from './UI/Checkbox';
-import { BugReport } from '../types/help';
+import { BugReport, Feedback } from '../types/help';
+import { UserTable } from '../types/database';
 import { AiMiAPI, version } from '../core/constants';
 import { getUser } from '../core/database/queries';
 import { useToast } from './UI/Toast';
@@ -62,8 +63,17 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   const [bugPage, setBugPage] = useState<string | null>(null);
   const [bugDescription, setBugDescription] = useState('');
   const [bugDropOpen, setBugDropOpen] = useState(false);
-  const [creditMe, setCreditMe] = useState(false);
+  const [bugCreditMe, setCreditMe] = useState(false);
+  const [feedbackEntry, setFeedbackEntry] = useState('');
+  const [feedbackEnjoying, setFeedbackEnjoying] = useState(true);
+  const [feedbackIsReview, setFeedbackIsReview] = useState(false);
+  const [feedbackCreditMe, setFeedbackCreditMe] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserTable | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    getUser().then(setCurrentUser);
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -72,6 +82,10 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
       setBugDescription('');
       setBugDropOpen(false);
       setCreditMe(false);
+      setFeedbackEntry('');
+      setFeedbackEnjoying(false);
+      setFeedbackIsReview(false);
+      setFeedbackCreditMe(false);
     }
   }, [open]);
 
@@ -99,13 +113,12 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
 
   async function submitBugReport(report: BugReport) {
     toast(`Sending bug report...`, 'info');
-    const user = await getUser();
     const bundled = {
         report,
         version,
-        username: user?.username,
-        playerId: user?.playerId,
-        discordId: user?.discordId,
+        username: currentUser?.username,
+        playerId: currentUser?.playerId,
+        discordId: currentUser?.discordId,
     }
     console.debug(`Submitting bug report:`, bundled);
 
@@ -128,7 +141,34 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
     return;
   }
 
-  function submitFeedbackReport() {}
+  async function submitFeedbackReport(submission: Feedback) {
+    const bundled = {
+        submission,
+        version,
+        username: currentUser?.username,
+        playerId: currentUser?.playerId,
+        discordId: currentUser?.discordId,
+    }
+    console.debug(`Submitting feedback:`, bundled);
+
+    const res = await fetch(`${AiMiAPI}/v1/feedback/submit`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json", "x-user-agent": "aimi-app" },
+      body: JSON.stringify(bundled)
+    });
+
+    const response = await res?.json();
+
+    if (!res.ok) {
+      console.error(`Failed to send feedback! Error:`, response?.error);
+      toast(`Feedback failed to send! (Error: ${res.status})`, 'error');
+      return;
+    };
+
+    toast(`Submitted feedback successfully!`, 'success');
+    console.log(`Submitted feedback successfully.`);
+    return;
+  }
 
   const bugPageItems: DropdownItem[] = 
     ['Home', 'Current Match', 'Match History', 'Stream Overlay', 'Settings', 'Other']
@@ -298,13 +338,13 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
 
                         <div className="flex items-center gap-2">
                           <div className="flex-1">
-                            <Checkbox checked={creditMe} onChange={setCreditMe} label="Credit Me" description='Display my username in the patch notes when this gets fixed.' />
+                            <Checkbox checked={bugCreditMe} onChange={setCreditMe} label="Credit Me" description='Display my username in the patch notes when this gets fixed.' />
                           </div>
                         </div>
 
                         <div className="flex justify-end">
                           <motion.button
-                            onClick={() => { submitBugReport({ page: bugPage ?? '', content: bugDescription, credit: creditMe }); onClose(); }}
+                            onClick={() => { submitBugReport({ page: bugPage ?? '', content: bugDescription, credit: bugCreditMe }); onClose(); }}
                             whileTap={{ scale: 0.96 }}
                             transition={buttonTap}
                             className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-secondary transition-colors cursor-pointer"
@@ -318,13 +358,37 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                     {/* Feedback Page */}
                     {view === 'feedback' && (
                       <div className="flex flex-col gap-3">
+                        <Checkbox
+                          checked={feedbackEnjoying}
+                          onChange={setFeedbackEnjoying}
+                          label="Enjoying the app?"
+                          description="Let us know if you're having a good experience overall."
+                        />
+
                         <textarea
                           placeholder="Share your feedback..."
-                          className="w-full h-32 resize-none rounded-lg bg-surface-active border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
+                          value={feedbackEntry}
+                          onChange={e => setFeedbackEntry(e.target.value)}
+                          className="w-full h-28 resize-none rounded-lg bg-surface-active border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
                         />
+
+                        <Checkbox
+                          checked={feedbackIsReview}
+                          onChange={v => { setFeedbackIsReview(v); if (!v) setFeedbackCreditMe(false); }}
+                          label="This is a review"
+                          description="Mark this feedback as a review of this app version."
+                        />
+                        <Checkbox
+                          checked={feedbackCreditMe}
+                          onChange={setFeedbackCreditMe}
+                          disabled={!feedbackIsReview || !currentUser}
+                          label="Attach my username"
+                          description={currentUser ? `'${currentUser.username}' will be displayed alongside your review.` : `Unable to resolve current username, option cannot be enabled.`}
+                        />
+
                         <div className="flex justify-end">
                           <motion.button
-                            onClick={() => { submitFeedbackReport(); onClose(); }}
+                            onClick={() => { submitFeedbackReport({ content: feedbackEntry, review: feedbackIsReview, public: feedbackCreditMe, enjoying: feedbackEnjoying }); onClose(); }}
                             whileTap={{ scale: 0.96 }}
                             transition={buttonTap}
                             className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-secondary transition-colors cursor-pointer"

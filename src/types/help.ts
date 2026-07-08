@@ -6,3 +6,11 @@ export type BugReport = {
   content: string,
   credit: boolean
 }
+
+
+export type Feedback = {
+  content: string,
+  public: boolean,
+  review: boolean,
+  enjoying: boolean,
+}
