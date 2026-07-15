@@ -180,8 +180,8 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
             <div className="px-4 py-2 bg-surface-raised/10 grid grid-cols-3 items-center text-xs">
               {/* Bans */}
               <div className="flex items-center gap-2">
-                {row.bans.map(id => (
-                  <BasicPopover key={id} displayText={`Banned ${getCharName(id) ?? id}`}>
+                {row.bans.map((id, index) => (
+                  <BasicPopover key={`${id}-${index}`} displayText={`Banned ${getCharName(id) ?? id}`}>
                     <img
                       src={`/characters/portrait/${id}.webp`}
                       alt={getCharName(id) ?? id}
