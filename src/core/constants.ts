@@ -4,16 +4,18 @@
 export const version = '2.0.0-pre6';
 export const ClarionAPI = 'https://api.clarioncorp.net';
 export const OdyAPI = 'https://prometheus-proxy.odysseyinteractive.gg/api';
-export const AiMiAPI = 'https://api.aimis.app';
-// export const AiMiAPI = 'http://localhost:12240';
+// export const AiMiAPI = 'https://api.aimis.app';
+export const AiMiAPI = 'http://localhost:12240';
 export const StatusUrl = 'https://status.blals.com';
 
 
 // Identity Path Suffix (after user home folder)
 export const windows_identity = 'AppData/Local/OmegaStrikers/identity.json';
+export const linux_identity = 'AppData/Local/OmegaStrikers/identity.json'; // to do
 
 // Log File Path (after user home folder)
 export const windows_log = 'AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log';
+export const linux_log = 'AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log'; // to do
 
 // How often to heartbeat-check that the active identity hasn't changed (ms)
 export const heartbeat_interval = 300_000;

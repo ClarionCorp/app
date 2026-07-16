@@ -19,6 +19,7 @@ import { AiMiAPI, version } from '../core/constants';
 import { getUser } from '../core/database/queries';
 import { useToast } from './UI/Toast';
 import { useDialogue } from './UI/DialogueToast';
+import { gatherSystemInfo } from '../core/utilities/reporting';
 
 type View = 'home' | 'keybinds' | 'bug-report' | 'feedback';
 
@@ -112,12 +113,14 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   function redeemAllCodes() { toast('Feature not implemented yet, sorry!', 'warning'); };
 
   async function submitBugReport(report: BugReport) {
+    const gatheredSystemInfo = await gatherSystemInfo();
     const bundled = {
       report,
       version,
       username: currentUser?.username,
       playerId: currentUser?.playerId,
       discordId: currentUser?.discordId,
+      sysReport: gatheredSystemInfo,
     }
     console.debug(`Submitting bug report:`, bundled);
 

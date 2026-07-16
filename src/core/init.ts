@@ -1,24 +1,19 @@
-import { exists, readTextFile } from '@tauri-apps/plugin-fs';
-import { homeDir, join } from '@tauri-apps/api/path';
-import { windows_identity, windows_log } from './constants';
+import { readTextFile } from '@tauri-apps/plugin-fs';
 import { OdyAuth } from '../types/odyssey';
 import { upsertAuth } from './database/queries';
+import { getIdentityPath, getLogPath } from './utilities/system';
 
 
 export async function readIdentity(): Promise<OdyAuth> {
-  const home = await homeDir();
-  const fullIdentityPath = await join(home, windows_identity);
-  const raw = await readTextFile(fullIdentityPath);
+  const identityPath = await getIdentityPath();
+  if (!identityPath) { throw new Error(`Identity path could not be found, please create a bug report!`) };
+  const raw = await readTextFile(identityPath);
 
   let identity: unknown;
   try {
     identity = JSON.parse(raw);
   } catch {
     throw new Error('identity.json exists but could not be parsed. The file may be corrupted.');
-  }
-
-  if (typeof identity !== 'object' || identity === null) {
-    throw new Error('identity.json is not a valid object.');
   }
 
   const { accessTokens } = identity as Record<string, unknown>;
@@ -48,22 +43,18 @@ export async function readIdentity(): Promise<OdyAuth> {
 
 // Verify identity.json and OmegaStrikers.log exist, and identity has required keys
 export async function verifyClientFiles(): Promise<OdyAuth> {
-  const home = await homeDir();
+  const identityPath = await getIdentityPath();
+  const logPath = await getLogPath();
 
-  const fullIdentityPath = await join(home, windows_identity);
-  const fullLogPath = await join(home, windows_log);
-
-  const identityExists = await exists(fullIdentityPath);
-  if (!identityExists) {
+  if (!identityPath) {
     throw new Error(
-      `Could not find identity.json at:\n${fullIdentityPath}\n\nMake sure Omega Strikers has been launched at least once.`
+      `Could not find identity.json at:\n${identityPath}\n\nMake sure Omega Strikers has been launched at least once.`
     );
   }
 
-  const logExists = await exists(fullLogPath);
-  if (!logExists) {
+  if (!logPath) {
     throw new Error(
-      `Could not find OmegaStrikers.log at:\n${fullLogPath}\n\nMake sure Omega Strikers has been launched at least once.`
+      `Could not find OmegaStrikers.log at:\n${logPath}\n\nMake sure Omega Strikers has been launched at least once.`
     );
   }
 
