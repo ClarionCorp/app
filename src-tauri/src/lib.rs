@@ -169,6 +169,7 @@ pub fn run() {
         .plugin(tauri_plugin_drpc::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             // Bring the existing window to focus
             if let Some(window) = app.get_webview_window("main") {
