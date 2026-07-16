@@ -120,14 +120,16 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
       username: currentUser?.username,
       playerId: currentUser?.playerId,
       discordId: currentUser?.discordId,
-      sysReport: gatheredSystemInfo,
     }
-    console.debug(`Submitting bug report:`, bundled);
+    console.debug(`Submitting bug report${gatheredSystemInfo ? ' with sysInfo included' : ''}:`, bundled);
 
     const res = await fetch(`${AiMiAPI}/v1/bugs/report`, {
       method: 'POST',
       headers: { "Content-Type": "application/json", "x-user-agent": "aimi-app" },
-      body: JSON.stringify(bundled)
+      body: JSON.stringify({
+        ...bundled,
+        sysReport: gatheredSystemInfo
+      })
     });
 
     const response = await res?.json();
