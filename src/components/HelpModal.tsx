@@ -107,7 +107,6 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
     const altKey = keys.includes('Alt');
     const shiftKey = keys.includes('Shift');
     window.dispatchEvent(new KeyboardEvent('keydown', { key, ctrlKey, altKey, shiftKey, bubbles: true }));
-    onClose();
   }
 
   function redeemAllCodes() { toast('Feature not implemented yet, sorry!', 'warning'); };

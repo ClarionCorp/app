@@ -6,7 +6,7 @@ import { Playstyle, SmurfConfidence } from "../../types/clarion";
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
   id: integer("id").primaryKey(),
-  seenWelcome: integer("seenWelcome", { mode: "boolean" }).notNull().default(false),
+  seenWelcome: integer("seenWelcome", { mode: "boolean" }).notNull().default(false), // going to the leave this one up here
   gameDirectory: text("gameDirectory"),
   drpcEnabled: integer("drpcEnabled", { mode: "boolean" }).notNull().default(true),
   notifyQueuePop: integer("notifyQueuePop", { mode: "boolean" }).notNull().default(false), // i don't want to annoy anyone :P
@@ -14,6 +14,15 @@ export const appSettings = sqliteTable("appSettings", {
   queuePopType: text("queuePopType").notNull().default("Ai.Mi"),
   exitOnGameClose: integer("exitOnGameClose", { mode: "boolean" }).notNull().default(false),
   sendMatchData: integer("sendMatchData", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp" }),
+});
+
+// Keep track of which dialogues have been shown to the user
+// The existence of an entry here means that it has been shown
+export const seenDialogues = sqliteTable("seenDialogues", {
+  id: text("id").primaryKey().notNull().unique(), // e.g. 'DISCORD_CTA'
+  count: integer("count").notNull().default(1), // in case we need to keep track
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 
