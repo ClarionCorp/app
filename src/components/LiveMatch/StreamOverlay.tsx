@@ -76,7 +76,7 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
         >
           <div className="absolute inset-0 bg-overlay/80" onClick={onClose} />
           <motion.div
-            className="relative z-10 w-2xl max-w-[95vw] rounded-xl bg-surface border border-background-border shadow-xl p-5 flex flex-col gap-4"
+            className="relative z-10 w-[90vw] max-w-[120vh] rounded-xl bg-surface border border-background-border shadow-xl p-5 flex flex-col gap-4"
             initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 8 }}

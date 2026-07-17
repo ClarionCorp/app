@@ -6,9 +6,9 @@ import { MatchPlayer, TimelineEntry } from '../../types/ue4ss'
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler)
 
-const MY_COLOR = '#34d399'
-const ALLY_COLORS = ['#60a5fa', '#93c5fd', '#38bdf8']
-const ENEMY_COLORS = ['#f87171', '#fca5a5', '#fb923c']
+const MY_COLOR = '#25cf0e'
+const ALLY_COLORS = ['#1387d4', '#261fed', '#16c4ad']
+const ENEMY_COLORS = ['#fc0303', '#ed26a7', '#e83209']
 
 function getPlayerColors(players: MatchPlayer[], myTeam: number, myPlayerId: string | null): string[] {
   let allyIdx = 0
@@ -78,7 +78,7 @@ function TimelineChart({ players, colors, timeline, myTeam }: TimelineChartProps
           const color = colors[i]
           return {
             label: p.name,
-            data: [0, ...(p.xpGoals ?? [])],
+            data: [600, ...(p.xpGoals ?? [])],
             borderColor: color,
             backgroundColor: color + '22',
             borderWidth: 2,
