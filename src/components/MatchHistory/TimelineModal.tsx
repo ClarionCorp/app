@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import { Chart, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -33,9 +34,10 @@ interface TimelineChartProps {
   colors: string[]
   timeline: TimelineEntry[]
   myTeam: number
+  hiddenPlayers: Set<string>
 }
 
-function TimelineChart({ players, colors, timeline, myTeam }: TimelineChartProps) {
+function TimelineChart({ players, colors, timeline, myTeam, hiddenPlayers }: TimelineChartProps) {
   const safeTimeline = timeline ?? []
   const gameStart = safeTimeline.find(e => e.event === 'GAME_START')
 
@@ -74,8 +76,8 @@ function TimelineChart({ players, colors, timeline, myTeam }: TimelineChartProps
     <Line
       data={{
         labels,
-        datasets: players.map((p, i) => {
-          const color = colors[i]
+        datasets: players.filter(p => !hiddenPlayers.has(p.name)).map(p => {
+          const color = colors[players.indexOf(p)]
           return {
             label: p.name,
             data: [600, ...(p.xpGoals ?? [])],
@@ -134,6 +136,14 @@ interface TimelineModalProps {
 
 export function TimelineModal({ open, onClose, players, timeline, myTeam, myPlayerId }: TimelineModalProps) {
   const playerColors = getPlayerColors(players, myTeam, myPlayerId)
+  const [hiddenPlayers, setHiddenPlayers] = useState<Set<string>>(new Set())
+
+  const togglePlayer = (name: string) =>
+    setHiddenPlayers(prev => {
+      const next = new Set(prev)
+      next.has(name) ? next.delete(name) : next.add(name)
+      return next
+    })
 
   return (
     <AnimatePresence>
@@ -162,16 +172,29 @@ export function TimelineModal({ open, onClose, players, timeline, myTeam, myPlay
                 <XIcon size={16} />
               </button>
             </div>
-            <TimelineChart players={players} colors={playerColors} timeline={timeline} myTeam={myTeam} />
+            <TimelineChart players={players} colors={playerColors} timeline={timeline} myTeam={myTeam} hiddenPlayers={hiddenPlayers} />
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                {players.map((p, pi) => (
-                  <div key={p.name} className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: playerColors[pi] }} />
-                    <span className="text-xs text-char-subtle">{p.name}</span>
-                  </div>
-                ))}
+                {players.map((p, pi) => {
+                  const hidden = hiddenPlayers.has(p.name)
+                  const color = playerColors[pi]
+                  return (
+                    <button
+                      key={p.name}
+                      onClick={() => togglePlayer(p.name)}
+                      className="flex items-center gap-1.5 cursor-pointer transition-opacity"
+                      style={{ opacity: hidden ? 0.35 : 1 }}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full shrink-0 border-2 transition-colors"
+                        style={{ borderColor: color, backgroundColor: hidden ? 'transparent' : color }}
+                      />
+                      <span className="text-xs text-char-subtle">{p.name}</span>
+                    </button>
+                  )
+                })}
               </div>
+
               <div className="flex items-center gap-3 shrink-0 text-xs text-char-subtle">
                 <div className="flex items-center gap-1">
                   <CircleIcon size={12} weight='fill' className='text-[#60a5fa]' />
