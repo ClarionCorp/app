@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { version } from './constants';
+import { getTempDir } from './utilities/system';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -56,7 +57,18 @@ async function flushToFile() {
 
 setInterval(flushToFile, 2000);
 
-invoke('write_log_header', { version }).catch(() => {});
+(async () => {
+  try {
+    await invoke('write_log_header', { version });
+  } catch {
+    // Header write failed, but still try to report the temp dir below
+  }
+  try {
+    push('debug', `Using temp directory: ${await getTempDir()}`);
+  } catch (e) {
+    push('warn', 'Could not resolve temp dir', serialize(e));
+  }
+})();
 
 export function formatLogTime(date: Date): string {
   return (

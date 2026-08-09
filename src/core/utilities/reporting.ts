@@ -1,8 +1,8 @@
 // Functions for bug and feedback reporting
 
 import { platform, version, arch, Platform, Arch } from '@tauri-apps/plugin-os';
-import { getIdentityPath, getLogPath } from './system';
-import { join, tempDir } from '@tauri-apps/api/path';
+import { getIdentityPath, getLogPath, getTempDir } from './system';
+import { join } from '@tauri-apps/api/path';
 import { getAppSettings } from '../database/queries';
 import { readDir } from '@tauri-apps/plugin-fs';
 
@@ -34,7 +34,7 @@ export async function gatherSystemInfo(): Promise<SysReport | null> {
     // Basic Filepaths
     const identityPath = await getIdentityPath();
     const logPath = await getLogPath();
-    const tempPath = await tempDir();
+    const tempPath = await getTempDir();
     const omegaSys = await gatherModFiles(settings);
 
     return {

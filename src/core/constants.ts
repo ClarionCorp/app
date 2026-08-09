@@ -8,14 +8,17 @@ export const AiMiAPI = 'https://api.aimis.app';
 // export const AiMiAPI = 'http://localhost:12240';
 export const StatusUrl = 'https://status.blals.com';
 
+// Proton Paths
+export const proton_root = '.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/'; // prefix
+export const proton_temp = `${proton_root}/users/steamuser/AppData/Local/Temp/`;
 
 // Identity Path Suffix (after user home folder)
 export const windows_identity = 'AppData/Local/OmegaStrikers/identity.json';
-export const linux_identity = 'AppData/Local/OmegaStrikers/identity.json'; // to do
+export const linux_identity = `${proton_root}/users/steamuser/AppData/Local/OmegaStrikers/identity.json`;
 
 // Log File Path (after user home folder)
 export const windows_log = 'AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log';
-export const linux_log = 'AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log'; // to do
+export const linux_log = `${proton_root}/users/steamuser/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log`;
 
 // How often to heartbeat-check that the active identity hasn't changed (ms)
 export const heartbeat_interval = 300_000;

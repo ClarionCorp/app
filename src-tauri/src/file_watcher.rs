@@ -1,6 +1,7 @@
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
@@ -22,8 +23,27 @@ pub struct FileChangeEvent {
     pub content: Option<String>,
 }
 
+// Resolves the temp directory the game actually writes to.
+// On Windows, this is the normal system temp dir.
+// On Linux, the game writes into its Proton prefix's fake windows temp dir instead.
+fn resolve_temp_dir() -> PathBuf {
+    if cfg!(target_os = "windows") {
+        return std::env::temp_dir();
+    }
+
+    match std::env::var_os("HOME") {
+        Some(home) => PathBuf::from(home).join(
+            ".steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/Temp/",
+        ),
+        None => {
+            eprintln!("HOME environment variable not set, falling back to std::env::temp_dir()");
+            std::env::temp_dir()
+        }
+    }
+}
+
 pub fn start_file_watcher(app: AppHandle) {
-    let temp_dir = std::env::temp_dir();
+    let temp_dir = resolve_temp_dir();
 
     std::thread::spawn(move || {
         let (tx, rx) = mpsc::channel::<notify::Result<Event>>();

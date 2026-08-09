@@ -15,7 +15,9 @@
         { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" },
         { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
-        { "path": "$HOME/.steam/steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**"}
+        { "path": "$HOME/.steam/steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**"},
+        { "path": "$HOME/.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/OmegaStrikers/identity.json" },
+        { "path": "$HOME/.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" }
       ]
     },
     {
@@ -29,18 +31,19 @@
       "identifier": "fs:allow-mkdir",
       "allow": [
         { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
+        { "path": "$HOME/.local/share/**"},
         { "path": "$HOME/.steam/steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**"}
       ]
     },
     {
       "identifier": "fs:allow-exists",
       "allow": [
-        { "path": "$HOME/Desktop/**" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/identity.json" },
         { "path": "$HOME/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log" },
         { "path": "$TEMP/**" },
         { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" },
-        { "path": "$HOME/.steam/steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**"}
+        { "path": "$HOME/.steam/steam/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**"},
+        { "path": "$HOME/.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/OmegaStrikers/**" }
       ]
     },
     {

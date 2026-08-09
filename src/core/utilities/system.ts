@@ -1,8 +1,8 @@
 // Functions regarding anything to do with interfacing with the user's system or file paths
 
-import { homeDir, join } from "@tauri-apps/api/path";
+import { homeDir, join, tempDir } from "@tauri-apps/api/path";
 import { platform } from "@tauri-apps/plugin-os";
-import { linux_identity, linux_log, windows_identity, windows_log } from "../constants";
+import { linux_identity, linux_log, proton_temp, windows_identity, windows_log } from "../constants";
 import { exists } from "@tauri-apps/plugin-fs";
 
 // Moved here to be used in bug reports
@@ -23,4 +23,16 @@ export async function getLogPath(): Promise<string | null> {
   const fileExists = await exists(fullLogPath);
   if (fileExists == true) { return fullLogPath }
   else { return null }; // cancel early if file doesn't exist here.
+}
+
+// Needed because on Linux, we don't use /tmp,
+// we use the Proton tmp path in windows' LocalAppData.
+export async function getTempDir(): Promise<string> {
+  const os = platform();
+  if (os == 'windows') {
+    return await tempDir();
+  } else { // Not windows, return Proton path instead
+    const home = await homeDir();
+    return await join(home, proton_temp);
+  }
 }
