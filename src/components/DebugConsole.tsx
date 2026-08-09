@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { logger, LogEntry, LogLevel } from '../core/logger';
+import { logger, LogEntry, LogLevel, formatLogTime, formatLogEntry } from '../core/logger';
 import { BugIcon, XIcon, TrashIcon, CopySimpleIcon } from '@phosphor-icons/react';
-import { HelpModal } from './HelpModal';
 
 const LEVEL_TEXT: Record<LogLevel, string> = {
   debug: 'text-zinc-500',
@@ -21,23 +20,12 @@ const LEVEL_LABEL: Record<LogLevel, string> = {
 type Filter = LogLevel | 'all';
 const FILTERS: Filter[] = ['all', 'debug', 'info', 'warn', 'error'];
 
-function fmt(date: Date): string {
-  return (
-    date.toTimeString().slice(0, 8) +
-    '.' +
-    String(date.getMilliseconds()).padStart(3, '0')
-  );
+interface DebugConsoleProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-function entryText(e: LogEntry): string {
-  return `[${fmt(e.timestamp)}] [${e.level.toUpperCase().padEnd(5)}] ${e.message}${
-    e.detail ? '\n  ' + e.detail.replace(/\n/g, '\n  ') : ''
-  }`;
-}
-
-export function DebugConsole() {
-  const [open, setOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
+export function DebugConsole({ open, onOpenChange }: DebugConsoleProps) {
   const [entries, setEntries] = useState<LogEntry[]>([...logger.getEntries()]);
   const [filter, setFilter] = useState<Filter>('all');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -49,30 +37,17 @@ export function DebugConsole() {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'instant' });
   }, [entries.length, open]);
 
-  // Keyboard shortcut: Ctrl+`
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === '`') setOpen(v => !v);
-      if (e.key === 'F6') setHelpOpen(true);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
   const filtered = filter === 'all' ? entries : entries.filter(e => e.level === filter);
 
   const badgeCount = entries.filter(e => e.level === 'error').length;
   const warnCount  = entries.filter(e => e.level === 'warn').length;
 
   function copyAll() {
-    navigator.clipboard.writeText(entries.map(entryText).join('\n'));
+    navigator.clipboard.writeText(entries.map(formatLogEntry).join('\n'));
   }
 
   return (
-    <>
-    <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} onCopyLogs={copyAll} />
     <div className="fixed bottom-0 right-0 z-200 flex flex-col items-end pointer-events-none">
-      {/* Panel */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -124,7 +99,7 @@ export function DebugConsole() {
                 <TrashIcon size={13} />
               </button>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => onOpenChange(false)}
                 className="p-1 text-zinc-600 hover:text-zinc-300 transition-colors cursor-pointer"
               >
                 <XIcon size={13} weight="bold" />
@@ -138,7 +113,7 @@ export function DebugConsole() {
               )}
               {filtered.map(entry => (
                 <div key={entry.id} className="flex gap-2 hover:bg-zinc-900/40 px-1 rounded">
-                  <span className="text-zinc-700 shrink-0 tabular-nums">{fmt(entry.timestamp)}</span>
+                  <span className="text-zinc-700 shrink-0 tabular-nums">{formatLogTime(entry.timestamp)}</span>
                   <span className={`shrink-0 w-11 ${LEVEL_LABEL[entry.level]}`}>
                     [{entry.level.toUpperCase()}]
                   </span>
@@ -157,24 +132,6 @@ export function DebugConsole() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen(v => !v)}
-        title="Debug console (Ctrl+`)"
-        className={[
-          'pointer-events-auto m-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg',
-          'text-xs font-mono transition-colors cursor-pointer border',
-          open
-            ? 'bg-zinc-700 border-zinc-600 text-white'
-            : 'bg-zinc-900/80 border-zinc-800 text-zinc-600 hover:text-zinc-300',
-        ].join(' ')}
-      >
-        <BugIcon size={13} />
-        {!open && badgeCount > 0 && <span className="text-red-400 font-bold">{badgeCount}E</span>}
-        {!open && warnCount > 0  && <span className="text-amber-400">{warnCount}W</span>}
-      </button>
     </div>
-    </>
   );
 }

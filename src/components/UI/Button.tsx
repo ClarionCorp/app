@@ -24,7 +24,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-white border border-secondary hover:bg-secondary hover:shadow-accent active:bg-tertiary',
   secondary: 'bg-secondary text-white border border-secondary hover:bg-tertiary hover:shadow-accent active:bg-tertiary',
   'secondary-ghost': 'bg-transparent text-secondary/80 border border-transparent hover:border-secondary',
-  surface: 'bg-surface-active text-char-secondary hover:text-char border border-background-border hover:bg-surface-overlay active:bg-surface-raised',
+  surface: 'bg-surface-overlay text-char-secondary hover:text-char border border-background-border hover:bg-surface-overlay/80',
   success: 'bg-success/80 text-white hover:bg-success/60 hover:shadow-accent active:bg-success/50',
   ghost: 'bg-transparent text-char-secondary border border-transparent hover:bg-surface-active hover:text-char active:bg-surface-raised',
   danger: 'bg-error text-white border border-error hover:brightness-110 hover:shadow-danger active:brightness-90',

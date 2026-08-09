@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { OdyAuth } from './types/odyssey';
-import { DebugConsole } from './components/DebugConsole';
+import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { onGameStateChanged, onPlayersChanged, onMatchFinalize, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
@@ -304,7 +304,7 @@ function App() {
         </main>
       </div>
  
-      <DebugConsole />
+      <GlobalButtons />
     </div>
   );
 }

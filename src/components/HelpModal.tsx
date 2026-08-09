@@ -207,7 +207,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-150 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -274,7 +274,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                           }}
                           whileTap={{ scale: 0.96 }}
                           transition={buttonTap}
-                          className="flex flex-col items-center justify-center gap-2.5 py-5 rounded-lg border border-background-border bg-surface-active hover:bg-surface-overlay hover:border-primary/40 text-char-secondary hover:text-char transition-all duration-150 cursor-pointer group"
+                          className="flex flex-col items-center justify-center gap-2.5 py-5 rounded-lg border border-background-border bg-surface-raised hover:bg-surface-active hover:border-primary/40 text-char-secondary hover:text-char transition-all duration-150 cursor-pointer group"
                         >
                           <span className="text-primary/70 group-hover:text-primary transition-colors">
                             {action.icon}
@@ -303,7 +303,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                             onClick={() => simulateKey(bind.keys)}
                             whileTap={{ scale: 0.97 }}
                             transition={buttonTap}
-                            className="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-active hover:bg-tertiary/20 cursor-pointer transition-colors w-full"
+                            className="flex items-center justify-between py-2 px-3 rounded-lg bg-surface-raised hover:bg-tertiary/20 cursor-pointer transition-colors w-full"
                           >
                             <span className={`text-sm ${bind.debug ? 'text-char-subtle' : 'text-char-secondary'}`}>
                               {bind.description}
@@ -331,7 +331,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                         <div className="relative">
                           <button
                             onClick={() => setBugDropOpen(v => !v)}
-                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-surface-active border border-background-border text-sm hover:border-primary/60 transition-colors cursor-pointer"
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-surface-raised border border-background-border text-sm hover:border-primary/60 transition-colors cursor-pointer"
                           >
                             <span className={bugPage ? 'text-char' : 'text-char-subtle'}>
                               {bugPage ?? 'Which page does this occur on?'}
@@ -349,7 +349,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                           placeholder="Describe the bug..."
                           value={bugDescription}
                           onChange={e => setBugDescription(e.target.value)}
-                          className="w-full h-28 resize-none rounded-lg bg-surface-active border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
+                          className="w-full h-28 resize-none rounded-lg bg-surface-raised border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
                         />
 
                         <div className="flex items-center gap-2">
@@ -385,7 +385,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                           placeholder="Share your feedback..."
                           value={feedbackEntry}
                           onChange={e => setFeedbackEntry(e.target.value)}
-                          className="w-full h-28 resize-none rounded-lg bg-surface-active border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
+                          className="w-full h-28 resize-none rounded-lg bg-surface-raised border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
                         />
 
                         <Checkbox

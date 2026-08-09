@@ -58,6 +58,20 @@ setInterval(flushToFile, 2000);
 
 invoke('write_log_header', { version }).catch(() => {});
 
+export function formatLogTime(date: Date): string {
+  return (
+    date.toTimeString().slice(0, 8) +
+    '.' +
+    String(date.getMilliseconds()).padStart(3, '0')
+  );
+}
+
+export function formatLogEntry(e: LogEntry): string {
+  return `[${formatLogTime(e.timestamp)}] [${e.level.toUpperCase().padEnd(5)}] ${e.message}${
+    e.detail ? '\n  ' + e.detail.replace(/\n/g, '\n  ') : ''
+  }`;
+}
+
 export const logger = {
   debug: (message: string, data?: unknown) => push('debug', message, serialize(data)),
   info:  (message: string, data?: unknown) => push('info',  message, serialize(data)),

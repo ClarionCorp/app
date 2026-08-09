@@ -49,7 +49,7 @@ export default function Sidebar({ navigate }: SidebarProps) {
       <nav className="flex flex-col gap-1 p-2 flex-1">
         <button
           onClick={() => navigate('/home')}
-          className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg transition-colors cursor-pointer text-left text-char-subtle hover:bg-surface-active hover:text-char"
+          className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg transition-colors cursor-pointer text-left text-char-subtle hover:bg-surface-overlay hover:text-char"
         >
           <span className="shrink-0">
             <HouseIcon size={18} weight="duotone" />
@@ -80,7 +80,7 @@ export default function Sidebar({ navigate }: SidebarProps) {
                   ? 'opacity-40 cursor-not-allowed text-char-subtle'
                   : isActive
                     ? 'bg-primary/10 text-primary cursor-pointer'
-                    : 'text-char-subtle hover:bg-surface-active hover:text-char cursor-pointer'
+                    : 'text-char-subtle hover:bg-surface-overlay hover:text-char cursor-pointer'
                 }
               `}
             >
