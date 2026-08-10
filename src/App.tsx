@@ -23,7 +23,7 @@ import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { checkSaveTimelineEntries, markMatchStartIfNone } from './core/timeline';
 import { formatLiveMatchInfo } from './core/overlay';
 import { MatchJSON, MetaJSON, PlayersJSON } from './types/ue4ss-new';
-import { updateGameState, updatePlayers } from './core/utilities/events';
+import { updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -128,6 +128,7 @@ function App() {
   // Rust Mod Bridge Listeners
   useEffect(() => {
   const unlistens = Promise.all([
+    onMatchUpdate(async (payload) => { updateScore(JSON.parse(payload.content!) as MatchJSON); }),
     onPlayersChanged(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
     onGameStateChanged(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
@@ -141,42 +142,6 @@ function App() {
 
       console.log(`GameState Changed! (${data.game_state.old_phase} -> ${data.game_state.new_phase})`);
       if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); }
-    }),
-    onMatchUpdate(async (payload) => {
-      const data = JSON.parse(payload.content!) as MatchJSON;
-      if (data.game_state == null) { return };
-
-      // remove matchPlayers table entries for next game
-      if (data.game_state.new_phase == 'None' || data.game_state.new_phase == 'PreGame') { await resetLocalTables(); }; 
-
-      const gameStatus = getGameStatus(data.game_state.new_phase);
-      const currentState = await getCurrentMatch();
-      
-
-      let cMatch = await upsertCurrentMatch({
-        gameState: data.phase,
-        map: data.map_id,
-        queue: gameStatus == 'IDLING' ? session.queueName : undefined,
-        bans: data.banned_characters,
-        teamNum: data.my_team,
-        teamOnePts: data.t1_goals,
-        teamTwoPts: data.t2_goals,
-        teamOneSets: data.t1_sets,
-        teamTwoSets: data.t2_sets,
-        // startedAt: data.phase == 'VersusScreen' ? new Date() : undefined
-      });
-
-      console.log(`GameState Changed! (${data.phase})`);
-      if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(cMatch); } // Ask Discord RPC to try and update score
-      
-      console.log(`t1_pts: ${currentState.teamOnePts} | t2_pts: ${currentState.teamTwoPts}`);
-      console.log(`t1_goals: ${data.t1_goals} | t2_goals: ${data.t2_goals}`);
-      if (
-        data.phase == 'GoalScore' ||
-        data.phase == 'GoalCelebration' ||
-        data.phase == 'InGame'
-      ) { await checkSaveTimelineEntries(currentState, data) };
-      if (data.phase == 'FaceOffIntro') { await markMatchStartIfNone(); };
     }),
     onSessionUpdated(async (payload) => {
       const data = JSON.parse(payload.content!) as GameSessionJSON;

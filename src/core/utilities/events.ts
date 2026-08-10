@@ -5,7 +5,7 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
 import { currentMatch, matchPlayers } from "../database/schema";
-import { MetaJSON, PlayersJSON } from "../../types/ue4ss-new";
+import { MatchJSON, MetaJSON, PlayersJSON } from "../../types/ue4ss-new";
 import { calcAndSetPlayerStats, getUser, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { fetchPlayerStats, fetchRankQuery } from "./odyssey";
@@ -68,7 +68,6 @@ export async function updatePlayers(data: PlayersJSON) {
 
 export async function updateGameState(data: MetaJSON) {
   const state = {
-    id: 1,
     gameState: data.game_state.new_phase,
     queue: data.queue?.name,
   }
@@ -76,5 +75,22 @@ export async function updateGameState(data: MetaJSON) {
   await db.insert(currentMatch).values(state).onConflictDoUpdate({
     target: currentMatch.id,
     set: state,
+  }).returning()
+}
+
+export async function updateScore(data: MatchJSON) {
+  const table = {
+    map: data.map.id,
+    bans: data.banned_characters,
+    // teamNum: data.
+    teamOnePts: data.team1.goals,
+    teamTwoPts: data.team2.goals,
+    teamOneSets: data.team1.sets,
+    teamTwoSets: data.team2.sets,
+  }
+
+  await db.insert(currentMatch).values(table).onConflictDoUpdate({
+    target: currentMatch.id,
+    set: table,
   }).returning()
 }
