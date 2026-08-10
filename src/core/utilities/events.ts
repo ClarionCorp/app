@@ -11,7 +11,7 @@ import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { fetchPlayerStats, fetchRankQuery } from "./odyssey";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
-import { MatchPlayersTable } from "../../types/database";
+import { CurrentMatchTable, MatchPlayersTable } from "../../types/database";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -71,16 +71,18 @@ export async function updatePlayers(data: PlayersJSON) {
   }
 }
 
-export async function updateGameState(gameState: string, queue?: string | null) {
+export async function updateGameState(gameState: string, queue?: string | null): Promise<CurrentMatchTable> {
   const table = {
     gameState,
     queue,
   }
 
-  await db.insert(currentMatch).values(table).onConflictDoUpdate({
+  const [row] = await db.insert(currentMatch).values(table).onConflictDoUpdate({
     target: currentMatch.id,
     set: table,
-  })
+  }).returning();
+
+  return row;
 }
 
 export async function updateScore(data: MatchJSON) {

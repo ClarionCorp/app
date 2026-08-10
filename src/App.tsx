@@ -5,7 +5,7 @@ import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { onMatchFinalize, onMatchUpdate, onStateChange, onQueueChange, onPlayersUpdate } from './core/bridgeListener';
-import { getUser, resetLocalTables, getAppSettings } from './core/database/queries';
+import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { matchHistory } from './core/database/schema';
@@ -130,15 +130,19 @@ function App() {
     onStateChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
       if (data.game_state == null) { return };
+      console.log(`GameState Changed! (${data.game_state.old_phase} -> ${data.game_state.new_phase})`);
 
       // remove matchPlayers table entries for next game
-      if (data.game_state.new_phase == 'None' || data.game_state.new_phase == 'PreGame') { await resetLocalTables(); }; 
+      if (data.game_state.new_phase == 'None' || data.game_state.new_phase == 'PreGame') { await resetLocalTables(); };
 
+      // Update database
       const gameStatus = getGameStatus(data.game_state.new_phase);
-      await updateGameState(data.game_state.new_phase, data.queue.name);
+      const matchTable = await updateGameState(data.game_state.new_phase, data.queue.name);
 
-      console.log(`GameState Changed! (${data.game_state.old_phase} -> ${data.game_state.new_phase})`);
-      if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); }
+      // In Match Setup or In Game, tell discord to try to update
+      if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); };
+      // Only once during Match Start, log the match start time in timeline entries if not there already.
+      if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };
     }),
 
     onQueueChange(async (payload) => {
