@@ -21,14 +21,14 @@ import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { updateGameState } from "../core/utilities/events";
 
-const STEPS = [
-  "Checking UE4SS...",
-  "Fetching account info...",
-  "Checking for updates...",
-  "Connecting to Discord...",
-];
+type StepId = "ue4ss" | "account" | "updates" | "discord";
 
-const STEP_PCTS = [5, 40, 60, 75, 100];
+const steps: { id: StepId; label: string; pct: number }[] = [
+  { id: "ue4ss", label: "Checking UE4SS...", pct: 5 },
+  { id: "account", label: "Fetching account info...", pct: 40 },
+  { id: "updates", label: "Checking for updates...", pct: 60 },
+  { id: "discord", label: "Connecting to Discord...", pct: 75 },
+];
 
 export default function InitializationPage() {
   const {
@@ -37,7 +37,7 @@ export default function InitializationPage() {
     setConnectedStatus,
   } = useOutletContext<AppContextType>();
 
-  const [stepIndex, setStepIndex] = useState(0);
+  const [step, setStep] = useState(steps[0]);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [needsGameDir, setNeedsGameDir] = useState(false);
@@ -46,6 +46,12 @@ export default function InitializationPage() {
   const [ue4ssPercent, setUe4ssPercent] = useState<number | null>(null);
   const gameDirResolveRef = useRef<((dir: string) => void) | null>(null);
   const { show: showDialogue } = useDialogue();
+
+  const goToStep = (id: StepId) => {
+    const next = steps.find(s => s.id === id)!;
+    setStep(next);
+    setProgress(next.pct);
+  };
 
   const handlePickExe = async () => {
     const selected = await open({
@@ -85,8 +91,7 @@ export default function InitializationPage() {
         }
 
         // 1) Check & install/update UE4SS and companion mods
-        setStepIndex(0);
-        setProgress(STEP_PCTS[0]);
+        goToStep("ue4ss");
         const wasInstalled = await checkUE4SS(gameDir, (_stage, percent, message) => {
           setUe4ssMessage(message);
           setUe4ssPercent(percent);
@@ -112,8 +117,7 @@ export default function InitializationPage() {
         await updateGameState('None');
 
         // 2) Fetch account info from Odyssey
-        setStepIndex(1);
-        setProgress(STEP_PCTS[1]);
+        goToStep("account");
         try {
           const auth = await readIdentity();
           setOdyAuth(auth);
@@ -133,8 +137,7 @@ export default function InitializationPage() {
         }
 
         // 3) Check for updates
-        setStepIndex(2);
-        setProgress(STEP_PCTS[2]);
+        goToStep("updates");
         const updateCheck = await checkForUpdates();
         if (updateCheck.updateAvailable) {
           showDialogue({
@@ -158,8 +161,7 @@ export default function InitializationPage() {
         }
 
         // 4) Connect to Discord RPC
-        setStepIndex(3);
-        setProgress(STEP_PCTS[3]);
+        goToStep("discord");
         await stopRpc();
         await startRpc();
         await discordRpc?.updateActivity(DEFAULT_ACTIVITY);
@@ -280,14 +282,14 @@ export default function InitializationPage() {
 
           <AnimatePresence mode="wait">
             <motion.p
-              key={stepIndex}
+              key={step.id}
               className="text-sm text-char-secondary text-center"
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2 }}
             >
-              {STEPS[stepIndex]}
+              {step.label}
             </motion.p>
           </AnimatePresence>
 
@@ -300,9 +302,9 @@ export default function InitializationPage() {
             />
           </div>
 
-          {/* UE4SS sub-progress — only visible during step 0 */}
+          {/* UE4SS sub-progress — only visible during the UE4SS step */}
           <AnimatePresence>
-            {stepIndex === 0 && ue4ssMessage && (
+            {step.id === "ue4ss" && ue4ssMessage && (
               <motion.div
                 className="flex flex-col gap-1.5 w-full"
                 initial={{ opacity: 0, y: 4 }}
