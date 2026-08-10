@@ -2,7 +2,7 @@ import { AuthTable, PlayerCharJSON, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, sessionInfo } from "./schema";
+import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory } from "./schema";
 import { eq, sql } from "drizzle-orm";
 
 // Just using a basic translation file since I am still new to Drizzle
@@ -62,11 +62,6 @@ export async function getMyMatchPlayer() {
 
 export async function getMatchHistory() {
   return db.select().from(matchHistory);
-}
-
-export async function getGameSession() {
-  const rows = await db.select().from(sessionInfo).limit(1);
-  return rows[0] ?? null;
 }
 
 
@@ -207,11 +202,6 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
     })
     .where(eq(matchPlayers.username, username))
     .returning();
-}
-
-export async function resetSessionTable() {
-  await db.delete(sessionInfo);
-  await db.insert(sessionInfo).values({ id: 1 });
 }
 
 export async function appendTimelineEntry(entry: TimelineEntry) {

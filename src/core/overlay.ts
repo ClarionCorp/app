@@ -1,6 +1,7 @@
-import { getCurrentMatch, getGameSession, getMatchPlayers, getUser } from "./database/queries";
+import { getCurrentMatch, getMatchPlayers, getUser } from "./database/queries";
 import { PlaystyleType } from "../types/clarion";
 import { TimelineEntry } from "../types/ue4ss";
+import { getQueueObjectFromID } from "./objects/queues";
 
 // Matches what AppAPI expects
 export type POSTLiveMatchV1 = {
@@ -64,19 +65,19 @@ export type LiveMatchPlayer = {
 
 export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   const currentMatch = await getCurrentMatch();
-  const sessionInfo = await getGameSession();
   const matchPlayers = await getMatchPlayers();
   const currentUser = await getUser();
+  const queueName = getQueueObjectFromID(currentMatch.queue).queueName;
 
   // Make sure we have all the required info to initiate a valid update
-  if (!currentMatch || !currentUser || !sessionInfo || !matchPlayers) return null;
+  if (!currentMatch || !currentUser || !matchPlayers) return null;
   if (
-    !sessionInfo.queueName ||
+    !queueName ||
     !currentMatch.teamNum ||
     !currentMatch.startedAt
   ) { return null };
 
-  const isRanked = sessionInfo.queueName === 'Ranked';
+  const isRanked = queueName === 'Ranked';
 
   const formattedPlayers: LiveMatchPlayer[] = matchPlayers.map(p => ({
     username: p.username,
@@ -103,8 +104,8 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
     username: currentUser.username,
     gameState: currentMatch.gameState,
     map: currentMatch.map,
-    queue: sessionInfo.queueName,
-    partySize: sessionInfo.partySize,
+    queue: queueName,
+    partySize: currentMatch.partySize,
     teamNumber: currentMatch.teamNum,
     seenTrainings: currentMatch.trainings,
     bans: currentMatch.bans,

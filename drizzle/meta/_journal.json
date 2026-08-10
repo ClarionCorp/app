@@ -183,6 +183,13 @@
       "when": 1786344913884,
       "tag": "0025_daily_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1786347142491,
+      "tag": "0026_sticky_lady_bullseye",
+      "breakpoints": true
     }
   ]
 }

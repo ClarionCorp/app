@@ -20,7 +20,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { formatLiveMatchInfo } from './core/overlay';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
-import { saveMatchToHistory, updateGameState, updatePlayers, updateScore, updateSession } from './core/utilities/events';
+import { saveMatchToHistory, updateGameState, updatePlayers, updateQueueState, updateScore } from './core/utilities/events';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -123,7 +123,6 @@ function App() {
   // Rust Mod Bridge Listeners
   useEffect(() => {
   const unlistens = Promise.all([
-    onMatchUpdate(async (payload) => { updateScore(JSON.parse(payload.content!) as MatchJSON); }),
     onPlayersUpdate(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
     onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
 
@@ -149,7 +148,7 @@ function App() {
       const data = JSON.parse(payload.content!) as MetaJSON;
 
       console.log(`Updating Matchmaking to: (${data.queue.state}: ${data.queue.id})`);
-      await updateSession(data);
+      await updateQueueState(data);
       await tryUpdateDiscordRPC();
 
       if (data.queue.state == 'FoundMatch') {
@@ -158,6 +157,12 @@ function App() {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
         }
       }
+    }),
+    
+    onMatchUpdate(async (payload) => {
+      const data = JSON.parse(payload.content!) as MatchJSON;
+      await updateScore(data);
+      await tryUpdateDiscordRPC();
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };

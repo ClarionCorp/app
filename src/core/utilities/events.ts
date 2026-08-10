@@ -4,7 +4,7 @@
 
 import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
-import { currentMatch, matchPlayers, sessionInfo } from "../database/schema";
+import { currentMatch, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
 import { appendTimelineEntry, calcAndSetPlayerStats, getCurrentMatch, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
@@ -87,6 +87,7 @@ export async function updateGameState(gameState: string, queue?: string | null):
 }
 
 export async function updateScore(data: MatchJSON) {
+  console.warn(`Start Time: `)
   const table = {
     id: 1,
     map: data.map.id,
@@ -96,7 +97,7 @@ export async function updateScore(data: MatchJSON) {
     teamTwoPts: data.team2.goals,
     teamOneSets: data.team1.sets,
     teamTwoSets: data.team2.sets,
-    startedAt: new Date(data.start_time)
+    startedAt: new Date(data.start_time * 1000)
   }
 
   await db.insert(currentMatch).values(table).onConflictDoUpdate({
@@ -105,26 +106,19 @@ export async function updateScore(data: MatchJSON) {
   }).returning()
 }
 
-export async function updateSession(data: MetaJSON) {
-  console.warn(`QueueID: ${data.queue.id}`);
-  console.debug(`Session: `, JSON.stringify(data, null, 1));
+export async function updateQueueState(data: MetaJSON) {
   const table = {
     id: 1,
+    gameState: data.game_state.new_phase,
     partySize: data.party_size,
-    maxPartySize: data.max_party_size,
-    queueId: data.queue.id,
+    queue: data.queue.id,
     queueState: data.queue.state
   }
 
-  await db.insert(sessionInfo).values(table).onConflictDoUpdate({
-    target: sessionInfo.id,
-    set: table,
-  })
-
   // also update currentMatch's queue cache
-  await db.insert(currentMatch).values({ queue: data.queue.id }).onConflictDoUpdate({
-    target: sessionInfo.id,
-    set: { queue: data.queue.id },
+  await db.insert(currentMatch).values(table).onConflictDoUpdate({
+    target: currentMatch.id,
+    set: table,
   })
 }
 

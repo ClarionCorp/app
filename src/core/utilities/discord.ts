@@ -2,7 +2,7 @@ import { start, setActivity, clearActivity, stop } from "tauri-plugin-drpc";
 import { Activity, Assets, Timestamps, Button } from "tauri-plugin-drpc/activity";
 import { getRankFromLP } from "../objects/ranks";
 import { removeDevCharPrefix } from "../objects/ody";
-import { getAppSettings, getCurrentMatch, getGameSession, getMatchPlayers } from "../database/queries";
+import { getAppSettings, getCurrentMatch, getMatchPlayers } from "../database/queries";
 import { refreshRating } from "./odyssey";
 import { getMapObjectFromID } from "../objects/maps";
 import { getPartyLabel } from "../objects/sessions";
@@ -37,6 +37,7 @@ export const DEFAULT_ACTIVITY: RpcActivityOptions = {
 }
 
 export let discordRpc: DiscordRpc | null = null;
+let remainingSetupTimestamp: number = Date.now() + 70_000; // default
 
 export async function startRpc() {
   // Add back some sort of disabling dRPC later
@@ -133,17 +134,17 @@ export async function tryUpdateDiscordRPC() {
   }
 
   const matchTable = await getCurrentMatch();
-  const sessionTable = await getGameSession();
   const gameStatus = getGameStatus(matchTable.gameState);
 
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
   const mapObject = getMapObjectFromID(matchTable.map);
-  const queueName = (getQueueObjectFromID(matchTable.queue)).queueName;
-  const partyLabel = getPartyLabel(sessionTable.partySize);
-
+  const queueName = getQueueObjectFromID(matchTable.queue).queueName;
+  const partyLabel = getPartyLabel(matchTable.partySize);
+  const isQueued = matchTable.queueState == 'Queued' || matchTable.queueState == 'FoundMatch';
+  
   // Not in a match, and not queuing
-  if (sessionTable.queueState == 'Idle' || (sessionTable.queueState == null && matchTable.queue == null)) {
+  if (matchTable.queue == null && !isQueued) {
     await discordRpc.updateActivity({
       details: 'Idling on the Main Menu',
       state: `Playing ${partyLabel}`,
@@ -153,7 +154,7 @@ export async function tryUpdateDiscordRPC() {
   }
 
   // Queuing
-  else if (sessionTable.queueState == 'Queued' || sessionTable.queueState == 'FoundMatch' || sessionTable.queueState == 'StartingGame') {
+  else if (isQueued) {
     await discordRpc.updateActivity({
       details: `Waiting in ${queueName} Queue`,
       state: `Playing ${partyLabel}`,
@@ -162,14 +163,20 @@ export async function tryUpdateDiscordRPC() {
     });
   }
 
-  // Match found and it's in setup phase, but only run once.
-  else if (gameStatus == 'SETUP' && matchTable.gameState == 'ArenaOverview') {
+  // Match found and it's in setup phase.
+  else if (gameStatus == 'SETUP') {
+    if (matchTable.gameState == 'ArenaOverview') { remainingSetupTimestamp = Date.now() + 70_000 };
+    if (matchTable.gameState == 'CharacterPreSelect') { remainingSetupTimestamp = Date.now() + 65_000 };
+    if (matchTable.gameState == 'CharacterSelect') { remainingSetupTimestamp = Date.now() + 60_000 };
+    if (matchTable.gameState == 'LoadoutSelect') { remainingSetupTimestamp = Date.now() + 20_000 };
+    if (matchTable.gameState == 'VersusScreen') { remainingSetupTimestamp = Date.now() + 15_000 };
+
     await refreshRating();
     await discordRpc.updateActivity({
       details: `${queueName} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
       startTimestamp: Date.now(),
-      endTimestamp: Date.now() + 70_000, // 70 seconds in ms
+      endTimestamp: remainingSetupTimestamp,
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
