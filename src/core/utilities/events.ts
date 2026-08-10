@@ -73,6 +73,7 @@ export async function updatePlayers(data: PlayersJSON) {
 
 export async function updateGameState(gameState: string, queue?: string | null): Promise<CurrentMatchTable> {
   const table = {
+    id: 1,
     gameState,
     queue,
   }
@@ -87,6 +88,7 @@ export async function updateGameState(gameState: string, queue?: string | null):
 
 export async function updateScore(data: MatchJSON) {
   const table = {
+    id: 1,
     map: data.map.id,
     bans: data.banned_characters,
     // teamNum: data.
@@ -104,6 +106,7 @@ export async function updateScore(data: MatchJSON) {
 
 export async function updateSession(data: MetaJSON) {
   const table = {
+    id: 1,
     partySize: data.party_size,
     maxPartySize: data.max_party_size,
     queueName: data.queue.name,

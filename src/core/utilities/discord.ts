@@ -141,7 +141,7 @@ export async function tryUpdateDiscordRPC() {
   const partyLabel = getPartyLabel(sessionTable.partySize);
 
   // Not in a match, and not queuing
-  if (sessionTable.queueState == 'Idle') {
+  if (sessionTable.queueState == 'Idle' || sessionTable.queueState == null) {
     await discordRpc.updateActivity({
       details: 'Idling on the Main Menu',
       state: `Playing ${partyLabel}`,
@@ -198,6 +198,9 @@ export async function tryUpdateDiscordRPC() {
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
+  
+  // Edge case where everything else is false, just set to default
+  else { await discordRpc.updateActivity(DEFAULT_ACTIVITY); };
 }
 
 function formatScore(

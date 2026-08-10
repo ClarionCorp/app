@@ -99,16 +99,16 @@ fn dispatch(app: &AppHandle, file: &str, kind: &str, content: String) {
 // On Linux, the game writes into its Proton prefix's fake windows temp dir instead.
 fn resolve_temp_dir() -> PathBuf {
     if cfg!(target_os = "windows") {
-        return std::env::temp_dir();
+        return std::env::temp_dir().join("AiMiApp");
     }
 
     match std::env::var_os("HOME") {
         Some(home) => PathBuf::from(home).join(
-            ".steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/Temp/",
+            ".steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/Temp/AiMiApp",
         ),
         None => {
             eprintln!("HOME environment variable not set, falling back to std::env::temp_dir()");
-            std::env::temp_dir()
+            std::env::temp_dir().join("AiMiApp")
         }
     }
 }

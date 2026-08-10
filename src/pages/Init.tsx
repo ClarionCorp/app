@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { readIdentity } from "../core/init";
-import { DEFAULT_ACTIVITY, discordRpc, startRpc, stopRpc } from "../core/utilities/discord";
+import { startRpc, stopRpc, tryUpdateDiscordRPC } from "../core/utilities/discord";
 import { invoke } from "@tauri-apps/api/core";
 import { dirname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
@@ -164,7 +164,7 @@ export default function InitializationPage() {
         goToStep("discord");
         await stopRpc();
         await startRpc();
-        await discordRpc?.updateActivity(DEFAULT_ACTIVITY);
+        await tryUpdateDiscordRPC();
         if (cancelled) return;
 
         setProgress(100);
