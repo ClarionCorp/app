@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { CurrentMatchTable, MatchPlayersTable, SessionTable } from '../types/database';
-import { getCurrentMatch, getGameSession, getMatchPlayers, upsertCurrentMatch } from '../core/database/queries';
+import { getCurrentMatch, getGameSession, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { MapRotation } from '../components/LiveMatch/MapRotation';
@@ -14,6 +14,7 @@ import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
 import { getGameStatus } from '../core/objects/gameStates';
+import { updateGameState } from '../core/utilities/events';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -34,7 +35,7 @@ export default function CurrentMatchPage() {
       setLoading(true);
       try {
         const matchDb = await getCurrentMatch();
-        if (!matchDb) { await upsertCurrentMatch({ gameState: 'None' }) };
+        if (!matchDb) { await updateGameState('None') };
         setMatchData(matchDb);
 
         const playersDb = await getMatchPlayers();
@@ -81,10 +82,11 @@ export default function CurrentMatchPage() {
     .sort((a) => (a.role === 'Goalie' ? -1 : 1));
 
   // always show maps (default state) unless in game
+  const gameStatus = getGameStatus(match?.gameState);
   const showMaps =
     session?.queueState == 'StartingGame' ||
     session?.queueState == 'FoundMatch' ||
-    (getGameStatus(match?.gameState) !== 'IN_GAME' && getGameStatus(match?.gameState) !== 'SETUP' && getGameStatus(match?.gameState) !== 'STARTING');
+    (gameStatus !== 'IN_GAME' && gameStatus !== 'SETUP' && gameStatus !== 'STARTING');
 
   return (
     <div className="flex flex-col">
