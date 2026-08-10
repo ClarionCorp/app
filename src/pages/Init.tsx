@@ -9,7 +9,7 @@ import { dirname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { getAppSettings, upsertAppSettings, updateRating, upsertUser, resetSessionTable, updateRegion, updateGameState } from "../core/database/queries";
+import { getAppSettings, upsertAppSettings, updateRating, upsertUser, resetSessionTable, updateRegion } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { db } from "../core/database/driver";
 import { matchPlayers } from "../core/database/schema";
@@ -19,6 +19,7 @@ import { getLatestRegion } from "../core/bridgeListener";
 import { checkForUpdates } from "../core/utilities/appAPI";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { updateGameState } from "../core/utilities/events";
 
 const STEPS = [
   "Checking UE4SS...",

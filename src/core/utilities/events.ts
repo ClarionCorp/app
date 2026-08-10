@@ -71,10 +71,10 @@ export async function updatePlayers(data: PlayersJSON) {
   }
 }
 
-export async function updateGameState(data: MetaJSON) {
+export async function updateGameState(gameState: string, queue?: string | null) {
   const table = {
-    gameState: data.game_state.new_phase,
-    queue: data.queue?.name,
+    gameState,
+    queue,
   }
 
   await db.insert(currentMatch).values(table).onConflictDoUpdate({
@@ -111,6 +111,12 @@ export async function updateSession(data: MetaJSON) {
   await db.insert(sessionInfo).values(table).onConflictDoUpdate({
     target: sessionInfo.id,
     set: table,
+  })
+
+  // also update currentMatch's queue cache
+  await db.insert(currentMatch).values({ queue: data.queue.name }).onConflictDoUpdate({
+    target: sessionInfo.id,
+    set: { queue: data.queue.name },
   })
 }
 

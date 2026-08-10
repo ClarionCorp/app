@@ -126,6 +126,7 @@ function App() {
     onMatchUpdate(async (payload) => { updateScore(JSON.parse(payload.content!) as MatchJSON); }),
     onPlayersUpdate(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
     onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
+    
     onStateChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
       if (data.game_state == null) { return };
@@ -139,6 +140,7 @@ function App() {
       console.log(`GameState Changed! (${data.game_state.old_phase} -> ${data.game_state.new_phase})`);
       if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); }
     }),
+
     onQueueChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
 
