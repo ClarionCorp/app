@@ -123,7 +123,7 @@ async function _clearActivity() {
   await clearActivity();
 }
 
-export async function tryUpdateDiscordRPC() {
+export async function tryUpdateDiscordRPC(clear?: boolean) {
   const appSetts = await getAppSettings();
   if (appSetts.drpcEnabled == false) { return; }
 
@@ -132,6 +132,8 @@ export async function tryUpdateDiscordRPC() {
     await startRpc();
     return await tryUpdateDiscordRPC();
   }
+
+  if (clear) { await discordRpc.updateActivity(DEFAULT_ACTIVITY); };
 
   const matchTable = await getCurrentMatch();
   const gameStatus = getGameStatus(matchTable.gameState);
@@ -217,9 +219,6 @@ export async function tryUpdateDiscordRPC() {
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
-  
-  // Edge case where everything else is false, just set to default
-  else { await discordRpc.updateActivity(DEFAULT_ACTIVITY); };
 }
 
 function formatScore(

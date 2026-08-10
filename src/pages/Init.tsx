@@ -163,7 +163,7 @@ export default function InitializationPage() {
         goToStep("discord");
         await stopRpc();
         await startRpc();
-        await tryUpdateDiscordRPC();
+        await tryUpdateDiscordRPC(true);
         if (cancelled) return;
 
         setProgress(100);

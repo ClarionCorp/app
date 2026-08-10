@@ -10,7 +10,6 @@ import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { matchHistory } from './core/database/schema';
 import { fetchSelfQuery } from './core/utilities/odyssey';
-import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
 import { desc} from 'drizzle-orm';
@@ -135,11 +134,9 @@ function App() {
       if (data.game_state.new_phase == 'None' || data.game_state.new_phase == 'PreGame') { await resetLocalTables(); };
 
       // Update database
-      const gameStatus = getGameStatus(data.game_state.new_phase);
       const matchTable = await updateGameState(data);
+      await tryUpdateDiscordRPC();
 
-      // In Match Setup or In Game, tell discord to try to update
-      if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); };
       // Only once during Match Start, log the match start time in timeline entries if not there already.
       if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };
     }),
