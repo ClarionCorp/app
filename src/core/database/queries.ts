@@ -129,14 +129,6 @@ export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
   }).run();
 }
 
-export async function updateSessionInfo(data: Omit<typeof sessionInfo.$inferInsert, "id">) {
-  const rows = await db.insert(sessionInfo).values({ id: 1, ...data }).onConflictDoUpdate({
-    target: sessionInfo.id,
-    set: data,
-  }).returning();
-  return rows[0];
-}
-
 export async function updatePlayerRating(username: string, rating: number) {
   return db.update(matchPlayers)
     .set({ rating })

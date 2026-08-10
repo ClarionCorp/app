@@ -29,8 +29,7 @@ fn handle_meta(app: &AppHandle, file: &str, kind: &str, content: String) {
     let event_name = match serde_json::from_str::<MetaLastChanged>(&content) {
         Ok(meta) => match meta.last_changed.as_str() {
             "state" => "onStateChange",
-            "queue" => "onQueueChange",
-            "party" => "onPartyUpdate",
+            "queue" | "party" => "onQueueChange",
             other => {
                 eprintln!("meta.json: unknown last_changed value '{other}'");
                 return;

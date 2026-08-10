@@ -9,46 +9,6 @@ export interface FileChangePayload {
   content: string | null;
 }
 
-export async function onPlayersChanged(
-  handler: (payload: FileChangePayload) => void
-): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('ue4ss-players-changed', (event) => {
-    handler(event.payload);
-  });
-}
-
-export async function onGameStateChanged(
-  handler: (payload: FileChangePayload) => void
-): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('ue4ss-gamestate-changed', (event) => {
-    handler(event.payload);
-  });
-}
-
-export async function onMatchFinalize(
-  handler: (payload: FileChangePayload) => void
-): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('postgame-stats-changed', (event) => {
-    handler(event.payload);
-  });
-}
-
-export async function onTrainingsChanged(
-  handler: (payload: FileChangePayload) => void
-): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('ue4ss-trainings-changed', (event) => {
-    handler(event.payload);
-  });
-}
-
-export async function onSessionUpdated(
-  handler: (payload: FileChangePayload) => void
-): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('ue4ss-session-changed', (event) => {
-    handler(event.payload);
-  });
-}
-
 // new stuff to replace old stuff later
 export async function onStateChange(
   handler: (payload: FileChangePayload) => void
@@ -62,14 +22,6 @@ export async function onQueueChange(
   handler: (payload: FileChangePayload) => void
 ): Promise<UnlistenFn> {
   return listen<FileChangePayload>('onQueueChange', (event) => {
-    handler(event.payload);
-  });
-}
-
-export async function onPartyUpdate(
-  handler: (payload: FileChangePayload) => void
-): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('onPartyUpdate', (event) => {
     handler(event.payload);
   });
 }
@@ -90,7 +42,7 @@ export async function onPlayersUpdate(
   });
 }
 
-export async function onPostGameUpdate( // rename later
+export async function onMatchFinalize(
   handler: (payload: FileChangePayload) => void
 ): Promise<UnlistenFn> {
   return listen<FileChangePayload>('onPostGameUpdate', (event) => {

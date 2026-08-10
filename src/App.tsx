@@ -4,14 +4,12 @@ import { OdyAuth } from './types/odyssey';
 import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { onGameStateChanged, onPlayersChanged, onMatchFinalize, onSessionUpdated, onTrainingsChanged, onMatchUpdate } from './core/bridgeListener';
-import { getCurrentMatch, getUser, insertMatchHistory, getMatchPlayers, resetLocalTables, getGameSession, updateSessionInfo, getAppSettings, appendTimelineEntry } from './core/database/queries';
-import { GameSessionJSON, mergeMatchPlayers, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
+import { onMatchFinalize, onMatchUpdate, onStateChange, onQueueChange, onPlayersUpdate } from './core/bridgeListener';
+import { getUser, resetLocalTables, getAppSettings } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
-import { currentMatch, matchHistory } from './core/database/schema';
+import { matchHistory } from './core/database/schema';
 import { fetchSelfQuery } from './core/utilities/odyssey';
-import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
@@ -20,12 +18,9 @@ import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
-import { checkSaveTimelineEntries, markMatchStartIfNone } from './core/timeline';
 import { formatLiveMatchInfo } from './core/overlay';
-import { MatchJSON, MetaJSON, PlayersJSON } from './types/ue4ss-new';
-import { updateGameState, updatePlayers, updateScore } from './core/utilities/events';
-
-const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
+import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
+import { saveMatchToHistory, updateGameState, updatePlayers, updateScore, updateSession } from './core/utilities/events';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -129,8 +124,9 @@ function App() {
   useEffect(() => {
   const unlistens = Promise.all([
     onMatchUpdate(async (payload) => { updateScore(JSON.parse(payload.content!) as MatchJSON); }),
-    onPlayersChanged(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
-    onGameStateChanged(async (payload) => {
+    onPlayersUpdate(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
+    onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
+    onStateChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
       if (data.game_state == null) { return };
 
@@ -143,85 +139,21 @@ function App() {
       console.log(`GameState Changed! (${data.game_state.old_phase} -> ${data.game_state.new_phase})`);
       if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); }
     }),
-    onSessionUpdated(async (payload) => {
-      const data = JSON.parse(payload.content!) as GameSessionJSON;
+    onQueueChange(async (payload) => {
+      const data = JSON.parse(payload.content!) as MetaJSON;
 
-      const prevSession = await getGameSession();
-      const queueObj = getQueueObjectFromID(data.queue_name);
-      const queueState = QUEUE_STATES_ARRAY[data.mm_state];
+      console.log(`Updating Matchmaking to: (${data.queue.state}: ${data.queue.name})`);
+      await updateSession(data);
+      await tryUpdateDiscordRPC();
 
-      console.log(`Updating Matchmaking to: (${queueState}: ${queueObj.queueName})`);
-      const session = await updateSessionInfo({
-        partySize: data.party_size,
-        maxPartySize: data.max_party_size,
-        queueName: queueObj.queueName,
-        queueState: QUEUE_STATES_ARRAY[data.mm_state] ?? 'Unknown',
-      });
-      await tryUpdateDiscordRPC(undefined, session); // Ask Discord RPC to update
-
-      if (prevSession.queueState == 'Queued' && (session.queueState == 'FoundMatch' || session.queueState == 'StartingGame')) {
+      if (data.queue.state == 'FoundMatch') {
         const settings = await getAppSettings();
         if (settings.notifyQueuePop) {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
         }
       }
     }),
-    onTrainingsChanged(async (payload) => {
-      const data = JSON.parse(payload.content!) as TrainingsChangedJSON;
-
-      // ADD new trainings to the match storage
-      console.log(`Updating shown awakenings list...`);
-      const [row] = await db.select({ trainings: currentMatch.trainings }).from(currentMatch);
-      await db.update(currentMatch).set({ trainings: [...row.trainings, ...data.trainings] });
-    }),
-    onMatchFinalize(async (payload) => {
-      console.debug(`Match Ended! Saving...`)
-      try { // if any matches fail to save, it'll be easier to debug lol (im leaving this here after I needed it)
-        await refreshLatestMatchStart();
-        const stats = JSON.parse(payload.content!) as PostGameStatsJSON;
-
-        const [match, currentUser, matchPlayers] = await Promise.all([
-          getCurrentMatch(),
-          getUser(),
-          getMatchPlayers(),
-        ]);
-        if (!match || !currentUser) return;
-
-        const players = mergeMatchPlayers(matchPlayers, stats);
-        const myPlayer = players.find(p => p.name === currentUser.username);
-        if (!myPlayer) return;
-
-        const myTeam = match.teamNum ?? 1;
-        const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
-        const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
-        await appendTimelineEntry({
-          when: new Date(),
-          event: 'WON_GAME',
-          team: (match.teamOneSets ?? 0) > (match.teamTwoSets ?? 0) ? 1 : 2,
-        })
-
-        await insertMatchHistory({
-          players,
-          mapId: match.map ?? '',
-          duration: diffSeconds(match.startedAt!, new Date()),
-          queue: match.queue ?? 'queue:none',
-          playerId: myPlayer.playerId,
-          myTeam,
-          bans: match.bans,
-          t1_pts: match.teamOnePts ?? 0,
-          t2_pts: match.teamTwoPts ?? 0,
-          t1_sets: match.teamOneSets ?? 0,
-          t2_sets: match.teamTwoSets ?? 0,
-          wonGame: myScore > enemyScore,
-          timeline: match.timeline,
-          createdAt: new Date(),
-        });
-      } catch (e) {
-        console.error('Something went wrong while saving the match!', e);
-      }
-    }),
   ]);
-
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
 }, []);
 

@@ -4,11 +4,16 @@
 
 import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
-import { currentMatch, matchPlayers } from "../database/schema";
-import { MatchJSON, MetaJSON, PlayersJSON } from "../../types/ue4ss-new";
-import { calcAndSetPlayerStats, getUser, updatePlayerRating } from "../database/queries";
+import { currentMatch, matchPlayers, sessionInfo } from "../database/schema";
+import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
+import { appendTimelineEntry, calcAndSetPlayerStats, getCurrentMatch, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { fetchPlayerStats, fetchRankQuery } from "./odyssey";
+import { MatchPlayer } from "../../types/ue4ss";
+import { getLevelFromXP } from "../objects/levels";
+import { MatchPlayersTable } from "../../types/database";
+
+const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
 export async function updatePlayers(data: PlayersJSON) {
   const currentUser = await getUser();
@@ -67,15 +72,15 @@ export async function updatePlayers(data: PlayersJSON) {
 }
 
 export async function updateGameState(data: MetaJSON) {
-  const state = {
+  const table = {
     gameState: data.game_state.new_phase,
     queue: data.queue?.name,
   }
 
-  await db.insert(currentMatch).values(state).onConflictDoUpdate({
+  await db.insert(currentMatch).values(table).onConflictDoUpdate({
     target: currentMatch.id,
-    set: state,
-  }).returning()
+    set: table,
+  })
 }
 
 export async function updateScore(data: MatchJSON) {
@@ -93,4 +98,92 @@ export async function updateScore(data: MatchJSON) {
     target: currentMatch.id,
     set: table,
   }).returning()
+}
+
+export async function updateSession(data: MetaJSON) {
+  const table = {
+    partySize: data.party_size,
+    maxPartySize: data.max_party_size,
+    queueName: data.queue.name,
+    queueState: data.queue.state
+  }
+
+  await db.insert(sessionInfo).values(table).onConflictDoUpdate({
+    target: sessionInfo.id,
+    set: table,
+  })
+}
+
+export async function saveMatchToHistory(data: PostGameJSON) {
+  console.debug(`Saving completed match to history...`);
+  try {
+    const [match, currentUser, matchPlayers] = await Promise.all([
+      getCurrentMatch(),
+      getUser(),
+      getMatchPlayers(),
+    ]);
+    if (!match || !currentUser) return;
+
+    const players = mergeMatchPlayers(matchPlayers, data);
+    const myPlayer = players.find(p => p.name === currentUser.username);
+    if (!myPlayer) return;
+
+    const myTeam = match.teamNum ?? 1;
+    const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
+    const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
+    await appendTimelineEntry({
+      when: new Date(),
+      event: 'WON_GAME',
+      team: (match.teamOneSets ?? 0) > (match.teamTwoSets ?? 0) ? 1 : 2,
+    })
+
+    await insertMatchHistory({
+      players,
+      mapId: match.map ?? '',
+      duration: diffSeconds(match.startedAt!, new Date()),
+      queue: match.queue ?? 'queue:none',
+      playerId: myPlayer.playerId,
+      myTeam,
+      bans: match.bans,
+      t1_pts: match.teamOnePts ?? 0,
+      t2_pts: match.teamTwoPts ?? 0,
+      t1_sets: match.teamOneSets ?? 0,
+      t2_sets: match.teamTwoSets ?? 0,
+      wonGame: myScore > enemyScore,
+      timeline: match.timeline,
+      createdAt: new Date(),
+    });
+  } catch (e) {
+    console.error('Something went wrong while saving the match!', e);
+  }
+}
+
+
+export function mergeMatchPlayers(
+  players: MatchPlayersTable[],
+  postGameStats: PostGameJSON,
+): MatchPlayer[] {
+  return players.map(player => {
+    const stats = postGameStats.players.find(s => s.name === player.username);
+
+    return {
+      name: player.username,
+      playerId: player.playerId,
+      rating: player.rating,
+      characterId: player.charId ?? '',
+      level: getLevelFromXP(player.xp ?? 0),
+      xpGoals: player.xpGoals,
+      role: player.role ?? 'Forward',
+      team: player.teamNum ?? 1,
+      trainings: player.trainings,
+      goals: stats?.goals ?? 0,
+      redirects: stats?.redirects ?? 0,
+      kos: stats?.knockouts ?? 0,
+      damage: stats?.damage ?? 0,
+      shots: stats?.shots ?? 0,
+      orbs: stats?.orbs ?? 0,
+      assists: stats?.assists ?? 0,
+      saves: stats?.saves ?? 0,
+    };
+  });
 }
