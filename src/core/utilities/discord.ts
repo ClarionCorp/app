@@ -144,7 +144,7 @@ export async function tryUpdateDiscordRPC() {
   const isQueued = matchTable.queueState == 'Queued' || matchTable.queueState == 'FoundMatch';
   
   // Not in a match, and not queuing
-  if (matchTable.queue == null && !isQueued) {
+  if (matchTable.queue == null && !isQueued && matchTable.queueState !== 'StartingGame') {
     await discordRpc.updateActivity({
       details: 'Idling on the Main Menu',
       state: `Playing ${partyLabel}`,
@@ -162,6 +162,16 @@ export async function tryUpdateDiscordRPC() {
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
+
+  // Match is found, but it's not in the setup phase yet.
+  // else if (matchTable.queueState == 'StartingGame' && gameStatus !== 'SETUP') {
+  //   await discordRpc.updateActivity({
+  //     details: `Match Found!`,
+  //     state: `Waiting on Server...`,
+  //     largeImage: DRPC_LOGO_KEY,
+  //     buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
+  //   });
+  // }
 
   // Match found and it's in setup phase.
   else if (gameStatus == 'SETUP') {

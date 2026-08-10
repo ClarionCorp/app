@@ -14,7 +14,6 @@ import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
 import { getGameStatus } from '../core/objects/gameStates';
-import { updateGameState } from '../core/utilities/events';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -34,7 +33,6 @@ export default function CurrentMatchPage() {
       setLoading(true);
       try {
         const matchDb = await getCurrentMatch();
-        if (!matchDb) { await updateGameState('None') };
         setMatchData(matchDb);
 
         const playersDb = await getMatchPlayers();

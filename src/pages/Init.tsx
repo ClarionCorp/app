@@ -113,7 +113,7 @@ export default function InitializationPage() {
 
         // 1.5) (Hidden) Purge players table as we'll just fetch a new one anyway
         await db.delete(matchPlayers).run();
-        await updateGameState('None', null);
+        // await updateGameState('None');
 
         // 2) Fetch account info from Odyssey
         goToStep("account");

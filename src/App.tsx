@@ -4,7 +4,7 @@ import { OdyAuth } from './types/odyssey';
 import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { onMatchFinalize, onMatchUpdate, onStateChange, onQueueChange, onPlayersUpdate } from './core/bridgeListener';
+import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
@@ -20,7 +20,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { formatLiveMatchInfo } from './core/overlay';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
-import { saveMatchToHistory, updateGameState, updatePlayers, updateQueueState, updateScore } from './core/utilities/events';
+import { saveMatchToHistory, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -126,7 +126,7 @@ function App() {
     onPlayersUpdate(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
     onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
 
-    onStateChange(async (payload) => {
+    onGameStateChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
       if (data.game_state == null) { return };
       console.log(`GameState Changed! (${data.game_state.old_phase} -> ${data.game_state.new_phase})`);
@@ -136,27 +136,12 @@ function App() {
 
       // Update database
       const gameStatus = getGameStatus(data.game_state.new_phase);
-      const matchTable = await updateGameState(data.game_state.new_phase, data.queue.id);
+      const matchTable = await updateGameState(data);
 
       // In Match Setup or In Game, tell discord to try to update
       if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); };
       // Only once during Match Start, log the match start time in timeline entries if not there already.
       if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };
-    }),
-
-    onQueueChange(async (payload) => {
-      const data = JSON.parse(payload.content!) as MetaJSON;
-
-      console.log(`Updating Matchmaking to: (${data.queue.state}: ${data.queue.id})`);
-      await updateQueueState(data);
-      await tryUpdateDiscordRPC();
-
-      if (data.queue.state == 'FoundMatch') {
-        const settings = await getAppSettings();
-        if (settings.notifyQueuePop) {
-          await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
-        }
-      }
     }),
     
     onMatchUpdate(async (payload) => {

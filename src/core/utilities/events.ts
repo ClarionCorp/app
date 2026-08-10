@@ -71,11 +71,13 @@ export async function updatePlayers(data: PlayersJSON) {
   }
 }
 
-export async function updateGameState(gameState: string, queue?: string | null): Promise<CurrentMatchTable> {
+export async function updateGameState(data: MetaJSON): Promise<CurrentMatchTable> {
   const table = {
     id: 1,
-    gameState,
-    queue,
+    gameState: data.game_state.new_phase,
+    queue: data.queue.id,
+    queueState: data.queue.state,
+    partySize: data.party_size,
   }
 
   const [row] = await db.insert(currentMatch).values(table).onConflictDoUpdate({

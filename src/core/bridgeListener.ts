@@ -10,7 +10,7 @@ export interface FileChangePayload {
 }
 
 // new stuff to replace old stuff later
-export async function onStateChange(
+export async function onGameStateChange(
   handler: (payload: FileChangePayload) => void
 ): Promise<UnlistenFn> {
   return listen<FileChangePayload>('onStateChange', (event) => {
