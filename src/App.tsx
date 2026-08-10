@@ -4,27 +4,26 @@ import { OdyAuth } from './types/odyssey';
 import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { onGameStateChanged, onPlayersChanged, onMatchFinalize, onSessionUpdated, onTrainingsChanged, refreshLatestMatchStart } from './core/bridgeListener';
-import { getCurrentMatch, getUser, insertMatchHistory, setMatchPlayers, upsertCurrentMatch, getMatchPlayers, updatePlayerRating, resetLocalTables, calcAndSetPlayerStats, getGameSession, updateSessionInfo, getAppSettings, appendTimelineEntry } from './core/database/queries';
-import { GameSessionJSON, GameStateJSON, mergeMatchPlayers, PlayerFinderJSON, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
+import { onGameStateChanged, onPlayersChanged, onMatchFinalize, onSessionUpdated, onTrainingsChanged, onMatchUpdate } from './core/bridgeListener';
+import { getCurrentMatch, getUser, insertMatchHistory, getMatchPlayers, resetLocalTables, getGameSession, updateSessionInfo, getAppSettings, appendTimelineEntry } from './core/database/queries';
+import { GameSessionJSON, mergeMatchPlayers, PostGameStatsJSON, TrainingsChangedJSON } from './types/ue4ss';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
-import { currentMatch, matchHistory, matchPlayers } from './core/database/schema';
-import { fetchPlayerStats, fetchRankQuery, fetchSelfQuery, fetchUsernameQuery } from './core/utilities/odyssey';
+import { currentMatch, matchHistory } from './core/database/schema';
+import { fetchSelfQuery } from './core/utilities/odyssey';
 import { getQueueObjectFromID, QUEUE_STATES_ARRAY } from './core/objects/queues';
 import { getGameStatus } from './core/objects/gameStates';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
-import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from './core/utilities/clarion';
-import { desc, eq } from 'drizzle-orm';
+import { desc} from 'drizzle-orm';
 import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { checkSaveTimelineEntries, markMatchStartIfNone } from './core/timeline';
 import { formatLiveMatchInfo } from './core/overlay';
-import { PlayersJSON } from './types/ue4ss-new';
-import { updatePlayers } from './core/utilities/events';
+import { MatchJSON, MetaJSON, PlayersJSON } from './types/ue4ss-new';
+import { updateGameState, updatePlayers } from './core/utilities/events';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -131,15 +130,28 @@ function App() {
   const unlistens = Promise.all([
     onPlayersChanged(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
     onGameStateChanged(async (payload) => {
-      const data = JSON.parse(payload.content!) as GameStateJSON;
+      const data = JSON.parse(payload.content!) as MetaJSON;
+      if (data.game_state == null) { return };
 
       // remove matchPlayers table entries for next game
-      if (data.phase == 'None' || data.phase == 'PreGame') { await resetLocalTables(); }; 
+      if (data.game_state.new_phase == 'None' || data.game_state.new_phase == 'PreGame') { await resetLocalTables(); }; 
 
-      await refreshLatestMatchStart(); // might be deprecated soon
-      const session = await getGameSession();
-      const gameStatus = getGameStatus(data.phase);
+      const gameStatus = getGameStatus(data.game_state.new_phase);
+      await updateGameState(data);
+
+      console.log(`GameState Changed! (${data.game_state.old_phase} -> ${data.game_state.new_phase})`);
+      if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); }
+    }),
+    onMatchUpdate(async (payload) => {
+      const data = JSON.parse(payload.content!) as MatchJSON;
+      if (data.game_state == null) { return };
+
+      // remove matchPlayers table entries for next game
+      if (data.game_state.new_phase == 'None' || data.game_state.new_phase == 'PreGame') { await resetLocalTables(); }; 
+
+      const gameStatus = getGameStatus(data.game_state.new_phase);
       const currentState = await getCurrentMatch();
+      
 
       let cMatch = await upsertCurrentMatch({
         gameState: data.phase,

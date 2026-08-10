@@ -5,40 +5,8 @@ import { removeDevCharPrefix } from "../objects/ody";
 import { getAppSettings, getCurrentMatch, getGameSession, getMatchPlayers } from "../database/queries";
 import { refreshRating } from "./odyssey";
 import { getMapObjectFromID } from "../objects/maps";
-import { CurrentMatchTable, SessionTable } from "../../types/database";
 import { getPartyLabel } from "../objects/sessions";
-
-const APP_ID = "1483520798017982707";
-
-export const PHASE_GROUPS = {
-  out_of_game: [
-    'Unknown',
-    'None',
-    'PostGameCelebration',
-    'PostGameSummary'
-  ],
-  starting: [
-    'PreGame',
-    'ArenaOverview',
-    'CharacterPreSelect',
-    'BanSelect',
-    'BanCelebration',
-    'LoadoutSelect',
-    'CharacterSelect',
-    'VersusScreen',
-  ],
-  in_game: [
-    'InGame',
-    'FaceOffIntro',
-    'FaceOffCountdown',
-    'GoalScore',
-    'GoalCelebration',
-    'IntermissionMvp',
-    'IntermissionIntro',
-    'IntermissionOutro',
-    'Intermission'
-  ],
-} as const;
+import { getGameStatus } from "../objects/gameStates";
 
 export interface RpcActivityOptions {
   details?: string;
@@ -68,7 +36,6 @@ export const DEFAULT_ACTIVITY: RpcActivityOptions = {
 }
 
 export let discordRpc: DiscordRpc | null = null;
-let matchSetupTimestamps: { startTimestamp: number; endTimestamp: number } | null = null;
 
 export async function startRpc() {
   // Add back some sort of disabling dRPC later
@@ -79,7 +46,7 @@ export async function startRpc() {
   };
   try {
     console.log(`Starting new Discord RPC...`);
-    await start(APP_ID);
+    await start("1483520798017982707");
     discordRpc = {
       updateActivity: _updateActivity,
       clear: _clearActivity,
@@ -154,29 +121,27 @@ async function _clearActivity() {
   await clearActivity();
 }
 
-export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo?: SessionTable) { // less db reads
+export async function tryUpdateDiscordRPC() {
   const appSetts = await getAppSettings();
   if (appSetts.drpcEnabled == false) { return; }
 
-  const currentMatch = match ?? (await getCurrentMatch());
   if (!discordRpc) {
     console.warn(`[DRPC] No DRPC found. Starting a new instance on-the-fly...`);
     await startRpc();
-    return await tryUpdateDiscordRPC(currentMatch);
+    return await tryUpdateDiscordRPC();
   }
 
-  const session = sessionInfo ?? (await getGameSession());
+  const matchTable = await getCurrentMatch();
+  const sessionTable = await getGameSession();
+  const gameStatus = getGameStatus(matchTable.gameState);
 
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
-  const mapObject = getMapObjectFromID(currentMatch.map);
-  const partyLabel = getPartyLabel(session.partySize);
+  const mapObject = getMapObjectFromID(matchTable.map);
+  const partyLabel = getPartyLabel(sessionTable.partySize);
 
   // Not in a match, and not queuing
-  if (
-    session.queueState == 'Idle'
-  ) {
-    matchSetupTimestamps = null;
+  if (sessionTable.queueState == 'Idle') {
     await discordRpc.updateActivity({
       details: 'Idling on the Main Menu',
       state: `Playing ${partyLabel}`,
@@ -186,52 +151,50 @@ export async function tryUpdateDiscordRPC(match?: CurrentMatchTable, sessionInfo
   }
 
   // Queuing
-  else if (session.queueState == 'Queued' || session.queueState == 'FoundMatch' || session.queueState == 'StartingGame') {
+  else if (sessionTable.queueState == 'Queued' || sessionTable.queueState == 'FoundMatch' || sessionTable.queueState == 'StartingGame') {
     await discordRpc.updateActivity({
-      details: `Waiting in ${session.queueName} Queue`,
+      details: `Waiting in ${sessionTable.queueName} Queue`,
       state: `Playing ${partyLabel}`,
       largeImage: DRPC_LOGO_KEY,
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
 
-  // Match found and it's in setup phase
-  else if (PHASE_GROUPS.starting.some(p => p === currentMatch.gameState)) {
-    if (currentMatch.gameState === 'ArenaOverview') { // Only set on Pre-Game (after resetting match table), to use on other setup phases
-      console.debug('New Match! Saving setup timestamp finish...');
-      const now = Date.now();
-      matchSetupTimestamps = { startTimestamp: now, endTimestamp: now + 95 * 1000 }; // technically done in 90s, but +5s for padding
-    }
+  // Match found and it's in setup phase, but only run once.
+  else if (gameStatus == 'SETUP' && matchTable.gameState == 'ArenaOverview') {
     await refreshRating();
     await discordRpc.updateActivity({
-      details: `${session.queueName} - ${mapObject.mapName}`,
+      details: `${sessionTable.queueName} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
-      ...matchSetupTimestamps,
+      startTimestamp: Date.now(),
+      endTimestamp: Date.now() + 70_000, // 70 seconds in ms
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }
 
+  // maybe we could add one for intermission like "Picking 1st" /shrug
+
   // In a Match
-  else if (PHASE_GROUPS.in_game.some(p => p === currentMatch.gameState)) {
-    console.debug(`Updating dRPC...`);
+  else if (gameStatus == 'IN_GAME') {
     const rankObject = getRankFromLP(myPlayer?.rating);
 
     let largeImg = DRPC_LOGO_KEY;
     if (myPlayer?.charId) { largeImg = removeDevCharPrefix(myPlayer?.charId as string).toLowerCase(); }
+
     await discordRpc.updateActivity({// cant be null here
-      details: `${session.queueName} - ${mapObject.mapName}`,
+      details: `${sessionTable.queueName} - ${mapObject.mapName}`,
       state: formatScore(
-        currentMatch.teamOnePts ?? 0,
-        currentMatch.teamTwoPts ?? 0,
-        currentMatch.teamOneSets ?? 0,
-        currentMatch.teamTwoSets ?? 0,
-        currentMatch.teamNum ?? 0,
+        matchTable.teamOnePts ?? 0,
+        matchTable.teamTwoPts ?? 0,
+        matchTable.teamOneSets ?? 0,
+        matchTable.teamTwoSets ?? 0,
+        matchTable.teamNum ?? 0,
       ),
       largeImage: largeImg,
       largeText: myPlayer?.charName ? `Playing ${myPlayer?.charName}` : 'Ai.Mi Companion App',
       smallImage: rankObject.key,
       smallText: rankObject.name,
-      startTimestamp: currentMatch.startedAt?.getTime(),
+      startTimestamp: matchTable.startedAt?.getTime(),
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
     });
   }

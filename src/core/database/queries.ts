@@ -129,14 +129,6 @@ export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
   }).run();
 }
 
-export async function upsertCurrentMatch(data: Omit<typeof currentMatch.$inferInsert, "id">) {
-  const rows = await db.insert(currentMatch).values({ id: 1, ...data }).onConflictDoUpdate({
-    target: currentMatch.id,
-    set: data,
-  }).returning();
-  return rows[0];
-}
-
 export async function updateSessionInfo(data: Omit<typeof sessionInfo.$inferInsert, "id">) {
   const rows = await db.insert(sessionInfo).values({ id: 1, ...data }).onConflictDoUpdate({
     target: sessionInfo.id,
@@ -228,10 +220,6 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
 export async function resetSessionTable() {
   await db.delete(sessionInfo);
   await db.insert(sessionInfo).values({ id: 1 });
-}
-
-export async function updateGameState(state: string) {
-  await db.update(currentMatch).set({ gameState: state});
 }
 
 export async function appendTimelineEntry(entry: TimelineEntry) {

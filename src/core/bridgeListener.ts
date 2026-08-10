@@ -2,7 +2,6 @@
 
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
-import { upsertCurrentMatch } from './database/queries';
 
 export interface FileChangePayload {
   file: string;
@@ -105,14 +104,4 @@ export async function isProcessRunning(name: string): Promise<boolean> {
 
 export async function getLatestRegion(): Promise<string | null> {
   return invoke<string | null>('get_latest_region');
-}
-
-export async function refreshLatestMatchStart(): Promise<void> {
-  const ts = await invoke<string | null>('get_latest_match_timestamp');
-  if (!ts) return;
-  const m = ts.match(/^(\d{4})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})\.(\d{2}):(\d+)$/);
-  if (!m) return;
-  const [, year, month, day, hour, min, sec, ms] = m;
-  const startedAt = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(min), Number(sec), Number(ms)));
-  await upsertCurrentMatch({ startedAt });
 }
