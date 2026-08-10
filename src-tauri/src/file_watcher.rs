@@ -16,7 +16,7 @@ const WATCHED_FILES: &[&str] = &["meta.json", "match.json", "players.json", "pos
 pub struct FileChangeEvent {
     pub file: String,
     pub kind: String,
-    pub content: Option<String>,
+    pub content: String,
 }
 
 #[derive(Deserialize)]
@@ -25,13 +25,8 @@ struct MetaLastChanged {
 }
 
 // Meta has 3 separate update conditions in it, so determine the cause of the update and redirect.
-fn handle_meta(app: &AppHandle, file: &str, kind: &str, content: Option<String>) {
-    let Some(raw) = content.as_deref() else {
-        // Nothing to route on removal - last_changed isn't known.
-        return;
-    };
-
-    let event_name = match serde_json::from_str::<MetaLastChanged>(raw) {
+fn handle_meta(app: &AppHandle, file: &str, kind: &str, content: String) {
+    let event_name = match serde_json::from_str::<MetaLastChanged>(&content) {
         Ok(meta) => match meta.last_changed.as_str() {
             "state" => "onStateChange",
             "queue" => "onQueueChange",
@@ -57,7 +52,7 @@ fn handle_meta(app: &AppHandle, file: &str, kind: &str, content: Option<String>)
     );
 }
 
-fn handle_match(app: &AppHandle, file: &str, kind: &str, content: Option<String>) {
+fn handle_match(app: &AppHandle, file: &str, kind: &str, content: String) {
     let _ = app.emit(
         "onMatchUpdate",
         FileChangeEvent {
@@ -68,7 +63,7 @@ fn handle_match(app: &AppHandle, file: &str, kind: &str, content: Option<String>
     );
 }
 
-fn handle_players(app: &AppHandle, file: &str, kind: &str, content: Option<String>) {
+fn handle_players(app: &AppHandle, file: &str, kind: &str, content: String) {
     let _ = app.emit(
         "onPlayersUpdate",
         FileChangeEvent {
@@ -79,7 +74,7 @@ fn handle_players(app: &AppHandle, file: &str, kind: &str, content: Option<Strin
     );
 }
 
-fn handle_postgame(app: &AppHandle, file: &str, kind: &str, content: Option<String>) {
+fn handle_postgame(app: &AppHandle, file: &str, kind: &str, content: String) {
     let _ = app.emit(
         "onPostGameUpdate",
         FileChangeEvent {
@@ -90,7 +85,7 @@ fn handle_postgame(app: &AppHandle, file: &str, kind: &str, content: Option<Stri
     );
 }
 
-fn dispatch(app: &AppHandle, file: &str, kind: &str, content: Option<String>) {
+fn dispatch(app: &AppHandle, file: &str, kind: &str, content: String) {
     match file {
         "meta.json" => handle_meta(app, file, kind, content),
         "match.json" => handle_match(app, file, kind, content),
@@ -146,7 +141,9 @@ pub fn start_file_watcher(app: AppHandle) {
                     let kind = match event.kind {
                         EventKind::Create(_) => "created",
                         EventKind::Modify(_) => "modified",
-                        EventKind::Remove(_) => "removed",
+                        // Removed files have no content to filter on, so there's
+                        // nothing useful to send the frontend - skip entirely.
+                        EventKind::Remove(_) => continue,
                         _ => continue,
                     };
 
@@ -163,10 +160,11 @@ pub fn start_file_watcher(app: AppHandle) {
                                 continue;
                             }
                             last_seen.insert(key, now);
-                            let content = if kind != "removed" {
-                                std::fs::read_to_string(path).ok()
-                            } else {
-                                None
+
+                            // Also covers the race where the file gets removed
+                            // between the event firing and the read below.
+                            let Ok(content) = std::fs::read_to_string(path) else {
+                                continue;
                             };
 
                             dispatch(&app, &name, kind, content);
