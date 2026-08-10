@@ -7,6 +7,7 @@ import { refreshRating } from "./odyssey";
 import { getMapObjectFromID } from "../objects/maps";
 import { getPartyLabel } from "../objects/sessions";
 import { getGameStatus } from "../objects/gameStates";
+import { getQueueObjectFromID } from "../objects/queues";
 
 export interface RpcActivityOptions {
   details?: string;
@@ -138,10 +139,11 @@ export async function tryUpdateDiscordRPC() {
   const players = await getMatchPlayers();
   const myPlayer = players.find(p => p.isMe);
   const mapObject = getMapObjectFromID(matchTable.map);
+  const queueName = (getQueueObjectFromID(matchTable.queue)).queueName;
   const partyLabel = getPartyLabel(sessionTable.partySize);
 
   // Not in a match, and not queuing
-  if (sessionTable.queueState == 'Idle' || sessionTable.queueState == null) {
+  if (sessionTable.queueState == 'Idle' || (sessionTable.queueState == null && matchTable.queue == null)) {
     await discordRpc.updateActivity({
       details: 'Idling on the Main Menu',
       state: `Playing ${partyLabel}`,
@@ -153,7 +155,7 @@ export async function tryUpdateDiscordRPC() {
   // Queuing
   else if (sessionTable.queueState == 'Queued' || sessionTable.queueState == 'FoundMatch' || sessionTable.queueState == 'StartingGame') {
     await discordRpc.updateActivity({
-      details: `Waiting in ${sessionTable.queueName} Queue`,
+      details: `Waiting in ${queueName} Queue`,
       state: `Playing ${partyLabel}`,
       largeImage: DRPC_LOGO_KEY,
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],
@@ -164,7 +166,7 @@ export async function tryUpdateDiscordRPC() {
   else if (gameStatus == 'SETUP' && matchTable.gameState == 'ArenaOverview') {
     await refreshRating();
     await discordRpc.updateActivity({
-      details: `${sessionTable.queueName} - ${mapObject.mapName}`,
+      details: `${queueName} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
       startTimestamp: Date.now(),
       endTimestamp: Date.now() + 70_000, // 70 seconds in ms
@@ -182,7 +184,7 @@ export async function tryUpdateDiscordRPC() {
     if (myPlayer?.charId) { largeImg = removeDevCharPrefix(myPlayer?.charId as string).toLowerCase(); }
 
     await discordRpc.updateActivity({// cant be null here
-      details: `${sessionTable.queueName} - ${mapObject.mapName}`,
+      details: `${queueName} - ${mapObject.mapName}`,
       state: formatScore(
         matchTable.teamOnePts ?? 0,
         matchTable.teamTwoPts ?? 0,

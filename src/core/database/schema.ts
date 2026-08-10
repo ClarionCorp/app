@@ -133,6 +133,6 @@ export const sessionInfo = sqliteTable("sessionInfo", {
   partySize: integer("partySize").notNull().default(0),
   maxPartySize: integer("maxPartySize").notNull().default(3),
   queueState: text("queueState").$type<QueueStates>(),
-  queueName: text("queueName"),
+  queueId: text("queueId"),
   // eventually add session rating tracking here :)
 });

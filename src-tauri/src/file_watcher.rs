@@ -3,10 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::mpsc;
-use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
-
-const DEBOUNCE: Duration = Duration::from_millis(100);
 
 // Each file gets its own function for custom filtering down the line.
 // We wanna deal with it here because Rust is a gazillion times faster than TS.
@@ -132,7 +129,10 @@ pub fn start_file_watcher(app: AppHandle) {
             return;
         }
 
-        let mut last_seen: HashMap<String, Instant> = HashMap::new();
+        // Tracks the last content emitted per file, so we only dedupe genuine
+        // repeats (e.g. Windows firing multiple Modify events for one write)
+        // instead of dropping distinct writes that land close together.
+        let mut last_content: HashMap<String, String> = HashMap::new();
 
         for result in rx {
             match result {
@@ -148,23 +148,21 @@ pub fn start_file_watcher(app: AppHandle) {
 
                     for path in &event.paths {
                         if let Some(filename) = path.file_name() {
-                            let name = filename.to_string_lossy();
-                            if !WATCHED_FILES.contains(&name.as_ref()) {
+                            let name = filename.to_string_lossy().into_owned();
+                            if !WATCHED_FILES.contains(&name.as_str()) {
                                 continue;
                             }
-
-                            let now = Instant::now();
-                            let key = format!("{kind}:{name}");
-                            if last_seen.get(&key).map_or(false, |t| now.duration_since(*t) < DEBOUNCE) {
-                                continue;
-                            }
-                            last_seen.insert(key, now);
 
                             // Also covers the race where the file gets removed
                             // between the event firing and the read below.
                             let Ok(content) = std::fs::read_to_string(path) else {
                                 continue;
                             };
+
+                            if last_content.get(&name) == Some(&content) {
+                                continue;
+                            }
+                            last_content.insert(name.clone(), content.clone());
 
                             dispatch(&app, &name, kind, content);
                         }

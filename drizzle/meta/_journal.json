@@ -176,6 +176,13 @@
       "when": 1786342665614,
       "tag": "0024_sturdy_mandrill",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1786344913884,
+      "tag": "0025_daily_lightspeed",
+      "breakpoints": true
     }
   ]
 }

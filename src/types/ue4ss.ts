@@ -4,7 +4,7 @@ type TeamNum = 1 | 2;
 export type MetaJSON = {
   last_changed: 'state' | 'queue' | 'party',
   queue: {
-    name: null | string,
+    id: null | string,
     state: 'Unknown' | 'Idle' | 'Queued' | 'FoundMatch' | 'StartingGame' | 'InGame' | 'EMatchmakingStateV2_MAX',
     timestamp: number, // last updated, helpful for queue times
   },

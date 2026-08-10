@@ -137,7 +137,7 @@ function App() {
 
       // Update database
       const gameStatus = getGameStatus(data.game_state.new_phase);
-      const matchTable = await updateGameState(data.game_state.new_phase, data.queue.name);
+      const matchTable = await updateGameState(data.game_state.new_phase, data.queue.id);
 
       // In Match Setup or In Game, tell discord to try to update
       if (gameStatus == 'IN_GAME' || gameStatus == 'SETUP') { await tryUpdateDiscordRPC(); };
@@ -148,7 +148,7 @@ function App() {
     onQueueChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
 
-      console.log(`Updating Matchmaking to: (${data.queue.state}: ${data.queue.name})`);
+      console.log(`Updating Matchmaking to: (${data.queue.state}: ${data.queue.id})`);
       await updateSession(data);
       await tryUpdateDiscordRPC();
 

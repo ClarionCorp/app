@@ -96,6 +96,7 @@ export async function updateScore(data: MatchJSON) {
     teamTwoPts: data.team2.goals,
     teamOneSets: data.team1.sets,
     teamTwoSets: data.team2.sets,
+    startedAt: new Date(data.start_time)
   }
 
   await db.insert(currentMatch).values(table).onConflictDoUpdate({
@@ -105,11 +106,13 @@ export async function updateScore(data: MatchJSON) {
 }
 
 export async function updateSession(data: MetaJSON) {
+  console.warn(`QueueID: ${data.queue.id}`);
+  console.debug(`Session: `, JSON.stringify(data, null, 1));
   const table = {
     id: 1,
     partySize: data.party_size,
     maxPartySize: data.max_party_size,
-    queueName: data.queue.name,
+    queueId: data.queue.id,
     queueState: data.queue.state
   }
 
@@ -119,9 +122,9 @@ export async function updateSession(data: MetaJSON) {
   })
 
   // also update currentMatch's queue cache
-  await db.insert(currentMatch).values({ queue: data.queue.name }).onConflictDoUpdate({
+  await db.insert(currentMatch).values({ queue: data.queue.id }).onConflictDoUpdate({
     target: sessionInfo.id,
-    set: { queue: data.queue.name },
+    set: { queue: data.queue.id },
   })
 }
 
