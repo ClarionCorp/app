@@ -145,22 +145,6 @@ export async function updateSessionInfo(data: Omit<typeof sessionInfo.$inferInse
   return rows[0];
 }
 
-export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[]) {
-  if (players.length === 0) return [];
-  return db.insert(matchPlayers).values(players).onConflictDoUpdate({
-    target: matchPlayers.username,
-    set: {
-      charName: sql`excluded.charName`,
-      charId: sql`excluded.charId`,
-      xp: sql`excluded.xp`,
-      gainedXp: sql`excluded.gainedXp`,
-      ping: sql`excluded.ping`,
-      trainings: sql`excluded.trainings`,
-      knockouts: sql`excluded.knockouts`,
-    },
-  }).returning();
-}
-
 export async function updatePlayerRating(username: string, rating: number) {
   return db.update(matchPlayers)
     .set({ rating })

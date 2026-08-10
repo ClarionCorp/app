@@ -23,6 +23,8 @@ import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { checkSaveTimelineEntries, markMatchStartIfNone } from './core/timeline';
 import { formatLiveMatchInfo } from './core/overlay';
+import { PlayersJSON } from './types/ue4ss-new';
+import { updatePlayers } from './core/utilities/events';
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 
@@ -127,48 +129,9 @@ function App() {
   // Rust Mod Bridge Listeners
   useEffect(() => {
   const unlistens = Promise.all([
-    onPlayersChanged(async (payload) => {
-      console.debug(`Players updated!`)
-      if (payload.kind === 'removed' || !payload.content) return;
-      const data = JSON.parse(payload.content) as PlayerFinderJSON;
-      const currentUser = await getUser();
-
-      const players = await setMatchPlayers(data.players.filter(p => p.name !== 'Player').map(p => ({
-        username: p.name,
-        teamNum: p.team,
-        role: p.role,
-        charName: p.character_name,
-        charId: p.character_id,
-        isMe: p.name === currentUser?.username,
-        xp: p.level,
-        gainedXp: p.intermissionXp,
-        ping: p.ping_ms,
-        trainings: p.trainings,
-        knockouts: p.knockouts,
-      })));
-
-      for (const player of players.filter(p => p.rating === null)) {
-        // fetch and set ratings and other stats (if empty)
-        console.log(`Fetching statistical data for ${player.username}...`)
-        try {
-          const user = await fetchUsernameQuery(player.username);
-          const ranked = await fetchRankQuery(user!.playerId);
-          const stats = await fetchPlayerStats(user!.playerId);
-          const playstyle = await fetchPlayerPlayerstyle(player.username);
-          const smurf = await fetchPlayerSmurfEstimate(player.username);
-          await calcAndSetPlayerStats(player.username, stats, user?.playerId); // run first since it really shouldn't fail as much as rating
-          await updatePlayerRating(player.username, ranked!.rating);
-          await db.update(matchPlayers).set({ playstyle, smurfProbability: smurf?.confidence }).where(eq(matchPlayers.username, player.username));
-        } catch (e) {
-          console.warn(`No rank data could be found for ${player.username}.`);
-          updatePlayerRating(player.username, 0); // set to 0 to prevent refetching (and failing again)
-          continue;
-        }
-      }
-    }),
+    onPlayersChanged(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
     onGameStateChanged(async (payload) => {
-      if (payload.kind === 'removed' || !payload.content) return;
-      const data = JSON.parse(payload.content) as GameStateJSON;
+      const data = JSON.parse(payload.content!) as GameStateJSON;
 
       // remove matchPlayers table entries for next game
       if (data.phase == 'None' || data.phase == 'PreGame') { await resetLocalTables(); }; 
@@ -204,8 +167,7 @@ function App() {
       if (data.phase == 'FaceOffIntro') { await markMatchStartIfNone(); };
     }),
     onSessionUpdated(async (payload) => {
-      if (payload.kind === 'removed' || !payload.content) return;
-      const data = JSON.parse(payload.content) as GameSessionJSON;
+      const data = JSON.parse(payload.content!) as GameSessionJSON;
 
       const prevSession = await getGameSession();
       const queueObj = getQueueObjectFromID(data.queue_name);
@@ -228,8 +190,7 @@ function App() {
       }
     }),
     onTrainingsChanged(async (payload) => {
-      if (payload.kind === 'removed' || !payload.content) return;
-      const data = JSON.parse(payload.content) as TrainingsChangedJSON;
+      const data = JSON.parse(payload.content!) as TrainingsChangedJSON;
 
       // ADD new trainings to the match storage
       console.log(`Updating shown awakenings list...`);
@@ -237,11 +198,10 @@ function App() {
       await db.update(currentMatch).set({ trainings: [...row.trainings, ...data.trainings] });
     }),
     onMatchFinalize(async (payload) => {
-      if (payload.kind === 'removed' || !payload.content) return;
       console.debug(`Match Ended! Saving...`)
       try { // if any matches fail to save, it'll be easier to debug lol (im leaving this here after I needed it)
         await refreshLatestMatchStart();
-        const stats = JSON.parse(payload.content) as PostGameStatsJSON;
+        const stats = JSON.parse(payload.content!) as PostGameStatsJSON;
 
         const [match, currentUser, matchPlayers] = await Promise.all([
           getCurrentMatch(),
