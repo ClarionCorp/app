@@ -190,6 +190,20 @@
       "when": 1786347142491,
       "tag": "0026_sticky_lady_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "6",
+      "when": 1786500832780,
+      "tag": "0027_lucky_lilith",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "6",
+      "when": 1786501452272,
+      "tag": "0028_hesitant_khan",
+      "breakpoints": true
     }
   ]
 }

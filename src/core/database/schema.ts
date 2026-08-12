@@ -128,3 +128,18 @@ export const matchHistory = sqliteTable("matchHistory", {
   validated: integer("validated", { mode: "boolean" }).notNull().default(false), // skips checking if already validated
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
+
+// A one-line table for keeping track of custom lobby data
+export const customLobby = sqliteTable("customLobby", {
+  id: integer("id").primaryKey(),
+  lobbyName: text("lobbyName"),
+  lobbyId: text("lobbyId"),
+  private: integer("private", { mode: "boolean" }).notNull().default(false),
+  serverIds: text("serverIds").$type<string[]>(),
+  region: text("region"),
+  appBlocked: integer("appBlocked", { mode: "boolean" }).notNull().default(false),
+  maxMembers: integer("maxMembers").notNull().default(0),
+  memberCount: integer("memberCount").notNull().default(0),
+
+  lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
+});

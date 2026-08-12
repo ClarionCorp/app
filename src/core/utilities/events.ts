@@ -4,7 +4,7 @@
 
 import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
-import { currentMatch, matchPlayers } from "../database/schema";
+import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
 import { appendTimelineEntry, calcAndSetPlayerStats, getCurrentMatch, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
@@ -12,8 +12,10 @@ import { fetchPlayerStats, fetchRankQuery } from "./odyssey";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, MatchPlayersTable } from "../../types/database";
+import { getRegionObjectFromID } from "../objects/regions";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
+const flags =  ['BLOCKAPP', 'EUSL', 'BUB', 'OSAS'];
 
 export async function updatePlayers(data: PlayersJSON) {
   const currentUser = await getUser();
@@ -89,7 +91,6 @@ export async function updateGameState(data: MetaJSON): Promise<CurrentMatchTable
 }
 
 export async function updateScore(data: MatchJSON) {
-  console.warn(`Start Time: `)
   const table = {
     id: 1,
     map: data.map.id,
@@ -168,7 +169,6 @@ export async function saveMatchToHistory(data: PostGameJSON) {
   }
 }
 
-
 export function mergeMatchPlayers(
   players: MatchPlayersTable[],
   postGameStats: PostGameJSON,
@@ -196,4 +196,21 @@ export function mergeMatchPlayers(
       saves: stats?.saves ?? 0,
     };
   });
+}
+
+export async function updateCustomLobby(data: MetaJSON) {
+  const lobbyData = {
+    id: 1,
+    lobbyName: data.custom_lobby?.lobby_name,
+    lobbyId: data.custom_lobby?.lobby_id,
+    private: data.custom_lobby?.is_private,
+    serverIds: data.custom_lobby?.regions,
+    region: getRegionObjectFromID(data.custom_lobby?.regions[0]).region,
+    appBlocked: flags.some(item => data.custom_lobby?.lobby_name.includes(item)),
+    maxMembers: data.custom_lobby?.lobby_size,
+    memberCount: data.custom_lobby?.member_count,
+    lastUpdated: new Date(),
+  };
+
+  await db.insert(customLobby).values(lobbyData).onConflictDoUpdate({ target: customLobby.id, set: lobbyData });
 }

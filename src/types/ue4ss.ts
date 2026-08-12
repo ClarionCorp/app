@@ -19,7 +19,16 @@ export type MetaJSON = {
   game_state: {
     old_phase: string,
     new_phase: string
-  }
+  },
+  custom_lobby: {
+    lobby_name: string,
+    lobby_id: string,
+    is_private: boolean,
+    regions: string[],
+    member_count: number,
+    lobby_size: number,
+    // add member info later
+  } | null
 }
 
 // Separated from GameStateMod

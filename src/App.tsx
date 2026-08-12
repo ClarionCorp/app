@@ -4,7 +4,7 @@ import { OdyAuth } from './types/odyssey';
 import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange } from './core/bridgeListener';
+import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
@@ -19,7 +19,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { formatLiveMatchInfo } from './core/overlay';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
-import { saveMatchToHistory, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
+import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -124,6 +124,7 @@ function App() {
   const unlistens = Promise.all([
     onPlayersUpdate(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
     onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
+    onCustomLobbyHeartbeat(async (payload) => { await updateCustomLobby(JSON.parse(payload.content!) as MetaJSON); }),
 
     onGameStateChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;

@@ -50,6 +50,14 @@ export async function onMatchFinalize(
   });
 }
 
+export async function onCustomLobbyHeartbeat(
+  handler: (payload: FileChangePayload) => void
+): Promise<UnlistenFn> {
+  return listen<FileChangePayload>('onCustomLobbyHeartbeat', (event) => {
+    handler(event.payload);
+  });
+}
+
 export async function isProcessRunning(name: string): Promise<boolean> {
   return invoke<boolean>('is_process_running', { name });
 }
