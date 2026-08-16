@@ -19,7 +19,6 @@ import { getLatestRegion } from "../core/bridgeListener";
 import { checkForUpdates } from "../core/utilities/appAPI";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { updateGameState } from "../core/utilities/events";
 
 type StepId = "ue4ss" | "account" | "updates" | "discord";
 
