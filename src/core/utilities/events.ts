@@ -14,6 +14,7 @@ import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
 import { getRegionObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
+import { getQueueObjectFromID } from "../objects/queues";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 const flags =  ['blockapp', 'eusl', 'bub', 'osas', 'euos'];
@@ -155,7 +156,7 @@ export async function saveMatchToHistory(data: PostGameJSON) {
       players,
       mapId: match.map ?? '',
       duration: diffSeconds(match.startedAt!, new Date()),
-      queue: match.queue ?? 'queue:none',
+      queue: getQueueObjectFromID(match.queue).queueName ?? 'Unknown',
       playerId: myPlayer.playerId,
       myTeam,
       bans: match.bans,
