@@ -19,6 +19,7 @@ import { unInstallUE4SS } from "../core/utilities/ue4ss";
 import { useToast } from "../components/UI/Toast";
 // import { uploadAllMatches } from "../core/utilities/appAPI";
 import { exit } from "@tauri-apps/plugin-process";
+import { PreferredDataSources } from "../types/appAPI";
 
 export type QueuePopType = 'Ai.Mi' | 'Generic';
 
@@ -30,6 +31,7 @@ type Settings = {
   queuePopType: QueuePopType;
   exitOnGameClose: boolean;
   sendMatchData: boolean;
+  prefDataSource: PreferredDataSources;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -40,6 +42,7 @@ const DEFAULT_SETTINGS: Settings = {
   queuePopType: 'Ai.Mi',
   exitOnGameClose: false,
   sendMatchData: false,
+  prefDataSource: 'ClarionCorp',
 };
 
 export default function SettingsPage() {
@@ -54,6 +57,8 @@ export default function SettingsPage() {
   const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
   const [themeOpen, setThemeOpen] = useState(false);
   const themeTriggerRef = useRef<HTMLButtonElement>(null);
+  const [dataSourceOpen, setDataSourceOpen] = useState(false);
+  const dsTriggerRef = useRef<HTMLButtonElement>(null);
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
 
@@ -68,6 +73,7 @@ export default function SettingsPage() {
         queuePopType: (s.queuePopType as QueuePopType) ?? 'Ai.Mi',
         exitOnGameClose: s.exitOnGameClose,
         sendMatchData: s.sendMatchData,
+        prefDataSource: s.prefDataSource ?? 'ClarionCorp',
       });
     });
   }, []);
@@ -152,6 +158,28 @@ export default function SettingsPage() {
             >
               Browse
             </Button>
+          </div>
+        </SettingRow>
+
+        <SettingRow
+          title="Preferred Data Source"
+          subtitle="Where should we pull Players' Ranks from?"
+        >
+          <div className="relative">
+            <button
+              ref={dsTriggerRef}
+              onClick={() => setDataSourceOpen(o => !o)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-background-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer capitalize"
+            >
+              {settings.prefDataSource}
+              <CaretDownIcon size={12} className="opacity-60" />
+            </button>
+            <Dropdown
+              triggerRef={dsTriggerRef}
+              open={dataSourceOpen}
+              onClose={() => setDataSourceOpen(false)}
+              items={PreferredDataSources.map(v => ({ label: v, onClick: () => update({ prefDataSource: v as PreferredDataSources }) }))}
+            />
           </div>
         </SettingRow>
         

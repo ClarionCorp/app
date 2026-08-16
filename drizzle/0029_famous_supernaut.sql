@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `prefDataSource` text DEFAULT 'ClarionCorp';

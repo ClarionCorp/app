@@ -52,3 +52,6 @@ export type VersionCheck = {
   latest: string, // tag/version name
   release?: GithubRelease
 }
+
+export type PreferredDataSources = 'ClarionCorp' | 'Cached' | 'Odyssey';
+export const PreferredDataSources = ['ClarionCorp', 'Cached', 'Odyssey'];
