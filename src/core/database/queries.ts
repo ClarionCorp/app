@@ -2,7 +2,7 @@ import { AuthTable, PlayerCharJSON, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory } from "./schema";
+import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby } from "./schema";
 import { eq, sql } from "drizzle-orm";
 
 // Just using a basic translation file since I am still new to Drizzle
@@ -62,6 +62,10 @@ export async function getMyMatchPlayer() {
 
 export async function getMatchHistory() {
   return db.select().from(matchHistory);
+}
+
+export async function getCustomLobby() {
+  return db.select().from(customLobby).limit(1).then(r => r[0] ?? null);
 }
 
 
@@ -208,6 +212,10 @@ export async function appendTimelineEntry(entry: TimelineEntry) {
   await db.update(currentMatch)
     .set({ timeline: sql`json_insert(timeline, '$[#]', json(${JSON.stringify(entry)}))` })
     .where(eq(currentMatch.id, 1));
+}
+
+export async function deleteCustomLobby() {
+  await db.delete(customLobby).run();
 }
 
 // 

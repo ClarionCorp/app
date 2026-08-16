@@ -1,9 +1,12 @@
 // Mostly just where RankChecker resides lol
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
+import { HouseIcon } from '@phosphor-icons/react';
+import { Button } from '../components/UI/Button';
 import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
-import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
+import { getCurrentMatch, getCustomLobby, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { MapRotation } from '../components/LiveMatch/MapRotation';
@@ -14,6 +17,7 @@ import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
 import { getGameStatus } from '../core/objects/gameStates';
+import { checkBlocked } from '../core/utilities/events';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -22,11 +26,13 @@ const containerVariants: Variants = {
 
 
 export default function CurrentMatchPage() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [retryMessage, setRetryMessage] = useState<string | null>(null);
   const [match, setMatchData] = useState<CurrentMatchTable>();
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
   const [allTrainings, setTrainings] = useState<Awakenings[]>([]);
+  const [blocked, setBlocked] = useState<boolean>(false);
 
   useEffect(() => {
     async function load() {
@@ -39,6 +45,11 @@ export default function CurrentMatchPage() {
         setPlayers(playersDb);
 
         setTrainings(await getCurrentAwakeningRotation());
+
+        const lobby = await getCustomLobby();
+
+        const decision = await checkBlocked(lobby, matchDb);
+        setBlocked(decision);
 
         setRetryMessage(null);
         setLoading(false);
@@ -58,6 +69,9 @@ export default function CurrentMatchPage() {
       setPlayers(playersDb);
       const matchDb = await getCurrentMatch();
       setMatchData(matchDb);
+      const lobby = await getCustomLobby();
+      const decision = await checkBlocked(lobby, matchDb);
+      setBlocked(decision);
     }, 2500);
     return () => clearInterval(id);
   }, [loading]);
@@ -95,6 +109,29 @@ export default function CurrentMatchPage() {
               <p className="text-xs text-white">
                 {retryMessage ?? 'Loading data...'}
               </p>
+            </motion.div>
+          ) : blocked ? (
+            <motion.div
+              key="other"
+              className="flex flex-col items-center justify-center h-full min-h-64 gap-2 px-6 text-center mt-24"
+              exit={{ opacity: 0 }}
+            >
+              <img
+                src={'/aimi/Cry.png'}
+                className="w-40 aspect-square rounded-xl object-cover mb-3"
+              />
+              <p className="text-2xl font-bold text-error">App Blocked</p>
+              <p className="text-sm text-char-secondary whitespace-pre-wrap mb-4">
+                This custom lobby has prohibited the use of this page. Sorry!
+              </p>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => navigate('/home')}
+                iconLeft={<HouseIcon size={15} />}
+              >
+                Go Home
+              </Button>
             </motion.div>
           ) : (
             <motion.div

@@ -6,17 +6,17 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
-import { appendTimelineEntry, calcAndSetPlayerStats, getCurrentMatch, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
+import { appendTimelineEntry, calcAndSetPlayerStats, deleteCustomLobby, getCurrentMatch, getCustomLobby, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { fetchPlayerStats, fetchRankQuery } from "./odyssey";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
-import { CurrentMatchTable, MatchPlayersTable } from "../../types/database";
+import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
 import { getRegionObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
-const flags =  ['BLOCKAPP', 'EUSL', 'BUB', 'OSAS'];
+const flags =  ['blockapp', 'eusl', 'bub', 'osas', 'euos'];
 
 export async function updatePlayers(data: PlayersJSON) {
   const currentUser = await getUser();
@@ -209,11 +209,36 @@ export async function updateCustomLobby(data: MetaJSON) {
     private: data.custom_lobby?.is_private,
     serverIds: data.custom_lobby?.regions,
     region: getRegionObjectFromID(data.custom_lobby?.regions[0]).region,
-    appBlocked: flags.some(item => data.custom_lobby?.lobby_name.includes(item)),
+    appBlocked: flags.some(item => data.custom_lobby?.lobby_name.toLocaleLowerCase().includes(item)),
     maxMembers: data.custom_lobby?.lobby_size,
     memberCount: data.custom_lobby?.member_count,
     lastUpdated: new Date(),
   };
 
   await db.insert(customLobby).values(lobbyData).onConflictDoUpdate({ target: customLobby.id, set: lobbyData });
+  if (lobbyData.appBlocked == true) { console.warn(`Lobby owner has blocked AiMi App. The Current Match page has been disabled.`) };
+}
+
+export async function checkBlocked(lobbyCache?: CustomLobbyTable, matchCache?: CurrentMatchTable): Promise<boolean> {
+  let lobby: CustomLobbyTable;
+  if (lobbyCache) { lobby = lobbyCache }
+  else { lobby = await getCustomLobby() };
+
+  let match: CurrentMatchTable;
+  if (matchCache) { match = matchCache }
+  else { match = await getCurrentMatch() };
+
+  let decision = false;
+  if (!lobby) { return decision };
+
+  if (lobby.appBlocked === true) {
+    decision = true;
+    if (!match.queue || match.queue == 'queue:custom:NvM') { decision = true }
+    else { // no longer in a custom lobby
+      decision = false;
+      await deleteCustomLobby();
+    };
+  };
+
+  return decision;
 }

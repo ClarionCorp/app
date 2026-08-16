@@ -4,7 +4,7 @@ import { OdyAuth } from './types/odyssey';
 import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
-import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat } from './core/bridgeListener';
+import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
@@ -146,6 +146,11 @@ function App() {
       const data = JSON.parse(payload.content!) as MatchJSON;
       await updateScore(data);
       await tryUpdateDiscordRPC();
+    }),
+
+    onQueueChange(async (payload) => {
+      const data = JSON.parse(payload.content!) as MetaJSON;
+      await updateGameState(data); // we are really just updating the queue object
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
