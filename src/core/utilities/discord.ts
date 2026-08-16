@@ -209,7 +209,7 @@ export async function tryUpdateDiscordRPC(clear?: boolean) {
         matchTable.teamTwoPts ?? 0,
         matchTable.teamOneSets ?? 0,
         matchTable.teamTwoSets ?? 0,
-        matchTable.teamNum ?? 0,
+        myPlayer?.teamNum ?? 0,
       ),
       largeImage: largeImg,
       largeText: myPlayer?.charName ? `Playing ${myPlayer?.charName}` : 'Ai.Mi Companion App',

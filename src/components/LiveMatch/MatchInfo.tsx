@@ -4,6 +4,7 @@ import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '../UI/Button';
 import { StreamOverlayModal } from './StreamOverlay';
+import { getQueueObjectFromID } from '../../core/objects/queues';
 
 export function MatchInfo({ match, myPlayer }: { match: CurrentMatchTable | undefined, myPlayer: MatchPlayersTable | undefined }) {
   const ping = myPlayer?.ping;
@@ -24,7 +25,7 @@ export function MatchInfo({ match, myPlayer }: { match: CurrentMatchTable | unde
     <div className="bg-surface border border-surface-border rounded-xl px-4 py-2 shadow-lg">
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-char-secondary">{match?.queue ?? '—'}</span>
+          <span className="font-bold text-char-secondary">{getQueueObjectFromID(match?.queue).queueName ?? '—'}</span>
           {match?.map && (
             <span className="text-char-secondary">— {getMapObjectFromID(match.map).mapName}</span>
           )}

@@ -139,7 +139,7 @@ export async function saveMatchToHistory(data: PostGameJSON) {
     const myPlayer = players.find(p => p.name === currentUser.username);
     if (!myPlayer) return;
 
-    const myTeam = match.teamNum ?? 1;
+    const myTeam = myPlayer.team ?? 1;
     const myScore = myTeam === 1 ? (match.teamOneSets ?? 0) : (match.teamTwoSets ?? 0);
     const enemyScore = myTeam === 1 ? (match.teamTwoSets ?? 0) : (match.teamOneSets ?? 0);
     await appendTimelineEntry({
