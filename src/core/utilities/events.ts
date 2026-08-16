@@ -13,6 +13,7 @@ import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, MatchPlayersTable } from "../../types/database";
 import { getRegionObjectFromID } from "../objects/regions";
+import { checkSaveTimelineEntries } from "../timeline";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 const flags =  ['BLOCKAPP', 'EUSL', 'BUB', 'OSAS'];
@@ -91,6 +92,8 @@ export async function updateGameState(data: MetaJSON): Promise<CurrentMatchTable
 }
 
 export async function updateScore(data: MatchJSON) {
+  await checkSaveTimelineEntries(data);
+  
   const table = {
     id: 1,
     map: data.map.id,
