@@ -1,74 +1,109 @@
-import { getLevelFromXP } from "../core/objects/levels";
-import { MatchPlayersTable } from "./database";
-
 type TeamNum = 1 | 2;
 
-export type PlayerFinderJSON = {
+// Replaced GameStateMod and GameSessionMod
+export type MetaJSON = {
+  last_changed: 'state' | 'queue' | 'party',
+  queue: {
+    id: null | string,
+    state: 'Unknown' | 'Idle' | 'Queued' | 'FoundMatch' | 'StartingGame' | 'InGame' | 'EMatchmakingStateV2_MAX',
+    timestamp: number, // last updated, helpful for queue times
+  },
+  local_player: string, // id
+  party_size: number,
+  max_party_size: number, // usually 3
+  party_members: {
+    player_id: string,
+    level: number | null,
+    is_local: boolean
+  }[],
+  game_state: {
+    old_phase: string,
+    new_phase: string
+  },
+  custom_lobby: {
+    lobby_name: string,
+    lobby_id: string,
+    is_private: boolean,
+    regions: string[],
+    member_count: number,
+    lobby_size: number,
+    // add member info later
+  } | null
+}
+
+// Separated from GameStateMod
+export type MatchJSON = {
+  start_time: number, // unix timestamp, reliable
+  team1: {
+    goals: number,
+    sets: number,
+  },
+  team2: {
+    goals: number,
+    sets: number,
+  },
+  map: {
+    name: string, // Taiko Temple
+    id: string, // GMD_Drums
+  },
+  banned_characters: [], // gotta get this still
+  timestamp: number, // last updated
+}
+
+// Replaced PlayerFinderMod
+export type PlayersJSON = {
   players: {
     name: string,
+    player_id: string,
     team: TeamNum,
     role: 'Forward' | 'Goalie',
-    character_id: string, // CD_NimbleBlaster
-    character_name: string, // "Drek'ar"
-    level: number,
-    intermissionXp: number,
-    ping_ms: number,
-    trainings: string[],
-    knockouts: number,
+    character_id: string | null,
+    character_name: string | null,
+    intermission_xp: number,
+    xp: number,
+    ping_ms: number | null,
+    knockouts: number, // earned this match
+    trainings: string[]
   }[],
-  timestamp: number, // keeps tauri updating even if data is the same
-};
+  timestamp: number, // last updated
+}
+
+// Replaced PostGameStatsMod
+export type PostGameJSON = {
+  winning_team: TeamNum,
+  resolution: 'Normal' | 'Surrender' | 'AutoCancel',
+  mvp: {
+    player_id: string,
+    name: string,
+    team: TeamNum,
+  },
+  players: {
+    player_id: string,
+    name: string,
+    team: TeamNum,
+    goals: number,
+    assists: number,
+    saves: number,
+    knockouts: number,
+    redirects: number,
+    damage: number,
+    shots: number,
+    orbs: number,
+    mvp: boolean,
+  }[],
+  timestamp: number, // last updated
+}
 
 export type PlayerTrainings = {
   username: string,
   trainings: string[],
 }
 
-export type GameStateJSON = {
-  phase: string,
-  my_team: TeamNum,
-  t1_goals: number,
-  t1_sets: number,
-  t2_goals: number,
-  t2_sets: number,
-  map: string,
-  map_id: string,
-  banned_characters: string[],
-  timestamp: number, // keeps tauri updating even if data is the same
-}
-
-export type GameSessionJSON = {
-  party_size: number,
-  max_party_size: number,
-  mm_state: 0 | 1 | 2 | 3 | 4 | 5 | 6, // Unknown, Idle, Queued, FoundMatch, StartingGame, InGame, EMatchmakingStateV2_MAX
-  queue_name: string | null,
-  timestamp: number, // keeps tauri updating even if data is the same
-}
-
-export type TrainingsChangedJSON = {
-  trainings: string[]
-}
-
-// In order, just because
-export type PostGameStatsJSON = [{
-  id: string,
-  name: string, // username
-  team: number,
-  goals: string,
-  assists: string,
-  saves: string,
-  kos: string,
-  damage: string,
-  shots: string,
-  redirects: string,
-  orbs: string,
-}]
-
 export type TimelineEventType = 'GAME_START' | 'GOAL_SCORE' | 'WON_SET' | 'WON_GAME';
 export type TimelineEntry = {
   when: Date,
   event: TimelineEventType,
-  team?: 1 | 2,
+  team?: TeamNum,
 }
 
 export type MatchPlayer = {
@@ -79,44 +114,14 @@ export type MatchPlayer = {
   level: number,
   xpGoals: number[],
   role: 'Forward' | 'Goalie',
-  team: 1 | 2,
+  team: TeamNum,
   trainings: string[],
-  goals: string,
-  redirects: string,
-  kos: string,
-  damage: string,
-  shots: string,
-  orbs: string,
-  assists: string,
-  saves: string,
-}
-
-
-export function mergeMatchPlayers(
-  players: MatchPlayersTable[],
-  postGameStats: PostGameStatsJSON,
-): MatchPlayer[] {
-  return players.map(player => {
-    const stats = postGameStats.find(s => s.name === player.username);
-
-    return {
-      name: player.username,
-      playerId: player.playerId,
-      rating: player.rating,
-      characterId: player.charId ?? '',
-      level: getLevelFromXP(player.xp ?? 0),
-      xpGoals: player.xpGoals,
-      role: player.role ?? 'Forward',
-      team: player.teamNum ?? 1,
-      trainings: player.trainings,
-      goals: stats?.goals ?? '0',
-      redirects: stats?.redirects ?? '0',
-      kos: stats?.kos ?? '0',
-      damage: stats?.damage ?? '0',
-      shots: stats?.shots ?? '0',
-      orbs: stats?.orbs ?? '0',
-      assists: stats?.assists ?? '0',
-      saves: stats?.saves ?? '0',
-    };
-  });
+  goals: number,
+  redirects: number,
+  kos: number,
+  damage: number,
+  shots: number,
+  orbs: number,
+  assists: number,
+  saves: number,
 }

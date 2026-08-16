@@ -1,0 +1,1 @@
+ALTER TABLE `sessionInfo` RENAME COLUMN "queueName" TO "queueId";

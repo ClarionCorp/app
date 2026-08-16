@@ -1,26 +1,95 @@
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::mpsc;
-use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
 
-const DEBOUNCE: Duration = Duration::from_millis(100);
-
-const WATCHED_FILES: &[(&str, &str)] = &[
-    ("ue4ss_shown_trainings.json", "ue4ss-trainings-changed"),
-    ("ue4ss_players.json", "ue4ss-players-changed"),
-    ("ue4ss_gamestate.json", "ue4ss-gamestate-changed"),
-    ("ue4ss_session.json", "ue4ss-session-changed"),
-    ("PostGameStats.json", "postgame-stats-changed"),
-];
+// Each file gets its own function for custom filtering down the line.
+// We wanna deal with it here because Rust is a gazillion times faster than TS.
+const WATCHED_FILES: &[&str] = &["meta.json", "match.json", "players.json", "postgame.json"];
 
 #[derive(Serialize, Clone)]
 pub struct FileChangeEvent {
     pub file: String,
     pub kind: String,
-    pub content: Option<String>,
+    pub content: String,
+}
+
+#[derive(Deserialize)]
+struct MetaLastChanged {
+    last_changed: String,
+}
+
+// Meta has 3 separate update conditions in it, so determine the cause of the update and redirect.
+fn handle_meta(app: &AppHandle, file: &str, kind: &str, content: String) {
+    let event_name = match serde_json::from_str::<MetaLastChanged>(&content) {
+        Ok(meta) => match meta.last_changed.as_str() {
+            "state" => "onStateChange",
+            "custom_lobby" => "onCustomLobbyHeartbeat",
+            "queue" | "party" => "onQueueChange",
+            other => {
+                eprintln!("meta.json: unknown last_changed value '{other}'");
+                return;
+            }
+        },
+        Err(e) => {
+            eprintln!("meta.json: failed to parse ({e})");
+            return;
+        }
+    };
+
+    let _ = app.emit(
+        event_name,
+        FileChangeEvent {
+            file: file.to_string(),
+            kind: kind.to_string(),
+            content,
+        },
+    );
+}
+
+fn handle_match(app: &AppHandle, file: &str, kind: &str, content: String) {
+    let _ = app.emit(
+        "onMatchUpdate",
+        FileChangeEvent {
+            file: file.to_string(),
+            kind: kind.to_string(),
+            content,
+        },
+    );
+}
+
+fn handle_players(app: &AppHandle, file: &str, kind: &str, content: String) {
+    let _ = app.emit(
+        "onPlayersUpdate",
+        FileChangeEvent {
+            file: file.to_string(),
+            kind: kind.to_string(),
+            content,
+        },
+    );
+}
+
+fn handle_postgame(app: &AppHandle, file: &str, kind: &str, content: String) {
+    let _ = app.emit(
+        "onPostGameUpdate",
+        FileChangeEvent {
+            file: file.to_string(),
+            kind: kind.to_string(),
+            content,
+        },
+    );
+}
+
+fn dispatch(app: &AppHandle, file: &str, kind: &str, content: String) {
+    match file {
+        "meta.json" => handle_meta(app, file, kind, content),
+        "match.json" => handle_match(app, file, kind, content),
+        "players.json" => handle_players(app, file, kind, content),
+        "postgame.json" => handle_postgame(app, file, kind, content),
+        _ => {}
+    }
 }
 
 // Resolves the temp directory the game actually writes to.
@@ -28,16 +97,16 @@ pub struct FileChangeEvent {
 // On Linux, the game writes into its Proton prefix's fake windows temp dir instead.
 fn resolve_temp_dir() -> PathBuf {
     if cfg!(target_os = "windows") {
-        return std::env::temp_dir();
+        return std::env::temp_dir().join("AiMiApp");
     }
 
     match std::env::var_os("HOME") {
         Some(home) => PathBuf::from(home).join(
-            ".steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/Temp/",
+            ".steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/Temp/AiMiApp",
         ),
         None => {
             eprintln!("HOME environment variable not set, falling back to std::env::temp_dir()");
-            std::env::temp_dir()
+            std::env::temp_dir().join("AiMiApp")
         }
     }
 }
@@ -61,7 +130,10 @@ pub fn start_file_watcher(app: AppHandle) {
             return;
         }
 
-        let mut last_seen: HashMap<String, Instant> = HashMap::new();
+        // Tracks the last content emitted per file, so we only dedupe genuine
+        // repeats (e.g. Windows firing multiple Modify events for one write)
+        // instead of dropping distinct writes that land close together.
+        let mut last_content: HashMap<String, String> = HashMap::new();
 
         for result in rx {
             match result {
@@ -69,38 +141,31 @@ pub fn start_file_watcher(app: AppHandle) {
                     let kind = match event.kind {
                         EventKind::Create(_) => "created",
                         EventKind::Modify(_) => "modified",
-                        EventKind::Remove(_) => "removed",
+                        // Removed files have no content to filter on, so there's
+                        // nothing useful to send the frontend - skip entirely.
+                        EventKind::Remove(_) => continue,
                         _ => continue,
                     };
 
                     for path in &event.paths {
                         if let Some(filename) = path.file_name() {
-                            let name = filename.to_string_lossy();
-                            if let Some((_, event_name)) = WATCHED_FILES
-                                .iter()
-                                .find(|(file, _)| *file == name.as_ref())
-                            {
-                                let now = Instant::now();
-                                let key = format!("{kind}:{name}");
-                                if last_seen.get(&key).map_or(false, |t| now.duration_since(*t) < DEBOUNCE) {
-                                    continue;
-                                }
-                                last_seen.insert(key, now);
-                                let content = if kind != "removed" {
-                                    std::fs::read_to_string(path).ok()
-                                } else {
-                                    None
-                                };
-
-                                let _ = app.emit(
-                                    event_name,
-                                    FileChangeEvent {
-                                        file: name.to_string(),
-                                        kind: kind.to_string(),
-                                        content,
-                                    },
-                                );
+                            let name = filename.to_string_lossy().into_owned();
+                            if !WATCHED_FILES.contains(&name.as_str()) {
+                                continue;
                             }
+
+                            // Also covers the race where the file gets removed
+                            // between the event firing and the read below.
+                            let Ok(content) = std::fs::read_to_string(path) else {
+                                continue;
+                            };
+
+                            if last_content.get(&name) == Some(&content) {
+                                continue;
+                            }
+                            last_content.insert(name.clone(), content.clone());
+
+                            dispatch(&app, &name, kind, content);
                         }
                     }
                 }

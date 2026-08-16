@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
 import { readIdentity } from "../core/init";
-import { DEFAULT_ACTIVITY, discordRpc, startRpc, stopRpc } from "../core/utilities/discord";
+import { startRpc, stopRpc, tryUpdateDiscordRPC } from "../core/utilities/discord";
 import { invoke } from "@tauri-apps/api/core";
 import { dirname } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { getAppSettings, upsertAppSettings, updateRating, upsertUser, resetSessionTable, updateRegion, updateGameState } from "../core/database/queries";
+import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { db } from "../core/database/driver";
 import { matchPlayers } from "../core/database/schema";
@@ -20,14 +20,14 @@ import { checkForUpdates } from "../core/utilities/appAPI";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-const STEPS = [
-  "Checking UE4SS...",
-  "Fetching account info...",
-  "Checking for updates...",
-  "Connecting to Discord...",
-];
+type StepId = "ue4ss" | "account" | "updates" | "discord";
 
-const STEP_PCTS = [5, 40, 60, 75, 100];
+const steps: { id: StepId; label: string; pct: number }[] = [
+  { id: "ue4ss", label: "Checking UE4SS...", pct: 5 },
+  { id: "account", label: "Fetching account info...", pct: 40 },
+  { id: "updates", label: "Checking for updates...", pct: 60 },
+  { id: "discord", label: "Connecting to Discord...", pct: 75 },
+];
 
 export default function InitializationPage() {
   const {
@@ -36,7 +36,7 @@ export default function InitializationPage() {
     setConnectedStatus,
   } = useOutletContext<AppContextType>();
 
-  const [stepIndex, setStepIndex] = useState(0);
+  const [step, setStep] = useState(steps[0]);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [needsGameDir, setNeedsGameDir] = useState(false);
@@ -45,6 +45,12 @@ export default function InitializationPage() {
   const [ue4ssPercent, setUe4ssPercent] = useState<number | null>(null);
   const gameDirResolveRef = useRef<((dir: string) => void) | null>(null);
   const { show: showDialogue } = useDialogue();
+
+  const goToStep = (id: StepId) => {
+    const next = steps.find(s => s.id === id)!;
+    setStep(next);
+    setProgress(next.pct);
+  };
 
   const handlePickExe = async () => {
     const selected = await open({
@@ -84,8 +90,7 @@ export default function InitializationPage() {
         }
 
         // 1) Check & install/update UE4SS and companion mods
-        setStepIndex(0);
-        setProgress(STEP_PCTS[0]);
+        goToStep("ue4ss");
         const wasInstalled = await checkUE4SS(gameDir, (_stage, percent, message) => {
           setUe4ssMessage(message);
           setUe4ssPercent(percent);
@@ -107,12 +112,10 @@ export default function InitializationPage() {
 
         // 1.5) (Hidden) Purge players table as we'll just fetch a new one anyway
         await db.delete(matchPlayers).run();
-        await resetSessionTable();
-        await updateGameState('None');
+        // await updateGameState('None');
 
         // 2) Fetch account info from Odyssey
-        setStepIndex(1);
-        setProgress(STEP_PCTS[1]);
+        goToStep("account");
         try {
           const auth = await readIdentity();
           setOdyAuth(auth);
@@ -132,8 +135,7 @@ export default function InitializationPage() {
         }
 
         // 3) Check for updates
-        setStepIndex(2);
-        setProgress(STEP_PCTS[2]);
+        goToStep("updates");
         const updateCheck = await checkForUpdates();
         if (updateCheck.updateAvailable) {
           showDialogue({
@@ -157,11 +159,10 @@ export default function InitializationPage() {
         }
 
         // 4) Connect to Discord RPC
-        setStepIndex(3);
-        setProgress(STEP_PCTS[3]);
+        goToStep("discord");
         await stopRpc();
         await startRpc();
-        await discordRpc?.updateActivity(DEFAULT_ACTIVITY);
+        await tryUpdateDiscordRPC(true);
         if (cancelled) return;
 
         setProgress(100);
@@ -279,14 +280,14 @@ export default function InitializationPage() {
 
           <AnimatePresence mode="wait">
             <motion.p
-              key={stepIndex}
+              key={step.id}
               className="text-sm text-char-secondary text-center"
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2 }}
             >
-              {STEPS[stepIndex]}
+              {step.label}
             </motion.p>
           </AnimatePresence>
 
@@ -299,9 +300,9 @@ export default function InitializationPage() {
             />
           </div>
 
-          {/* UE4SS sub-progress — only visible during step 0 */}
+          {/* UE4SS sub-progress — only visible during the UE4SS step */}
           <AnimatePresence>
-            {stepIndex === 0 && ue4ssMessage && (
+            {step.id === "ue4ss" && ue4ssMessage && (
               <motion.div
                 className="flex flex-col gap-1.5 w-full"
                 initial={{ opacity: 0, y: 4 }}

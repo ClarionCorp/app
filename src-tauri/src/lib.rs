@@ -7,6 +7,7 @@ use std::io::{self, Write};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 mod file_watcher;
+mod hardware;
 mod log_watcher;
 
 // Checks for running processes (just for checking if game is running)
@@ -178,6 +179,7 @@ pub fn run() {
         }))
         .invoke_handler(tauri::generate_handler![
             is_process_running,
+            hardware::get_hardware_info,
             extract_zip,
             write_log_header,
             flush_logs,

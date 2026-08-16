@@ -15,6 +15,9 @@ const ue4ssRelativePaths = [
   'OmegaStrikers/Binaries/Win64/README.md',
 ];
 
+// Mostly used for legacy mods that need to be disabled going forward.
+const incompatible_mods = ['GameSessionMod', 'GameStateMod', 'PlayerFinderMod', 'PostGameStatsMod'];
+
 type InstallProgressCallback = (stage: 'checking' | 'downloading' | 'installing' | 'updating' | 'extracting' | 'done', percent: number | null, message: string) => void;
 type UnInstallProgressCallback = (stage: 'checking' | 'removing' | 'cleaning' | 'done', percent: number | null, message: string) => void;
 
@@ -83,34 +86,43 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
       console.log(`Finished UE4SS installation script.`);
     }
 
+    const modsFolder = await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods');
+
+    // Disable incompatible mods (currently just the legacy versions)
+    await disableIncompatibleMods(modsFolder);
+
     // Check for mod updates (or force it if ue4ss_installed is false)
     onProgress?.('checking', 50, 'Checking mod versions...');
     for (let i = 0; i < MODS.length; i++) {
       const mod = MODS[i];
       const percent = Math.round(50 + (i / MODS.length) * (90 - 50));
 
-      const scriptDir = await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods', mod.name, 'Scripts');
+      const scriptDir = await join(modsFolder, mod.name, 'Scripts');
       const installedPath = await join(scriptDir, 'main.lua');
       const isInstalled = await exists(installedPath);
 
       if (!isInstalled || !ue4ss_installed) {
         onProgress?.('installing', percent, `Installing ${mod.name} v${mod.version}...`);
         await mkdir(scriptDir, { recursive: true });
-        await writeTextFile(installedPath, mod.source);
+        for (const file of mod.files) {
+          await writeTextFile(await join(scriptDir, file.fileName), file.source);
+        }
         console.log(`Installed ${mod.name} v${mod.version}`);
       } else {
         const installedContent = await readTextFile(installedPath);
         const installedVersion = parseVersion(installedContent);
         if (installedVersion !== mod.version) {
           onProgress?.('updating', percent, `Updating ${mod.name} ${installedVersion} -> ${mod.version}...`);
-          await writeTextFile(installedPath, mod.source);
+          for (const file of mod.files) {
+            await writeTextFile(await join(scriptDir, file.fileName), file.source);
+          }
           console.log(`Updated ${mod.name} to v${mod.version}`);
         }
         // this mod is up to date, continue
         console.info(`Mod ${mod.name} is up-to-date (v${mod.version})`);
       }
 
-      await ensureModEnabled(mod.name, await join(gameDirectory, 'OmegaStrikers/Binaries/Win64/Mods'));
+      await ensureModEnabled(mod.name, modsFolder);
     }
 
     onProgress?.('done', 100, 'UE4SS & Mods Up-to-date!');
@@ -125,7 +137,9 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
 
 
 // Mod Handling
-const modFiles = import.meta.glob('../../assets/mods/*.lua', { query: '?raw', import: 'default', eager: true })
+// Each mod lives in its own folder under assets/mods, with a main.lua entry point
+// (declaring ModName/ModVersion) plus any number of component .lua files it requires().
+const modFiles = import.meta.glob('../../assets/mods/*/*.lua', { query: '?raw', import: 'default', eager: true })
 
 const parseVersion = (lua: string) =>
   lua.match(/local ModVersion\s*=\s*"([^"]+)"/)?.[1] ?? '0.0.0';
@@ -133,17 +147,58 @@ const parseVersion = (lua: string) =>
 const parseName = (lua: string) =>
   lua.match(/local ModName\s*=\s*"([^"]+)"/)?.[1];
 
-export type ModEntry = {
-  name: string;
-  version: string;
+export type ModFile = {
+  fileName: string;
   source: string; // raw lua content for copying
 };
 
-export const MODS: ModEntry[] = Object.values(modFiles).map(source => ({
-  name: parseName(source as string)!,
-  version: parseVersion(source as string),
-  source: source as string,
-}));
+export type ModEntry = {
+  name: string;
+  version: string;
+  files: ModFile[];
+};
+
+const modFolders = new Map<string, ModFile[]>();
+for (const [path, source] of Object.entries(modFiles)) {
+  const parts = path.split('/');
+  const folder = parts[parts.length - 2];
+  const fileName = parts[parts.length - 1];
+  if (!modFolders.has(folder)) modFolders.set(folder, []);
+  modFolders.get(folder)!.push({ fileName, source: source as string });
+}
+
+export const MODS: ModEntry[] = Array.from(modFolders.values()).map(files => {
+  const main = files.find(f => f.fileName === 'main.lua');
+  if (!main) throw new Error(`Mod folder is missing a main.lua entry point`);
+
+  return {
+    name: parseName(main.source)!,
+    version: parseVersion(main.source),
+    files,
+  };
+});
+
+async function disableIncompatibleMods(modsFolder: string) {
+  const modsFilePath = await join(modsFolder, 'mods.txt');
+  if (!await exists(modsFilePath)) return;
+
+  let content = await readTextFile(modsFilePath);
+  let changed = false;
+
+  for (const incompatibleName of incompatible_mods) {
+    const entryRegex = new RegExp(`^(${incompatibleName}\\s*:\\s*)\\d`, 'm');
+    const updated = content.replace(entryRegex, (_, prefix) => `${prefix}0`);
+    if (updated !== content) {
+      content = updated;
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    await writeTextFile(modsFilePath, content);
+    console.warn(`Disabled incompatible mods in mods.txt`);
+  }
+}
 
 
 async function ensureModEnabled(modName: string, modsFolder: string) {
@@ -175,7 +230,7 @@ async function ensureModEnabled(modName: string, modsFolder: string) {
     lines.push(entry);
   }
 
-  await writeTextFile(modsFilePath, lines.join(' \n'));
+  await writeTextFile(modsFilePath, lines.join('\n'));
 }
 
 export async function unInstallUE4SS(gameDirectory: string, onProgress?: UnInstallProgressCallback) {

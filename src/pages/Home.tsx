@@ -75,7 +75,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] bg-background px-8 pb-24">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] bg-background px-8 pb-36">
       <motion.div
         className="mb-10 short:my-7 text-center"
         initial={{ opacity: 0, y: -10 }}
@@ -87,7 +87,7 @@ export default function HomePage() {
             src={'/aimi/Yapping.gif'}
             className="w-40 aspect-square rounded-xl object-cover my-10 short:my-7"
           />
-          <div className="text-center">
+          <div className="text-center mb-5">
             <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
               Welcome back!
             </p>

@@ -2,7 +2,7 @@ import { AuthTable, PlayerCharJSON, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, sessionInfo } from "./schema";
+import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby } from "./schema";
 import { eq, sql } from "drizzle-orm";
 
 // Just using a basic translation file since I am still new to Drizzle
@@ -64,9 +64,8 @@ export async function getMatchHistory() {
   return db.select().from(matchHistory);
 }
 
-export async function getGameSession() {
-  const rows = await db.select().from(sessionInfo).limit(1);
-  return rows[0] ?? null;
+export async function getCustomLobby() {
+  return db.select().from(customLobby).limit(1).then(r => r[0] ?? null);
 }
 
 
@@ -127,38 +126,6 @@ export async function upsertAuth(data: Omit<typeof auth.$inferInsert, "id">) {
     target: auth.id,
     set: data,
   }).run();
-}
-
-export async function upsertCurrentMatch(data: Omit<typeof currentMatch.$inferInsert, "id">) {
-  const rows = await db.insert(currentMatch).values({ id: 1, ...data }).onConflictDoUpdate({
-    target: currentMatch.id,
-    set: data,
-  }).returning();
-  return rows[0];
-}
-
-export async function updateSessionInfo(data: Omit<typeof sessionInfo.$inferInsert, "id">) {
-  const rows = await db.insert(sessionInfo).values({ id: 1, ...data }).onConflictDoUpdate({
-    target: sessionInfo.id,
-    set: data,
-  }).returning();
-  return rows[0];
-}
-
-export async function setMatchPlayers(players: typeof matchPlayers.$inferInsert[]) {
-  if (players.length === 0) return [];
-  return db.insert(matchPlayers).values(players).onConflictDoUpdate({
-    target: matchPlayers.username,
-    set: {
-      charName: sql`excluded.charName`,
-      charId: sql`excluded.charId`,
-      xp: sql`excluded.xp`,
-      gainedXp: sql`excluded.gainedXp`,
-      ping: sql`excluded.ping`,
-      trainings: sql`excluded.trainings`,
-      knockouts: sql`excluded.knockouts`,
-    },
-  }).returning();
 }
 
 export async function updatePlayerRating(username: string, rating: number) {
@@ -241,19 +208,14 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
     .returning();
 }
 
-export async function resetSessionTable() {
-  await db.delete(sessionInfo);
-  await db.insert(sessionInfo).values({ id: 1 });
-}
-
-export async function updateGameState(state: string) {
-  await db.update(currentMatch).set({ gameState: state});
-}
-
 export async function appendTimelineEntry(entry: TimelineEntry) {
   await db.update(currentMatch)
     .set({ timeline: sql`json_insert(timeline, '$[#]', json(${JSON.stringify(entry)}))` })
     .where(eq(currentMatch.id, 1));
+}
+
+export async function deleteCustomLobby() {
+  await db.delete(customLobby).run();
 }
 
 // 

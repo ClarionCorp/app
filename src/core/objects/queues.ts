@@ -8,7 +8,6 @@ import {
   QuestionIcon,
   type Icon,
 } from '@phosphor-icons/react'
-import { QueueStates } from '../../types/database'
 
 export type QueueObject = {
   queueId: string
@@ -68,6 +67,3 @@ export function getQueueObjectFromName(queueName: string | null | undefined): Qu
   if (!queueName) { return QUEUES.find(q => q.queueName === 'Unknown')! };
   return QUEUES.find(q => q.queueName === queueName) ?? QUEUES.find(q => q.queueName === 'Unknown')!;
 }
-
-// In order. 0 = Unknown, Idle, Queued, FoundMatch, StartingGame, InGame, EMatchmakingStateV2_MAX
-export const QUEUE_STATES_ARRAY: QueueStates[] = ['Unknown', 'Idle', 'Queued', 'FoundMatch', 'StartingGame', 'InGame', 'EMatchmakingStateV2_MAX'];

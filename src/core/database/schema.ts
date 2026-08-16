@@ -63,7 +63,9 @@ export const currentMatch = sqliteTable("currentMatch", {
   id: integer("id").primaryKey(),
   gameState: text("gameState"),
   map: text("map"),
-  queue: text("queue"), // Ranked, Norms, Customs, etc.
+  queue: text("queue"), // id, must be translated before use
+  queueState: text("queueState").$type<QueueStates>(), // Idle, FoundMatch, InGame, etc.
+  partySize: integer("partySize").notNull().default(0),
   teamNum: integer("teamNum").$type<1 | 2>(),
   trainings: text("trainings", { mode: "json" }).$type<string[]>().notNull().default([]),
   bans: text("bans", { mode: "json" }).$type<string[]>().notNull().default([]),
@@ -80,7 +82,7 @@ export const currentMatch = sqliteTable("currentMatch", {
 // Saves data sent from PlayerFinderMod (multi-row)
 export const matchPlayers = sqliteTable("matchPlayers", {
   username: text("username").notNull().unique().primaryKey(),
-  playerId: text("playerId").unique(),
+  playerId: text("playerId").unique().notNull(),
   teamNum: integer("teamNum").$type<1 | 2>(), // can be null if not on a team yet
   role: text("role").$type<'Forward' | 'Goalie'>(),
   charName: text("charName"),
@@ -127,12 +129,17 @@ export const matchHistory = sqliteTable("matchHistory", {
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 
-// Table should reset when game is reopened.
-export const sessionInfo = sqliteTable("sessionInfo", {
+// A one-line table for keeping track of custom lobby data
+export const customLobby = sqliteTable("customLobby", {
   id: integer("id").primaryKey(),
-  partySize: integer("partySize").notNull().default(0),
-  maxPartySize: integer("maxPartySize").notNull().default(3),
-  queueState: text("queueState").$type<QueueStates>(),
-  queueName: text("queueName"),
-  // eventually add session rating tracking here :)
+  lobbyName: text("lobbyName"),
+  lobbyId: text("lobbyId"),
+  private: integer("private", { mode: "boolean" }).notNull().default(false),
+  serverIds: text("serverIds").$type<string[]>(),
+  region: text("region"),
+  appBlocked: integer("appBlocked", { mode: "boolean" }).notNull().default(false),
+  maxMembers: integer("maxMembers").notNull().default(0),
+  memberCount: integer("memberCount").notNull().default(0),
+
+  lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
 });

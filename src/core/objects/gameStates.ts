@@ -13,8 +13,8 @@ const gameStateMap: Record<string, OnlineStatus> = {
   'CharacterPreSelect':     'SETUP',
   'BanSelect':              'SETUP',
   'BanCelebration':         'SETUP',
-  'LoadoutSelect':          'SETUP',
   'CharacterSelect':        'SETUP',
+  'LoadoutSelect':          'SETUP',
   
   'VersusScreen':           'STARTING',
 

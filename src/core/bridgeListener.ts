@@ -1,6 +1,7 @@
+// This file is the bridge between the Rust backend and the TS frontend
+
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
-import { upsertCurrentMatch } from './database/queries';
 
 export interface FileChangePayload {
   file: string;
@@ -8,18 +9,35 @@ export interface FileChangePayload {
   content: string | null;
 }
 
-export async function onPlayersChanged(
+// new stuff to replace old stuff later
+export async function onGameStateChange(
   handler: (payload: FileChangePayload) => void
 ): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('ue4ss-players-changed', (event) => {
+  return listen<FileChangePayload>('onStateChange', (event) => {
     handler(event.payload);
   });
 }
 
-export async function onGameStateChanged(
+export async function onQueueChange(
   handler: (payload: FileChangePayload) => void
 ): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('ue4ss-gamestate-changed', (event) => {
+  return listen<FileChangePayload>('onQueueChange', (event) => {
+    handler(event.payload);
+  });
+}
+
+export async function onMatchUpdate(
+  handler: (payload: FileChangePayload) => void
+): Promise<UnlistenFn> {
+  return listen<FileChangePayload>('onMatchUpdate', (event) => {
+    handler(event.payload);
+  });
+}
+
+export async function onPlayersUpdate(
+  handler: (payload: FileChangePayload) => void
+): Promise<UnlistenFn> {
+  return listen<FileChangePayload>('onPlayersUpdate', (event) => {
     handler(event.payload);
   });
 }
@@ -27,23 +45,15 @@ export async function onGameStateChanged(
 export async function onMatchFinalize(
   handler: (payload: FileChangePayload) => void
 ): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('postgame-stats-changed', (event) => {
+  return listen<FileChangePayload>('onPostGameUpdate', (event) => {
     handler(event.payload);
   });
 }
 
-export async function onTrainingsChanged(
+export async function onCustomLobbyHeartbeat(
   handler: (payload: FileChangePayload) => void
 ): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('ue4ss-trainings-changed', (event) => {
-    handler(event.payload);
-  });
-}
-
-export async function onSessionUpdated(
-  handler: (payload: FileChangePayload) => void
-): Promise<UnlistenFn> {
-  return listen<FileChangePayload>('ue4ss-session-changed', (event) => {
+  return listen<FileChangePayload>('onCustomLobbyHeartbeat', (event) => {
     handler(event.payload);
   });
 }
@@ -54,14 +64,4 @@ export async function isProcessRunning(name: string): Promise<boolean> {
 
 export async function getLatestRegion(): Promise<string | null> {
   return invoke<string | null>('get_latest_region');
-}
-
-export async function refreshLatestMatchStart(): Promise<void> {
-  const ts = await invoke<string | null>('get_latest_match_timestamp');
-  if (!ts) return;
-  const m = ts.match(/^(\d{4})\.(\d{2})\.(\d{2})-(\d{2})\.(\d{2})\.(\d{2}):(\d+)$/);
-  if (!m) return;
-  const [, year, month, day, hour, min, sec, ms] = m;
-  const startedAt = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(min), Number(sec), Number(ms)));
-  await upsertCurrentMatch({ startedAt });
 }

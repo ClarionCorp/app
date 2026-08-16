@@ -1,21 +1,25 @@
 import { eq } from "drizzle-orm";
-import { CurrentMatchTable } from "../types/database";
-import { GameStateJSON } from "../types/ue4ss";
 import { appendTimelineEntry, getCurrentMatch, getMatchPlayers } from "./database/queries";
 import { matchPlayers } from "./database/schema";
 import { db } from "./database/driver";
+import { MatchJSON } from "../types/ue4ss";
 
-export async function checkSaveTimelineEntries(oldState: CurrentMatchTable, newState: GameStateJSON) {
-  if (!oldState || oldState.teamOnePts == null || oldState.teamTwoPts == null || oldState.teamOneSets == null || oldState.teamTwoSets == null) {
-    console.error(`Tried saving timeline entry but something was null!`, oldState);
+export async function checkSaveTimelineEntries(matchJSON: MatchJSON) {
+  const matchTable = await getCurrentMatch();
+  
+  if (
+    !matchJSON || matchJSON.team1.goals == null || matchJSON.team1.sets == null || matchJSON.team2.goals == null || matchJSON.team2.sets == null ||
+    !matchTable || matchTable.teamOnePts == null || matchTable.teamTwoPts == null || matchTable.teamOneSets == null || matchTable.teamTwoSets == null
+  ) {
+    console.error(`Tried saving timeline entry but something was null!`, matchJSON);
     return;
   };
 
   // Data Points
-  const teamOneScored = oldState.teamOnePts < newState.t1_goals;
-  const teamTwoScored = oldState.teamTwoPts < newState.t2_goals;
-  const teamOneSetted = oldState.teamOneSets < newState.t1_sets;
-  const teamTwoSetted = oldState.teamTwoSets < newState.t2_sets;
+  const teamOneScored = matchTable.teamOnePts < matchJSON.team1.goals;
+  const teamTwoScored = matchTable.teamTwoPts < matchJSON.team2.goals;
+  const teamOneSetted = matchTable.teamOneSets < matchJSON.team1.sets;
+  const teamTwoSetted = matchTable.teamTwoSets < matchJSON.team2.sets;
 
   // Goal Scored, log event + save player xps
   if (teamOneScored || teamTwoScored) {
@@ -46,16 +50,4 @@ export async function checkSaveTimelineEntries(oldState: CurrentMatchTable, newS
 
   // Won Game is saved + determined while saving match history.
   // It's never saved to the currentMatch table.
-}
-
-export async function markMatchStartIfNone() {
-  const currentMatch = await getCurrentMatch();
-  const gameStart = currentMatch.timeline.find(e => e.event === 'GAME_START');
-  if (gameStart) { return };
-  
-  console.log(`Marking Game Start in Timeline...`);
-  await appendTimelineEntry({
-    when: new Date(),
-    event: 'GAME_START',
-  })
 }
