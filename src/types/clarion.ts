@@ -17,6 +17,7 @@ export type Player = {
   playerStatus: 'Online' | 'Offline' | 'InQueue' | 'InGame',
   ratings: PlayerRating[],
   // teams: // unused for now
+  characterRatings: PlayerCharacterRating[],
   mastery: {
     currentLevel: number,
     currentLevelXp: number,
@@ -34,6 +35,22 @@ export type PlayerRating = {
   masteryLevel: number,
   games: number,
   createdAt: Date
+}
+
+export type PlayerCharacterRating = {
+  playerId: string,
+  character: string, // id
+  role: 'Forward' | 'Goalie',
+  games: number,
+  assists: number,
+  knockouts: number,
+  losses: number,
+  mvp: number,
+  saves: number,
+  scores: number,
+  wins: number,
+  gamemode: 'NormalInitial' | 'RankedInitial',
+  createdAt: Date,
 }
 
 export type Awakenings = {

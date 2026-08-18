@@ -8,7 +8,7 @@ import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
 import { appendTimelineEntry, calcAndSetPlayerStats, deleteCustomLobby, getCurrentMatch, getCustomLobby, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
-import { fetchPlayerStats, fetchRankQuery } from "./odyssey";
+import { fetchOdyPlayerStats, fetchRankQuery } from "./odyssey";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
@@ -61,7 +61,7 @@ export async function updatePlayers(data: PlayersJSON) {
     try {
       // I'll come back to this block later, prob just gonna switch to CC by default (more reliable)
       const ranked = await fetchRankQuery(player.playerId);
-      const stats = await fetchPlayerStats(player.playerId);
+      const stats = await fetchOdyPlayerStats(player.playerId);
       const playstyle = await fetchPlayerPlayerstyle(player.username);
       const smurf = await fetchPlayerSmurfEstimate(player.username);
       await calcAndSetPlayerStats(player.username, stats, player.playerId); // run first since it really shouldn't fail as much as rating

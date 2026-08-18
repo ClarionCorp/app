@@ -58,7 +58,7 @@ export async function fetchRankQuery(playerId: string): Promise<RankedQuery | nu
   }
 }
 
-export async function fetchPlayerStats(playerId: string): Promise<StatsQuery | null> {
+export async function fetchOdyPlayerStats(playerId: string): Promise<StatsQuery | null> {
   const { jwt, rft } = await readIdentity();
   try {
     const res = await fetch(`${OdyAPI}/v1/stats/player-stats/${playerId}`, {

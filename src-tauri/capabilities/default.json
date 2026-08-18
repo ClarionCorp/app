@@ -90,7 +90,8 @@
         { "url": "https://api.github.com/*" },
         { "url": "https://api.clarioncorp.net/*" },
         { "url": "https://clarioncorp.net/api/*" },
-        { "url": "https://api.aimis.app/*" }
+        { "url": "https://api.aimis.app/*" },
+        { "url": "https://prometheus-proxy.odysseyinteractive.gg/api/*" }
       ]
     }
   ]
