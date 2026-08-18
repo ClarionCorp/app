@@ -159,6 +159,8 @@ function App() {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
         }
       }
+
+      await tryUpdateDiscordRPC();
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
