@@ -10,6 +10,7 @@ import { getPlayerChar } from '../../core/database/queries';
 import { PlaystyleType } from '../../types/clarion';
 import clsx from 'clsx';
 import BasicPopover from '../UI/BasicPopover';
+import { getQueueObjectFromID } from '../../core/objects/queues';
 
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
@@ -32,7 +33,7 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
       ? 'border-background-border hover:border-blue-500/50'
       : 'border-background-border hover:border-primary/20';
 
-  const queue = match?.queue; // test this later lol
+  const queue = getQueueObjectFromID(match?.queue).queueName;
   const charQueue: 'Normal' | 'Ranked' = queue === 'Ranked' || queue === 'Customs' ? 'Ranked' : 'Normal';
   const games = charQueue === 'Normal' ? player.normGames : player.rankedGames;
   const winrate = charQueue === 'Normal' ? player.normWR : player.rankedWR;
