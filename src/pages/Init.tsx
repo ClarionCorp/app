@@ -43,16 +43,23 @@ export default function InitializationPage() {
   const [error, setError] = useState<string | null>(null);
   const [needsGameDir, setNeedsGameDir] = useState(false);
   const [needsRestart, setNeedsRestart] = useState(false);
+  const [needsLaunchOptionsConfirm, setNeedsLaunchOptionsConfirm] = useState(false);
   const [ue4ssMessage, setUe4ssMessage] = useState<string | null>(null);
   const [ue4ssPercent, setUe4ssPercent] = useState<number | null>(null);
   const [copiedLaunchOptions, setCopiedLaunchOptions] = useState(false);
   const gameDirResolveRef = useRef<((dir: string) => void) | null>(null);
+  const launchOptionsResolveRef = useRef<(() => void) | null>(null);
   const { show: showDialogue } = useDialogue();
 
   const handleCopyLaunchOptions = () => {
     navigator.clipboard.writeText(linux_launch_options);
     setCopiedLaunchOptions(true);
     setTimeout(() => setCopiedLaunchOptions(false), 1500);
+  };
+
+  const handleConfirmLaunchOptions = () => {
+    setNeedsLaunchOptionsConfirm(false);
+    launchOptionsResolveRef.current?.();
   };
 
   const goToStep = (id: StepId) => {
@@ -116,6 +123,13 @@ export default function InitializationPage() {
               if (!stillRunning) break;
             }
             setNeedsRestart(false);
+          } else if (platform() === 'linux') {
+            // Game isn't running, make sure to let linux users know about the launch options
+            setNeedsLaunchOptionsConfirm(true);
+            await new Promise<void>(resolve => {
+              launchOptionsResolveRef.current = resolve;
+            });
+            if (cancelled) return;
           }
         }
 
@@ -209,7 +223,7 @@ export default function InitializationPage() {
             >
               <p className="text-lg font-semibold text-char">Game Restart Required</p>
               <p className="text-md text-char-secondary">
-                UE4SS was just installed. Please <span className="text-primary font-semibold">close Omega Strikers</span>. The setup will continue automatically once the game exits.
+                UE4SS was just installed or updated. Please <span className="text-primary font-semibold">close Omega Strikers</span>. The setup will continue automatically once the game exits.
               </p>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-3.5 h-3.5 rounded-full border-2 border-surface-overlay border-t-primary animate-spin shrink-0" />
@@ -232,6 +246,45 @@ export default function InitializationPage() {
                   </div>
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Linux launch options confirmation modal */}
+      <AnimatePresence>
+        {needsLaunchOptionsConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="flex flex-col gap-4 bg-surface p-6 rounded-xl w-116 shadow-xl"
+              initial={{ scale: 0.95, y: 8 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 8 }}
+            >
+              <p className="text-lg font-semibold text-char">Steam Launch Options Required</p>
+              <p className="text-sm text-char-secondary">
+                UE4SS was just installed or updated. Since you're on Linux, make sure this is set in Omega Strikers' <span className="text-primary font-semibold">Steam launch options</span> before you launch the game, so the mods can load properly:
+              </p>
+              <div className="flex items-center gap-2 bg-surface-overlay rounded-lg pl-3 pr-1.5 py-1.5">
+                <code className="text-xs text-primary font-mono flex-1 text-left break-all">{linux_launch_options}</code>
+                <button
+                  onClick={handleCopyLaunchOptions}
+                  className="shrink-0 px-2 py-1 rounded-md bg-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                >
+                  {copiedLaunchOptions ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <button
+                onClick={handleConfirmLaunchOptions}
+                className="mt-1 py-2 rounded-lg bg-secondary text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                Okay
+              </button>
             </motion.div>
           </motion.div>
         )}
