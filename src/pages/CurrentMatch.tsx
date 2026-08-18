@@ -141,11 +141,11 @@ export default function CurrentMatchPage() {
               initial="hidden"
               animate="show"
             >
-              {match?.queue !== null && <MatchInfo match={match} myPlayer={myPlayer} />}
+              {!showMaps && <MatchInfo match={match} myPlayer={myPlayer} />}
               
               <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
 
-              {!showMaps && <IntermissionPredictions players={players} />}
+              {!showMaps && getGameStatus(match?.gameState) !== 'SETUP' &&<IntermissionPredictions players={players} />}
 
               <div className="flex flex-col lg:flex-row lg:gap-0 mt-4 mb-8">
                 <div className="flex-1 min-w-0 space-y-3">
