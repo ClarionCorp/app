@@ -5,7 +5,7 @@ import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange } from './core/bridgeListener';
-import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry } from './core/database/queries';
+import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { db } from './core/database/driver';
 import { matchHistory } from './core/database/schema';
@@ -150,7 +150,15 @@ function App() {
 
     onQueueChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
+      const previous = await getCurrentMatch();
       await updateGameState(data); // we are really just updating the queue object
+
+      if (previous.queueState == 'Queued' && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
+        const settings = await getAppSettings();
+        if (settings.notifyQueuePop) {
+          await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
+        }
+      }
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
