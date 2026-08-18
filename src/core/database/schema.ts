@@ -1,8 +1,9 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer, TimelineEntry } from "../../types/ue4ss";
-import { PlayerCharJSON, QueueStates } from "../../types/database";
+import { QueueStates } from "../../types/database";
 import { Playstyle, SmurfConfidence } from "../../types/clarion";
 import { PreferredDataSources } from "../../types/appAPI";
+import { ProminentChar } from "../utilities/players";
 
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
@@ -96,8 +97,8 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   xpGoals: text("xpGoals", { mode: "json" }).$type<number[]>().notNull().default([]),
   ping: integer("ping").default(0),
   trainings: text("trainings", { mode: "json" }).$type<string[]>().notNull().default([]),
-  favChar: text("favChar", { mode: "json" }).$type<PlayerCharJSON[]>().notNull().default([]), // most games played
-  bestChar: text("bestChar", { mode: "json" }).$type<PlayerCharJSON[]>().notNull().default([]), // highest WR
+  favChar: text("favChar", { mode: "json" }).$type<ProminentChar[]>().notNull().default([]), // most games played
+  bestChar: text("bestChar", { mode: "json" }).$type<ProminentChar[]>().notNull().default([]), // highest WR
   normWR: real("normWR"),
   rankedWR: real("rankedWR"),
   normGames: integer("normGames"),

@@ -6,15 +6,15 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
-import { appendTimelineEntry, calcAndSetPlayerStats, deleteCustomLobby, getCurrentMatch, getCustomLobby, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
+import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
-import { fetchOdyPlayerStats, fetchRankQuery } from "./odyssey";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
 import { getRegionObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
+import { fetchPlayerStats } from "./players";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 const flags =  ['blockapp', 'eusl', 'bub', 'osas', 'euos'];
@@ -59,14 +59,20 @@ export async function updatePlayers(data: PlayersJSON) {
     // fetch and set ratings and other stats (if empty)
     console.log(`Fetching statistical data for ${player.username}...`)
     try {
-      // I'll come back to this block later, prob just gonna switch to CC by default (more reliable)
-      const ranked = await fetchRankQuery(player.playerId);
-      const stats = await fetchOdyPlayerStats(player.playerId);
+      const playerStats = await fetchPlayerStats(player.username, player.playerId);
       const playstyle = await fetchPlayerPlayerstyle(player.username);
       const smurf = await fetchPlayerSmurfEstimate(player.username);
-      await calcAndSetPlayerStats(player.username, stats, player.playerId); // run first since it really shouldn't fail as much as rating
-      await updatePlayerRating(player.username, ranked!.rating);
-      await db.update(matchPlayers).set({ playstyle, smurfProbability: smurf?.confidence }).where(eq(matchPlayers.username, player.username));
+      await db.update(matchPlayers).set({
+        rating: playerStats.rating, // will be 0 if not found
+        favChar: playerStats.favChar ?? undefined,
+        bestChar: playerStats.bestChar ?? undefined,
+        normGames: playerStats.normGames,
+        normWR: playerStats.normWR,
+        rankedGames: playerStats.rankedGames,
+        rankedWR: playerStats.rankedWR,
+        playstyle,
+        smurfProbability: smurf?.confidence
+      }).where(eq(matchPlayers.username, player.username));
     } catch (e) {
       console.warn(`No rank data could be found for ${player.username}.`);
       updatePlayerRating(player.username, 0); // set to 0 to prevent refetching (and failing again)

@@ -1,9 +1,10 @@
-import { AuthTable, PlayerCharJSON, UserTable } from "../../types/database";
+import { AuthTable, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
 import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby } from "./schema";
 import { eq, sql } from "drizzle-orm";
+import { ProminentChar } from "../utilities/players";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -162,8 +163,8 @@ export async function calcAndSetPlayerStats(username: string, stats: StatsQuery 
     { role: 'Goalie', queue: 'Ranked' },
   ] as const;
 
-  const favChar: PlayerCharJSON[] = [];
-  const bestChar: PlayerCharJSON[] = [];
+  const favChar: ProminentChar[] = [];
+  const bestChar: ProminentChar[] = [];
 
   for (const { role, queue } of slots) {
     const candidates = stats.characterStats
@@ -223,10 +224,10 @@ export async function deleteCustomLobby() {
 // 
 
 export function getPlayerChar(
-  chars: PlayerCharJSON[],
-  role: PlayerCharJSON['role'] | null | undefined,
-  queue: PlayerCharJSON['queue'] | null | undefined,
-): PlayerCharJSON | undefined {
+  chars: ProminentChar[],
+  role: ProminentChar['role'] | null | undefined,
+  queue: ProminentChar['queue'] | null | undefined,
+): ProminentChar | undefined {
   if (!role || !queue) return undefined;
   return chars.find(c => c.queue === queue && c.role === role);
 }

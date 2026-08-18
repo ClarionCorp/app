@@ -7,13 +7,4 @@ export type MatchPlayersTable = typeof matchPlayers.$inferSelect;
 export type MatchHistoryTable = typeof matchHistory.$inferSelect;
 export type CustomLobbyTable = typeof customLobby.$inferSelect;
 
-
-export type PlayerCharJSON = {
-  characterId: string,
-  queue: 'Normal' | 'Ranked',
-  role: 'Forward' | 'Goalie',
-  games: number,
-  winrate: number,
-}
-
 export type QueueStates = 'Unknown' | 'Idle' | 'Queued' | 'FoundMatch' | 'StartingGame' | 'InGame' | 'EMatchmakingStateV2_MAX';

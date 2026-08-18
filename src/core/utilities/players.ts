@@ -10,15 +10,15 @@ import { Player } from "../../types/clarion";
 // An obj containing what we need in order to fill the database
 type ReqPlayerStats = {
   rating: number, // if no rating, save as 0 so we don't recheck
-  favChar?: ProminentChar,
-  bestChar?: ProminentChar,
+  favChar?: ProminentChar[],
+  bestChar?: ProminentChar[],
   normWR: number,
   rankedWR: number,
   normGames: number,
   rankedGames: number,
 }
 
-type ProminentChar = {
+export type ProminentChar = {
   characterId: string,
   queue: 'Ranked' | 'Normal',
   role: 'Forward' | 'Goalie',
@@ -48,8 +48,8 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
 
       requiredStats = {
         rating: data.ratings[0]?.rating ?? 0,
-        favChar: getProminentCharCC(data, 'Favorite'),
-        bestChar: getProminentCharCC(data, 'Best'),
+        favChar: getProminentCharsCC(data, 'Favorite'),
+        bestChar: getProminentCharsCC(data, 'Best'),
         normWR: normStats.wins / normStats.games,
         normGames: normStats.games,
         rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
@@ -67,8 +67,8 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
 
       requiredStats = {
         rating: data.ratings[0]?.rating ?? 0,
-        favChar: getProminentCharCC(data, 'Favorite'),
-        bestChar: getProminentCharCC(data, 'Best'),
+        favChar: getProminentCharsCC(data, 'Favorite'),
+        bestChar: getProminentCharsCC(data, 'Best'),
         normWR: normStats.wins / normStats.games,
         normGames: normStats.games,
         rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
@@ -94,15 +94,46 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         )
         .filter(e => e.games > 0); // skip zero-game role entries entirely
 
-      // Best winrate
-      const bestChar = flatCharStats
-        .map(e => ({ ...e, winrate: e.wins / e.games }))
-        .reduce((a, b) => (b.winrate > a.winrate ? b : a));
+      const queues = ['Normal', 'Ranked'] as const;
+      const inQueue = (ratingName: string, queue: typeof queues[number]) => (ratingName === 'RankedInitial' ? 'Ranked' : 'Normal') === queue;
 
-      // Favorite (most games)
-      const favChar = flatCharStats.reduce((a, b) => (b.games > a.games ? b : a));
+      // Best winrate, per queue
+      const bestChars: ProminentChar[] = queues.reduce<ProminentChar[]>((entries, queue) => {
+        const candidates = flatCharStats.filter(e => inQueue(e.ratingName, queue));
+        if (candidates.length === 0) return entries;
 
-      
+        const best = candidates
+          .map(e => ({ ...e, winrate: e.wins / e.games }))
+          .reduce((a, b) => (b.winrate > a.winrate ? b : a));
+
+        entries.push({
+          characterId: best.characterId,
+          queue,
+          role: best.role,
+          games: best.games,
+          winrate: best.winrate,
+        });
+        return entries;
+      }, []);
+
+      // Favorite (most games), per queue
+      const favChars: ProminentChar[] = queues.reduce<ProminentChar[]>((entries, queue) => {
+        const candidates = flatCharStats.filter(e => inQueue(e.ratingName, queue));
+        if (candidates.length === 0) return entries;
+
+        const favorite = candidates.reduce((a, b) => (b.games > a.games ? b : a));
+
+        entries.push({
+          characterId: favorite.characterId,
+          queue,
+          role: favorite.role,
+          games: favorite.games,
+          winrate: favorite.wins / favorite.games,
+        });
+        return entries;
+      }, []);
+
+
       // Player Stats after
       const flatPlayerStats = statsQuery.playerStats
         .filter(e => e.ratingName !== 'None')
@@ -138,20 +169,8 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
 
       requiredStats = {
         rating: rankQuery?.rating ?? 0,
-        favChar: {
-          characterId: favChar.characterId,
-          queue: favChar.ratingName == 'RankedInitial' ? 'Ranked' : 'Normal',
-          role: favChar.role,
-          games: favChar.games,
-          winrate: favChar.wins / favChar.games,
-        },
-        bestChar: {
-          characterId: bestChar.characterId,
-          queue: bestChar.ratingName == 'RankedInitial' ? 'Ranked' : 'Normal',
-          role: bestChar.role,
-          games: bestChar.games,
-          winrate: bestChar.wins / bestChar.games,
-        },
+        favChar: favChars,
+        bestChar: bestChars,
         normWR: normalTotals.wins / normalTotals.games,
         normGames: normalTotals.games,
         rankedWR: rankedTotals.wins / rankedTotals.games,
@@ -168,32 +187,43 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
   }
 }
 
-// Prominent Character mapping (CC only)
-function getProminentCharCC(data: Player, prominence: 'Favorite' | 'Best'): ProminentChar {
-  if (prominence == 'Favorite') {
-    const favorite = data.characterRatings.reduce((a, b) => (b.games > a.games ? b : a));
+// Prominent Character mapping (CC only) - one entry per queue (Normal, Ranked)
+function getProminentCharsCC(data: Player, prominence: 'Favorite' | 'Best'): ProminentChar[] {
+  const queues = ['Normal', 'Ranked'] as const;
 
-    return {
-      characterId: favorite.character,
-      queue: favorite.gamemode === 'RankedInitial' ? 'Ranked' : 'Normal',
-      role: favorite.role,
-      games: favorite.games,
-      winrate: favorite.wins / favorite.games
+  return queues.reduce<ProminentChar[]>((entries, queue) => {
+    const inQueue = data.characterRatings.filter(entry =>
+      (entry.gamemode === 'RankedInitial' ? 'Ranked' : 'Normal') === queue && entry.games > 0
+    );
+    if (inQueue.length === 0) return entries;
+
+    if (prominence == 'Favorite') {
+      const favorite = inQueue.reduce((a, b) => (b.games > a.games ? b : a));
+
+      entries.push({
+        characterId: favorite.character,
+        queue,
+        role: favorite.role,
+        games: favorite.games,
+        winrate: favorite.wins / favorite.games
+      });
+
+    } else {
+      const best = inQueue
+        .map(entry => ({ ...entry, winrate: entry.wins / entry.games }))
+        .reduce((a, b) => (b.winrate > a.winrate ? b : a));
+
+      entries.push({
+        characterId: best.character,
+        queue,
+        role: best.role,
+        games: best.games,
+        winrate: best.winrate
+      });
     }
 
-  } else {
-    const best = data.characterRatings
-      .map(entry => ({ ...entry, winrate: entry.games > 0 ? entry.wins / entry.games : 0 }))
-      .reduce((a, b) => (b.winrate > a.winrate ? b : a));
-
-    return {
-      characterId: best.character,
-      queue: best.gamemode === 'RankedInitial' ? 'Ranked' : 'Normal',
-      role: best.role,
-      games: best.games,
-      winrate: best.winrate
-    }
-  }
+    return entries;
+  }, []);
 }
 
 // Merging and combining norms stats for each character (CC only)
