@@ -9,6 +9,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
+    "tauri:linux": "NO_STRIP=true tauri build",
     "regen": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "gen": "drizzle-kit generate"
