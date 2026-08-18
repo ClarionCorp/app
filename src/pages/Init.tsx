@@ -127,7 +127,7 @@ export default function InitializationPage() {
           const rankQuery = await fetchRankQuery(selfQuery.playerId);
           if (cancelled) return;
           await upsertUser(selfQuery);
-          if (rankQuery) await updateRating(rankQuery.rating);
+          if (rankQuery) await updateRating(selfQuery.playerId, rankQuery.rating);
           setConnectedStatus(true);
         } catch (e) {
           console.warn('Failed to fetch account data, some features disabled.', e);

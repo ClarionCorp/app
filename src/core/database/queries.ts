@@ -114,8 +114,11 @@ export async function upsertUser(data: SelfQuery) {
   });
 }
 
-export async function updateRating(rating: number) {
-  return db.update(user).set({ rating }).run();
+export async function updateRating(playerId: string, rating: number) {
+  return db.update(user)
+    .set({ rating })
+    .where(eq(user.playerId, playerId))
+    .run();
 }
 
 export async function updateRegion(region: string) {

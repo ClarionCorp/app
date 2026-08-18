@@ -72,7 +72,7 @@ export default function CurrentMatchPage() {
       const lobby = await getCustomLobby();
       const decision = await checkBlocked(lobby, matchDb);
       setBlocked(decision);
-    }, 2500);
+    }, 2000);
     return () => clearInterval(id);
   }, [loading]);
 
