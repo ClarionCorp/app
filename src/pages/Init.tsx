@@ -19,6 +19,8 @@ import { getLatestRegion } from "../core/bridgeListener";
 import { checkForUpdates } from "../core/utilities/appAPI";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { platform } from "@tauri-apps/plugin-os";
+import { linux_launch_options } from "../core/constants";
 
 type StepId = "ue4ss" | "account" | "updates" | "discord";
 
@@ -43,8 +45,15 @@ export default function InitializationPage() {
   const [needsRestart, setNeedsRestart] = useState(false);
   const [ue4ssMessage, setUe4ssMessage] = useState<string | null>(null);
   const [ue4ssPercent, setUe4ssPercent] = useState<number | null>(null);
+  const [copiedLaunchOptions, setCopiedLaunchOptions] = useState(false);
   const gameDirResolveRef = useRef<((dir: string) => void) | null>(null);
   const { show: showDialogue } = useDialogue();
+
+  const handleCopyLaunchOptions = () => {
+    navigator.clipboard.writeText(linux_launch_options);
+    setCopiedLaunchOptions(true);
+    setTimeout(() => setCopiedLaunchOptions(false), 1500);
+  };
 
   const goToStep = (id: StepId) => {
     const next = steps.find(s => s.id === id)!;
@@ -206,6 +215,23 @@ export default function InitializationPage() {
                 <div className="w-3.5 h-3.5 rounded-full border-2 border-surface-overlay border-t-primary animate-spin shrink-0" />
                 <span className="text-xs text-char-subtle">Waiting for you to restart the game...</span>
               </div>
+
+              {platform() === 'linux' && (
+                <div className="flex flex-col gap-2 bg-surface-overlay/50 p-3 rounded-lg mt-2">
+                  <p className="text-xs text-char-secondary">
+                    It appears you are on Linux! Make sure this is in Omega Strikers' Steam launch options before you relaunch, so the mods can load properly:
+                  </p>
+                  <div className="flex items-center gap-2 bg-surface-overlay rounded-lg pl-3 pr-1.5 py-1.5">
+                    <code className="text-xs text-primary font-mono flex-1 text-left break-all">{linux_launch_options}</code>
+                    <button
+                      onClick={handleCopyLaunchOptions}
+                      className="shrink-0 px-2 py-1 rounded-md bg-primary text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                      {copiedLaunchOptions ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

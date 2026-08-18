@@ -20,5 +20,8 @@ export const linux_identity = `${proton_root}/users/steamuser/AppData/Local/Omeg
 export const windows_log = 'AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log';
 export const linux_log = `${proton_root}/users/steamuser/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log`;
 
+// Steam launch option needed on Linux/Proton so UE4SS's dwmapi.dll proxy actually gets loaded
+export const linux_launch_options = 'WINEDLLOVERRIDES="dwmapi=n,b" %command%';
+
 // How often to heartbeat-check that the active identity hasn't changed (ms)
 export const heartbeat_interval = 300_000;
