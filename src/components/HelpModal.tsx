@@ -3,19 +3,19 @@ import { AnimatePresence, motion, type Transition } from 'framer-motion';
 import {
   CopySimpleIcon,
   KeyboardIcon,
-  GiftIcon,
   BugIcon,
   ChatCircleDotsIcon,
   XIcon,
   CaretLeftIcon,
   CaretDownIcon,
   TerminalWindowIcon,
+  LinuxLogoIcon,
 } from '@phosphor-icons/react';
 import { Dropdown, type DropdownItem } from './UI/Dropdown';
 import { Checkbox } from './UI/Checkbox';
 import { BugReport, Feedback } from '../types/help';
 import { UserTable } from '../types/database';
-import { AiMiAPI, version } from '../core/constants';
+import { AiMiAPI, linux_launch_options, version } from '../core/constants';
 import { getUser } from '../core/database/queries';
 import { useToast } from './UI/Toast';
 import { useDialogue } from './UI/DialogueToast';
@@ -110,7 +110,10 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
     window.dispatchEvent(new KeyboardEvent('keydown', { key, ctrlKey, altKey, shiftKey, bubbles: true }));
   }
 
-  function redeemAllCodes() { toast('Feature not implemented yet, sorry!', 'warning'); };
+  function copyLaunchOpts() {
+    navigator.clipboard.writeText(linux_launch_options);
+    toast('Copied to clipboard!', 'success');
+  };
 
   async function submitBugReport(report: BugReport) {
     const gatheredSystemInfo = await gatherSystemInfo();
@@ -198,7 +201,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
     { icon: <TerminalWindowIcon size={24} />, label: 'Show Console', onClick: () => simulateKey(['Ctrl', '`'])},
     { icon: <CopySimpleIcon size={24} />, label: 'Copy Logs', onClick: onCopyLogs },
     { icon: <KeyboardIcon size={24} />, label: 'View Keybinds', navigateTo: 'keybinds' },
-    { icon: <GiftIcon size={24} />, label: 'Redeem All Codes', onClick: redeemAllCodes },
+    { icon: <LinuxLogoIcon size={24} />, label: 'Copy Linux Launch Opts', onClick: copyLaunchOpts },
     { icon: <BugIcon size={24} />, label: 'Submit Bug Report', navigateTo: 'bug-report' },
     { icon: <ChatCircleDotsIcon size={24} />, label: 'Submit Feedback', navigateTo: 'feedback' },
   ];
