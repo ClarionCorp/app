@@ -114,6 +114,10 @@ fn resolve_temp_dir() -> PathBuf {
 pub fn start_file_watcher(app: AppHandle) {
     let temp_dir = resolve_temp_dir();
 
+    if let Err(e) = std::fs::create_dir_all(&temp_dir) {
+        eprintln!("Failed to create temp directory {temp_dir:?}: {e}");
+    }
+
     std::thread::spawn(move || {
         let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
 
