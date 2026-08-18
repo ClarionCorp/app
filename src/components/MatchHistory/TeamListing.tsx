@@ -25,12 +25,13 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
               alt={getCharName(p.characterId) ?? p.characterId}
               className="w-8 h-8 rounded object-cover"
             />
-            <img
-              src={`${getRankFromLP(p.rating).image}`}
-              alt={'rank icon'}
-              title={`${getRankFromLP(p.rating).name}`}
-              className="w-6 h-6 object-cover"
-            />
+            <BasicPopover displayText={`${getRankFromLP(p.rating).name}`}>
+              <img
+                src={`${getRankFromLP(p.rating).image}`}
+                alt={'rank icon'}
+                className="w-6 h-6 object-cover"
+              />
+            </BasicPopover>
             <button
               onClick={() => openUrl(`https://clarioncorp.net/pilot/${p.name}`)}
               className="text-sm font-medium w-full truncate text-left cursor-pointer hover:underline text-char" title={p.name}

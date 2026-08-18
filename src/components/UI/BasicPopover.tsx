@@ -23,7 +23,7 @@ export default function BasicPopover({ displayText, children }: { displayText: s
         ref={triggerRef}
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
-        className="inline-flex items-center justify-center"
+        className="inline-flex items-center justify-center shrink-0"
       >
         {children}
       </div>
