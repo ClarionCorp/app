@@ -15,8 +15,22 @@ mod log_watcher;
 fn is_process_running(name: &str) -> bool {
     let mut sys = System::new_all();
     sys.refresh_all();
+    let name_lower = name.to_ascii_lowercase();
     sys.processes().values().any(|p| {
-        p.name().to_string_lossy().eq_ignore_ascii_case(name)
+        if p.name().to_string_lossy().eq_ignore_ascii_case(name) {
+            return true;
+        }
+        // Windows exes that run under Wine/Proton don't reliably show the game name as the exe.
+        // Unreal often renames the main thread via SetThreadDescription, which Wine overwrites it to "GameThread".
+        if p.exe()
+            .and_then(|path| path.file_name())
+            .is_some_and(|exe_name| exe_name.to_string_lossy().eq_ignore_ascii_case(name))
+        {
+            return true;
+        }
+        p.cmd()
+            .iter()
+            .any(|arg| arg.to_string_lossy().to_ascii_lowercase().contains(&name_lower))
     })
 }
 

@@ -27,6 +27,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
   try {
     onProgress?.('checking', 0, 'Checking if UE4SS is installed...');
     let ue4ss_installed = true;
+    let mods_updated = false;
 
     const doCoreFilesExist = (
       await Promise.all(ue4ssRelativePaths.map(async p => exists(await join(gameDirectory, p))))
@@ -108,6 +109,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
           await writeTextFile(await join(scriptDir, file.fileName), file.source);
         }
         console.log(`Installed ${mod.name} v${mod.version}`);
+        mods_updated = true;
       } else {
         const installedContent = await readTextFile(installedPath);
         const installedVersion = parseVersion(installedContent);
@@ -127,6 +129,7 @@ export async function checkUE4SS(gameDirectory: string, onProgress?: InstallProg
 
     onProgress?.('done', 100, 'UE4SS & Mods Up-to-date!');
     console.log(`Successfully validated UE4SS & Installed Mods.`);
+    if (mods_updated) { return true }; // override
     return !ue4ss_installed;
 
   } catch (e) {

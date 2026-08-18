@@ -233,7 +233,7 @@ export default function InitializationPage() {
               {platform() === 'linux' && (
                 <div className="flex flex-col gap-2 bg-surface-overlay/50 p-3 rounded-lg mt-2">
                   <p className="text-xs text-char-secondary">
-                    It appears you are on Linux! Make sure this is in Omega Strikers' Steam launch options before you relaunch, so the mods can load properly:
+                    It appears you are on Linux! Make sure this is in Omega Strikers' Steam launch options before you relaunch, so the mods can load:
                   </p>
                   <div className="flex items-center gap-2 bg-surface-overlay rounded-lg pl-3 pr-1.5 py-1.5">
                     <code className="text-xs text-primary font-mono flex-1 text-left break-all">{linux_launch_options}</code>
