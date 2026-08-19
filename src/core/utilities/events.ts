@@ -15,6 +15,7 @@ import { getRegionObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
 import { fetchPlayerStats } from "./players";
+import { updateSession } from "./sessions";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 const flags =  ['blockapp', 'eusl', 'bub', 'osas', 'euos'];
@@ -158,7 +159,7 @@ export async function saveMatchToHistory(data: PostGameJSON) {
       team: (match.teamOneSets ?? 0) > (match.teamTwoSets ?? 0) ? 1 : 2,
     })
 
-    await insertMatchHistory({
+    const entry = await insertMatchHistory({
       players,
       mapId: match.map ?? '',
       duration: diffSeconds(match.startedAt!, new Date()),
@@ -174,6 +175,8 @@ export async function saveMatchToHistory(data: PostGameJSON) {
       timeline: match.timeline,
       createdAt: new Date(),
     });
+
+    await updateSession(currentUser.username, entry);
   } catch (e) {
     console.error('Something went wrong while saving the match!', e);
   }

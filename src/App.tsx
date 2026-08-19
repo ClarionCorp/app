@@ -20,6 +20,7 @@ import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { formatLiveMatchInfo } from './core/overlay';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
 import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
+import { sessionHeartbeat } from './core/utilities/sessions';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -137,6 +138,7 @@ function App() {
       // Update database
       const matchTable = await updateGameState(data);
       await tryUpdateDiscordRPC();
+      await sessionHeartbeat();
 
       // Only once during Match Start, log the match start time in timeline entries if not there already.
       if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };
@@ -161,6 +163,7 @@ function App() {
       }
 
       await tryUpdateDiscordRPC();
+      await sessionHeartbeat();
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };

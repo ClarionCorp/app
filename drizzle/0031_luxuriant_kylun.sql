@@ -1,0 +1,1 @@
+ALTER TABLE `gameSessions` ADD `active` integer DEFAULT true NOT NULL;

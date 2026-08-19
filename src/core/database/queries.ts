@@ -2,7 +2,7 @@ import { AuthTable, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby } from "./schema";
+import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby, gameSessions } from "./schema";
 import { eq, sql } from "drizzle-orm";
 import { ProminentChar } from "../utilities/players";
 
@@ -72,6 +72,10 @@ export async function getMatchHistory() {
 
 export async function getCustomLobby() {
   return db.select().from(customLobby).limit(1).then(r => r[0] ?? null);
+}
+
+export async function getCurrentSession() {
+  return db.select().from(gameSessions).where(eq(gameSessions.active, true)).limit(1).then(r => r[0] ?? null);
 }
 
 
@@ -145,7 +149,7 @@ export async function updatePlayerRating(username: string, rating: number) {
 }
 
 export async function insertMatchHistory(data: Omit<typeof matchHistory.$inferInsert, "id">) {
-  return db.insert(matchHistory).values(data).run();
+  return db.insert(matchHistory).values(data).returning().get();
 }
 
 // Moved here in case we need to add more

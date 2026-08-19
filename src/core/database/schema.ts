@@ -146,3 +146,15 @@ export const customLobby = sqliteTable("customLobby", {
 
   lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
 });
+
+
+// Keeps track of each playing session you have (4h one day, 2h the next, etc.)
+export const gameSessions = sqliteTable("gameSessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  startedAt: integer("startedAt", { mode: "timestamp" }),
+  lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+
+  endOfMatchLPs: integer("endOfMatchLPs").$type<number[]>().notNull().default([]),
+  matchHistories: integer("matchHistories").$type<number[]>().notNull().default([]), // match history IDs for this session
+});
