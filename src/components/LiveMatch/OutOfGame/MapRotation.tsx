@@ -48,7 +48,7 @@ function MapTile({ map }: { map: Map }) {
           >
             <div className="rounded-lg border border-background-border bg-surface shadow-xl p-3">
               <p className="text-2xl font-bold text-char mb-1">{mapInfo.mapName}</p>
-              <div className="text-sm text-char-secondary leading-relaxed whitespace-pre-line">
+              <div className="text-sm text-char-secondary leading-relaxed whitespace-pre-line p-2">
                 {mapInfo.description || 'No additional info for this map yet.'}
               </div>
             </div>
