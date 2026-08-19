@@ -5,6 +5,60 @@ import type { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { TRAININGS } from '../core/objects/trainings';
 import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
 import { getLatestRegion } from '../core/bridgeListener';
+import { useDialogue, DialogueConfig } from '../components/UI/DialogueToast';
+
+const dialoguePreviews: { label: string; config: DialogueConfig }[] = [
+  {
+    label: 'Success',
+    config: {
+      variant: 'success',
+      message: 'Match accepted! Loading into the arena...',
+      image: '/aimi/Laser.png',
+      autoDismiss: 4000,
+    },
+  },
+  {
+    label: 'Info',
+    config: {
+      variant: 'info',
+      message: "There's a new update available! I bet there's so many new features...",
+      image: '/aimi/Yapping.gif',
+      buttons: [
+        { label: 'Download', onClick: () => {}, dismisses: true },
+        { label: 'Dismiss', dismisses: true },
+      ],
+      dismissible: false,
+    },
+  },
+  {
+    label: 'Warning',
+    config: {
+      variant: 'warning',
+      message: "Failed to fetch user info! Is your game open?",
+      image: '/aimi/Pat.png',
+      autoDismiss: 6000,
+    },
+  },
+  {
+    label: 'Error',
+    config: {
+      variant: 'error',
+      message: 'Failed to sync match data. Please manually upload in settings or submit a bug report.',
+      image: '/aimi/Shock.png',
+      buttons: [{ label: 'Okay', variant: 'danger', dismisses: true }],
+    },
+  },
+  {
+    label: 'Alert',
+    config: {
+      variant: 'danger',
+      message: "This variant is mostly unused, but it's here so whatever lol",
+      image: '/aimi/Free.png',
+      dismissible: false,
+      buttons: [{ label: "o7", dismisses: true }],
+    },
+  },
+];
 
 function DebugRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -45,6 +99,7 @@ export default function DebugPage() {
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
   const [region, setRegion] = useState<string | null>();
   const polling_rate = 2000;
+  const { show: showDialogue } = useDialogue();
 
   useEffect(() => {
     async function poll() {
@@ -112,6 +167,21 @@ export default function DebugPage() {
                 />
               ))
             )}
+          </div>
+
+          <div className="bg-surface-subtle border border-background-border rounded-xl px-4 pb-4 mt-3">
+            <SectionHeader title="Dialogue Previews" />
+            <div className="flex flex-wrap gap-2">
+              {dialoguePreviews.map(({ label, config }) => (
+                <button
+                  key={label}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer bg-surface-raised text-char hover:bg-surface-active"
+                  onClick={() => showDialogue(config)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="bg-surface-subtle border border-background-border rounded-xl px-4 mt-3 pb-4">
