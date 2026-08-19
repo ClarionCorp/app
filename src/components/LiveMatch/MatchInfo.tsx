@@ -10,7 +10,7 @@ export function MatchInfo({ match, myPlayer }: { match: CurrentMatchTable | unde
   const ping = myPlayer?.ping;
   const isGood = (ping ?? 0) <= 60;
   const isMid = (ping ?? 0) <= 120;
-  const pingColorClass = isGood ? 'text-match-win/75' : isMid ? 'text-match-mid' : 'text-match-loss';
+  const pingColorClass = isGood ? 'text-green-400' : isMid ? 'text-match-mid' : 'text-match-loss';
 
   const [runningObs, setRunningObs] = useState(false);
   const [runningMeld, setRunningMeld] = useState(false);
