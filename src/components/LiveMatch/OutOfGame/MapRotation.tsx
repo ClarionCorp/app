@@ -3,17 +3,21 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ClarionAPI } from '../../../core/constants';
 import { Map, Maps } from '../../../types/clarion';
 import { getMapObjectFromCCID } from '../../../core/objects/maps';
+import { getClampedPopoverPosition } from '../../../core/utilities/popover';
 
 function MapTile({ map }: { map: Map }) {
   const mapInfo = getMapObjectFromCCID(map.id);
   const [hovered, setHovered] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (hovered && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({ top: rect.bottom + 8, left: rect.left + rect.width / 2 });
+    if (hovered && triggerRef.current && popoverRef.current) {
+      setPosition(getClampedPopoverPosition(
+        triggerRef.current.getBoundingClientRect(),
+        popoverRef.current.getBoundingClientRect(),
+      ));
     }
   }, [hovered]);
 
@@ -36,11 +40,12 @@ function MapTile({ map }: { map: Map }) {
       <AnimatePresence>
         {hovered && (
           <motion.div
+            ref={popoverRef}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="fixed z-50 w-90 -translate-x-1/2 pointer-events-none"
+            className="fixed z-50 w-90 pointer-events-none"
             style={{ top: position.top, left: position.left }}
           >
             <div className="rounded-lg border border-background-border bg-surface shadow-xl p-3">
