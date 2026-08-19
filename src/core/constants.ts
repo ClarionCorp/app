@@ -12,6 +12,10 @@ export const StatusUrl = 'https://status.blals.com';
 export const proton_root = '.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/'; // prefix
 export const proton_temp = `${proton_root}/users/steamuser/AppData/Local/Temp/`;
 
+// Default game install locations, used to auto-detect the game dir without prompting the user.
+export const windows_default_gamedir = 'C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers';
+export const linux_default_gamedir = '.steam/steam/steamapps/common/OmegaStrikers';
+
 // Identity Path Suffix (after user home folder)
 export const windows_identity = 'AppData/Local/OmegaStrikers/identity.json';
 export const linux_identity = `${proton_root}/users/steamuser/AppData/Local/OmegaStrikers/identity.json`;

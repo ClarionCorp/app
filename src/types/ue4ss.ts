@@ -46,7 +46,8 @@ export type MatchJSON = {
     name: string, // Taiko Temple
     id: string, // GMD_Drums
   },
-  banned_characters: [], // gotta get this still
+  banned_characters: string[],
+  trainings: string[], // seen trainings
   timestamp: number, // last updated
 }
 
@@ -124,4 +125,5 @@ export type MatchPlayer = {
   orbs: number,
   assists: number,
   saves: number,
+  mvp: boolean
 }

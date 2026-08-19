@@ -84,7 +84,7 @@ export async function updatePlayers(data: PlayersJSON) {
 export async function updateGameState(data: MetaJSON): Promise<CurrentMatchTable> {
   const table = {
     id: 1,
-    gameState: data.game_state.new_phase,
+    gameState: data.game_state?.new_phase ?? 'None',
     queue: data.queue.id,
     queueState: data.queue.state,
     partySize: data.party_size,
@@ -105,7 +105,7 @@ export async function updateScore(data: MatchJSON) {
     id: 1,
     map: data.map.id,
     bans: data.banned_characters,
-    // teamNum: data.
+    trainings: data.trainings,
     teamOnePts: data.team1.goals,
     teamTwoPts: data.team2.goals,
     teamOneSets: data.team1.sets,
@@ -204,6 +204,7 @@ export function mergeMatchPlayers(
       orbs: stats?.orbs ?? 0,
       assists: stats?.assists ?? 0,
       saves: stats?.saves ?? 0,
+      mvp: stats?.mvp ?? false,
     };
   });
 }

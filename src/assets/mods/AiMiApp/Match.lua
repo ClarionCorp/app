@@ -3,6 +3,7 @@ local Module = {}
 -- Edits meta.json in place (evolving state, not a discrete event)
 local StartTime = nil
 local LastSnapshot = ""
+local LastTrainings = {}
 
 local function GetMapInfo(gs)
     local ok, mapName, mapId = pcall(function()
@@ -32,7 +33,6 @@ local function GetTerrainInfo(gs)
     return terrainName, terrainId
 end
 
--- Same as GameStateMod's ReadBannedCharacters.
 local function GetBannedCharacters(gs)
     local ids = {}
     pcall(function()
@@ -51,6 +51,26 @@ local function GetBannedCharacters(gs)
     return ids
 end
 
+local function GetTrainings(gs)
+    local ids = {}
+    pcall(function()
+        local trainings = gs.CommonTrainings
+        for i = 1, #trainings do
+            pcall(function()
+                local td = trainings[i].TrainingData
+                if td and td:IsValid() then
+                    local ok, id = pcall(function() return td:GetFName():ToString() end)
+                    if ok and id and id ~= "" and id ~= "None" then
+                        table.insert(ids, id)
+                    end
+                end
+            end)
+        end
+    end)
+    table.sort(ids)
+    return ids
+end
+
 local function WriteMatchState(ModName, MATCH_FILE)
     local GameState = FindFirstOf("PMGameState")
     if not (GameState and GameState:IsValid()) then return end
@@ -62,6 +82,7 @@ local function WriteMatchState(ModName, MATCH_FILE)
     local terrainName, terrainId = GetTerrainInfo(GameState)
     local bannedIds = GetBannedCharacters(GameState)
     local bannedKey = table.concat(bannedIds, ",")
+    local trainingsKey = table.concat(LastTrainings, ",")
 
     -- Random-map mode (GMD_RGM) reports the terrain as the real map.
     local resolvedMap = (mapId == "GMD_RGM") and terrainName or mapName
@@ -70,7 +91,7 @@ local function WriteMatchState(ModName, MATCH_FILE)
     local snapshot = table.concat({
         tostring(StartTime), t1.NumGoalsThisSet, t1.NumSetsThisMatch,
         t2.NumGoalsThisSet, t2.NumSetsThisMatch, tostring(resolvedMap), tostring(resolvedMapId),
-        bannedKey,
+        bannedKey, trainingsKey,
     }, "|")
 
     if snapshot == LastSnapshot then return end
@@ -85,13 +106,20 @@ local function WriteMatchState(ModName, MATCH_FILE)
     end
     local bannedJson = "[" .. table.concat(bannedParts, ",") .. "]"
 
+    local trainingsParts = {}
+    for _, id in ipairs(LastTrainings) do
+        table.insert(trainingsParts, '"' .. id .. '"')
+    end
+    local trainingsJson = "[" .. table.concat(trainingsParts, ",") .. "]"
+
     local body = string.format(
-        '{\n  "start_time": %s,\n  "team1": {"goals": %d, "sets": %d},\n  "team2": {"goals": %d, "sets": %d},\n  "map": {"name": %s, "id": %s},\n  "banned_characters": %s,\n  "timestamp": %d\n}\n',
+        '{\n  "start_time": %s,\n  "team1": {"goals": %d, "sets": %d},\n  "team2": {"goals": %d, "sets": %d},\n  "map": {"name": %s, "id": %s},\n  "banned_characters": %s,\n  "trainings": %s,\n  "timestamp": %d\n}\n',
         StartTime and tostring(StartTime) or "null",
         t1.NumGoalsThisSet, t1.NumSetsThisMatch,
         t2.NumGoalsThisSet, t2.NumSetsThisMatch,
         mapStr, mapIdStr,
         bannedJson,
+        trainingsJson,
         os.time()
     )
 
@@ -112,6 +140,7 @@ function Module.Init(ModName, OUT_DIR)
                 pcall(function()
                     if NewPhase:get() == 1 then -- PreGame = new match starting
                         StartTime = os.time()
+                        LastTrainings = {}
                         print(string.format("[%s] New match starting, start_time=%d", ModName, StartTime))
                     end
                     WriteMatchState(ModName, MATCH_FILE)
@@ -119,6 +148,24 @@ function Module.Init(ModName, OUT_DIR)
             end
         )
         print(string.format("[%s] MatchPhaseChanged hook registered (match state)", ModName))
+    end)
+
+    -- Fires exactly when CommonTrainings actually replicates, instead of guessing at a phase when it's likely populated.
+    pcall(function()
+        RegisterHook("/Script/Prometheus.PMGameState:OnRep_CommonTrainings",
+            function(self)
+                pcall(function()
+                    local gs = self:get()
+                    if not gs or not gs:IsValid() then return end
+                    local trainings = GetTrainings(gs)
+                    if #trainings == 0 then return end -- The game replicates CommonTrainings back to empty once intermission ends
+                    LastTrainings = trainings
+                    print(string.format("[%s] Trainings updated (%d): %s", ModName, #LastTrainings, table.concat(LastTrainings, ",")))
+                    WriteMatchState(ModName, MATCH_FILE)
+                end)
+            end
+        )
+        print(string.format("[%s] OnRep_CommonTrainings hook registered", ModName))
     end)
 
     -- Capture state on mod load too (hook won't fire for the current phase).

@@ -43,7 +43,6 @@ local function GetTrainings(ps)
             end
         end
     end)
-    table.sort(ids)
     return ids
 end
 
