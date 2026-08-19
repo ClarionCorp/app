@@ -16,7 +16,7 @@ export function MapRotation() {
   }, []);
 
   return (
-    <div className="bg-surface border border-background-border rounded-xl p-4">
+    <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
       <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
         Current Maps in Rotation
       </p>
@@ -38,7 +38,7 @@ export function MapRotation() {
             <motion.div
               key={map.id}
               variants={{ hidden: { opacity: 0, scale: 0.92 }, show: { opacity: 1, scale: 1, transition: { duration: 0.2 } } }}
-              className="flex flex-col gap-1.5 rounded-lg p-2 bg-surface hover:bg-surface-overlay transition-colors duration-200"
+              className="flex flex-col gap-1.5 rounded-lg p-2 hover:bg-surface-overlay transition-colors duration-200"
             >
               <div className="w-full aspect-video overflow-hidden rounded-md bg-background-border border-surface-border border shadow-md">
                 <img

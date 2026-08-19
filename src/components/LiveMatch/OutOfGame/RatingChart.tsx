@@ -6,12 +6,19 @@ import { GameSessionsTable } from '../../../types/database';
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler, gradient);
 
+// Canvas fillStyle can't resolve var(...) directly, so read the theme's resolved color instead.
+function themeColor(cssVar: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+  return value || fallback;
+}
+
 export function RatingChart({ session }: { session: GameSessionsTable | null }) {
   const data = session?.endOfMatchLPs ?? [];
 
   if (data.length < 2) {
     return (
-      <div className="bg-surface border border-background-border rounded-xl p-4">
+      <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
         <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
           Rating This Session
         </p>
@@ -29,7 +36,7 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
   const lastColor = getRankFromLP(data[data.length - 1]).color;
 
   return (
-    <div className="bg-surface border border-background-border rounded-xl p-4">
+    <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
       <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
         Rating This Session
       </p>
@@ -68,6 +75,9 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
           options={{
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: { top: 10, right: 14 },
+            },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -79,11 +89,11 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
             scales: {
               x: {
                 grid: { color: '#85828B0D' },
-                ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } },
+                ticks: { color: themeColor('--color-char-subtle', 'rgba(255,255,255,0.4)'), font: { size: 10 } },
               },
               y: {
-                suggestedMin: bottomLine,
-                suggestedMax: topLine,
+                min: bottomLine,
+                max: topLine,
                 grid: { color: '#85828B0D' },
                 ticks: {
                   stepSize: 100,
