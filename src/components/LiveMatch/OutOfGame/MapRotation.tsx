@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ClarionAPI } from '../../core/constants';
-import { Map, Maps } from '../../types/clarion';
+import { ClarionAPI } from '../../../core/constants';
+import { Map, Maps } from '../../../types/clarion';
 
 export function MapRotation() {
   const [maps, setMaps] = useState<Map[]>([]);

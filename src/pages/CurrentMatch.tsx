@@ -9,9 +9,8 @@ import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { getCurrentMatch, getCustomLobby, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
-import { MapRotation } from '../components/LiveMatch/MapRotation';
+import { OutOfGamePanel } from '../components/LiveMatch/OutOfGame/OutOfGamePanel';
 import { AbilityCard } from '../components/LiveMatch/AbilityCard';
-import { IntermissionPredictions } from '../components/LiveMatch/IntermissionPredictions';
 import { MatchInfo } from '../components/LiveMatch/MatchInfo';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
@@ -90,7 +89,7 @@ export default function CurrentMatchPage() {
 
   // always show maps (default state) unless in game
   const gameStatus = getGameStatus(match?.gameState);
-  const showMaps =
+  const showOutOfGame =
     match?.queueState == 'StartingGame' ||
     match?.queueState == 'FoundMatch' ||
     (gameStatus !== 'IN_GAME' && gameStatus !== 'SETUP' && gameStatus !== 'STARTING');
@@ -141,18 +140,16 @@ export default function CurrentMatchPage() {
               initial="hidden"
               animate="show"
             >
-              {!showMaps && <MatchInfo match={match} myPlayer={myPlayer} />}
-              
-              <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
-
-              {!showMaps && getGameStatus(match?.gameState) !== 'SETUP' &&<IntermissionPredictions players={players} />}
+              {!showOutOfGame && <>
+                <MatchInfo match={match} myPlayer={myPlayer} />
+                <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
+              </>
+              }
 
               <div className="flex flex-col lg:flex-row lg:gap-0 mt-4 mb-8">
                 <div className="flex-1 min-w-0 space-y-3">
-                  {showMaps ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                      <MapRotation />
-                    </motion.div>
+                  {showOutOfGame ? (
+                    <OutOfGamePanel />
                   ) : (
                     <>
                       <div className="space-y-3">
