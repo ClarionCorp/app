@@ -225,6 +225,13 @@
       "when": 1787145302088,
       "tag": "0031_luxuriant_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1787147808928,
+      "tag": "0032_orange_stellaris",
+      "breakpoints": true
     }
   ]
 }

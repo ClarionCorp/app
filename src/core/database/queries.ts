@@ -149,7 +149,7 @@ export async function updatePlayerRating(username: string, rating: number) {
 }
 
 export async function insertMatchHistory(data: Omit<typeof matchHistory.$inferInsert, "id">) {
-  return db.insert(matchHistory).values(data).returning().get();
+  return db.insert(matchHistory).values(data).run();
 }
 
 // Moved here in case we need to add more

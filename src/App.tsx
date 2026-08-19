@@ -138,7 +138,6 @@ function App() {
       // Update database
       const matchTable = await updateGameState(data);
       await tryUpdateDiscordRPC();
-      await sessionHeartbeat();
 
       // Only once during Match Start, log the match start time in timeline entries if not there already.
       if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };

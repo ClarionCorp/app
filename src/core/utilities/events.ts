@@ -159,7 +159,7 @@ export async function saveMatchToHistory(data: PostGameJSON) {
       team: (match.teamOneSets ?? 0) > (match.teamTwoSets ?? 0) ? 1 : 2,
     })
 
-    const entry = await insertMatchHistory({
+    await insertMatchHistory({
       players,
       mapId: match.map ?? '',
       duration: diffSeconds(match.startedAt!, new Date()),
@@ -176,7 +176,7 @@ export async function saveMatchToHistory(data: PostGameJSON) {
       createdAt: new Date(),
     });
 
-    await updateSession(currentUser.username, entry);
+    await updateSession(currentUser.username);
   } catch (e) {
     console.error('Something went wrong while saving the match!', e);
   }

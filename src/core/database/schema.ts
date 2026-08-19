@@ -155,6 +155,6 @@ export const gameSessions = sqliteTable("gameSessions", {
   lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
 
-  endOfMatchLPs: integer("endOfMatchLPs").$type<number[]>().notNull().default([]),
-  matchHistories: integer("matchHistories").$type<number[]>().notNull().default([]), // match history IDs for this session
+  endOfMatchLPs: text("endOfMatchLPs", { mode: "json" }).$type<number[]>().notNull().default([]),
+  matchHistories: text("matchHistories", { mode: "json" }).$type<number[]>().notNull().default([]), // match history IDs for this session
 });
