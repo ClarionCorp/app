@@ -19,7 +19,7 @@ import { AiMiAPI, linux_launch_options, version } from '../core/constants';
 import { getUser } from '../core/database/queries';
 import { useToast } from './UI/Toast';
 import { useDialogue } from './UI/DialogueToast';
-import { gatherSystemInfo } from '../core/utilities/reporting';
+import { gatherSystemInfo, grabLatestAppLog } from '../core/utilities/reporting';
 
 type View = 'home' | 'keybinds' | 'bug-report' | 'feedback';
 
@@ -117,12 +117,14 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
 
   async function submitBugReport(report: BugReport) {
     const gatheredSystemInfo = await gatherSystemInfo();
+    const latestLog = await grabLatestAppLog();
     const bundled = {
       report,
       version,
       username: currentUser?.username,
       playerId: currentUser?.playerId,
       discordId: currentUser?.discordId,
+      appLogs: latestLog,
     }
     console.debug(`Submitting bug report${gatheredSystemInfo ? ' with sysInfo included' : ''}:`, bundled);
 

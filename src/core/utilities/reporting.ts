@@ -2,9 +2,9 @@
 
 import { platform, version, arch, Platform, Arch } from '@tauri-apps/plugin-os';
 import { getHardwareInfo, getIdentityPath, getLogPath, getTempDir } from './system';
-import { join } from '@tauri-apps/api/path';
+import { appDataDir, join } from '@tauri-apps/api/path';
 import { getAppSettings } from '../database/queries';
-import { readDir } from '@tauri-apps/plugin-fs';
+import { readDir, readTextFile } from '@tauri-apps/plugin-fs';
 
 export type SysReport = {
   platform: {
@@ -90,3 +90,11 @@ async function gatherModFiles(settings: any): Promise<string[]> {
   const entries = await readDir(omegaSysFolder);
   return entries.map((entry) => entry.name);
 }
+
+export async function grabLatestAppLog(): Promise<string> {
+  const appFolder = await appDataDir();
+  const latestPath = await join(appFolder, 'logs', 'latest.log');
+  const logContents = await readTextFile(latestPath);
+  return logContents;
+}
+
