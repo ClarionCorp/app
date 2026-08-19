@@ -33,7 +33,7 @@ The app will automatically save completed games and be viewable completely in-ap
 | Username      | ✅             | ✅                                           | ❌                                                  |
 |               |               |                                             |                                                    |
 | Role          | ✅             | ✅                                           | ✅                                                  |
-| MVP           | ❌             | ✅                                           | ✅                                                  |
+| MVP           | ✅             | ✅                                           | ✅                                                  |
 | Level         | ✅             | ✅                                           | ✅                                                  |
 | Scores        | ✅             | ✅                                           | ✅                                                  |
 | Assists       | ✅             | ✅                                           | ✅                                                  |

@@ -124,4 +124,5 @@ export type MatchPlayer = {
   orbs: number,
   assists: number,
   saves: number,
+  mvp: boolean
 }

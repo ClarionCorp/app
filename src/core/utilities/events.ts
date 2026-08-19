@@ -204,6 +204,7 @@ export function mergeMatchPlayers(
       orbs: stats?.orbs ?? 0,
       assists: stats?.assists ?? 0,
       saves: stats?.saves ?? 0,
+      mvp: stats?.mvp ?? false,
     };
   });
 }
