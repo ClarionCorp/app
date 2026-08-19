@@ -84,7 +84,7 @@ export async function updatePlayers(data: PlayersJSON) {
 export async function updateGameState(data: MetaJSON): Promise<CurrentMatchTable> {
   const table = {
     id: 1,
-    gameState: data.game_state.new_phase,
+    gameState: data.game_state?.new_phase ?? 'None',
     queue: data.queue.id,
     queueState: data.queue.state,
     partySize: data.party_size,

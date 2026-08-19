@@ -53,6 +53,11 @@ export async function getCurrentMatch() {
   return db.select().from(currentMatch).limit(1).then(r => r[0] ?? null);
 }
 
+// Ensures the singleton currentMatch row exists so downstream reads never see null.
+export async function ensureCurrentMatch() {
+  return db.insert(currentMatch).values({ id: 1 }).onConflictDoNothing({ target: currentMatch.id }).run();
+}
+
 export async function getMatchPlayers() {
   return db.select().from(matchPlayers);
 }

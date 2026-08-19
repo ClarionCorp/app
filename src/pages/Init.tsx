@@ -9,7 +9,7 @@ import { dirname, homeDir, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion } from "../core/database/queries";
+import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion, ensureCurrentMatch } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { db } from "../core/database/driver";
 import { matchPlayers } from "../core/database/schema";
@@ -85,6 +85,9 @@ export default function InitializationPage() {
 
     async function run() {
       try {
+        // Make sure a currentMatch row exists before anything else reads from it
+        await ensureCurrentMatch();
+
         // Update app title with version
         await getCurrentWindow().setTitle(`Ai.Mi App v${version}`);
 
