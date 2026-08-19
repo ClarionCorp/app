@@ -112,7 +112,7 @@ Don't trust my versions? That's fine lol. Or maybe you are wanting to try making
 4. When finished, run `pnpm approve-builds` press `A` on your keyboard, then press `ENTER`.
 5. Next install [Rust](https://rust-lang.org/tools/install/) on your system.
 6. Run `pnpm tauri dev` to run a live version of the app from your IDE/terminal.
-7. Once you want to try building an executable (for your platform), run `pnpm tauri build` (linux uses `pnpm tauri:linux build`).
+7. Once you want to try building an executable (for your platform), run `pnpm tauri build` (linux uses `pnpm tauri:linux`).
    - These are what are bundled in the releases, so if you JUST want a version to use, use this.
    - The file(s) can be found in `src-tauri/target/release` when finished.
 
