@@ -298,3 +298,58 @@
   --theme-dialogue-success-char: #14532d;
   --theme-dialogue-success-subtle: #bbf7d0;
 }
+
+
+/* Obscura, based loosely on Catppuccin */
+:root[data-theme="Obscura"] {
+  --theme-background: #11111b;
+  --theme-background-border: #191a1b;
+  --theme-overlay: #0c0c0c;
+  --theme-slate: #181825;
+  --theme-surface: #1e1e2e;
+  --theme-surface-border: #191a1b;
+  --theme-surface-subtle: #181825;
+  --theme-surface-raised: #313244;
+  --theme-surface-overlay: #45475a;
+  --theme-surface-active: #585b70;
+  --theme-primary: #8839ef;
+  --theme-secondary: #7c34db;
+  --theme-tertiary: #6b2ebb;
+  --theme-success: #40a02b;
+  --theme-error: #d20f39;
+  --theme-pink: #ea76cb;
+  --theme-char: #cdd6f4;
+  --theme-char-secondary: #bac2de;
+  --theme-char-subtle: #a6adc8;
+  --theme-char-accent: #dd77dd;
+  --theme-match-ally: #04a5e5;
+  --theme-match-enemy: #e64553;
+  --theme-match-win: #9851f5;
+  --theme-match-mid: #e49c38;
+  --theme-match-loss: #e64553;
+  --theme-match-brawler: #d20f39;
+  --theme-match-midfielder: #179299;
+  --theme-match-hardfwd: #fe640b;
+  --theme-match-offgoalie: #e64553;
+  --theme-match-defgoalie: #04a5e5;
+  --theme-dialogue-info: #3b82f6;
+  --theme-dialogue-info-surface: #0c1929;
+  --theme-dialogue-info-char: #93c5fd;
+  --theme-dialogue-info-subtle: #1e3a8a;
+  --theme-dialogue-warning: #eab308;
+  --theme-dialogue-warning-surface: #1a1400;
+  --theme-dialogue-warning-char: #fde047;
+  --theme-dialogue-warning-subtle: #713f12;
+  --theme-dialogue-danger: #f97316;
+  --theme-dialogue-danger-surface: #1a0d00;
+  --theme-dialogue-danger-char: #fdba74;
+  --theme-dialogue-danger-subtle: #7c2d12;
+  --theme-dialogue-error: #ef4444;
+  --theme-dialogue-error-surface: #1a0000;
+  --theme-dialogue-error-char: #fca5a5;
+  --theme-dialogue-error-subtle: #7f1d1d;
+  --theme-dialogue-success: #22c55e;
+  --theme-dialogue-success-surface: #001a09;
+  --theme-dialogue-success-char: #86efac;
+  --theme-dialogue-success-subtle: #14532d;
+}
