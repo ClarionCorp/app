@@ -101,11 +101,11 @@
   --theme-background-border: #191a1b;
   --theme-overlay: rgba(0, 0, 0, 0.7);
   --theme-bg-image: url('/backgrounds/Bedroom.jpg');
-  --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
+  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
   --theme-slate: #0A0A0A;
   --theme-surface: #0f090f;
   --theme-surface-border: #191a1b;
-  --theme-surface-subtle: #09010a;
+  --theme-surface-subtle: #0b070c;
   --theme-surface-raised: #291d29;
   --theme-surface-overlay: #141414;
   --theme-surface-active: #3b2a3b;

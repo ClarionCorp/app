@@ -87,6 +87,12 @@ export default function CurrentMatchPage() {
     .filter(p => p.teamNum !== myTeamNum)
     .sort((a) => (a.role === 'Goalie' ? -1 : 1));
 
+  const mvp = players.reduce<MatchPlayersTable | undefined>((best, p) => {
+    if (p.gainedXp == null) return best;
+    if (!best || (best.gainedXp ?? 0) < p.gainedXp) return p;
+    return best;
+  }, undefined);
+
   // always show maps (default state) unless in game
   const gameStatus = getGameStatus(match?.gameState);
   const showOutOfGame =
@@ -154,7 +160,7 @@ export default function CurrentMatchPage() {
                     <>
                       <div className="space-y-3">
                         {blueTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={index} isBlue />
+                          <PlayerCard key={player.username} player={player} match={match} index={index} isBlue isMvp={player.username === mvp?.username} />
                         ))}
                       </div>
 
@@ -166,7 +172,7 @@ export default function CurrentMatchPage() {
 
                       <div className="space-y-3">
                         {redTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} />
+                          <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} isMvp={player.username === mvp?.username} />
                         ))}
                       </div>
                     </>

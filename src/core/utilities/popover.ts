@@ -1,5 +1,4 @@
-// Positions a fixed-position popover under (or, if there's no room, above) a trigger element,
-// clamped so it never renders outside the viewport.
+// Positions a fixed-position popover under (or, if there's no room, above) a trigger element, clamped so it never renders outside the viewport.
 export function getClampedPopoverPosition(
   triggerRect: DOMRect,
   popoverRect: DOMRect,

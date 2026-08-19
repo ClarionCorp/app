@@ -6,7 +6,7 @@ export function AbilityCard({ ability }: { ability: Ability }) {
   const typeLabel = UNLABELED_TYPES.has(ability.type) ? null : ability.type.replace(/^(Open|Closed) /, '');
 
   return (
-    <div className="bg-surface border border-surface-border rounded-xl p-4 flex gap-4 shadow-lg">
+    <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-2 flex gap-4 shadow-lg">
       <img
         src={ability.icon}
         alt={ability.title}

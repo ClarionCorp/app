@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { getRankFromLP } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
-import { ShieldIcon, SwordIcon, WarningIcon } from '@phosphor-icons/react';
+import { CrownSimpleIcon, ShieldIcon, SwordIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { getGameStatus } from '../../core/objects/gameStates';
@@ -21,7 +21,7 @@ const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Gene
 };
 
 
-export function PlayerCard({ player, match, index, isBlue = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean }) {
+export function PlayerCard({ player, match, index, isBlue = false, isMvp = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean, isMvp?: boolean }) {
   const rankInfo = getRankFromLP(player.rating);
   // const winRate = player.games > 0
   //   ? ((player.wins / player.games) * 100).toFixed(1)
@@ -54,7 +54,7 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
       <button
         onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
         title='Click to open profile on ClarionCorp'
-        className={`relative w-full text-left bg-surface border rounded-xl px-4 py-4 short:py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
+        className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-4 short:py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
         {/* We need to make sure the game isn't in the setup phase */}
@@ -69,7 +69,7 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
             <div
               aria-hidden
               className="absolute inset-y-0 right-0 w-full pointer-events-none select-none"
-              style={{ background: 'linear-gradient(to right, var(--color-surface) 70%, transparent 90%)' }}
+              style={{ background: 'linear-gradient(to right, var(--color-surface-subtle) 70%, transparent 90%)' }}
             />
           </>
         )}
@@ -107,6 +107,11 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                   : <ShieldIcon size={12} weight="duotone" />}
                 {(playstyleType ?? player.role)?.replace('Generic ', '')}
               </span>
+              {isMvp && (
+                <BasicPopover displayText="MVP of the Current Set">
+                  <CrownSimpleIcon size={16} weight="duotone" className="text-yellow-400" />
+                </BasicPopover>
+              )}
               {player.charId && (
                 bestChar?.characterId === player.charId
                   ? <span className="text-xs font-medium text-purple-400">Playing Best Striker</span>
