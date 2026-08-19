@@ -3,7 +3,7 @@ import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
 import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby, gameSessions } from "./schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { ProminentChar } from "../utilities/players";
 
 // Just using a basic translation file since I am still new to Drizzle
@@ -68,6 +68,11 @@ export async function getMyMatchPlayer() {
 
 export async function getMatchHistory() {
   return db.select().from(matchHistory);
+}
+
+export async function getMatchHistoryByIds(ids: number[]) {
+  if (ids.length === 0) return [];
+  return db.select().from(matchHistory).where(inArray(matchHistory.id, ids));
 }
 
 export async function getCustomLobby() {
