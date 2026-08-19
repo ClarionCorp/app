@@ -105,7 +105,7 @@ export async function updateScore(data: MatchJSON) {
     id: 1,
     map: data.map.id,
     bans: data.banned_characters,
-    // teamNum: data.
+    trainings: data.trainings,
     teamOnePts: data.team1.goals,
     teamTwoPts: data.team2.goals,
     teamOneSets: data.team1.sets,
