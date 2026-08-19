@@ -90,7 +90,7 @@
 :root[data-theme="Ai.Mi"] {
   --theme-background: #080108;
   --theme-background-border: #191a1b;
-  --theme-overlay: #000000;
+  --theme-overlay: rgba(0, 0, 0, 0.9);
   --theme-slate: #0A0A0A;
   --theme-surface: #0f090f;
   --theme-surface-border: #191a1b;
@@ -144,7 +144,7 @@
 :root[data-theme="Clarion"] {
   --theme-background: #070707;
   --theme-background-border: #191a1b;
-  --theme-overlay: #000000;
+  --theme-overlay: rgba(0, 0, 0, 0.9);
   --theme-slate: #0A0A0A;
   --theme-surface: #0e0e0e;
   --theme-surface-border: #191a1b;
@@ -304,7 +304,7 @@
 :root[data-theme="Obscura"] {
   --theme-background: #11111b;
   --theme-background-border: #191a1b;
-  --theme-overlay: #0c0c0c;
+  --theme-overlay: rgba(0, 0, 0, 0.8);
   --theme-slate: #181825;
   --theme-surface: #1e1e2e;
   --theme-surface-border: #191a1b;
@@ -358,7 +358,7 @@
 :root[data-theme="Maelstrom"] {
   --theme-background: #101013;
   --theme-background-border: #191a1b;
-  --theme-overlay: #0c0c0c;
+  --theme-overlay: rgba(0, 0, 0, 0.8);
   --theme-slate: #181825;
   --theme-surface: #1e1e2e;
   --theme-surface-border: #191a1b;
@@ -406,4 +406,57 @@
   --theme-dialogue-success-surface: #11111b;
   --theme-dialogue-success-char: #a6d189;
   --theme-dialogue-success-subtle: #14532d;
+}
+
+/* SSR (light) */
+:root[data-theme="Beach"] {
+  --theme-background: #fdddad;
+  --theme-background-border: #e6b266;
+  --theme-overlay: rgba(0, 0, 0, 0.5);
+  --theme-slate: #f8d7a6;
+  --theme-surface: #f8ce8e;
+  --theme-surface-border: #f3be6e;
+  --theme-surface-subtle: #ffd89d;
+  --theme-surface-raised: #fac679;
+  --theme-surface-overlay: #fdc46f;
+  --theme-surface-active: #f8c67c;
+  --theme-primary: #008aca;
+  --theme-secondary: #14afb4;
+  --theme-tertiary: #199aac;
+  --theme-error: #ee4839;
+  --theme-pink: #F763E4;
+  --theme-char: #131313;
+  --theme-char-secondary: #535353;
+  --theme-char-subtle: #606070;
+  --theme-char-accent: #11d811;
+  --theme-match-ally: #60a5fa;
+  --theme-match-enemy: #f87171;
+  --theme-match-win: #12b13a;
+  --theme-match-mid: #d39126;
+  --theme-match-loss: #db2424;
+  --theme-match-brawler: #EF4444;
+  --theme-match-midfielder: #14B8A6;
+  --theme-match-hardfwd: #F97316;
+  --theme-match-offgoalie: #EF4444;
+  --theme-match-defgoalie: #3B82F6;
+  --theme-dialogue-info: #60a5fa;
+  --theme-dialogue-info-surface: #bfdbfe;
+  --theme-dialogue-info-char: #1e3a8a;
+  --theme-dialogue-info-subtle: #93c5fd;
+  --theme-dialogue-warning: #facc15;
+  --theme-dialogue-warning-surface: #fef9c3;
+  --theme-dialogue-warning-char: #713f12;
+  --theme-dialogue-warning-subtle: #fef08a;
+  --theme-dialogue-danger: #f97316;
+  --theme-dialogue-danger-surface: #ffedd5;
+  --theme-dialogue-danger-char: #7c2d12;
+  --theme-dialogue-danger-subtle: #fed7aa;
+  --theme-dialogue-error: #ef4444;
+  --theme-dialogue-error-surface: #fee2e2;
+  --theme-dialogue-error-char: #7f1d1d;
+  --theme-dialogue-error-subtle: #fecaca;
+  --theme-dialogue-success: #22c55e;
+  --theme-dialogue-success-surface: #dcfce7;
+  --theme-dialogue-success-char: #14532d;
+  --theme-dialogue-success-subtle: #bbf7d0;
 }
