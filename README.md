@@ -92,7 +92,7 @@ All linux need to add the following arguments to their game's steam launch optio
 WINEDLLOVERRIDES="dwmapi=n,b" %command%
 ```
 
-As for the release files, if you are on **Debian**, **Ubuntu**, or **Mint** you should use the `.deb`. If you are on **Fedora** or **Bazzite**, use the `.rpm`. Any and all other distributions can use the `.AppImage`.
+As for the release files, if you are on **Debian**, **Ubuntu**, or **Mint** you should use the `.deb`. If you are on **Fedora** or **Bazzite**, use the `.rpm`. Any and all other distributions can use the `.AppImage`. Also, the app only works if OS is installed to the default location (`~/.steam/`).
 
 
 ### Uninstalling
