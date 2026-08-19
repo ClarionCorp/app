@@ -139,7 +139,7 @@ export default function TopBar() {
                     <p className={`text-xs font-semibold ${status.color}`}>{status.label}</p>
                   </div>
                   <p className="text-xs font-medium text-char-default mb-1">{incident.title}</p>
-                  <p className="text-xs text-char-subtle mb-2 break-all">{incident.content}</p>
+                  <p className="text-xs text-char-subtle mb-2 wrap-break-word">{incident.content}</p>
                   <p className="text-xs text-char-subtle opacity-60">
                     {new Date(incident.createdDate).toLocaleString()}
                   </p>
