@@ -18,4 +18,4 @@ export const themeScript = `
 })();
 `.trim();
 
-export const themes = ['Ai.Mi', 'Ai.Mi-L', 'Clarion', 'Clarion-L', 'Obscura'];
+export const themes = ['Ai.Mi', 'Ai.Mi-L', 'Clarion', 'Clarion-L', 'Obscura', 'Maelstrom'];

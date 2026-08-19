@@ -32,7 +32,7 @@ export function Slider({ min, max, value, onChange, stops, unit, disabled }: Sli
         <div className="absolute inset-x-2 h-1.5 rounded-full bg-surface-overlay" />
         {/* Filled portion */}
         <div
-          className="absolute left-2 h-1.5 rounded-full bg-primary"
+          className="absolute left-2 h-1.5 rounded-full bg-secondary"
           style={{ width: `calc((100% - 16px) * ${pct} / 100)` }}
         />
         {/* Stop markers */}
