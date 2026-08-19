@@ -83,7 +83,7 @@ export const MAPS: MapObject[] = [
       - This can easily <a className='text-match-loss'>KO</a> multiple players.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b><br />
-      - <a className='text-match-enemy'>Vyce</a> and <a className='text-match-enemy'>Luna</a>'s <a className='bg-match-mid/50 px-1 rounded-sm'>SPECIAL</a> can be dangerous due to the limited space while the black hole is active<br />
+      - <a className='text-match-enemy'>Vyce</a> and <a className='text-match-enemy'>Luna</a>'s <a className='bg-orange-300/40 px-1 rounded-sm'>SPECIAL</a> can be dangerous due to the limited space while the black hole is active<br />
     </>
   },
   {
@@ -116,7 +116,7 @@ export const MAPS: MapObject[] = [
       - You can also be <a className='text-match-loss'>KO'd</a> by it.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b><br />
-      - <a className='text-match-enemy'>Rasmus</a>'s <a className='bg-match-mid/50 px-1 rounded-sm'>SPECIAL</a> can pull players into the hole.<br />
+      - <a className='text-match-enemy'>Rasmus</a>'s <a className='bg-orange-300/40 px-1 rounded-sm'>SPECIAL</a> can pull players into the hole.<br />
       - <a className='text-match-enemy'>Juliette</a> and other instant brawlers can be particularly dangerous.<br />
     </>
   },
@@ -166,7 +166,7 @@ export const MAPS: MapObject[] = [
       - Two <a className='text-match-mid'>portals</a> will spawn at the start of each round.<br />
       - Going through the one will teleport you to the other.<br />
       - The <a className='text-match-mid'>core</a> can pass through them, as well as <a className='text-match-mid'>players</a>.<br />
-      - <a className='text-match-enemy'>Luna</a> can use her <a className='bg-match-mid/50 px-1 rounded-sm'>SECONDARY</a> through them.<br />
+      - <a className='text-match-enemy'>Luna</a> can use her <a className='bg-orange-300/40 px-1 rounded-sm'>SECONDARY</a> through them.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b> No data
     </>

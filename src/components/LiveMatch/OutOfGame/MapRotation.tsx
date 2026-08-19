@@ -32,9 +32,6 @@ function MapTile({ map }: { map: Map }) {
           className="w-full h-full object-cover"
         />
       </div>
-      <span className="text-xs font-medium text-char-subtle truncate leading-tight text-center">
-        {map.name}
-      </span>
 
       <AnimatePresence>
         {hovered && (
@@ -88,7 +85,7 @@ export function MapRotation() {
           initial="hidden"
           animate="show"
           variants={{ show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } } }}
-          className="grid grid-cols-3 xl:grid-cols-5 gap-2"
+          className="grid grid-cols-3 xl:grid-cols-5 gap-1"
         >
           {maps.map((map) => (
             <MapTile key={map.id} map={map} />
