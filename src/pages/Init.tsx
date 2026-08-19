@@ -5,7 +5,7 @@ import { AppContextType } from "../App";
 import { readIdentity } from "../core/init";
 import { startRpc, stopRpc, tryUpdateDiscordRPC } from "../core/utilities/discord";
 import { invoke } from "@tauri-apps/api/core";
-import { dirname } from "@tauri-apps/api/path";
+import { dirname, homeDir, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
@@ -20,7 +20,7 @@ import { checkForUpdates } from "../core/utilities/appAPI";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { platform } from "@tauri-apps/plugin-os";
-import { linux_launch_options } from "../core/constants";
+import { linux_launch_options, windows_default_gamedir, linux_default_gamedir } from "../core/constants";
 
 type StepId = "ue4ss" | "account" | "updates" | "discord";
 
@@ -93,7 +93,9 @@ export default function InitializationPage() {
         let gameDir = settings?.gameDirectory ?? null;
 
         if (!gameDir) {
-          const defaultDir = 'C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers';
+          const defaultDir = platform() === 'windows'
+            ? windows_default_gamedir
+            : await join(await homeDir(), linux_default_gamedir);
           if (await exists(`${defaultDir}/OmegaStrikers.exe`)) {
             gameDir = defaultDir;
             await upsertAppSettings({ gameDirectory: gameDir });
