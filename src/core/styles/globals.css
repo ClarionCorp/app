@@ -6,6 +6,15 @@
   display: none;
 }
 
+:root {
+  /* Per-theme home page background image. Override inside a theme's
+     :root[data-theme="..."] block to give it a custom background. */
+  --theme-bg-image: none;
+  /* How strongly bg-background tints the background image (0 = image shows
+     through fully, 1 = solid bg-background). Override per theme as needed. */
+  --theme-bg-overlay-opacity: 0.85;
+}
+
 @media (max-width: 768px) {
   .mobile-hero {
     background-image: none !important;
@@ -90,7 +99,9 @@
 :root[data-theme="Ai.Mi"] {
   --theme-background: #080108;
   --theme-background-border: #191a1b;
-  --theme-overlay: rgba(0, 0, 0, 0.9);
+  --theme-overlay: rgba(0, 0, 0, 0.7);
+  --theme-bg-image: url('/backgrounds/Bedroom.jpg');
+  --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #0A0A0A;
   --theme-surface: #0f090f;
   --theme-surface-border: #191a1b;
@@ -145,6 +156,8 @@
   --theme-background: #070707;
   --theme-background-border: #191a1b;
   --theme-overlay: rgba(0, 0, 0, 0.9);
+  --theme-bg-image: url('/backgrounds/MusicStage.webp');
+  --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #0A0A0A;
   --theme-surface: #0e0e0e;
   --theme-surface-border: #191a1b;
@@ -305,6 +318,8 @@
   --theme-background: #11111b;
   --theme-background-border: #191a1b;
   --theme-overlay: rgba(0, 0, 0, 0.8);
+  --theme-bg-image: url('/backgrounds/Campfire.jpg');
+  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
   --theme-slate: #181825;
   --theme-surface: #1e1e2e;
   --theme-surface-border: #191a1b;
@@ -359,6 +374,8 @@
   --theme-background: #101013;
   --theme-background-border: #191a1b;
   --theme-overlay: rgba(0, 0, 0, 0.8);
+  --theme-bg-image: url('/backgrounds/MusicStage.webp');
+  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
   --theme-slate: #181825;
   --theme-surface: #1e1e2e;
   --theme-surface-border: #191a1b;
@@ -413,6 +430,8 @@
   --theme-background: #fdddad;
   --theme-background-border: #e6b266;
   --theme-overlay: rgba(0, 0, 0, 0.5);
+  --theme-bg-image: url('/backgrounds/Beach.webp');
+  --theme-bg-overlay-opacity: 0.70; /* Just for the home page */
   --theme-slate: #f8d7a6;
   --theme-surface: #f8ce8e;
   --theme-surface-border: #f3be6e;
