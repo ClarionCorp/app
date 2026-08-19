@@ -34,7 +34,7 @@ export async function getIdentityPath(): Promise<string | null> {
   else { return null }; // cancel early if file doesn't exist here.
 }
 
-// Moved here to be used in bug reports
+// Moved here to be used in bug reports (game log)
 export async function getLogPath(): Promise<string | null> {
   const home = await homeDir();
   const os = platform();
