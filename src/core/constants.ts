@@ -1,7 +1,7 @@
 // Just a central file to edit constant variables across updates.
 // I don't recommend changing this unless you know what you are doing.
 
-export const version = '2.0.0-pre7';
+export const version = '2.0.0-pre8';
 export const ClarionAPI = 'https://api.clarioncorp.net';
 export const OdyAPI = 'https://prometheus-proxy.odysseyinteractive.gg/api';
 export const AiMiAPI = 'https://api.aimis.app';
