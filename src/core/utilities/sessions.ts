@@ -2,7 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "../database/driver";
-import { getCurrentSession } from "../database/queries";
+import { getCurrentSession, getLatestMatchHistory } from "../database/queries";
 import { gameSessions } from "../database/schema";
 import { fetchPlayerStats } from "./players";
 
@@ -36,15 +36,13 @@ export async function updateSession(username: string) {
     const session = await getCurrentSession();
 
     // for whatever fuckin reason drizzle is returning this id as an array like [5]... so I have to do this bs to get it working
-    const latestMatchHistoryEntry = await db.query.matchHistory.findFirst({ columns: { id: true }, orderBy: (matchHistory, { desc }) => [desc(matchHistory.id)] });
-    const rawId = latestMatchHistoryEntry?.id as unknown as number | number[];
-    const historyId = Array.isArray(rawId) ? rawId[0] : rawId;
+    const latestEntry = await getLatestMatchHistory();
 
 
     await db.update(gameSessions).set({
       lastUpdated: new Date(),
       endOfMatchLPs: [...session.endOfMatchLPs, newStats.rating],
-      matchHistories: latestMatchHistoryEntry ? [...session.matchHistories, historyId] : session.matchHistories,
+      matchHistories: latestEntry ? [...session.matchHistories, latestEntry.id] : session.matchHistories,
     }).where(eq(gameSessions.id, session.id));
 
     console.log(`Updated session! (#${session.id})`)

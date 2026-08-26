@@ -6,11 +6,11 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
-import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
+import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getLatestMatchHistory, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
-import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
+import { CurrentMatchTable, CustomLobbyTable, MatchHistoryTable, MatchPlayersTable } from "../../types/database";
 import { getRegionObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
@@ -260,8 +260,9 @@ export async function checkBlocked(lobbyCache?: CustomLobbyTable, matchCache?: C
 
 export async function uploadLatestMatch() {
   try {
-    const latestEntry = await db.query.matchHistory.findFirst({ orderBy: (matchHistory, { desc }) => [desc(matchHistory.id)] });
+    const latestEntry = await getLatestMatchHistory();
     if (!latestEntry) { throw new Error('Latest entry could not be found.') };
+
     const user = await getUser();
     if (!user) { throw new Error('Current user could not be found.') };
 
@@ -313,6 +314,7 @@ export async function uploadLatestMatch() {
     const res = await fetch(`${AiMiAPI}/v1/matches`, {
       method: 'POST',
       body: JSON.stringify(formattedBody),
+      headers: { 'x-user-agent': 'aimi-app' },
     });
 
     const data = await res.json();
