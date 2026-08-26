@@ -10,13 +10,12 @@ import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
-import { CurrentMatchTable, CustomLobbyTable, MatchHistoryTable, MatchPlayersTable } from "../../types/database";
+import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
 import { getRegionObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
 import { fetchPlayerStats } from "./players";
 import { updateSession } from "./sessions";
-import { fetch } from "@tauri-apps/plugin-http";
 import { AiMiAPI } from "../constants";
 import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1 } from "../../types/appAPI";
 
@@ -314,7 +313,7 @@ export async function uploadLatestMatch() {
     const res = await fetch(`${AiMiAPI}/v1/matches`, {
       method: 'POST',
       body: JSON.stringify(formattedBody),
-      headers: { 'x-user-agent': 'aimi-app' },
+      headers: { 'x-user-agent': 'aimi-app', 'Content-Type': 'application/json' },
     });
 
     const data = await res.json();
