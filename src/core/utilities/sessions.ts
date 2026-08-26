@@ -15,6 +15,7 @@ export async function checkStartNewSession() {
   // else { start_new_session = false };
 
   if (start_new_session == true) {
+    await db.update(gameSessions).set({ active: false }).where(eq(gameSessions.active, true));
     await db.insert(gameSessions).values({
       startedAt: new Date(),
       lastUpdated: new Date(),
