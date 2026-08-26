@@ -16,6 +16,9 @@ import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
 import { fetchPlayerStats } from "./players";
 import { updateSession } from "./sessions";
+import { fetch } from "@tauri-apps/plugin-http";
+import { AiMiAPI } from "../constants";
+import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1 } from "../../types/appAPI";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 const flags =  ['blockapp', 'eusl', 'bub', 'osas', 'euos'];
@@ -177,6 +180,7 @@ export async function saveMatchToHistory(data: PostGameJSON) {
     });
 
     await updateSession(currentUser.username);
+    await uploadLatestMatch(); // automatically upload match to AppAPI for processing
   } catch (e) {
     console.error('Something went wrong while saving the match!', e);
   }
@@ -252,4 +256,70 @@ export async function checkBlocked(lobbyCache?: CustomLobbyTable, matchCache?: C
   };
 
   return decision;
+}
+
+export async function uploadLatestMatch() {
+  try {
+    const latestEntry = await db.query.matchHistory.findFirst({ orderBy: (matchHistory, { desc }) => [desc(matchHistory.id)] });
+    if (!latestEntry) { throw new Error('Latest entry could not be found.') };
+    const user = await getUser();
+    if (!user) { throw new Error('Current user could not be found.') };
+
+    const ratings = latestEntry.players.map(p => p.rating).filter((r): r is number => r !== null && r !== 0);
+    const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
+    const myPlayerId = latestEntry.playerId ?? user.playerId;
+
+    const formattedPlayers: POSTMatchHistoryPlayerV1[] = latestEntry.players.map(p => ({
+      playerId: p.playerId,
+      username: p.name,
+      teamNum: p.team,
+
+      characterId: p.characterId,
+      role: p.role,
+      trainings: p.trainings,
+      level: p.level,
+      assists: p.assists,
+      scores: p.goals,
+      saves: p.saves,
+      knockouts: p.kos,
+      damage: p.damage,
+      shots: p.shots,
+      redirects: p.redirects,
+      orbs: p.orbs,
+      mvp: p.mvp,
+    }));
+
+    const formattedBody: POSTMatchHistoryV1 = {
+      mapId: latestEntry.mapId,
+      queue: latestEntry.queue,
+      result: latestEntry.wonGame ? 'VICTORY' : 'DEFEAT',
+      duration: latestEntry.duration,
+      bans: latestEntry.bans,
+      avgRating: avgRating ?? 0,
+      myTeam: latestEntry.myTeam,
+
+      playerId: myPlayerId,
+      username: latestEntry.players.find(p => p.playerId === myPlayerId)?.playerId ?? user.playerId,
+      players: formattedPlayers,
+
+      t1_pts: latestEntry.t1_pts,
+      t2_pts: latestEntry.t2_pts,
+      t1_sets: latestEntry.t1_sets,
+      t2_sets: latestEntry.t2_sets,
+
+      playedAt: Math.floor(latestEntry.createdAt.getTime() / 1000),
+    }
+
+    const res = await fetch(`${AiMiAPI}/v1/matches`, {
+      method: 'POST',
+      body: JSON.stringify(formattedBody),
+    });
+
+    const data = await res.json();
+    if (!res.ok) { throw new Error(`Couldn't save match with AppAPI! (${res.status}: ${data.error})`) }
+    else { console.log(`Successfully uploaded match to AppAPI!`) };
+
+  } catch (e) {
+    console.error(e);
+  }
 }

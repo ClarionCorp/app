@@ -17,14 +17,16 @@ export type POSTMatchHistoryV1 = {
   avgRating: number,
 
   playerId: string,
-  username: string | null,
+  username: string,
   players: POSTMatchHistoryPlayerV1[],
 
   t1_sets: number,
   t2_sets: number,
+  t1_pts: number,
+  t2_pts: number,
   myTeam: number,
 
-  playedAt: number,
+  playedAt: number
 }
 
 export type POSTMatchHistoryPlayerV1 = {
