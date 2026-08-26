@@ -97,7 +97,7 @@ export async function fetchSelfQuery(): Promise<SelfQuery> {
   }
 
   const data = await res.json() as SelfQuery;
-  console.debug(`Successfully fetched user data from Odyssey! (${data.username})`);
+  console.log(`Successfully fetched user data from Odyssey! (${data.username})`);
   return data;
 }
 
