@@ -83,9 +83,26 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
           {/* Info */}
           <div className="flex-1 min-w-0 space-y-1.5 short:space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold text-char truncate">
-                {player.username}
+              {/* Username & Tags */}
+              <span className="flex items-center gap-1 min-w-0">
+                <span className="text-base font-semibold text-char truncate">
+                  {player.username}
+                </span>
+                {player.tags.length > 0 && (
+                  <span className="flex items-center gap-1 shrink-0">
+                    {player.tags.map(tag => (
+                      <img
+                        key={tag}
+                        src={`/tags/${tag}.webp`} /* will prob move to dictionary based later */
+                        alt={tag}
+                        title={tag}
+                        className="w-5 h-5"
+                      />
+                    ))}
+                  </span>
+                )}
               </span>
+
               <span
                 className="text-xs font-medium px-2 py-0.5 rounded-md shrink-0"
                 style={{

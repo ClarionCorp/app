@@ -74,7 +74,8 @@ export async function updatePlayers(data: PlayersJSON) {
         rankedGames: playerStats.rankedGames,
         rankedWR: playerStats.rankedWR,
         playstyle,
-        smurfProbability: smurf?.confidence
+        smurfProbability: smurf?.confidence,
+        tags: player.tags,
       }).where(eq(matchPlayers.username, player.username));
     } catch (e) {
       console.warn(`No rank data could be found for ${player.username}.`);
