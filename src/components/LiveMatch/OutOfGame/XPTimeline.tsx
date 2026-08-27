@@ -7,7 +7,7 @@ import { getLevelFromXP, xpThresholds } from '../../../core/objects/levels';
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
 
-const RECENT_POINTS = 4;
+const RECENT_POINTS = 3;
 const MY_COLOR = '#25cf0e';
 const ALLY_COLORS = ['#1387d4', '#261fed', '#16c4ad'];
 const ENEMY_COLORS = ['#fc0303', '#ed26a7', '#e83209'];
@@ -48,7 +48,7 @@ export function XPTimeline() {
   const pointCount = Math.min(RECENT_POINTS, maxLen);
   const labels = Array.from({ length: pointCount }, (_, i) => {
     const idx = maxLen - pointCount + i;
-    return idx === 0 ? 'Start' : `G${idx}`;
+    return idx === 0 ? 'Start' : `Goal ${idx}`;
   });
 
   let allyIdx = 0;
