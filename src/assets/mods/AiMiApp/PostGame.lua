@@ -127,7 +127,7 @@ local function WriteMatchCompleted(ModName, POSTGAME_FILE, log)
             mvpId, mvpInfo.name:gsub('"', '\\"'), numOrNull(mvpInfo.team))
     end
 
-    print(string.format("[%s] Match completed: %d players, MVP=%s", ModName, #playerParts, (mvpInfo and mvpInfo.name) or "?"))
+    print(string.format("[%s] Match completed: %d players, MVP=%s\n", ModName, #playerParts, (mvpInfo and mvpInfo.name) or "?"))
 
     local body = string.format(
         '{\n  "winning_team": %s,\n  "resolution": "%s",\n  "mvp": %s,\n  "players": %s,\n  "timestamp": %d\n}\n',
@@ -135,14 +135,14 @@ local function WriteMatchCompleted(ModName, POSTGAME_FILE, log)
     )
 
     local f = io.open(POSTGAME_FILE, "w")
-    if not f then print(string.format("[%s] Failed to write postgame file", ModName)) return end
+    if not f then print(string.format("[%s] Failed to write postgame file\n", ModName)) return end
     f:write(body)
     f:close()
 end
 
 function Module.Init(ModName, OUT_DIR)
     local POSTGAME_FILE = OUT_DIR .. "\\postgame.json"
-    print(string.format("[%s] Writing post-game stats to: %s", ModName, POSTGAME_FILE))
+    print(string.format("[%s] Writing post-game stats to: %s\n", ModName, POSTGAME_FILE))
 
     local hookRegistered = false
     local lastWriteTime = 0
@@ -156,26 +156,26 @@ function Module.Init(ModName, OUT_DIR)
                 function(self, MatchEventLogParam)
                     local now = os.time()
                     if now - lastWriteTime < 5 then
-                        print(string.format("[%s] MatchCompleted duplicate fire ignored (within 5s cooldown)", ModName))
+                        print(string.format("[%s] MatchCompleted duplicate fire ignored (within 5s cooldown)\n", ModName))
                         return
                     end
                     lastWriteTime = now
 
                     local ok2, log = pcall(function() return MatchEventLogParam:get() end)
                     if not ok2 or not log then
-                        print(string.format("[%s] MatchCompleted: could not unwrap MatchEventLog param", ModName))
+                        print(string.format("[%s] MatchCompleted: could not unwrap MatchEventLog param\n", ModName))
                         return
                     end
 
                     local ok3, err = pcall(function() WriteMatchCompleted(ModName, POSTGAME_FILE, log) end)
-                    if not ok3 then print(string.format("[%s] MatchCompleted ERROR: %s", ModName, tostring(err))) end
+                    if not ok3 then print(string.format("[%s] MatchCompleted ERROR: %s\n", ModName, tostring(err))) end
                 end
             )
         end)
 
         if ok then
             hookRegistered = true
-            print(string.format("[%s] PMGameStateBase:MatchCompleted_Multicast hook registered", ModName))
+            print(string.format("[%s] PMGameStateBase:MatchCompleted_Multicast hook registered\n", ModName))
             return true
         end
         return false
@@ -184,7 +184,7 @@ function Module.Init(ModName, OUT_DIR)
     local function retry()
         local ok, registered = pcall(tryRegisterHook)
         if not ok then
-            print(string.format("[%s] MatchCompleted retry error: %s", ModName, tostring(registered)))
+            print(string.format("[%s] MatchCompleted retry error: %s\n", ModName, tostring(registered)))
         end
         if not ok or not registered then
             ExecuteWithDelay(30000, retry)
@@ -193,10 +193,10 @@ function Module.Init(ModName, OUT_DIR)
 
     local ok, registered = pcall(tryRegisterHook)
     if not ok then
-        print(string.format("[%s] MatchCompleted initial hook registration error: %s", ModName, tostring(registered)))
+        print(string.format("[%s] MatchCompleted initial hook registration error: %s\n", ModName, tostring(registered)))
     end
     if not ok or not registered then
-        print(string.format("[%s] MatchCompleted hook not available yet, retrying every 30s...", ModName))
+        print(string.format("[%s] MatchCompleted hook not available yet, retrying every 30s...\n", ModName))
         ExecuteWithDelay(30000, retry)
     end
 end

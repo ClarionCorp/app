@@ -25,15 +25,23 @@ local MatchmakingStateNames = {
 local GameStateOld = nil
 local GameStateNew = nil
 local GameStateTimestamp = nil
+local CachedQueueName = nil -- GetQueueName clears this once matchmaking is idle again
 
--- GetQueueName clears this once matchmaking is idle again
-local CachedQueueName = nil
-
--- Tracks when the resolved queue name/state last actually changed (not when
--- it was last merely checked), same idea as GameStateTimestamp above.
+-- Tracks when the resolved queue name/state last actually changed
+-- (not when it was last merely checked), same idea as GameStateTimestamp above.
 local QueueTimestamp = nil
 local LastQueueValue = nil
 local HasCheckedQueue = false
+
+-- PMMatchmakingUIData is a long-lived client-session singleton 
+-- Cache the ref instead of FindFirstOf on every call, only re-fetching once it goes invalid.
+local CachedMatchmakingUI = nil
+local function GetMatchmakingUI()
+    if not (CachedMatchmakingUI and CachedMatchmakingUI:IsValid()) then
+        CachedMatchmakingUI = FindFirstOf("PMMatchmakingUIData")
+    end
+    return CachedMatchmakingUI
+end
 
 -- Returns (name, state)
 -- Name is the resolved/fallback queue label.
@@ -41,7 +49,7 @@ local HasCheckedQueue = false
 local function GetQueueName()
     local mmState = 0
     pcall(function()
-        local mmUI = FindFirstOf("PMMatchmakingUIData")
+        local mmUI = GetMatchmakingUI()
         if mmUI and mmUI:IsValid() then
             mmState = mmUI:GetMatchmakingState()
         end
@@ -96,6 +104,16 @@ local function ReadPlayer(playerUI)
     return ok and entry or nil
 end
 
+-- PMGroupUIData is a long-lived client-session singleton.
+-- Cache the ref instead of FindFirstOf on every call, only re-fetching once it goes invalid.
+local CachedGroupUI = nil
+local function GetGroupUI()
+    if not (CachedGroupUI and CachedGroupUI:IsValid()) then
+        CachedGroupUI = FindFirstOf("PMGroupUIData")
+    end
+    return CachedGroupUI
+end
+
 -- We assume that slot 0 is the local player, needs more testing
 local function ReadParty()
     local partySize = 1
@@ -103,7 +121,7 @@ local function ReadParty()
     local members = {}
 
     pcall(function()
-        local groupUI = FindFirstOf("PMGroupUIData")
+        local groupUI = GetGroupUI()
         if not (groupUI and groupUI:IsValid()) then return end
 
         local max = groupUI.MaxGroupSize
@@ -210,16 +228,19 @@ local function WriteMeta(ModName, META_FILE)
         lastChanged, queueJson, localStr, partySize, maxPartySize, membersJson, gameStateJson, customLobbyJson
     )
 
+    local writeStart = os.clock()
     local f = io.open(META_FILE, "w")
-    if not f then print(string.format("[%s] Failed to write meta file", ModName)) return end
+    if not f then print(string.format("[%s] Failed to write meta file\n", ModName)) return end
     f:write(body)
     f:close()
-    print(string.format("[%s] Meta updated (party %d/%d, queue %s)", ModName, partySize, maxPartySize, tostring(queueName)))
+    local writeMs = (os.clock() - writeStart) * 1000
+    print(string.format("[%s] Meta updated (party %d/%d, queue %s, reason=%s, write=%.1fms)\n",
+        ModName, partySize, maxPartySize, tostring(queueName), lastChanged, writeMs))
 end
 
 function Module.Init(ModName, OUT_DIR)
     local META_FILE = OUT_DIR .. "\\meta.json"
-    print(string.format("[%s] Writing meta to: %s", ModName, META_FILE))
+    print(string.format("[%s] Writing meta to: %s\n", ModName, META_FILE))
 
     -- Queue name can change mid-menu with no phase transition at all,
     -- so write immediately on the matchmaking hook too, not just on phase change.
@@ -242,7 +263,7 @@ function Module.Init(ModName, OUT_DIR)
                 end)
             end
         )
-        print(string.format("[%s] HandleMatchmakingStatusChanged hook registered", ModName))
+        print(string.format("[%s] HandleMatchmakingStatusChanged hook registered\n", ModName))
     end)
 
     -- Sent when a custom lobby changes, both host and clients receive this
@@ -252,7 +273,21 @@ function Module.Init(ModName, OUT_DIR)
                 pcall(function()
                     local resp = RosterResponseParam:get()
                     if not resp then return end
-                    CustomLobbyName = StringField(resp.Name)
+
+                    print(string.format("[%s] Checking custom lobby for changes...\n", ModName))
+
+                    -- AllPlayerProfiles is everyone currently in the lobby (players + spectators)
+                    local newName = StringField(resp.Name)
+                    local okCount, newMemberCount = pcall(function() return #resp.AllPlayerProfiles end)
+                    newMemberCount = okCount and newMemberCount or CustomLobbyMemberCount
+
+                    -- If name or member count hasn't changed, bail before taking up any more of the thread
+                    if newName == CustomLobbyName and newMemberCount == CustomLobbyMemberCount then
+                        return
+                    end
+                    CustomLobbyName = newName
+                    CustomLobbyMemberCount = newMemberCount
+
                     CustomLobbyId = StringField(resp.LobbyId)
                     local okPriv, requiresCode = pcall(function() return resp.RequiresJoinCode end)
                     CustomLobbyIsPrivate = okPriv and requiresCode or nil
@@ -269,17 +304,12 @@ function Module.Init(ModName, OUT_DIR)
                     end)
                     CustomLobbyRegions = regions
 
-                    -- AllPlayerProfiles is everyone currently in the lobby
-                    -- (players + spectators alike, per its own membership,
-                    -- not a role list like AdminIds/GuestIds) -- current
-                    -- headcount. Team1Size/Team2Size are the game format's
-                    -- configured team sizes, not a live count -- their sum
-                    -- is lobby capacity, separate from member_count.
-                    pcall(function() CustomLobbyMemberCount = #resp.AllPlayerProfiles end)
+                    -- Team1Size/Team2Size are the game format's configured team sizes, not a live counter.
+                    -- Their sum is lobby capacity, separate from member_count.
                     pcall(function() CustomLobbySize = (resp.Team1Size or 0) + (resp.Team2Size or 0) end)
 
                     print(string.format(
-                        "[%s] Custom lobby roster notified: name=%s id=%s requires_join_code=%s regions=%s members=%s/%s",
+                        "[%s] Custom lobby roster notified: name=%s id=%s requires_join_code=%s regions=%s members=%s/%s\n",
                         ModName, tostring(CustomLobbyName), tostring(CustomLobbyId), tostring(CustomLobbyIsPrivate),
                         table.concat(regions, ","), tostring(CustomLobbyMemberCount), tostring(CustomLobbySize)
                     ))
@@ -287,13 +317,14 @@ function Module.Init(ModName, OUT_DIR)
                 end)
             end
         )
-        print(string.format("[%s] OnCustomLobbyRosterResponseV1Notified hook registered", ModName))
+        print(string.format("[%s] OnCustomLobbyRosterResponseV1Notified hook registered\n", ModName))
     end)
 
     -- Sent when the game state changes
     pcall(function()
         RegisterHook("/Script/Prometheus.PMPlayerControllerGame:MatchPhaseChanged",
             function(self, OldPhase, NewPhase)
+                local calcStart = os.clock() -- performance.now() ahh
                 local ok, err = pcall(function()
                     local oldPhase = OldPhase:get()
                     local newPhase = NewPhase:get()
@@ -304,10 +335,12 @@ function Module.Init(ModName, OUT_DIR)
 
                     WriteMeta(ModName, META_FILE)
                 end)
-                if not ok then print(string.format("[%s] Meta MatchPhaseChanged ERROR: %s", ModName, tostring(err))) end
+                local calcMs = (os.clock() - calcStart) * 1000
+                print(string.format("[%s] [META] MatchPhaseChanged calc took %.2fms\n", ModName, calcMs))
+                if not ok then print(string.format("[%s] Meta MatchPhaseChanged ERROR: %s\n", ModName, tostring(err))) end
             end
         )
-        print(string.format("[%s] MatchPhaseChanged hook registered (game state + meta refetch)", ModName))
+        print(string.format("[%s] MatchPhaseChanged hook registered (game state + meta refetch)\n", ModName))
     end)
 
     -- Capture once on mod load too (hooks won't fire for the current state).
