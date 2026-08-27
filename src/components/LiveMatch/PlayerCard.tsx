@@ -58,7 +58,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
       >
         {/* Background character watermark */}
         {/* We need to make sure the game isn't in the setup phase */}
-        {player.charId && match && getGameStatus(match.gameState) !== 'SETUP' && (
+        {player.charId && match && (
           <>
             <img
               src={`/characters/goalscore/${player.charId}.webp`}

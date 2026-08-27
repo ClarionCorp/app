@@ -179,45 +179,48 @@ export default function CurrentMatchPage() {
                   )}
                 </div>
 
-                <div className="hidden lg:block w-px mx-4 self-stretch" />
+                {!showOutOfGame && <>
+                  <div className="hidden lg:block w-px mx-4 self-stretch" />
 
-                <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
-                  {myChar ? (
-                    <>
-                      {myChar.pagination && (
-                        <div className="flex gap-1 p-1 bg-surface rounded-lg border border-surface-border">
-                          {(['Closed', 'Open'] as const).map(form => (
-                            <button
-                              key={form}
-                              onClick={() => setAbilityForm(form)}
-                              className={`flex-1 py-1.5 text-sm font-semibold cursor-pointer rounded-md transition-colors ${
-                                abilityForm === form
-                                  ? 'bg-surface-overlay text-char'
-                                  : 'text-char-subtle hover:text-char'
-                              }`}
-                            >
-                              {form}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      {(myChar.pagination
-                        ? myChar.abilities.filter(a =>
-                            abilityForm === 'Open'
-                              ? !a.type.startsWith('Closed')
-                              : !a.type.startsWith('Open')
-                          )
-                        : myChar.abilities
-                      ).map((ability, index) => (
-                        <AbilityCard key={`${ability.type}-${index}`} ability={ability} />
-                      ))}
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-48">
-                      No character data
-                    </div>
-                  )}
-                </div>
+                  <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
+                    {myChar ? (
+                      <>
+                        {myChar.pagination && (
+                          <div className="flex gap-1 p-1 bg-surface rounded-lg border border-surface-border">
+                            {(['Closed', 'Open'] as const).map(form => (
+                              <button
+                                key={form}
+                                onClick={() => setAbilityForm(form)}
+                                className={`flex-1 py-1.5 text-sm font-semibold cursor-pointer rounded-md transition-colors ${
+                                  abilityForm === form
+                                    ? 'bg-surface-overlay text-char'
+                                    : 'text-char-subtle hover:text-char'
+                                }`}
+                              >
+                                {form}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {(myChar.pagination
+                          ? myChar.abilities.filter(a =>
+                              abilityForm === 'Open'
+                                ? !a.type.startsWith('Closed')
+                                : !a.type.startsWith('Open')
+                            )
+                          : myChar.abilities
+                        ).map((ability, index) => (
+                          <AbilityCard key={`${ability.type}-${index}`} ability={ability} />
+                        ))}
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-48">
+                        No character data
+                      </div>
+                    )}
+                  </div>
+                  </>
+                }
               </div>
             </motion.div>
           )}
