@@ -76,8 +76,18 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
 
         <div className="relative flex items-center gap-4">
           {/* Rank icon */}
-          <div className="shrink-0">
-            <RankIcon rating={player.rating ?? 0} size="lg" />
+          <div className="shrink-0 flex flex-col items-center gap-1">
+            <RankIcon rating={player.rating ?? 0} size="md" />
+            <span
+              className="text-xs font-medium px-2 py-0.5 rounded-md whitespace-nowrap"
+              style={{
+                color: rankInfo.color,
+                backgroundColor: `${rankInfo.color}1A`,
+                border: `1px solid ${rankInfo.color}30`,
+              }}
+            >
+              {rankInfo.name}
+            </span>
           </div>
 
           {/* Info */}
@@ -103,16 +113,6 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
                 )}
               </span>
 
-              <span
-                className="text-xs font-medium px-2 py-0.5 rounded-md shrink-0"
-                style={{
-                  color: rankInfo.color,
-                  backgroundColor: `${rankInfo.color}1A`,
-                  border: `1px solid ${rankInfo.color}30`,
-                }}
-              >
-                {rankInfo.name}
-              </span>
               <span
                 className={clsx(
                   'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md shrink-0 border border-current/20 bg-current/5',

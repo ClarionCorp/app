@@ -33,7 +33,7 @@ export function XPTimeline() {
           Recent XP Trend
         </p>
         <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-32">
-          No recent goal data yet.
+          No recent player data yet.
         </div>
       </div>
     );
