@@ -17,6 +17,7 @@ import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
 import { getGameStatus } from '../core/objects/gameStates';
 import { checkBlocked } from '../core/utilities/events';
+import { XPTimeline } from '../components/LiveMatch/OutOfGame/XPTimeline';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -183,6 +184,7 @@ export default function CurrentMatchPage() {
                   <div className="hidden lg:block w-px mx-4 self-stretch" />
 
                   <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
+                    <XPTimeline />
                     {myChar ? (
                       <>
                         {myChar.pagination && (

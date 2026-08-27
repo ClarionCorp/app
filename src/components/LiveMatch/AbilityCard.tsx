@@ -37,10 +37,6 @@ export function AbilityCard({ ability }: { ability: Ability }) {
             {ability.cooldown}s
           </span>
         </div>
-
-        <p className="text-xs text-char leading-relaxed">
-          {ability.description}
-        </p>
       </div>
     </div>
   );

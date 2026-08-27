@@ -7,7 +7,7 @@ export function getLevelFromXP(xp: number): number {
   return level;
 }
 
-const xpThresholds = [
+export const xpThresholds = [
   { xp: 0, level: 0 },
   { xp: 600, level: 1 },
   { xp: 700, level: 2 },
