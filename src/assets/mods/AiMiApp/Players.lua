@@ -201,7 +201,8 @@ function Module.Init(ModName, OUT_DIR)
         RegisterHook("/Script/Prometheus.PMPlayerControllerGame:MatchPhaseChanged",
             function(self, OldPhase, NewPhase)
                 local calcStart = os.clock() -- performance.now() ahh
-                if NewPhase:get() == 1 then -- PreGame = new match starting
+                local phase = NewPhase:get()
+                if phase == 1 then -- PreGame = new match starting
                     KoCounts = {}
                     LastSnapshot = ""
 
@@ -216,7 +217,14 @@ function Module.Init(ModName, OUT_DIR)
                         end
                     end
 
-                    print(string.format("[%s] PreGame -- KO counts reset, tracked states reseeded (%d)\n", ModName, #TrackedStates))
+                    print(string.format("[%s] PreGame -- KO counts reset, tracked states reset (%d)\n", ModName, #TrackedStates))
+                elseif phase == 0 then -- None = back at menus, no active match
+                    -- Otherwise PollRoster keeps polling last match's roster (trainings/ping/level calls, every 3s) for however long you sit in menus before queuing again.
+                    KoCounts = {}
+                    LastSnapshot = ""
+                    TrackedStates = {}
+                    IdentityCache = {}
+                    print(string.format("[%s] Back to menus -- tracked states cleared\n", ModName))
                 end
                 local calcMs = (os.clock() - calcStart) * 1000
                 print(string.format("[%s] [PLAYERS] MatchPhaseChanged calc took %.2fms\n", ModName, calcMs))
