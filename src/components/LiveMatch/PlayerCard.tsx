@@ -4,7 +4,6 @@ import RankIcon from '../Rank';
 import { CrownSimpleIcon, ShieldIcon, SwordIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
-import { getGameStatus } from '../../core/objects/gameStates';
 import { TRAININGS } from '../../core/objects/trainings';
 import { getPlayerChar } from '../../core/database/queries';
 import { PlaystyleType } from '../../types/clarion';
@@ -129,13 +128,6 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
                   <CrownSimpleIcon size={16} weight="duotone" className="text-yellow-400" />
                 </BasicPopover>
               )}
-              {player.charId && (
-                bestChar?.characterId === player.charId
-                  ? <span className="text-xs font-medium text-purple-400">Playing Best Striker</span>
-                  : favChar?.characterId === player.charId
-                    ? <span className="text-xs font-medium text-blue-400">Playing Main Striker</span>
-                    : null
-              )}
               {player.smurfProbability !== 'none' && (
                 <BasicPopover displayText={`Possible Smurf Detected! (${player.smurfProbability.toLocaleUpperCase()})`}>
                   <WarningIcon
@@ -194,6 +186,21 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
             )}
           </div>
         </div>
+
+        {/* Striker badge - "lower thirds" ahh cutout */}
+        {player.charId && (bestChar?.characterId === player.charId || favChar?.characterId === player.charId) && (
+          <div
+            className={clsx(
+              'absolute bottom-0 right-0 flex items-center py-1.5 short:py-1 pl-6 pr-3',
+              bestChar?.characterId === player.charId ? 'bg-match-mid/50' : 'bg-match-win/50'
+            )}
+            style={{ clipPath: 'polygon(18px 0, 100% 0, 100% 100%, 0 100%)' }}
+          >
+            <span className="text-[11px] font-semibold text-white uppercase tracking-wide whitespace-nowrap">
+              {bestChar?.characterId === player.charId ? 'Best Striker' : 'Main Striker'}
+            </span>
+          </div>
+        )}
       </button>
     </motion.div>
   );
