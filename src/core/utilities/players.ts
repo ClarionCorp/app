@@ -17,6 +17,7 @@ type ReqPlayerStats = {
   rankedWR: number,
   normGames: number,
   rankedGames: number,
+  tags: string[],
 }
 
 export type ProminentChar = {
@@ -36,7 +37,8 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
     normWR: 0,
     normGames: 0,
     rankedGames: 0,
-    rankedWR: 0
+    rankedWR: 0,
+    tags: [],
   };
 
   try {
@@ -55,6 +57,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         normGames: normStats.games,
         rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
         rankedGames: data.ratings[0]?.games ?? 0,
+        tags: data.tags,
       }
     }
 
@@ -74,6 +77,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         normGames: normStats.games,
         rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
         rankedGames: data.ratings[0]?.games ?? 0,
+        tags: data.tags,
       }
     }
 
@@ -176,6 +180,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         normGames: normalTotals.games,
         rankedWR: rankedTotals.wins / rankedTotals.games,
         rankedGames: rankedTotals.games,
+        tags: rankQuery?.tags ?? [],
       }
     }
 

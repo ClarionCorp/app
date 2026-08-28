@@ -58,14 +58,14 @@ export async function updatePlayers(data: PlayersJSON) {
 
   // For any players who have no rating, run a bunch of one-time stuff.
   // Here, we grab their rating, playstyle, smurf rating, and basic stats.
-  for (const player of players.filter(p => p.rating === null)) {
+  for (const localPlayer of players.filter(p => p.rating === null)) {
     // fetch and set ratings and other stats (if empty)
-    console.log(`Fetching statistical data for ${player.username}...`)
+    console.log(`Fetching statistical data for ${localPlayer.username}...`)
     try {
-      const playerStats = await fetchPlayerStats(player.username, player.playerId);
-      const playstyle = await fetchPlayerPlayerstyle(player.username);
-      const smurf = await fetchPlayerSmurfEstimate(player.username);
-      const inferredQueueMates = await getInferredQueueMates(player.username);
+      const playerStats = await fetchPlayerStats(localPlayer.username, localPlayer.playerId);
+      const playstyle = await fetchPlayerPlayerstyle(localPlayer.username);
+      const smurf = await fetchPlayerSmurfEstimate(localPlayer.username);
+      const inferredQueueMates = await getInferredQueueMates(localPlayer.username);
       await db.update(matchPlayers).set({
         rating: playerStats.rating, // will be 0 if not found
         favChar: playerStats.favChar ?? undefined,
@@ -76,12 +76,12 @@ export async function updatePlayers(data: PlayersJSON) {
         rankedWR: playerStats.rankedWR,
         playstyle,
         smurfProbability: smurf?.confidence,
-        tags: player.tags,
+        tags: playerStats.tags,
         queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
-      }).where(eq(matchPlayers.username, player.username));
+      }).where(eq(matchPlayers.username, localPlayer.username));
     } catch (e) {
-      console.warn(`No rank data could be found for ${player.username}.`);
-      updatePlayerRating(player.username, 0); // set to 0 to prevent refetching (and failing again)
+      console.warn(`No rank data could be found for ${localPlayer.username}.`);
+      updatePlayerRating(localPlayer.username, 0); // set to 0 to prevent refetching (and failing again)
       continue;
     }
   }
