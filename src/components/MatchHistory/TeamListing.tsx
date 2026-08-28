@@ -42,12 +42,12 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
 
           {/* Stats */}
           <div className="flex items-center lg:gap-3 mx-auto min-w-0 flex-wrap">
-            <BasicPopover displayText={p.role}>
+            <BasicPopover displayText={p.mvp ? `${p.role} (MVP)` : p.role}>
               <div className="flex items-center justify-center min-w-8">
                 {p.role === 'Forward' ? (
-                  <SwordIcon size={16} weight="regular" className="text-char-subtle" />
+                  <SwordIcon size={16} weight="regular" className={p.mvp ? 'text-yellow-400' : 'text-char-subtle'} />
                 ) : (
-                  <ShieldIcon size={16} weight="regular" className="text-char-subtle" />
+                  <ShieldIcon size={16} weight="regular" className={p.mvp ? 'text-yellow-400' : 'text-char-subtle'} />
                 )}
               </div>
             </BasicPopover>
