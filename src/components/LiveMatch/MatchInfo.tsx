@@ -22,7 +22,7 @@ export function MatchInfo({ match, myPlayer }: { match: CurrentMatchTable | unde
   }, []);
 
   return (
-    <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-2 shadow-lg">
+    <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-2 shadow-lg mt-2">
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
           <span className="font-bold text-char-secondary">{getQueueObjectFromID(match?.queue).queueName ?? '—'}</span>
