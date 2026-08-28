@@ -26,7 +26,7 @@ export type Rank =
 
 export type RankObject = { 
   name: Rank
-  short: string
+  tier: 'Low' | 'Mid' | 'High' | 'Omega' | 'PL' | 'Unranked'
   key: string
   image: string
   color: string
@@ -56,7 +56,7 @@ const ranks: RankObject[] = [
   {
     threshold: 0,
     name: 'Unranked',
-    short: 'Unranked',
+    tier: 'Unranked',
     key: 'unranked',
     image: '/ranks/Unranked-Blobbo.png',
     color: '#ECDCD0'
@@ -64,7 +64,7 @@ const ranks: RankObject[] = [
   {
     threshold: 800,
     name: 'Rookie',
-    short: 'Rookie',
+    tier: 'Low',
     key: 'rookie_low',
     image: '/ranks/Rookie_Low.webp',
     color: '#ECDCD0'
@@ -72,7 +72,7 @@ const ranks: RankObject[] = [
   {
     threshold: 900,
     name: 'Mid Rookie',
-    short: 'M. Rookie',
+    tier: 'Mid',
     key: 'rookie_mid',
     image: '/ranks/Rookie_Mid.webp',
     color: '#ECDCD0'
@@ -80,7 +80,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1000,
     name: 'High Rookie',
-    short: 'H. Rookie',
+    tier: 'High',
     key: 'rookie_high',
     image: '/ranks/Rookie_High.webp',
     color: '#ECDCD0'
@@ -88,7 +88,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1100,
     name: 'Bronze',
-    short: 'Bronze',
+    tier: 'Low',
     key: 'bronze_low',
     image: '/ranks/Bronze_Low.webp',
     color: '#C88C59'
@@ -96,7 +96,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1200,
     name: 'Mid Bronze',
-    short: 'M. Bronze',
+    tier: 'Mid',
     key: 'bronze_mid',
     image: '/ranks/Bronze_Mid.webp',
     color: '#C88C59'
@@ -104,7 +104,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1300,
     name: 'High Bronze',
-    short: 'H. Bronze',
+    tier: 'High',
     key: 'bronze_high',
     image: '/ranks/Bronze_High.webp',
     color: '#C88C59'
@@ -112,7 +112,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1400,
     name: 'Silver',
-    short: 'Silver',
+    tier: 'Low',
     key: 'silver_low',
     image: '/ranks/Silver_Low.webp',
     color: '#9F9F9F'
@@ -120,7 +120,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1500,
     name: 'Mid Silver',
-    short: 'M. Silver',
+    tier: 'Mid',
     key: 'silver_mid',
     image: '/ranks/Silver_Mid.webp',
     color: '#9F9F9F'
@@ -128,7 +128,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1600,
     name: 'High Silver',
-    short: 'H. Silver',
+    tier: 'High',
     key: 'silver_high',
     image: '/ranks/Silver_High.webp',
     color: '#9F9F9F'
@@ -136,7 +136,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1700,
     name: 'Gold',
-    short: 'Gold',
+    tier: 'Low',
     key: 'gold_low',
     image: '/ranks/Gold_Low.webp',
     color: '#F1E385'
@@ -144,7 +144,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1800,
     name: 'Mid Gold',
-    short: 'Mid Gold',
+    tier: 'Mid',
     key: 'gold_mid',
     image: '/ranks/Gold_Mid.webp',
     color: '#F1E385'
@@ -152,7 +152,7 @@ const ranks: RankObject[] = [
   {
     threshold: 1900,
     name: 'High Gold',
-    short: 'High Gold',
+    tier: 'High',
     key: 'gold_high',
     image: '/ranks/Gold_High.webp',
     color: '#F1E385'
@@ -160,7 +160,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2000,
     name: 'Platinum',
-    short: 'Platinum',
+    tier: 'Low',
     key: 'platinum_low',
     image: '/ranks/Platinum_Low.webp',
     color: '#2DE0A5'
@@ -168,7 +168,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2100,
     name: 'Mid Platinum',
-    short: 'Mid Plat',
+    tier: 'Mid',
     key: 'platinum_mid',
     image: '/ranks/Platinum_Mid.webp',
     color: '#2DE0A5'
@@ -176,7 +176,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2200,
     name: 'High Platinum',
-    short: 'High Plat',
+    tier: 'High',
     key: 'platinum_high',
     image: '/ranks/Platinum_High.webp',
     color: '#2DE0A5'
@@ -184,7 +184,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2300,
     name: 'Diamond',
-    short: 'Diamond',
+    tier: 'Low',
     key: 'diamond_low',
     image: '/ranks/Diamond_Low.webp',
     color: '#51B4FD'
@@ -192,7 +192,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2400,
     name: 'Mid Diamond',
-    short: 'M. Diamond',
+    tier: 'Mid',
     key: 'diamond_mid',
     image: '/ranks/Diamond_Mid.webp',
     color: '#51B4FD'
@@ -200,7 +200,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2500,
     name: 'High Diamond',
-    short: 'H. Diamond',
+    tier: 'High',
     key: 'diamond_high',
     image: '/ranks/Diamond_High.webp',
     color: '#51B4FD'
@@ -208,7 +208,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2600,
     name: 'Challenger',
-    short: 'Challenger',
+    tier: 'Low',
     key: 'challenger_low',
     image: '/ranks/Master_Low.webp',
     color: '#9952EE'
@@ -216,7 +216,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2700,
     name: 'Mid Challenger',
-    short: 'M. Challenger',
+    tier: 'Mid',
     key: 'challenger_mid',
     image: '/ranks/Master_Mid.webp',
     color: '#9952EE'
@@ -224,7 +224,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2800,
     name: 'High Challenger',
-    short: 'H. Challenger',
+    tier: 'High',
     key: 'challenger_high',
     image: '/ranks/Master_High.webp',
     color: '#9952EE'
@@ -232,7 +232,7 @@ const ranks: RankObject[] = [
   {
     threshold: 2900,
     name: 'Omega',
-    short: 'Omega',
+    tier: 'Omega',
     key: 'omega',
     image: '/ranks/Promethean.webp',
     color: '#E1137A'
@@ -240,7 +240,7 @@ const ranks: RankObject[] = [
   {
     threshold: 3000,
     name: 'Pro League',
-    short: 'Pro League',
+    tier: 'PL',
     key: 'proleague',
     image: '/ranks/ProLeague.webp',
     color: '#ffd1fa'

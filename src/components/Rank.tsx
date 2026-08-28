@@ -5,7 +5,7 @@ import { getRankFromLP } from '../core/objects/ranks'
 
 export interface RankProps {
   rating: number
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
+  size?: 'xs' | 'sm' | 'md' | 'xm' | 'lg' | 'xl' | '2xl' | '3xl'
 }
 
 export default function RankIcon({ rating, size = 'md' }: RankProps) {
@@ -18,6 +18,7 @@ export default function RankIcon({ rating, size = 'md' }: RankProps) {
         'w-6 h-6': size === 'xs',
         'w-8 h-8': size === 'sm',
         'w-12 h-12': size === 'md',
+        'w-14 h-14': size === 'xm',
         'w-16 h-16': size === 'lg',
         'w-20 h-20': size === 'xl',
         'w-24 h-24': size === '2xl',

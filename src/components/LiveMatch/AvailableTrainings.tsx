@@ -107,11 +107,11 @@ export function AvailableTrainings({ allTrainings, match, players }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-3 short:py-2 shadow-lg">
+      <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-2 shadow-lg">
         <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
           Available Awakenings
         </p>
-        <div className="flex flex-wrap gap-1 short:gap-0">
+        <div className="flex flex-wrap gap-0.5">
           {available.map(awakening => (
             <TrainingTile key={awakening.id} awakening={awakening} isTaken={false} isShown={false} />
           ))}
@@ -119,7 +119,7 @@ export function AvailableTrainings({ allTrainings, match, players }: Props) {
       </div>
 
       {unavailable.length > 0 && (
-        <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-3 short:py-2 shadow-lg">
+        <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-2 shadow-lg">
           <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
             Shown Awakenings
           </p>

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getRankFromLP } from '../../core/objects/ranks';
+import { getRankFromLP, RankObject } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
 import { CrownSimpleIcon, ShieldIcon, SwordIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
@@ -19,6 +19,12 @@ const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Gene
   'Offensive Goalie': 'text-match-offgoalie',
   'Defensive Goalie': 'text-match-defgoalie',
 };
+
+function getRankBadgeText(rankInfo: RankObject, rating: number | null | undefined) {
+  if (rankInfo.tier === 'Unranked' || !rating) return 'Unranked';
+  if (rankInfo.tier === 'PL') return `+${rating - rankInfo.threshold} PL`;
+  return `${rating % 100}% ${rankInfo.tier}`;
+}
 
 function RankBadge({ text, color }: { text: string, color: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -84,7 +90,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
       <button
         onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
         title='Click to open profile on ClarionCorp'
-        className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-4 short:py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
+        className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
         {/* We need to make sure the game isn't in the setup phase */}
@@ -106,13 +112,13 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
 
         <div className="relative flex items-center gap-3">
           {/* Rank icon */}
-          <div className="shrink-0 w-16 flex flex-col items-center gap-1">
-            <RankIcon rating={player.rating ?? 0} size="md" />
-            <RankBadge text={rankInfo.short} color={rankInfo.color} />
+          <div className="shrink-0 w-18 flex flex-col items-center gap-1">
+            <RankIcon rating={player.rating ?? 0} size="xm" />
+            <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} />
           </div>
 
           {/* Info */}
-          <div className="flex-1 min-w-0 space-y-1.5 short:space-y-1">
+          <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex items-center gap-2">
               {/* Username & Tags */}
               <span className="flex items-center gap-1 min-w-0">
@@ -213,7 +219,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
         {player.charId && (bestChar?.characterId === player.charId || favChar?.characterId === player.charId) && (
           <div
             className={clsx(
-              'absolute bottom-0 right-0 flex items-center py-1.5 short:py-1 pl-6 pr-3',
+              'absolute bottom-0 right-0 flex items-center py-1 pl-6 pr-3',
               bestChar?.characterId === player.charId ? 'bg-match-mid/50' : 'bg-match-win/50'
             )}
             style={{ clipPath: 'polygon(18px 0, 100% 0, 100% 100%, 0 100%)' }}
