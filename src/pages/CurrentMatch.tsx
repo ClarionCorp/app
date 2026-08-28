@@ -18,6 +18,7 @@ import { characters } from '../core/objects/characters';
 import { getGameStatus } from '../core/objects/gameStates';
 import { checkBlocked } from '../core/utilities/events';
 import { XPTimeline } from '../components/LiveMatch/XPTimeline';
+import { XPLeaderboard } from '../components/LiveMatch/XPLeaderboard';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -184,6 +185,7 @@ export default function CurrentMatchPage() {
                   <div className="hidden lg:block w-px mx-2 self-stretch" />
 
                   <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
+                    <XPLeaderboard players={players} />
                     <XPTimeline />
                     {myChar ? (
                       <>
