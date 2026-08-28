@@ -22,7 +22,7 @@ export function OutOfGamePanel() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-6"
+      className="space-y-4"
     >
 
       <div className="flex-1 min-w-0">
