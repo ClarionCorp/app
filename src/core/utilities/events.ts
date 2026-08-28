@@ -14,7 +14,7 @@ import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../ty
 import { getRegionObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
-import { fetchPlayerStats } from "./players";
+import { fetchPlayerStats, getInferredQueueMates } from "./players";
 import { updateSession } from "./sessions";
 import { AiMiAPI } from "../constants";
 import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1 } from "../../types/appAPI";
@@ -65,6 +65,7 @@ export async function updatePlayers(data: PlayersJSON) {
       const playerStats = await fetchPlayerStats(player.username, player.playerId);
       const playstyle = await fetchPlayerPlayerstyle(player.username);
       const smurf = await fetchPlayerSmurfEstimate(player.username);
+      const inferredQueueMates = await getInferredQueueMates(player.username);
       await db.update(matchPlayers).set({
         rating: playerStats.rating, // will be 0 if not found
         favChar: playerStats.favChar ?? undefined,
@@ -76,6 +77,7 @@ export async function updatePlayers(data: PlayersJSON) {
         playstyle,
         smurfProbability: smurf?.confidence,
         tags: player.tags,
+        queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
       }).where(eq(matchPlayers.username, player.username));
     } catch (e) {
       console.warn(`No rank data could be found for ${player.username}.`);

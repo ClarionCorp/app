@@ -49,6 +49,13 @@ export type POSTMatchHistoryPlayerV1 = {
   mvp: boolean, // unused for now, just leave omitted
 }
 
+export type PairedPlayersV1 = {
+  username: string,
+  queuemates: string[],
+  updatedAt: Date,
+  createdAt: Date
+}
+
 export type VersionCheck = {
   updateAvailable: boolean,
   latest: string, // tag/version name

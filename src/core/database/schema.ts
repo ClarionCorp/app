@@ -107,6 +107,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   playstyle: text("playstyle", { mode: "json" }).$type<Playstyle>(),
   knockouts: integer("knockouts"),
   smurfProbability: text("smurfProbability").$type<SmurfConfidence>().notNull().default('none'),
+  queueMates: text("queueMates", { mode: "json" }).$type<string[]>().notNull().default([]),
 });
 
 // Basic list of previous matches for local match history

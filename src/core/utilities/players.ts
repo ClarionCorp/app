@@ -6,6 +6,7 @@ import { getAppSettings } from "../database/queries";
 import { AiMiAPI, ClarionAPI } from "../constants";
 import { fetchOdyPlayerStats, fetchRankQuery } from "./odyssey";
 import { Player } from "../../types/clarion";
+import { PairedPlayersV1 } from "../../types/appAPI";
 
 // An obj containing what we need in order to fill the database
 type ReqPlayerStats = {
@@ -238,4 +239,23 @@ function getNormStatsCC(data: Player): { games: number, wins: number, losses: nu
     { games: 0, wins: 0, losses: 0 }
   );
   return { games, wins, losses };
+}
+
+// AppAPI will infer duo/trio queues from recent matches
+export async function getInferredQueueMates(username: string): Promise<PairedPlayersV1 | null> {
+  try {
+    const res = await fetch(`${AiMiAPI}/v1/player/${username}/teammates`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await res.json() as PairedPlayersV1;
+    if (!res.ok) { throw new Error(`${res.status}: ${res.statusText}`) };
+
+    return data;
+
+  } catch (e) {
+    console.error(`Failed to fetch teammates for ${username}!`, e);
+    return null;
+  }
 }

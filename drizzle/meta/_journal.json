@@ -239,6 +239,13 @@
       "when": 1787866352079,
       "tag": "0033_amused_iron_lad",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "6",
+      "when": 1787943019794,
+      "tag": "0034_dapper_mandroid",
+      "breakpoints": true
     }
   ]
 }
