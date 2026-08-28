@@ -7,13 +7,9 @@ import TopBar from './components/Navigation/TopBar';
 import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
-import { db } from './core/database/driver';
-import { matchHistory } from './core/database/schema';
 import { fetchSelfQuery } from './core/utilities/odyssey';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
-import { desc} from 'drizzle-orm';
-import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
@@ -47,12 +43,6 @@ function App() {
         const setting = await getAppSettings();
         await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
       };
-      // Upload & Validate last match history entry
-      if (e.ctrlKey && e.key === 'F9') {
-        const lastEntry = await db.select().from(matchHistory).orderBy(desc(matchHistory.id)).limit(1).then(r => r[0] ?? null);
-        console.debug(`Uploading entry:`, JSON.stringify(lastEntry, null, 1));
-        await saveMatchHistoryEntry(lastEntry);
-      }
       if (e.key === 'F9') navigate('/debug');
     };
     window.addEventListener('keydown', onKey);
