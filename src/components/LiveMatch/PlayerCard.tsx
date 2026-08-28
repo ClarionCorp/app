@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getRankFromLP } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
@@ -19,12 +20,42 @@ const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Gene
   'Defensive Goalie': 'text-match-defgoalie',
 };
 
+function RankBadge({ text, color }: { text: string, color: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [fontSize, setFontSize] = useState(12);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    let size = 12;
+    el.style.fontSize = `${size}px`;
+    while (el.scrollWidth > el.clientWidth && size > 7) {
+      size -= 1;
+      el.style.fontSize = `${size}px`;
+    }
+    setFontSize(size);
+  }, [text]);
+
+  return (
+    <span
+      ref={ref}
+      className="max-w-full font-medium px-1.5 py-0.5 rounded-md whitespace-nowrap"
+      style={{
+        color,
+        backgroundColor: `${color}1A`,
+        border: `1px solid ${color}30`,
+        fontSize,
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
 
 export function PlayerCard({ player, match, index, isBlue = false, isMvp = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean, isMvp?: boolean }) {
   const rankInfo = getRankFromLP(player.rating);
-  // const winRate = player.games > 0
-  //   ? ((player.wins / player.games) * 100).toFixed(1)
-  //   : '0.0';
 
   const borderClass = player.isMe
     ? 'border-blue-500/30 hover:border-blue-500/50'
@@ -73,20 +104,11 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
           </>
         )}
 
-        <div className="relative flex items-center gap-4">
+        <div className="relative flex items-center gap-3">
           {/* Rank icon */}
-          <div className="shrink-0 flex flex-col items-center gap-1">
+          <div className="shrink-0 w-16 flex flex-col items-center gap-1">
             <RankIcon rating={player.rating ?? 0} size="md" />
-            <span
-              className="text-xs font-medium px-2 py-0.5 rounded-md whitespace-nowrap"
-              style={{
-                color: rankInfo.color,
-                backgroundColor: `${rankInfo.color}1A`,
-                border: `1px solid ${rankInfo.color}30`,
-              }}
-            >
-              {rankInfo.name}
-            </span>
+            <RankBadge text={rankInfo.short} color={rankInfo.color} />
           </div>
 
           {/* Info */}

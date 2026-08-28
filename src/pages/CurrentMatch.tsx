@@ -181,7 +181,7 @@ export default function CurrentMatchPage() {
                 </div>
 
                 {!showOutOfGame && <>
-                  <div className="hidden lg:block w-px mx-4 self-stretch" />
+                  <div className="hidden lg:block w-px mx-2 self-stretch" />
 
                   <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
                     <XPTimeline />
