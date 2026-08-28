@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { isProcessRunning } from '../../core/bridgeListener';
 import {
@@ -30,17 +30,36 @@ export default function Sidebar({ navigate }: SidebarProps) {
   const location = useLocation();
   const [hovered, setHovered] = useState(false);
   const [gameRunning, setGameRunning] = useState(false);
+  const expandTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     isProcessRunning('OmegaStrikers-Win64-Shipping.exe').then(setGameRunning);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (expandTimeout.current) clearTimeout(expandTimeout.current);
+    };
+  }, []);
+
+  const handleHoverStart = () => {
+    expandTimeout.current = setTimeout(() => setHovered(true), 500);
+  };
+
+  const handleHoverEnd = () => {
+    if (expandTimeout.current) {
+      clearTimeout(expandTimeout.current);
+      expandTimeout.current = null;
+    }
+    setHovered(false);
+  };
+
   const currentSlug = location.pathname.replace('/', '');
 
   return (
     <motion.aside
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
+      onHoverStart={handleHoverStart}
+      onHoverEnd={handleHoverEnd}
       initial={{ width: 52 }}
       animate={{ width: hovered ? 250 : 52 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
