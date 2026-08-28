@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getRankFromLP, RankObject } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
-import { CrownSimpleIcon, ShieldIcon, SwordIcon, WarningIcon } from '@phosphor-icons/react';
+import { CrownSimpleIcon, ShieldIcon, SwordIcon, UsersIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { TRAININGS } from '../../core/objects/trainings';
@@ -11,6 +11,7 @@ import { PlaystyleType } from '../../types/clarion';
 import clsx from 'clsx';
 import BasicPopover from '../UI/BasicPopover';
 import { getQueueObjectFromID } from '../../core/objects/queues';
+import { getQueueGroup } from './PairedPlayers';
 
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
@@ -60,8 +61,9 @@ function RankBadge({ text, color }: { text: string, color: string }) {
 }
 
 
-export function PlayerCard({ player, match, index, isBlue = false, isMvp = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean, isMvp?: boolean }) {
+export function PlayerCard({ player, match, index, isBlue = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
   const rankInfo = getRankFromLP(player.rating);
+  const queueGroup = getQueueGroup(player, teammates);
 
   const borderClass = player.isMe
     ? 'border-blue-500/30 hover:border-blue-500/50'
@@ -214,6 +216,25 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
             )}
           </div>
         </div>
+
+        {/* Queue party badge - "upper thirds" ahh cutout */}
+        {queueGroup && (
+          <div className="absolute top-0 right-0">
+            <BasicPopover displayText="May be queued together">
+              <div
+                className="flex items-center gap-1 py-1 pl-6 pr-3 bg-tertiary/50"
+                style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 18px 100%)' }}
+              >
+                {queueGroup.length === 3
+                  ? <UsersThreeIcon size={14} weight="duotone" className="text-white" />
+                  : <UsersIcon size={14} weight="duotone" className="text-white" />}
+                <span className="text-[11px] font-semibold text-white tracking-wide whitespace-nowrap">
+                  {queueGroup.length}/3
+                </span>
+              </div>
+            </BasicPopover>
+          </div>
+        )}
 
         {/* Striker badge - "lower thirds" ahh cutout */}
         {player.charId && (bestChar?.characterId === player.charId || favChar?.characterId === player.charId) && (
