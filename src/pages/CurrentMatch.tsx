@@ -17,7 +17,7 @@ import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
 import { getGameStatus } from '../core/objects/gameStates';
 import { checkBlocked } from '../core/utilities/events';
-import { XPTimeline } from '../components/LiveMatch/OutOfGame/XPTimeline';
+import { XPTimeline } from '../components/LiveMatch/XPTimeline';
 
 const containerVariants: Variants = {
   hidden: {},

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart, LineElement, PointElement, LinearScale, CategoryScale, Tooltip } from 'chart.js';
-import { getMatchPlayers } from '../../../core/database/queries';
-import { MatchPlayersTable } from '../../../types/database';
-import { getLevelFromXP, xpThresholds } from '../../../core/objects/levels';
+import { getMatchPlayers } from '../../core/database/queries';
+import { MatchPlayersTable } from '../../types/database';
+import { getLevelFromXP, xpThresholds } from '../../core/objects/levels';
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
 
