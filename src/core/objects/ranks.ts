@@ -58,7 +58,7 @@ const ranks: RankObject[] = [
     name: 'Unranked',
     tier: 'Unranked',
     key: 'unranked',
-    image: '/ranks/Unranked-Blobbo.png',
+    image: '/ranks/Unranked.webp',
     color: '#ECDCD0'
   },
   {

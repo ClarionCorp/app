@@ -47,7 +47,7 @@ function RankBadge({ text, color }: { text: string, color: string }) {
   return (
     <span
       ref={ref}
-      className="max-w-full font-medium px-1.5 py-0.5 rounded-md whitespace-nowrap"
+      className="max-w-full font-medium px-1.5 py-0.5 mb-0.5 rounded-md whitespace-nowrap"
       style={{
         color,
         backgroundColor: `${color}1A`,
