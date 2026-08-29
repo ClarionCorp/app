@@ -126,6 +126,24 @@ function RegionGraphSkeleton() {
   );
 }
 
+function CounterStat({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-2xl font-semibold text-char">{value}</span>
+      <span className="text-[11px] uppercase tracking-widest text-char-subtle">{label}</span>
+    </div>
+  );
+}
+
+function CounterStatSkeleton() {
+  return (
+    <div className="flex flex-col items-center gap-1.5 animate-pulse">
+      <div className="h-7 w-10 rounded bg-surface-active" />
+      <div className="h-2.5 w-14 rounded bg-surface-active" />
+    </div>
+  );
+}
+
 interface OnlineGraphsProps {
   open: boolean;
   onClose: () => void;
@@ -187,19 +205,35 @@ export default function OnlineGraphs({ open, onClose }: OnlineGraphsProps) {
             </div>
 
             {loading && !data ? (
-              <div className="flex flex-col gap-4">
-                {REGION_ORDER.map(region => (
-                  <RegionGraphSkeleton key={region} />
-                ))}
-              </div>
+              <>
+                <div className="flex items-center justify-center gap-10 py-2">
+                  <CounterStatSkeleton />
+                  <CounterStatSkeleton />
+                  <CounterStatSkeleton />
+                </div>
+                <div className="flex flex-col gap-4">
+                  {REGION_ORDER.map(region => (
+                    <RegionGraphSkeleton key={region} />
+                  ))}
+                </div>
+              </>
             ) : error && !data ? (
               <div className="flex items-center justify-center min-h-32 text-sm text-char-subtle">Failed to load online history.</div>
             ) : (
-              <div className="flex flex-col gap-4">
-                {REGION_ORDER.map(region => (
-                  <RegionGraph key={region} region={region} points={data?.history[region] ?? []} />
-                ))}
-              </div>
+              <>
+                {data && (
+                  <div className="flex items-center justify-center gap-10 py-2">
+                    <CounterStat value={data.counts.in_game} label="In Game" />
+                    <CounterStat value={data.counts.idling} label="Idling" />
+                    <CounterStat value={data.counts.seen} label="Seen" />
+                  </div>
+                )}
+                <div className="flex flex-col gap-4">
+                  {REGION_ORDER.map(region => (
+                    <RegionGraph key={region} region={region} points={data?.history[region] ?? []} />
+                  ))}
+                </div>
+              </>
             )}
           </motion.div>
         </motion.div>
