@@ -12,6 +12,7 @@ local CachedMap = nil
 local CachedTerrain = nil
 local CachedBans = nil
 local MapResolved = false
+local BansResolved = false -- Bans are resolved separately from map/terrain.
 
 local function GetMapInfo(gs)
     local ok, mapName, mapId = pcall(function()
@@ -79,7 +80,7 @@ local function GetTrainings(gs)
     return ids
 end
 
--- Resolves once and caches map/terrain/bans. Gated on mapId, not just "has this run before",
+-- Resolves once and caches map/terrain. Gated on mapId, not just "has this run before",
 -- since the map isn't chosen yet on early calls (ban/select) (keeps retrying until it is)
 local function ResolveMatchInfo(GameState)
     if MapResolved then return end
@@ -90,8 +91,20 @@ local function ResolveMatchInfo(GameState)
 
     CachedMap = { name = mapName, id = mapId }
     CachedTerrain = { name = terrainName, id = terrainId }
-    CachedBans = GetBannedCharacters(GameState)
     MapResolved = true
+end
+
+-- Resolved independently from map/terrain.
+-- Bans have to be voted on, which doesn't resolve on the same call as the map.
+-- Keeps retrying (cheap: no FindFirstOf, just a couple property/FName reads) until the vote actually produces bans.
+local function ResolveBans(GameState)
+    if BansResolved then return end
+
+    local bannedIds = GetBannedCharacters(GameState)
+    if #bannedIds == 0 then return end
+
+    CachedBans = bannedIds
+    BansResolved = true
 end
 
 -- PMGameState is a long-lived per-match singleton.
@@ -108,9 +121,11 @@ local function WriteMatchState(ModName, MATCH_FILE)
     local GameState = GetGameState()
     if not (GameState and GameState:IsValid()) then return end
 
-    local wasResolved = MapResolved
+    local wasMapResolved = MapResolved
     ResolveMatchInfo(GameState)
-    local justResolved = (not wasResolved) and MapResolved
+    local wasBansResolved = BansResolved
+    ResolveBans(GameState)
+    local justResolved = ((not wasMapResolved) and MapResolved) or ((not wasBansResolved) and BansResolved)
 
     local scoreInfo = GameState.MatchScoreInfo
     local t1 = scoreInfo.TeamOneInfo
@@ -185,6 +200,7 @@ function Module.Init(ModName, OUT_DIR)
                         CachedTerrain = nil
                         CachedBans = nil
                         MapResolved = false
+                        BansResolved = false
                         print(string.format("[%s] New match starting, start_time=%d\n", ModName, StartTime))
                     end
                     WriteMatchState(ModName, MATCH_FILE)
