@@ -255,7 +255,12 @@ export async function getInferredQueueMates(username: string): Promise<PairedPla
     });
 
     const data = await res.json() as PairedPlayersV1;
-    if (!res.ok) { throw new Error(`${res.status}: ${res.statusText}`) };
+
+    // Not really an error, just drop and add to logfile
+    if (res.status == 404) {
+      console.debug(`No teammates could be found for ${username}: (${res.status})`);
+      return null;
+    } else if (!res.ok) { throw new Error(`${res.status}: ${res.statusText}`) }
 
     return data;
 
