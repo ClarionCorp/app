@@ -26,7 +26,7 @@ export function getServerObjectFromID(serverId: string | null | undefined): Serv
   return target;
 }
 
-export function getRegionObjectFromAppRegion(appRegion: Region): RegionObject {
+export function getRegionObjectFromAppRegion(appRegion: Region | null | undefined | string): RegionObject {
   let target = REGIONS.find(m => m.appRegion === appRegion);
   if (!target) { target = REGIONS[0] }; // Unknown
   return target;
