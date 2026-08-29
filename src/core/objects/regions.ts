@@ -32,6 +32,12 @@ export function getRegionObjectFromAppRegion(appRegion: Region | null | undefine
   return target;
 }
 
+export function getRegionObjectFromAPIRegion(apiRegion: AppAPIRegion | null | undefined): RegionObject {
+  let target = REGIONS.find(m => m.apiRegion === apiRegion);
+  if (!target) { target = REGIONS[0] }; // Unknown
+  return target;
+}
+
 // consistentcy.
 export type Region = 'Unknown' | 'North America' | 'Europe' | 'Asia' | 'South America' | 'Oceania' | 'Japan';
 export type AppAPIRegion = 'None' | 'Global' | 'NorthAmerica' | 'SouthAmerica' | 'Europe' | 'Japan' | 'Asia' | 'Oceania';

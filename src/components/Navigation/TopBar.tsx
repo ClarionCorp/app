@@ -1,28 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { getCurrentMatch, getUser } from '../../core/database/queries';
-import { AiMiAPI, StatusUrl } from '../../core/constants';
+import { StatusUrl } from '../../core/constants';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { OnlinePlayersV1 } from '../../types/appAPI';
+import { fetchOnlineCount } from '../../core/utilities/appAPI';
+import OnlineGraphs from '../OnlineGraphs';
+// import { AppAPIRegion, getRegionObjectFromAppRegion, getServerObjectFromID } from '../../core/objects/regions';
+// import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES } from '../../core/objects/onlineStatus';
 
-// Add back dynamic coloring when app gets bigger.
-// const onlineColor = (n: number) => n >= 100 ? 'text-green-400' : n >= 50 ? 'text-yellow-400' : 'text-red-400';
-
-async function fetchOnlineCount(username: string, gameState: string, region: string | null): Promise<number> {
-  console.debug(`Fetching online player count...`);
-  const res = await fetch(`${AiMiAPI}/v1/online`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-user-agent': 'aimi-app',
-    },
-    body: JSON.stringify({ username, gameState, region }),
-  });
-  if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, gameState }, null, 0)) };
-  const data = await res.json() as OnlinePlayersV1;
-  console.debug(`Receieved online players: ${JSON.stringify(data, null, 1)}`);
-  return data.total;
-}
 
 interface Incident {
   title: string;
@@ -53,8 +38,10 @@ async function fetchApiStatus(): Promise<Incident | null> {
 
 export default function TopBar() {
   const [online, setOnline] = useState(0);
+  // const [region, setRegion] = useState<AppAPIRegion>('None');
   const [incident, setIncident] = useState<Incident | null>(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [showGraphs, setShowGraphs] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -69,6 +56,7 @@ export default function TopBar() {
       if (state && username) {
         const count = await fetchOnlineCount(username, state, user.region);
         setOnline(count);
+        // setRegion(getRegionObjectFromAppRegion(getServerObjectFromID(user.region).region).apiRegion);
       }
     }
 
@@ -105,19 +93,26 @@ export default function TopBar() {
   }, [showPopup]);
 
   const status = incident ? (styleMap[incident.style] ?? styleMap.warning) : goodStatus;
+  // const onlineLevel = getOnlineStatusLevel(region, online); // unused for now
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-6 bg-surface-subtle border-b border-background-border">
+    <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle border-b border-background-border">
       {/* Left */}
       <div className="flex items-center gap-4">
-        <p className={`text-xs text-char-subtle`}>Online: {online}</p>
+        <button
+          className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
+          onClick={() => setShowGraphs(true)}
+        >
+          Online: {online}
+        </button>
       </div>
+      <OnlineGraphs open={showGraphs} onClose={() => setShowGraphs(false)} />
 
       {/* Right */}
       <div className="flex items-center gap-4 relative">
         <button
           ref={triggerRef}
-          className="flex items-center gap-1.5 text-xs text-char-subtle hover:text-char-default transition-colors cursor-pointer select-none"
+          className="flex items-center gap-1.5 text-xs text-char-subtle hover:text-char-default transition cursor-pointer select-none border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
           onClick={() => setShowPopup(v => !v)}
         >
           API Status: <span className={status.color}>{status.label}</span>
