@@ -1,5 +1,6 @@
 // This refers to the Ai.Mi App API at https://api.aimis.app.
 
+import { AppAPIRegion } from "../core/objects/regions"
 import { GithubRelease } from "./github"
 
 export type OnlinePlayersV1 = {
@@ -26,7 +27,8 @@ export type POSTMatchHistoryV1 = {
   t2_pts: number,
   myTeam: number,
 
-  playedAt: number
+  region: AppAPIRegion,
+  playedAt: number,
 }
 
 export type POSTMatchHistoryPlayerV1 = {

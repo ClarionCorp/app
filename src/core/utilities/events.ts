@@ -11,7 +11,7 @@ import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
-import { getRegionObjectFromID } from "../objects/regions";
+import { getRegionObjectFromAppRegion, getServerObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
 import { fetchPlayerStats, getInferredQueueMates } from "./players";
@@ -228,7 +228,7 @@ export async function updateCustomLobby(data: MetaJSON) {
     lobbyId: data.custom_lobby?.lobby_id,
     private: data.custom_lobby?.is_private,
     serverIds: data.custom_lobby?.regions,
-    region: getRegionObjectFromID(data.custom_lobby?.regions[0]).region,
+    region: getServerObjectFromID(data.custom_lobby?.regions[0]).region,
     appBlocked: flags.some(item => data.custom_lobby?.lobby_name.toLocaleLowerCase().includes(item)),
     maxMembers: data.custom_lobby?.lobby_size,
     memberCount: data.custom_lobby?.member_count,
@@ -313,6 +313,7 @@ export async function uploadLatestMatch() {
       t1_sets: latestEntry.t1_sets,
       t2_sets: latestEntry.t2_sets,
 
+      region: getRegionObjectFromAppRegion(user.matchmakingRegion).apiRegion,
       playedAt: Math.floor(latestEntry.createdAt.getTime() / 1000),
     }
 
