@@ -30,7 +30,7 @@ export function XPTimeline() {
     return (
       <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
         <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
-          Recent XP Trend
+          Recent XP Timeline
         </p>
         <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-32">
           No recent player data yet.
