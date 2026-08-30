@@ -110,7 +110,7 @@ export async function updateScore(data: MatchJSON) {
   const table = {
     id: 1,
     map: data.map.id,
-    bans: data.banned_characters.length == 0 ? undefined : data.banned_characters,
+    bans: data.banned_characters,
     trainings: data.trainings,
     teamOnePts: data.team1.goals,
     teamTwoPts: data.team2.goals,
