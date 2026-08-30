@@ -45,7 +45,7 @@ function MapTile({ map }: { map: Map }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="fixed z-50 w-90 pointer-events-none"
+            className="fixed z-60 w-100 pointer-events-none"
             style={{ top: position.top, left: position.left }}
           >
             <div className="rounded-lg border border-background-border bg-surface shadow-xl p-3">

@@ -66,7 +66,15 @@ export const MAPS: MapObject[] = [
     mapName: 'Ahten City',
     icon: BuildingsIcon,
     image: `${ClarionAPI}/assets/maps/GTD_AhtenCity.webp`,
-    description: ''
+    description: <>
+      <b className='text-match-mid'>Locks:</b> A single, trapezoid barrier right infront of the goalbox. <br />
+      <br />
+      <b className='text-match-ally'>Map Gimmicks:</b><br />
+      - Considerably more <a className='text-match-ally'>orbs</a> spawn than usual, making <a className='text-match-ally'>orb</a>-based awakenings very good.<br />
+      - Each time an <a className='text-match-ally'>orb</a> event is called, all <a className='text-match-mid'>6</a> <a className='text-match-ally'>orbs</a> respawn instead of the usual <a className='text-match-mid'>3</a>.<br />
+      <br />
+      <b className='text-match-enemy'>Common Bans:</b> No data
+    </>
   },
   {
     mapId: 'GMD_AtlasLab',
@@ -126,7 +134,16 @@ export const MAPS: MapObject[] = [
     mapName: 'Taiko Temple',
     icon: SpeakerHifiIcon,
     image: `${ClarionAPI}/assets/maps/GTD_Drums.webp`,
-    description: ''
+    description: <>
+      <b className='text-match-mid'>Locks:</b> Two, arrow-shaped barriers spaced evenly infront of the goalbox. <br />
+      <br />
+      <b className='text-match-ally'>Map Gimmicks:</b><br />
+      - Surrounding the edges of the arena are <a className='text-match-ally'>Taiko Drums</a> that will bounce the <a className='text-match-mid'>core</a> and <a className='text-match-mid'>players</a>.<br />
+      - The center contains a chunk of these <a className='text-match-ally'>Drums</a>.<br />
+      - Affected <a className='text-match-mid'>objects</a> will be rebound at a speed <a className='text-match-enemy'>faster</a> than before.<br />
+      <br />
+      <b className='text-match-enemy'>Common Bans:</b> No data
+    </>
   },
   {
     mapId: 'GMD_MusicStage',
@@ -193,7 +210,17 @@ export const MAPS: MapObject[] = [
     mapName: "Inky's Splash Zone",
     icon: TrashIcon,
     image: `${ClarionAPI}/assets/maps/GTD_SummerSplash.webp`,
-    description: ''
+    description: <>
+      <b className='text-match-mid'>Locks:</b> A single, corner barrier to the left of the goalbox. <br />
+      <br />
+      <b className='text-match-ally'>Map Gimmicks:</b><br />
+      - When the enemy team's barrier is <a className='text-match-enemy'>destroyed</a>, your team can activate the <a className='text-match-ally'>water cannon</a>.<br />
+      - Once inside the <a className='text-match-ally'>cannon's stream</a>, <a className='text-match-mid'>players</a> will be pushed outside of the arena, instantly <a className='text-match-enemy'>KO'ing</a> them.<br />
+      - Inside the stream, the <a className='text-match-mid'>core</a> will be pushed to the opposing end of the arena and bounce <a className='text-match-win'>upwards</a>.<br />
+      - You can walk inside the stream freely if it was activated by your team.<br />
+      <br />
+      <b className='text-match-enemy'>Common Bans:</b> No data
+    </>
   },
   {
     mapId: 'TutorialMap',
