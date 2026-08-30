@@ -36,7 +36,11 @@ async function fetchApiStatus(): Promise<Incident | null> {
   return null;
 }
 
-export default function TopBar() {
+interface TopBarProps {
+  border?: boolean; // NavCorner draws the border when the sidebar is shown; set this when it isn't
+}
+
+export default function TopBar({ border = false }: TopBarProps) {
   const [online, setOnline] = useState(0);
   // const [region, setRegion] = useState<AppAPIRegion>('None');
   const [incident, setIncident] = useState<Incident | null>(null);
@@ -96,7 +100,7 @@ export default function TopBar() {
   // const onlineLevel = getOnlineStatusLevel(region, online); // unused for now
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle">
+    <div className={`fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
       {/* Left */}
       <div className="flex items-center gap-4">
         <button

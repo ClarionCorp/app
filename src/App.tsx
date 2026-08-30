@@ -167,7 +167,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-white pt-12">
-      <TopBar />
+      <TopBar border={!showSidebar} />
       {showSidebar && <NavCorner hovered={sidebarHovered} />}
 
       <div className="flex">

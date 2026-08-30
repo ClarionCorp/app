@@ -316,7 +316,7 @@
 /* Obscura, based loosely on Catppuccin */
 :root[data-theme="Obscura"] {
   --theme-background: #11111b;
-  --theme-background-border: #191a1b;
+  --theme-background-border: #2b2f47;
   --theme-overlay: rgba(0, 0, 0, 0.8);
   --theme-bg-image: url('/backgrounds/Campfire.jpg');
   --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
@@ -372,7 +372,7 @@
 /* Maelstrom (dark) */
 :root[data-theme="Maelstrom"] {
   --theme-background: #101013;
-  --theme-background-border: #191a1b;
+  --theme-background-border: #1e212e;
   --theme-overlay: rgba(0, 0, 0, 0.8);
   --theme-bg-image: url('/backgrounds/MusicStage.webp');
   --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
