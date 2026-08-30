@@ -11,7 +11,7 @@ import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
-import { getRegionObjectFromAppRegion, getServerObjectFromID } from "../objects/regions";
+import { getRegionObjectFromOdyRegion, getServerObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
 import { fetchPlayerStats, getInferredQueueMates } from "./players";
@@ -313,7 +313,7 @@ export async function uploadLatestMatch() {
       t1_sets: latestEntry.t1_sets,
       t2_sets: latestEntry.t2_sets,
 
-      region: getRegionObjectFromAppRegion(user.matchmakingRegion).apiRegion,
+      region: getRegionObjectFromOdyRegion(user.matchmakingRegion).apiRegion,
       playedAt: Math.floor(latestEntry.createdAt.getTime() / 1000),
     }
 
