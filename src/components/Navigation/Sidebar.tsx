@@ -12,6 +12,7 @@ import {
   ClockCounterClockwiseIcon,
 } from '@phosphor-icons/react';
 import { NAV_ITEMS } from '../../core/objects/navigation';
+import { collapsedWidth, expandedWidth, widthTransition } from './NavCorner';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   match: <ChartBarIcon size={18} weight="duotone" />,
@@ -22,22 +23,14 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   settings: <GearIcon size={18} weight="duotone" />,
 };
 
-// mainly just so its easier to read below
-// (so we're not spamming magic numbers)
-const collapsedWidth = 52;
-const expandedWidth = 250;
-const topBarHeight = 48;
-const cornerRadius = 16;
-const borderWidth = 1; // matches the border-r/border-b utilities; the corner piece overlaps by this much to hide the straight border stubs it replaces
-const widthTransition = { type: 'spring', stiffness: 300, damping: 30 } as const;
-
 interface SidebarProps {
   navigate: (path: string) => void;
+  hovered: boolean;
+  onHoverChange: (hovered: boolean) => void;
 }
 
-export default function Sidebar({ navigate }: SidebarProps) {
+export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarProps) {
   const location = useLocation();
-  const [hovered, setHovered] = useState(false);
   const [gameRunning, setGameRunning] = useState(false);
   const expandTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -52,7 +45,7 @@ export default function Sidebar({ navigate }: SidebarProps) {
   }, []);
 
   const handleHoverStart = () => {
-    expandTimeout.current = setTimeout(() => setHovered(true), 500);
+    expandTimeout.current = setTimeout(() => onHoverChange(true), 500);
   };
 
   const handleHoverEnd = () => {
@@ -60,20 +53,19 @@ export default function Sidebar({ navigate }: SidebarProps) {
       clearTimeout(expandTimeout.current);
       expandTimeout.current = null;
     }
-    setHovered(false);
+    onHoverChange(false);
   };
 
   const currentSlug = location.pathname.replace('/', '');
 
   return (
-    <>
       <motion.aside
         onHoverStart={handleHoverStart}
         onHoverEnd={handleHoverEnd}
         initial={{ width: collapsedWidth }}
         animate={{ width: hovered ? expandedWidth : collapsedWidth }}
         transition={widthTransition}
-        className="fixed left-0 top-12 bottom-0 z-40 flex flex-col bg-surface-subtle border-r border-background-border overflow-hidden"
+        className="fixed left-0 top-12 bottom-0 z-40 flex flex-col bg-surface-subtle overflow-hidden"
       >
         <nav className="flex flex-col gap-1 p-2 flex-1">
           <button
@@ -128,26 +120,5 @@ export default function Sidebar({ navigate }: SidebarProps) {
           })}
         </nav>
       </motion.aside>
-
-      <motion.div
-        aria-hidden
-        className="fixed pointer-events-none z-51"
-        style={{ top: topBarHeight - borderWidth, width: cornerRadius + borderWidth, height: cornerRadius + borderWidth }}
-        initial={{ left: collapsedWidth - borderWidth }}
-        animate={{ left: (hovered ? expandedWidth : collapsedWidth) - borderWidth }}
-        transition={widthTransition}
-      >
-        <div
-          className="w-full h-full"
-          style={{
-            background: `radial-gradient(circle at bottom right,
-              transparent ${cornerRadius - 1}px,
-              var(--color-background-border) ${cornerRadius - 1}px,
-              var(--color-background-border) ${cornerRadius}px,
-              var(--color-surface-subtle) ${cornerRadius}px)`,
-          }}
-        />
-      </motion.div>
-    </>
   );
 }

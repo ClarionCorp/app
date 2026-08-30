@@ -96,7 +96,7 @@ export default function TopBar() {
   // const onlineLevel = getOnlineStatusLevel(region, online); // unused for now
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle border-b border-background-border">
+    <div className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle">
       {/* Left */}
       <div className="flex items-center gap-4">
         <button
