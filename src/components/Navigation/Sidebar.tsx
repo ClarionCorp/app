@@ -28,6 +28,7 @@ const collapsedWidth = 52;
 const expandedWidth = 250;
 const topBarHeight = 48;
 const cornerRadius = 16;
+const borderWidth = 1; // matches the border-r/border-b utilities; the corner piece overlaps by this much to hide the straight border stubs it replaces
 const widthTransition = { type: 'spring', stiffness: 300, damping: 30 } as const;
 
 interface SidebarProps {
@@ -130,10 +131,10 @@ export default function Sidebar({ navigate }: SidebarProps) {
 
       <motion.div
         aria-hidden
-        className="fixed pointer-events-none z-40"
-        style={{ top: topBarHeight, width: cornerRadius, height: cornerRadius }}
-        initial={{ left: collapsedWidth }}
-        animate={{ left: hovered ? expandedWidth : collapsedWidth }}
+        className="fixed pointer-events-none z-51"
+        style={{ top: topBarHeight - borderWidth, width: cornerRadius + borderWidth, height: cornerRadius + borderWidth }}
+        initial={{ left: collapsedWidth - borderWidth }}
+        animate={{ left: (hovered ? expandedWidth : collapsedWidth) - borderWidth }}
         transition={widthTransition}
       >
         <div
