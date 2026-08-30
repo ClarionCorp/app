@@ -6,6 +6,7 @@ import { getAppSettings } from "../database/queries";
 import { AiMiAPI, ClarionAPI } from "../constants";
 import { fetchOdyPlayerStats, fetchRankQuery } from "./odyssey";
 import { Player } from "../../types/clarion";
+import { PairedPlayersV1 } from "../../types/appAPI";
 
 // An obj containing what we need in order to fill the database
 type ReqPlayerStats = {
@@ -16,6 +17,7 @@ type ReqPlayerStats = {
   rankedWR: number,
   normGames: number,
   rankedGames: number,
+  tags: string[],
 }
 
 export type ProminentChar = {
@@ -35,7 +37,8 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
     normWR: 0,
     normGames: 0,
     rankedGames: 0,
-    rankedWR: 0
+    rankedWR: 0,
+    tags: [],
   };
 
   try {
@@ -54,6 +57,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         normGames: normStats.games,
         rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
         rankedGames: data.ratings[0]?.games ?? 0,
+        tags: data.tags,
       }
     }
 
@@ -73,6 +77,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         normGames: normStats.games,
         rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
         rankedGames: data.ratings[0]?.games ?? 0,
+        tags: data.tags,
       }
     }
 
@@ -175,6 +180,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         normGames: normalTotals.games,
         rankedWR: rankedTotals.wins / rankedTotals.games,
         rankedGames: rankedTotals.games,
+        tags: rankQuery?.tags ?? [],
       }
     }
 
@@ -238,4 +244,28 @@ function getNormStatsCC(data: Player): { games: number, wins: number, losses: nu
     { games: 0, wins: 0, losses: 0 }
   );
   return { games, wins, losses };
+}
+
+// AppAPI will infer duo/trio queues from recent matches
+export async function getInferredQueueMates(username: string): Promise<PairedPlayersV1 | null> {
+  try {
+    const res = await fetch(`${AiMiAPI}/v1/player/${username}/teammates`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await res.json() as PairedPlayersV1;
+
+    // Not really an error, just drop and add to logfile
+    if (res.status == 404) {
+      console.debug(`No teammates could be found for ${username}: (${res.status})`);
+      return null;
+    } else if (!res.ok) { throw new Error(`${res.status}: ${res.statusText}`) }
+
+    return data;
+
+  } catch (e) {
+    console.error(`Failed to fetch teammates for ${username}!`, e);
+    return null;
+  }
 }

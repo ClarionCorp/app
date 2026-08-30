@@ -86,6 +86,7 @@ export const currentMatch = sqliteTable("currentMatch", {
 export const matchPlayers = sqliteTable("matchPlayers", {
   username: text("username").notNull().unique().primaryKey(),
   playerId: text("playerId").unique().notNull(),
+  tags: text("tags", { mode: "json" }).$type<string[]>().notNull().default([]),
   teamNum: integer("teamNum").$type<1 | 2>(), // can be null if not on a team yet
   role: text("role").$type<'Forward' | 'Goalie'>(),
   charName: text("charName"),
@@ -106,6 +107,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   playstyle: text("playstyle", { mode: "json" }).$type<Playstyle>(),
   knockouts: integer("knockouts"),
   smurfProbability: text("smurfProbability").$type<SmurfConfidence>().notNull().default('none'),
+  queueMates: text("queueMates", { mode: "json" }).$type<string[]>().notNull().default([]),
 });
 
 // Basic list of previous matches for local match history
@@ -145,4 +147,16 @@ export const customLobby = sqliteTable("customLobby", {
   memberCount: integer("memberCount").notNull().default(0),
 
   lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
+});
+
+
+// Keeps track of each playing session you have (4h one day, 2h the next, etc.)
+export const gameSessions = sqliteTable("gameSessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  startedAt: integer("startedAt", { mode: "timestamp" }),
+  lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+
+  endOfMatchLPs: text("endOfMatchLPs", { mode: "json" }).$type<number[]>().notNull().default([]),
+  matchHistories: text("matchHistories", { mode: "json" }).$type<number[]>().notNull().default([]), // match history IDs for this session
 });

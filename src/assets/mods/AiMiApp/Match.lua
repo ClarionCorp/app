@@ -5,6 +5,15 @@ local StartTime = nil
 local LastSnapshot = ""
 local LastTrainings = {}
 
+-- Map, terrain, and bans never change mid match.
+-- Resolve them once and cache instead of refetching each time.
+-- Then we reset them alongside StartTime/LastTrainings when a new match starts.
+local CachedMap = nil
+local CachedTerrain = nil
+local CachedBans = nil
+local MapResolved = false
+local BansResolved = false -- Bans are resolved separately from map/terrain.
+
 local function GetMapInfo(gs)
     local ok, mapName, mapId = pcall(function()
         local md = gs.CurrentMapData
@@ -71,37 +80,79 @@ local function GetTrainings(gs)
     return ids
 end
 
+-- Resolves once and caches map/terrain. Gated on mapId, not just "has this run before",
+-- since the map isn't chosen yet on early calls (ban/select) (keeps retrying until it is)
+local function ResolveMatchInfo(GameState)
+    if MapResolved then return end
+
+    local mapName, mapId = GetMapInfo(GameState)
+    if not mapId then return end
+    local terrainName, terrainId = GetTerrainInfo(GameState)
+
+    CachedMap = { name = mapName, id = mapId }
+    CachedTerrain = { name = terrainName, id = terrainId }
+    MapResolved = true
+end
+
+-- Resolved independently from map/terrain.
+-- Bans have to be voted on, which doesn't resolve on the same call as the map.
+-- Keeps retrying (cheap: no FindFirstOf, just a couple property/FName reads) until the vote actually produces bans.
+local function ResolveBans(GameState)
+    if BansResolved then return end
+
+    local bannedIds = GetBannedCharacters(GameState)
+    if #bannedIds == 0 then return end
+
+    CachedBans = bannedIds
+    BansResolved = true
+end
+
+-- PMGameState is a long-lived per-match singleton.
+-- Cache the ref instead of FindFirstOf on every call, only re-fetching once it goes invalid.
+local CachedGameState = nil
+local function GetGameState()
+    if not (CachedGameState and CachedGameState:IsValid()) then
+        CachedGameState = FindFirstOf("PMGameState")
+    end
+    return CachedGameState
+end
+
 local function WriteMatchState(ModName, MATCH_FILE)
-    local GameState = FindFirstOf("PMGameState")
+    local GameState = GetGameState()
     if not (GameState and GameState:IsValid()) then return end
+
+    local wasMapResolved = MapResolved
+    ResolveMatchInfo(GameState)
+    local wasBansResolved = BansResolved
+    ResolveBans(GameState)
+    local justResolved = ((not wasMapResolved) and MapResolved) or ((not wasBansResolved) and BansResolved)
 
     local scoreInfo = GameState.MatchScoreInfo
     local t1 = scoreInfo.TeamOneInfo
     local t2 = scoreInfo.TeamTwoInfo
-    local mapName, mapId = GetMapInfo(GameState)
-    local terrainName, terrainId = GetTerrainInfo(GameState)
-    local bannedIds = GetBannedCharacters(GameState)
-    local bannedKey = table.concat(bannedIds, ",")
     local trainingsKey = table.concat(LastTrainings, ",")
 
-    -- Random-map mode (GMD_RGM) reports the terrain as the real map.
-    local resolvedMap = (mapId == "GMD_RGM") and terrainName or mapName
-    local resolvedMapId = (mapId == "GMD_RGM") and terrainId or mapId
-
+    -- Score and trainings are the only things that can still change once map/terrain/bans are locked in
+    -- Bail before calcing anything if neither moved, unless this is the exact call where map info just became available.
     local snapshot = table.concat({
-        tostring(StartTime), t1.NumGoalsThisSet, t1.NumSetsThisMatch,
-        t2.NumGoalsThisSet, t2.NumSetsThisMatch, tostring(resolvedMap), tostring(resolvedMapId),
-        bannedKey, trainingsKey,
+        t1.NumGoalsThisSet, t1.NumSetsThisMatch, t2.NumGoalsThisSet, t2.NumSetsThisMatch, trainingsKey,
     }, "|")
 
-    if snapshot == LastSnapshot then return end
+    if snapshot == LastSnapshot and not justResolved then return end
     LastSnapshot = snapshot
+
+    -- Random-map mode (GMD_RGM) reports the terrain as the real map.
+    local resolvedMap, resolvedMapId
+    if CachedMap then
+        resolvedMap = (CachedMap.id == "GMD_RGM") and CachedTerrain.name or CachedMap.name
+        resolvedMapId = (CachedMap.id == "GMD_RGM") and CachedTerrain.id or CachedMap.id
+    end
 
     local mapStr = resolvedMap and ('"' .. resolvedMap .. '"') or "null"
     local mapIdStr = resolvedMapId and ('"' .. resolvedMapId .. '"') or "null"
 
     local bannedParts = {}
-    for _, id in ipairs(bannedIds) do
+    for _, id in ipairs(CachedBans or {}) do
         table.insert(bannedParts, '"' .. id .. '"')
     end
     local bannedJson = "[" .. table.concat(bannedParts, ",") .. "]"
@@ -123,31 +174,42 @@ local function WriteMatchState(ModName, MATCH_FILE)
         os.time()
     )
 
+    local writeStart = os.clock()
     local f = io.open(MATCH_FILE, "w")
-    if not f then print(string.format("[%s] Failed to write match file", ModName)) return end
+    if not f then print(string.format("[%s] Failed to write match file\n", ModName)) return end
     f:write(body)
     f:close()
-    print(string.format("[%s] Match: Updated score", ModName))
+    local writeMs = (os.clock() - writeStart) * 1000
+    print(string.format("[%s] Match: Updated score (write=%.1fms)\n", ModName, writeMs))
 end
 
 function Module.Init(ModName, OUT_DIR)
     local MATCH_FILE = OUT_DIR .. "\\match.json"
-    print(string.format("[%s] Writing match state to: %s", ModName, MATCH_FILE))
+    print(string.format("[%s] Writing match state to: %s\n", ModName, MATCH_FILE))
 
     pcall(function()
         RegisterHook("/Script/Prometheus.PMPlayerControllerGame:MatchPhaseChanged",
             function(self, OldPhase, NewPhase)
+                local calcStart = os.clock() -- performance.now() ahh
                 pcall(function()
                     if NewPhase:get() == 1 then -- PreGame = new match starting
                         StartTime = os.time()
                         LastTrainings = {}
-                        print(string.format("[%s] New match starting, start_time=%d", ModName, StartTime))
+                        LastSnapshot = ""
+                        CachedMap = nil
+                        CachedTerrain = nil
+                        CachedBans = nil
+                        MapResolved = false
+                        BansResolved = false
+                        print(string.format("[%s] New match starting, start_time=%d\n", ModName, StartTime))
                     end
                     WriteMatchState(ModName, MATCH_FILE)
                 end)
+                local calcMs = (os.clock() - calcStart) * 1000
+                print(string.format("[%s] [MATCH] MatchPhaseChanged calc took %.2fms\n", ModName, calcMs))
             end
         )
-        print(string.format("[%s] MatchPhaseChanged hook registered (match state)", ModName))
+        print(string.format("[%s] MatchPhaseChanged hook registered (match state)\n", ModName))
     end)
 
     -- Fires exactly when CommonTrainings actually replicates, instead of guessing at a phase when it's likely populated.
@@ -160,12 +222,12 @@ function Module.Init(ModName, OUT_DIR)
                     local trainings = GetTrainings(gs)
                     if #trainings == 0 then return end -- The game replicates CommonTrainings back to empty once intermission ends
                     LastTrainings = trainings
-                    print(string.format("[%s] Trainings updated (%d): %s", ModName, #LastTrainings, table.concat(LastTrainings, ",")))
+                    print(string.format("[%s] Trainings updated (%d): %s\n", ModName, #LastTrainings, table.concat(LastTrainings, ",")))
                     WriteMatchState(ModName, MATCH_FILE)
                 end)
             end
         )
-        print(string.format("[%s] OnRep_CommonTrainings hook registered", ModName))
+        print(string.format("[%s] OnRep_CommonTrainings hook registered\n", ModName))
     end)
 
     -- Capture state on mod load too (hook won't fire for the current phase).

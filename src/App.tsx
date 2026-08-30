@@ -4,22 +4,20 @@ import { OdyAuth } from './types/odyssey';
 import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
+import NavCorner from './components/Navigation/NavCorner';
 import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
-import { db } from './core/database/driver';
-import { matchHistory } from './core/database/schema';
 import { fetchSelfQuery } from './core/utilities/odyssey';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
-import { desc} from 'drizzle-orm';
-import { saveMatchHistoryEntry } from './core/utilities/appAPI';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { AiMiAPI, heartbeat_interval } from './core/constants';
 import { formatLiveMatchInfo } from './core/overlay';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
 import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
+import { sessionHeartbeat } from './core/utilities/sessions';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -38,6 +36,12 @@ function App() {
 
   const location = useLocation();
   const showSidebar = !['/', '/home', '/setup'].includes(location.pathname);
+  const [sidebarHovered, setSidebarHovered] = useState(false);
+
+  // collapse back down if we navigate away while expanded, so it doesn't reappear pre-expanded later
+  useEffect(() => {
+    if (!showSidebar) setSidebarHovered(false);
+  }, [showSidebar]);
 
   // Debug Page
   useEffect(() => {
@@ -46,12 +50,6 @@ function App() {
         const setting = await getAppSettings();
         await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
       };
-      // Upload & Validate last match history entry
-      if (e.ctrlKey && e.key === 'F9') {
-        const lastEntry = await db.select().from(matchHistory).orderBy(desc(matchHistory.id)).limit(1).then(r => r[0] ?? null);
-        console.debug(`Uploading entry:`, JSON.stringify(lastEntry, null, 1));
-        await saveMatchHistoryEntry(lastEntry);
-      }
       if (e.key === 'F9') navigate('/debug');
     };
     window.addEventListener('keydown', onKey);
@@ -161,6 +159,7 @@ function App() {
       }
 
       await tryUpdateDiscordRPC();
+      await sessionHeartbeat();
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
@@ -168,10 +167,11 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-white pt-12">
-      <TopBar />
- 
+      <TopBar border={!showSidebar} />
+      {showSidebar && <NavCorner hovered={sidebarHovered} />}
+
       <div className="flex">
-        {showSidebar && <Sidebar navigate={navigate} />}
+        {showSidebar && <Sidebar navigate={navigate} hovered={sidebarHovered} onHoverChange={setSidebarHovered} />}
         <main className={showSidebar ? "flex-1 pl-13" : "flex-1"}>
           <Outlet context={{
             navigate,

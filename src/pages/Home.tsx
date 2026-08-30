@@ -75,44 +75,55 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] bg-background px-8 pb-36">
-      <motion.div
-        className="mb-10 short:my-7 text-center"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      >
-        <div className="relative flex flex-col items-center">
-          <img
-            src={'/aimi/Yapping.gif'}
-            className="w-40 aspect-square rounded-xl object-cover my-10 short:my-7"
-          />
-          <div className="text-center mb-5">
-            <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
-              Welcome back!
-            </p>
-            <h1 className="text-2xl font-extrabold tracking-tight text-char">
-              How can I <span className="text-primary">help</span>?
-            </h1>
-          </div>
-        </div>
-      </motion.div>
+    <div className="relative min-h-[calc(100vh-3rem)]">
+      <div
+        className="absolute inset-0 bg-cover bg-center brightness-50 blur-xs"
+        style={{ backgroundImage: 'var(--theme-bg-image)' }}
+      />
+      <div
+        className="absolute inset-0 bg-background"
+        style={{ opacity: 'var(--theme-bg-overlay-opacity)' }}
+      />
 
-      <motion.div
-        className="grid grid-cols-2 gap-4 w-full max-w-2xl"
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-      >
-        {NAV_ITEMS.map((item) => {
-          const disabled = item.online && !gameRunning;
-          return (
-            <motion.div key={item.slug} variants={itemVariants}>
-              <NavButton item={item} disabled={disabled} onClick={() => !disabled && navigate(item.slug)} />
-            </motion.div>
-          );
-        })}
-      </motion.div>
+      <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] px-8 pb-36">
+        <motion.div
+          className="mb-10 short:my-7 text-center"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <div className="relative flex flex-col items-center">
+            <img
+              src={'/aimi/Yapping.gif'}
+              className="w-40 aspect-square rounded-xl object-cover my-10 short:my-7"
+            />
+            <div className="text-center mb-5">
+              <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
+                Welcome back!
+              </p>
+              <h1 className="text-2xl font-extrabold tracking-tight text-char">
+                How can I <span className="text-primary">help</span>?
+              </h1>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="grid grid-cols-2 gap-4 w-full max-w-2xl"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          {NAV_ITEMS.map((item) => {
+            const disabled = item.online && !gameRunning;
+            return (
+              <motion.div key={item.slug} variants={itemVariants}>
+                <NavButton item={item} disabled={disabled} onClick={() => !disabled && navigate(item.slug)} />
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </div>
     </div>
   );
 }
@@ -141,10 +152,10 @@ function NavButton({ item, disabled, onClick }: NavButtonProps) {
       <div className="absolute -inset-2 bg-overlay/80" />
 
       <div>
-        <p className="relative z-10 text-sm font-bold tracking-wide text-zinc-200">
+        <p className="relative z-10 text-sm font-bold tracking-wide text-zinc-100">
           {item.label}
         </p>
-        <p className="relative z-10 text-xs tracking-wide text-zinc-400 hidden sm:block">
+        <p className="relative z-10 text-xs tracking-wide text-zinc-300 hidden sm:block">
           {disabled ? "Requires game to be open" : item.desc}
         </p>
       </div>

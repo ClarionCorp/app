@@ -10,7 +10,7 @@ export function MatchInfo({ match, myPlayer }: { match: CurrentMatchTable | unde
   const ping = myPlayer?.ping;
   const isGood = (ping ?? 0) <= 60;
   const isMid = (ping ?? 0) <= 120;
-  const pingColorClass = isGood ? 'text-match-win/75' : isMid ? 'text-match-mid' : 'text-match-loss';
+  const pingColorClass = isGood ? 'text-green-400' : isMid ? 'text-match-mid' : 'text-match-loss';
 
   const [runningObs, setRunningObs] = useState(false);
   const [runningMeld, setRunningMeld] = useState(false);
@@ -22,7 +22,7 @@ export function MatchInfo({ match, myPlayer }: { match: CurrentMatchTable | unde
   }, []);
 
   return (
-    <div className="bg-surface border border-surface-border rounded-xl px-4 py-2 shadow-lg">
+    <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-2 shadow-lg mt-4">
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
           <span className="font-bold text-char-secondary">{getQueueObjectFromID(match?.queue).queueName ?? '—'}</span>

@@ -1,16 +1,17 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getRankFromLP } from '../../core/objects/ranks';
+import { getRankFromLP, RankObject } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
-import { ShieldIcon, SwordIcon, WarningIcon } from '@phosphor-icons/react';
+import { CrownSimpleIcon, ShieldIcon, SwordIcon, UsersIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
-import { getGameStatus } from '../../core/objects/gameStates';
 import { TRAININGS } from '../../core/objects/trainings';
 import { getPlayerChar } from '../../core/database/queries';
 import { PlaystyleType } from '../../types/clarion';
 import clsx from 'clsx';
 import BasicPopover from '../UI/BasicPopover';
 import { getQueueObjectFromID } from '../../core/objects/queues';
+import { getQueueGroup } from './PairedPlayers';
 
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
@@ -20,12 +21,49 @@ const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Gene
   'Defensive Goalie': 'text-match-defgoalie',
 };
 
+function getRankBadgeText(rankInfo: RankObject, rating: number | null | undefined) {
+  if (rankInfo.tier === 'Unranked' || !rating) return 'Unranked';
+  if (rankInfo.tier === 'PL') return `+${rating - rankInfo.threshold} PL`;
+  return `${rating % 100}% ${rankInfo.tier}`;
+}
 
-export function PlayerCard({ player, match, index, isBlue = false }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean }) {
+function RankBadge({ text, color }: { text: string, color: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [fontSize, setFontSize] = useState(12);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    let size = 12;
+    el.style.fontSize = `${size}px`;
+    while (el.scrollWidth > el.clientWidth && size > 7) {
+      size -= 1;
+      el.style.fontSize = `${size}px`;
+    }
+    setFontSize(size);
+  }, [text]);
+
+  return (
+    <span
+      ref={ref}
+      className="max-w-full font-medium px-1.5 py-0.5 mb-0.5 rounded-md whitespace-nowrap"
+      style={{
+        color,
+        backgroundColor: `${color}1A`,
+        border: `1px solid ${color}30`,
+        fontSize,
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+
+export function PlayerCard({ player, match, index, isBlue = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
   const rankInfo = getRankFromLP(player.rating);
-  // const winRate = player.games > 0
-  //   ? ((player.wins / player.games) * 100).toFixed(1)
-  //   : '0.0';
+  const queueGroup = getQueueGroup(player, teammates);
 
   const borderClass = player.isMe
     ? 'border-blue-500/30 hover:border-blue-500/50'
@@ -54,11 +92,11 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
       <button
         onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
         title='Click to open profile on ClarionCorp'
-        className={`relative w-full text-left bg-surface border rounded-xl px-4 py-4 short:py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
+        className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
         {/* We need to make sure the game isn't in the setup phase */}
-        {player.charId && match && getGameStatus(match.gameState) !== 'SETUP' && (
+        {player.charId && match && (
           <>
             <img
               src={`/characters/goalscore/${player.charId}.webp`}
@@ -69,33 +107,41 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
             <div
               aria-hidden
               className="absolute inset-y-0 right-0 w-full pointer-events-none select-none"
-              style={{ background: 'linear-gradient(to right, var(--color-surface) 70%, transparent 90%)' }}
+              style={{ background: 'linear-gradient(to right, var(--color-surface-subtle) 70%, transparent 90%)' }}
             />
           </>
         )}
 
-        <div className="relative flex items-center gap-4">
+        <div className="relative flex items-center gap-3">
           {/* Rank icon */}
-          <div className="shrink-0">
-            <RankIcon rating={player.rating ?? 0} size="lg" />
+          <div className="shrink-0 w-18 flex flex-col items-center gap-1">
+            <RankIcon rating={player.rating ?? 0} size="xm" />
+            <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} />
           </div>
 
           {/* Info */}
-          <div className="flex-1 min-w-0 space-y-1.5 short:space-y-1">
+          <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="text-base font-semibold text-char truncate">
-                {player.username}
+              {/* Username & Tags */}
+              <span className="flex items-center gap-1 min-w-0">
+                <span className="text-base font-semibold text-char truncate">
+                  {player.username}
+                </span>
+                {player.tags.length > 0 && (
+                  <span className="flex items-center gap-1 shrink-0">
+                    {player.tags.map(tag => (
+                      <img
+                        key={tag}
+                        src={`/tags/${tag}.webp`} /* will prob move to dictionary based later */
+                        alt={tag}
+                        title={tag}
+                        className="w-5 h-5"
+                      />
+                    ))}
+                  </span>
+                )}
               </span>
-              <span
-                className="text-xs font-medium px-2 py-0.5 rounded-md shrink-0"
-                style={{
-                  color: rankInfo.color,
-                  backgroundColor: `${rankInfo.color}1A`,
-                  border: `1px solid ${rankInfo.color}30`,
-                }}
-              >
-                {rankInfo.name}
-              </span>
+
               <span
                 className={clsx(
                   'inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md shrink-0 border border-current/20 bg-current/5',
@@ -107,12 +153,10 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
                   : <ShieldIcon size={12} weight="duotone" />}
                 {(playstyleType ?? player.role)?.replace('Generic ', '')}
               </span>
-              {player.charId && (
-                bestChar?.characterId === player.charId
-                  ? <span className="text-xs font-medium text-purple-400">Playing Best Striker</span>
-                  : favChar?.characterId === player.charId
-                    ? <span className="text-xs font-medium text-blue-400">Playing Main Striker</span>
-                    : null
+              {isMvp && (
+                <BasicPopover displayText="MVP of the Current Set">
+                  <CrownSimpleIcon size={16} weight="duotone" className="text-yellow-400" />
+                </BasicPopover>
               )}
               {player.smurfProbability !== 'none' && (
                 <BasicPopover displayText={`Possible Smurf Detected! (${player.smurfProbability.toLocaleUpperCase()})`}>
@@ -172,6 +216,40 @@ export function PlayerCard({ player, match, index, isBlue = false }: { player: M
             )}
           </div>
         </div>
+
+        {/* Queue party badge - "upper thirds" ahh cutout */}
+        {queueGroup && (
+          <div className="absolute top-0 right-0">
+            <BasicPopover displayText="May be queued together">
+              <div
+                className="flex items-center gap-1 py-1 pl-6 pr-3 bg-tertiary/50"
+                style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 18px 100%)' }}
+              >
+                {queueGroup.length === 3
+                  ? <UsersThreeIcon size={14} weight="duotone" className="text-white" />
+                  : <UsersIcon size={14} weight="duotone" className="text-white" />}
+                <span className="text-[11px] font-semibold text-white tracking-wide whitespace-nowrap">
+                  {queueGroup.length}/3
+                </span>
+              </div>
+            </BasicPopover>
+          </div>
+        )}
+
+        {/* Striker badge - "lower thirds" ahh cutout */}
+        {player.charId && (bestChar?.characterId === player.charId || favChar?.characterId === player.charId) && (
+          <div
+            className={clsx(
+              'absolute bottom-0 right-0 flex items-center py-1 pl-6 pr-3',
+              bestChar?.characterId === player.charId ? 'bg-match-mid/50' : 'bg-match-win/50'
+            )}
+            style={{ clipPath: 'polygon(18px 0, 100% 0, 100% 100%, 0 100%)' }}
+          >
+            <span className="text-[11px] font-semibold text-white uppercase tracking-wide whitespace-nowrap">
+              {bestChar?.characterId === player.charId ? 'Best Striker' : 'Main Striker'}
+            </span>
+          </div>
+        )}
       </button>
     </motion.div>
   );

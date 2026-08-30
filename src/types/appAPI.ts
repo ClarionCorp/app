@@ -1,13 +1,33 @@
 // This refers to the Ai.Mi App API at https://api.aimis.app.
 
+import { AppAPIRegion } from "../core/objects/regions"
 import { GithubRelease } from "./github"
 
+// /v1/online
 export type OnlinePlayersV1 = {
   total: number,
   in_game: number,
-  idling: number
+  idling: number,
+  seen: number,
 }
 
+// /v1/online/detailed
+export type OnlineHistoryV1 = {
+  counts: OnlinePlayersV1,
+  history: Record<AppAPIRegion, OnlineHistoryObjV1[]>
+}
+
+export type OnlineHistoryObjV1 = {
+  region: AppAPIRegion,
+  totalCount: number,
+  idleCount: number,
+  queueCount: number,
+  inGameCount: number,
+  seenCount: number,
+  createdAt: Date
+}
+
+// /v1/matches
 export type POSTMatchHistoryV1 = {
   mapId: string,
   queue: string, // English names, like "Ranked"
@@ -17,13 +37,16 @@ export type POSTMatchHistoryV1 = {
   avgRating: number,
 
   playerId: string,
-  username: string | null,
+  username: string,
   players: POSTMatchHistoryPlayerV1[],
 
   t1_sets: number,
   t2_sets: number,
+  t1_pts: number,
+  t2_pts: number,
   myTeam: number,
 
+  region: AppAPIRegion,
   playedAt: number,
 }
 
@@ -47,6 +70,15 @@ export type POSTMatchHistoryPlayerV1 = {
   mvp: boolean, // unused for now, just leave omitted
 }
 
+// /v1/player/:username/teammates
+export type PairedPlayersV1 = {
+  username: string,
+  queuemates: string[],
+  updatedAt: Date,
+  createdAt: Date
+}
+
+// /v1/updates
 export type VersionCheck = {
   updateAvailable: boolean,
   latest: string, // tag/version name

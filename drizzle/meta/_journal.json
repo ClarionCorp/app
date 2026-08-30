@@ -211,6 +211,41 @@
       "when": 1786890109975,
       "tag": "0029_famous_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1787145074856,
+      "tag": "0030_serious_lilith",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1787145302088,
+      "tag": "0031_luxuriant_kylun",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1787147808928,
+      "tag": "0032_orange_stellaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1787866352079,
+      "tag": "0033_amused_iron_lad",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "6",
+      "when": 1787943019794,
+      "tag": "0034_dapper_mandroid",
+      "breakpoints": true
     }
   ]
 }

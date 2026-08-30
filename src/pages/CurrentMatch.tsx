@@ -9,15 +9,16 @@ import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { getCurrentMatch, getCustomLobby, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
-import { MapRotation } from '../components/LiveMatch/MapRotation';
+import { OutOfGamePanel } from '../components/LiveMatch/OutOfGame/OutOfGamePanel';
 import { AbilityCard } from '../components/LiveMatch/AbilityCard';
-import { IntermissionPredictions } from '../components/LiveMatch/IntermissionPredictions';
 import { MatchInfo } from '../components/LiveMatch/MatchInfo';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
 import { getGameStatus } from '../core/objects/gameStates';
 import { checkBlocked } from '../core/utilities/events';
+import { XPTimeline } from '../components/LiveMatch/XPTimeline';
+import { XPLeaderboard } from '../components/LiveMatch/XPLeaderboard';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -88,16 +89,22 @@ export default function CurrentMatchPage() {
     .filter(p => p.teamNum !== myTeamNum)
     .sort((a) => (a.role === 'Goalie' ? -1 : 1));
 
+  const mvp = players.reduce<MatchPlayersTable | undefined>((best, p) => {
+    if (p.gainedXp == null) return best;
+    if (!best || (best.gainedXp ?? 0) < p.gainedXp) return p;
+    return best;
+  }, undefined);
+
   // always show maps (default state) unless in game
   const gameStatus = getGameStatus(match?.gameState);
-  const showMaps =
+  const showOutOfGame =
     match?.queueState == 'StartingGame' ||
     match?.queueState == 'FoundMatch' ||
     (gameStatus !== 'IN_GAME' && gameStatus !== 'SETUP' && gameStatus !== 'STARTING');
 
   return (
     <div className="flex flex-col">
-      <div className="flex-1 overflow-y-auto px-6 py-3">
+      <div className="flex-1 overflow-y-auto px-4">
         <AnimatePresence mode="wait">
           {loading ? (
             <motion.div
@@ -141,23 +148,21 @@ export default function CurrentMatchPage() {
               initial="hidden"
               animate="show"
             >
-              {!showMaps && <MatchInfo match={match} myPlayer={myPlayer} />}
-              
-              <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
-
-              {!showMaps && getGameStatus(match?.gameState) !== 'SETUP' &&<IntermissionPredictions players={players} />}
+              {!showOutOfGame && <>
+                <MatchInfo match={match} myPlayer={myPlayer} />
+                <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
+              </>
+              }
 
               <div className="flex flex-col lg:flex-row lg:gap-0 mt-4 mb-8">
                 <div className="flex-1 min-w-0 space-y-3">
-                  {showMaps ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                      <MapRotation />
-                    </motion.div>
+                  {showOutOfGame ? (
+                    <OutOfGamePanel />
                   ) : (
                     <>
                       <div className="space-y-3">
                         {blueTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={index} isBlue />
+                          <PlayerCard key={player.username} player={player} match={match} index={index} isBlue isMvp={player.username === mvp?.username} teammates={blueTeam} />
                         ))}
                       </div>
 
@@ -169,52 +174,57 @@ export default function CurrentMatchPage() {
 
                       <div className="space-y-3">
                         {redTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} />
+                          <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} isMvp={player.username === mvp?.username} teammates={redTeam} />
                         ))}
                       </div>
                     </>
                   )}
                 </div>
 
-                <div className="hidden lg:block w-px mx-4 self-stretch" />
+                {!showOutOfGame && <>
+                  <div className="hidden lg:block w-px mx-2 self-stretch" />
 
-                <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
-                  {myChar ? (
-                    <>
-                      {myChar.pagination && (
-                        <div className="flex gap-1 p-1 bg-surface rounded-lg border border-surface-border">
-                          {(['Closed', 'Open'] as const).map(form => (
-                            <button
-                              key={form}
-                              onClick={() => setAbilityForm(form)}
-                              className={`flex-1 py-1.5 text-sm font-semibold cursor-pointer rounded-md transition-colors ${
-                                abilityForm === form
-                                  ? 'bg-surface-overlay text-char'
-                                  : 'text-char-subtle hover:text-char'
-                              }`}
-                            >
-                              {form}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      {(myChar.pagination
-                        ? myChar.abilities.filter(a =>
-                            abilityForm === 'Open'
-                              ? !a.type.startsWith('Closed')
-                              : !a.type.startsWith('Open')
-                          )
-                        : myChar.abilities
-                      ).map((ability, index) => (
-                        <AbilityCard key={`${ability.type}-${index}`} ability={ability} />
-                      ))}
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-48">
-                      No character data
-                    </div>
-                  )}
-                </div>
+                  <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
+                    <XPLeaderboard players={players} />
+                    <XPTimeline />
+                    {myChar ? (
+                      <>
+                        {myChar.pagination && (
+                          <div className="flex gap-1 p-1 bg-surface rounded-lg border border-surface-border">
+                            {(['Closed', 'Open'] as const).map(form => (
+                              <button
+                                key={form}
+                                onClick={() => setAbilityForm(form)}
+                                className={`flex-1 py-1.5 text-sm font-semibold cursor-pointer rounded-md transition-colors ${
+                                  abilityForm === form
+                                    ? 'bg-surface-overlay text-char'
+                                    : 'text-char-subtle hover:text-char'
+                                }`}
+                              >
+                                {form}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {(myChar.pagination
+                          ? myChar.abilities.filter(a =>
+                              abilityForm === 'Open'
+                                ? !a.type.startsWith('Closed')
+                                : !a.type.startsWith('Open')
+                            )
+                          : myChar.abilities
+                        ).map((ability, index) => (
+                          <AbilityCard key={`${ability.type}-${index}`} ability={ability} />
+                        ))}
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-48">
+                        No character data
+                      </div>
+                    )}
+                  </div>
+                  </>
+                }
               </div>
             </motion.div>
           )}

@@ -4,6 +4,7 @@ import { matchHistory } from '../core/database/schema'
 import { UserTable } from '../types/database'
 import { MAPS } from '../core/objects/maps'
 import { QUEUES } from '../core/objects/queues'
+import { characters } from '../core/objects/characters'
 import { Dropdown, type DropdownItem } from '../components/UI/Dropdown'
 import { CaretDownIcon, MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react'
 import IndividualMatch from '../components/MatchHistory/IndividualMatch'
@@ -65,6 +66,7 @@ export default function MatchHistoryPage() {
   const [queueFilter, setQueueFilter] = useState<string | null>(null)
   const [mapFilter, setMapFilter] = useState<string | null>(null)
   const [accountFilter, setAccountFilter] = useState<string | null>(null)
+  const [characterFilter, setCharacterFilter] = useState<string | null>(null)
 
   const [playerSearch, setPlayerSearch] = useState('')
   const [visibleCount, setVisibleCount] = useState(pageSize)
@@ -82,12 +84,13 @@ export default function MatchHistoryPage() {
 
   useEffect(() => {
     setVisibleCount(pageSize)
-  }, [queueFilter, mapFilter, accountFilter, playerSearch])
+  }, [queueFilter, mapFilter, accountFilter, characterFilter, playerSearch])
 
   const filtered = matches.filter(m => {
     if (queueFilter && m.queue !== queueFilter) return false
     if (mapFilter && m.mapId !== mapFilter) return false
     if (accountFilter !== null && m.playerId !== accountFilter) return false
+    if (characterFilter && m.players.find(p => p.playerId === m.playerId)?.characterId !== characterFilter) return false
     if (playerSearch && !m.players.some(p => p.name.toLowerCase().includes(playerSearch.toLowerCase()))) return false
     return true
   })
@@ -152,6 +155,17 @@ export default function MatchHistoryPage() {
           }))}
         />
 
+        <FilterButton
+          label={characters.find(c => c.id === characterFilter)?.name ?? 'All Characters'}
+          active={characterFilter !== null}
+          onClear={() => setCharacterFilter(null)}
+          items={characters.map(c => ({
+            label: c.name,
+            icon: <img src={`/characters/portrait/${c.id}.webp`} alt="" className="w-6 aspect-square rounded-full object-cover" />,
+            onClick: () => setCharacterFilter(c.id === characterFilter ? null : c.id),
+          }))}
+        />
+
         {showAccountFilter && (
           <FilterButton
             label={selectedUser?.username ?? 'All Accounts'}
@@ -165,7 +179,7 @@ export default function MatchHistoryPage() {
         )}
 
         <span className="ml-auto text-xs text-char-subtle whitespace-nowrap">
-          {filtered.length} of {matches.length} match{matches.length !== 1 ? 'es' : ''}
+          {filtered.length} match{matches.length !== 1 ? 'es' : ''}
         </span>
 
         <div className="relative">

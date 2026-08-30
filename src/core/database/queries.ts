@@ -2,8 +2,8 @@ import { AuthTable, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby } from "./schema";
-import { eq, sql } from "drizzle-orm";
+import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby, gameSessions } from "./schema";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { ProminentChar } from "../utilities/players";
 
 // Just using a basic translation file since I am still new to Drizzle
@@ -70,8 +70,22 @@ export async function getMatchHistory() {
   return db.select().from(matchHistory);
 }
 
+export async function getMatchHistoryByIds(ids: number[]) {
+  if (ids.length === 0) return [];
+  return db.select().from(matchHistory).where(inArray(matchHistory.id, ids));
+}
+
 export async function getCustomLobby() {
   return db.select().from(customLobby).limit(1).then(r => r[0] ?? null);
+}
+
+export async function getCurrentSession() {
+  return db.select().from(gameSessions).where(eq(gameSessions.active, true)).limit(1).then(r => r[0] ?? null);
+}
+
+export async function getLatestMatchHistory(orderCol = matchHistory.id) {
+  const rows = await db.select().from(matchHistory).orderBy(desc(orderCol)).limit(1);
+  return rows[0] ?? null;
 }
 
 

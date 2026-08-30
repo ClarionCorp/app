@@ -6,6 +6,15 @@
   display: none;
 }
 
+:root {
+  /* Per-theme home page background image. Override inside a theme's
+     :root[data-theme="..."] block to give it a custom background. */
+  --theme-bg-image: none;
+  /* How strongly bg-background tints the background image (0 = image shows
+     through fully, 1 = solid bg-background). Override per theme as needed. */
+  --theme-bg-overlay-opacity: 0.85;
+}
+
 @media (max-width: 768px) {
   .mobile-hero {
     background-image: none !important;
@@ -90,13 +99,15 @@
 :root[data-theme="Ai.Mi"] {
   --theme-background: #080108;
   --theme-background-border: #191a1b;
-  --theme-overlay: #000000;
+  --theme-overlay: rgba(0, 0, 0, 0.7);
+  --theme-bg-image: url('/backgrounds/Bedroom.jpg');
+  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
   --theme-slate: #0A0A0A;
   --theme-surface: #0f090f;
   --theme-surface-border: #191a1b;
-  --theme-surface-subtle: #09010a;
+  --theme-surface-subtle: #0b070c;
   --theme-surface-raised: #291d29;
-  --theme-surface-overlay: #141414;
+  --theme-surface-overlay: #1c141d;
   --theme-surface-active: #3b2a3b;
   --theme-primary: #f258d8;
   --theme-secondary: #cf4da8;
@@ -144,7 +155,9 @@
 :root[data-theme="Clarion"] {
   --theme-background: #070707;
   --theme-background-border: #191a1b;
-  --theme-overlay: #000000;
+  --theme-overlay: rgba(0, 0, 0, 0.9);
+  --theme-bg-image: url('/backgrounds/MusicStage.webp');
+  --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #0A0A0A;
   --theme-surface: #0e0e0e;
   --theme-surface-border: #191a1b;
@@ -267,6 +280,174 @@
   --theme-char-secondary: #66666b;
   --theme-char-subtle: #606070;
   --theme-char-accent: #11d811;
+  --theme-match-ally: #60a5fa;
+  --theme-match-enemy: #f87171;
+  --theme-match-win: #12b13a;
+  --theme-match-mid: #d39126;
+  --theme-match-loss: #db2424;
+  --theme-match-brawler: #EF4444;
+  --theme-match-midfielder: #14B8A6;
+  --theme-match-hardfwd: #F97316;
+  --theme-match-offgoalie: #EF4444;
+  --theme-match-defgoalie: #3B82F6;
+  --theme-dialogue-info: #60a5fa;
+  --theme-dialogue-info-surface: #bfdbfe;
+  --theme-dialogue-info-char: #1e3a8a;
+  --theme-dialogue-info-subtle: #93c5fd;
+  --theme-dialogue-warning: #facc15;
+  --theme-dialogue-warning-surface: #fef9c3;
+  --theme-dialogue-warning-char: #713f12;
+  --theme-dialogue-warning-subtle: #fef08a;
+  --theme-dialogue-danger: #f97316;
+  --theme-dialogue-danger-surface: #ffedd5;
+  --theme-dialogue-danger-char: #7c2d12;
+  --theme-dialogue-danger-subtle: #fed7aa;
+  --theme-dialogue-error: #ef4444;
+  --theme-dialogue-error-surface: #fee2e2;
+  --theme-dialogue-error-char: #7f1d1d;
+  --theme-dialogue-error-subtle: #fecaca;
+  --theme-dialogue-success: #22c55e;
+  --theme-dialogue-success-surface: #dcfce7;
+  --theme-dialogue-success-char: #14532d;
+  --theme-dialogue-success-subtle: #bbf7d0;
+}
+
+
+/* Obscura, based loosely on Catppuccin */
+:root[data-theme="Obscura"] {
+  --theme-background: #11111b;
+  --theme-background-border: #2b2f47;
+  --theme-overlay: rgba(0, 0, 0, 0.8);
+  --theme-bg-image: url('/backgrounds/Campfire.jpg');
+  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
+  --theme-slate: #181825;
+  --theme-surface: #1e1e2e;
+  --theme-surface-border: #191a1b;
+  --theme-surface-subtle: #181825;
+  --theme-surface-raised: #313244;
+  --theme-surface-overlay: #45475a;
+  --theme-surface-active: #585b70;
+  --theme-primary: #8839ef;
+  --theme-secondary: #7c34db;
+  --theme-tertiary: #6b2ebb;
+  --theme-success: #40a02b;
+  --theme-error: #d20f39;
+  --theme-pink: #ea76cb;
+  --theme-char: #cdd6f4;
+  --theme-char-secondary: #bac2de;
+  --theme-char-subtle: #7b8097;
+  --theme-char-accent: #aa69ff;
+  --theme-match-ally: #04a5e5;
+  --theme-match-enemy: #e64553;
+  --theme-match-win: #9851f5;
+  --theme-match-mid: #e49c38;
+  --theme-match-loss: #e64553;
+  --theme-match-brawler: #d20f39;
+  --theme-match-midfielder: #179299;
+  --theme-match-hardfwd: #fe640b;
+  --theme-match-offgoalie: #e64553;
+  --theme-match-defgoalie: #04a5e5;
+  --theme-dialogue-info: #04a5e5;
+  --theme-dialogue-info-surface: #11111b;
+  --theme-dialogue-info-char: #74c7ec;
+  --theme-dialogue-info-subtle: #1e3a8a;
+  --theme-dialogue-warning: #df8e1d;
+  --theme-dialogue-warning-surface: #11111b;
+  --theme-dialogue-warning-char: #fde047;
+  --theme-dialogue-warning-subtle: #713f12;
+  --theme-dialogue-danger: #8839ef;
+  --theme-dialogue-danger-surface: #11111b;
+  --theme-dialogue-danger-char: #a363f7;
+  --theme-dialogue-danger-subtle: #8839ef;
+  --theme-dialogue-error: #d20f39;
+  --theme-dialogue-error-surface: #11111b;
+  --theme-dialogue-error-char: #fca5a5;
+  --theme-dialogue-error-subtle: #7f1d1d;
+  --theme-dialogue-success: #40a02b;
+  --theme-dialogue-success-surface: #11111b;
+  --theme-dialogue-success-char: #a6d189;
+  --theme-dialogue-success-subtle: #14532d;
+}
+
+/* Maelstrom (dark) */
+:root[data-theme="Maelstrom"] {
+  --theme-background: #101013;
+  --theme-background-border: #1e212e;
+  --theme-overlay: rgba(0, 0, 0, 0.8);
+  --theme-bg-image: url('/backgrounds/MusicStage.webp');
+  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
+  --theme-slate: #181825;
+  --theme-surface: #1c1c24;
+  --theme-surface-border: #191a1b;
+  --theme-surface-subtle: #17171d;
+  --theme-surface-raised: #373842;
+  --theme-surface-overlay: #31323d;
+  --theme-surface-active: #43434b;
+  --theme-primary: #c6c920;
+  --theme-secondary: #816a53;
+  --theme-tertiary: #685442;
+  --theme-success: #40a02b;
+  --theme-error: #d20f39;
+  --theme-pink: #ea76cb;
+  --theme-char: #cdd6f4;
+  --theme-char-secondary: #bac2de;
+  --theme-char-subtle: #a6adc8;
+  --theme-char-accent: #c6c920;
+  --theme-match-ally: #04a5e5;
+  --theme-match-enemy: #e64553;
+  --theme-match-win: #41e057;
+  --theme-match-mid: #e49c38;
+  --theme-match-loss: #e64553;
+  --theme-match-brawler: #d20f39;
+  --theme-match-midfielder: #179299;
+  --theme-match-hardfwd: #fe640b;
+  --theme-match-offgoalie: #e64553;
+  --theme-match-defgoalie: #04a5e5;
+  --theme-dialogue-info: #816a53;
+  --theme-dialogue-info-surface: #121214;
+  --theme-dialogue-info-char: #caa988;
+  --theme-dialogue-info-subtle: #856c57;
+  --theme-dialogue-warning: #df8e1d;
+  --theme-dialogue-warning-surface: #11111b;
+  --theme-dialogue-warning-char: #fde047;
+  --theme-dialogue-warning-subtle: #713f12;
+  --theme-dialogue-danger: #8839ef;
+  --theme-dialogue-danger-surface: #11111b;
+  --theme-dialogue-danger-char: #a363f7;
+  --theme-dialogue-danger-subtle: #8839ef;
+  --theme-dialogue-error: #d20f39;
+  --theme-dialogue-error-surface: #11111b;
+  --theme-dialogue-error-char: #fca5a5;
+  --theme-dialogue-error-subtle: #7f1d1d;
+  --theme-dialogue-success: #40a02b;
+  --theme-dialogue-success-surface: #11111b;
+  --theme-dialogue-success-char: #a6d189;
+  --theme-dialogue-success-subtle: #14532d;
+}
+
+/* SSR (light) */
+:root[data-theme="Beach"] {
+  --theme-background: #fdddad;
+  --theme-background-border: #e6b266;
+  --theme-overlay: rgba(0, 0, 0, 0.5);
+  --theme-bg-image: url('/backgrounds/Beach.webp');
+  --theme-bg-overlay-opacity: 0.70; /* Just for the home page */
+  --theme-slate: #f8d7a6;
+  --theme-surface: #f8ce8e;
+  --theme-surface-border: #f3be6e;
+  --theme-surface-subtle: #ffd89d;
+  --theme-surface-raised: #fac679;
+  --theme-surface-overlay: #fdc46f;
+  --theme-surface-active: #f8c67c;
+  --theme-primary: #008aca;
+  --theme-secondary: #14afb4;
+  --theme-tertiary: #199aac;
+  --theme-error: #ee4839;
+  --theme-pink: #F763E4;
+  --theme-char: #131313;
+  --theme-char-secondary: #535353;
+  --theme-char-subtle: #606070;
+  --theme-char-accent: #039be2;
   --theme-match-ally: #60a5fa;
   --theme-match-enemy: #f87171;
   --theme-match-win: #12b13a;

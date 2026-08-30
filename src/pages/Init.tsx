@@ -21,6 +21,7 @@ import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { platform } from "@tauri-apps/plugin-os";
 import { linux_launch_options, windows_default_gamedir, linux_default_gamedir } from "../core/constants";
+import { checkStartNewSession } from "../core/utilities/sessions";
 
 type StepId = "ue4ss" | "account" | "updates" | "discord";
 
@@ -141,6 +142,7 @@ export default function InitializationPage() {
         // 1.5) (Hidden) Purge players table as we'll just fetch a new one anyway
         await db.delete(matchPlayers).run();
         // await updateGameState('None');
+        await checkStartNewSession();
 
         // 2) Fetch account info from Odyssey
         goToStep("account");

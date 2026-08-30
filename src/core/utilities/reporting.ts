@@ -2,9 +2,10 @@
 
 import { platform, version, arch, Platform, Arch } from '@tauri-apps/plugin-os';
 import { getHardwareInfo, getIdentityPath, getLogPath, getTempDir } from './system';
-import { appDataDir, join } from '@tauri-apps/api/path';
+import { appDataDir, homeDir, join } from '@tauri-apps/api/path';
 import { getAppSettings } from '../database/queries';
 import { readDir, readTextFile } from '@tauri-apps/plugin-fs';
+import { linux_default_gamedir, windows_default_gamedir } from '../constants';
 
 export type SysReport = {
   platform: {
@@ -95,6 +96,16 @@ export async function grabLatestAppLog(): Promise<string> {
   const appFolder = await appDataDir();
   const latestPath = await join(appFolder, 'logs', 'latest.log');
   const logContents = await readTextFile(latestPath);
+  return logContents;
+}
+
+export async function grabLatestModLogs(): Promise<string> {
+  const settings = await getAppSettings();
+  const defaultDir = platform() === 'windows' ? windows_default_gamedir : await join(await homeDir(), linux_default_gamedir);
+  const gameDir = settings.gameDirectory ?? defaultDir;
+
+  const logPath = await join(gameDir, 'OmegaStrikers', 'Binaries', 'Win64', 'UE4SS.log');
+  const logContents = await readTextFile(logPath);
   return logContents;
 }
 

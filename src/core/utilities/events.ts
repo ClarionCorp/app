@@ -6,15 +6,18 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
-import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
+import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getLatestMatchHistory, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
-import { getRegionObjectFromID } from "../objects/regions";
+import { getRegionObjectFromAppRegion, getServerObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
-import { fetchPlayerStats } from "./players";
+import { fetchPlayerStats, getInferredQueueMates } from "./players";
+import { updateSession } from "./sessions";
+import { AiMiAPI } from "../constants";
+import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1 } from "../../types/appAPI";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
 const flags =  ['blockapp', 'eusl', 'bub', 'osas', 'euos'];
@@ -55,13 +58,14 @@ export async function updatePlayers(data: PlayersJSON) {
 
   // For any players who have no rating, run a bunch of one-time stuff.
   // Here, we grab their rating, playstyle, smurf rating, and basic stats.
-  for (const player of players.filter(p => p.rating === null)) {
+  for (const localPlayer of players.filter(p => p.rating === null)) {
     // fetch and set ratings and other stats (if empty)
-    console.log(`Fetching statistical data for ${player.username}...`)
+    console.log(`Fetching statistical data for ${localPlayer.username}...`)
     try {
-      const playerStats = await fetchPlayerStats(player.username, player.playerId);
-      const playstyle = await fetchPlayerPlayerstyle(player.username);
-      const smurf = await fetchPlayerSmurfEstimate(player.username);
+      const playerStats = await fetchPlayerStats(localPlayer.username, localPlayer.playerId);
+      const playstyle = await fetchPlayerPlayerstyle(localPlayer.username);
+      const smurf = await fetchPlayerSmurfEstimate(localPlayer.username);
+      const inferredQueueMates = await getInferredQueueMates(localPlayer.username);
       await db.update(matchPlayers).set({
         rating: playerStats.rating, // will be 0 if not found
         favChar: playerStats.favChar ?? undefined,
@@ -71,11 +75,13 @@ export async function updatePlayers(data: PlayersJSON) {
         rankedGames: playerStats.rankedGames,
         rankedWR: playerStats.rankedWR,
         playstyle,
-        smurfProbability: smurf?.confidence
-      }).where(eq(matchPlayers.username, player.username));
+        smurfProbability: smurf?.confidence,
+        tags: playerStats.tags,
+        queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
+      }).where(eq(matchPlayers.username, localPlayer.username));
     } catch (e) {
-      console.warn(`No rank data could be found for ${player.username}.`);
-      updatePlayerRating(player.username, 0); // set to 0 to prevent refetching (and failing again)
+      console.warn(`No rank data could be found for ${localPlayer.username}.`);
+      updatePlayerRating(localPlayer.username, 0); // set to 0 to prevent refetching (and failing again)
       continue;
     }
   }
@@ -174,6 +180,12 @@ export async function saveMatchToHistory(data: PostGameJSON) {
       timeline: match.timeline,
       createdAt: new Date(),
     });
+
+    await uploadLatestMatch(); // automatically upload match to AppAPI for processing
+
+    // wait a few seconds for OdyAPI to update LP before updating session
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    await updateSession(currentUser.username);
   } catch (e) {
     console.error('Something went wrong while saving the match!', e);
   }
@@ -216,7 +228,7 @@ export async function updateCustomLobby(data: MetaJSON) {
     lobbyId: data.custom_lobby?.lobby_id,
     private: data.custom_lobby?.is_private,
     serverIds: data.custom_lobby?.regions,
-    region: getRegionObjectFromID(data.custom_lobby?.regions[0]).region,
+    region: getServerObjectFromID(data.custom_lobby?.regions[0]).region,
     appBlocked: flags.some(item => data.custom_lobby?.lobby_name.toLocaleLowerCase().includes(item)),
     maxMembers: data.custom_lobby?.lobby_size,
     memberCount: data.custom_lobby?.member_count,
@@ -249,4 +261,73 @@ export async function checkBlocked(lobbyCache?: CustomLobbyTable, matchCache?: C
   };
 
   return decision;
+}
+
+export async function uploadLatestMatch() {
+  try {
+    const latestEntry = await getLatestMatchHistory();
+    if (!latestEntry) { throw new Error('Latest entry could not be found.') };
+
+    const user = await getUser();
+    if (!user) { throw new Error('Current user could not be found.') };
+
+    const ratings = latestEntry.players.map(p => p.rating).filter((r): r is number => r !== null && r !== 0);
+    const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
+    const myPlayerId = latestEntry.playerId ?? user.playerId;
+
+    const formattedPlayers: POSTMatchHistoryPlayerV1[] = latestEntry.players.map(p => ({
+      playerId: p.playerId,
+      username: p.name,
+      teamNum: p.team,
+
+      characterId: p.characterId,
+      role: p.role,
+      trainings: p.trainings,
+      level: p.level,
+      assists: p.assists,
+      scores: p.goals,
+      saves: p.saves,
+      knockouts: p.kos,
+      damage: p.damage,
+      shots: p.shots,
+      redirects: p.redirects,
+      orbs: p.orbs,
+      mvp: p.mvp,
+    }));
+
+    const formattedBody: POSTMatchHistoryV1 = {
+      mapId: latestEntry.mapId,
+      queue: latestEntry.queue,
+      result: latestEntry.wonGame ? 'VICTORY' : 'DEFEAT',
+      duration: latestEntry.duration,
+      bans: latestEntry.bans,
+      avgRating: avgRating ?? 0,
+      myTeam: latestEntry.myTeam,
+
+      playerId: myPlayerId,
+      username: latestEntry.players.find(p => p.playerId === myPlayerId)?.playerId ?? user.playerId,
+      players: formattedPlayers,
+
+      t1_pts: latestEntry.t1_pts,
+      t2_pts: latestEntry.t2_pts,
+      t1_sets: latestEntry.t1_sets,
+      t2_sets: latestEntry.t2_sets,
+
+      region: getRegionObjectFromAppRegion(user.matchmakingRegion).apiRegion,
+      playedAt: Math.floor(latestEntry.createdAt.getTime() / 1000),
+    }
+
+    const res = await fetch(`${AiMiAPI}/v1/matches`, {
+      method: 'POST',
+      body: JSON.stringify(formattedBody),
+      headers: { 'x-user-agent': 'aimi-app', 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok) { throw new Error(`Couldn't save match with AppAPI! (${res.status}: ${data.error})`) }
+    else { console.log(`Successfully uploaded match to AppAPI!`) };
+
+  } catch (e) {
+    console.error(e);
+  }
 }

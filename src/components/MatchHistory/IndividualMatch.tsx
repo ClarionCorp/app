@@ -66,8 +66,8 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
       className={clsx(
         'w-full rounded-lg border overflow-hidden relative min-w-0',
         row.wonGame
-          ? 'bg-match-win/10 border-green-500/20'
-          : 'bg-match-loss/10 border-red-500/20'
+          ? 'bg-match-win/10 border-match-win/20'
+          : 'bg-match-loss/10 border-match-loss/20'
       )}
     >
       {/* Compact Summary */}

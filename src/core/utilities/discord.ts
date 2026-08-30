@@ -72,8 +72,8 @@ export async function stopRpc() {
 }
 
 async function _updateActivity(options: RpcActivityOptions) {
-  console.log(`Received request to change rich presence...`);
-  console.debug(`DRPC Options: ${JSON.stringify(options, null, 1)}`);
+  console.debug(`Received request to change rich presence...`);
+  // console.debug(`DRPC Options: ${JSON.stringify(options, null, 1)}`);
 
   try {
     const {
@@ -112,7 +112,7 @@ async function _updateActivity(options: RpcActivityOptions) {
       );
     }
 
-    console.debug(activity);
+    // console.debug(activity);
     await setActivity(activity);
   } catch (e) {
     console.error(`[DRPC] Failed to update activity!`, e);
