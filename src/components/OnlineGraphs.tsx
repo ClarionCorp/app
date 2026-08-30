@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Line } from 'react-chartjs-2';
 import { Chart, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js';
 import { XIcon } from '@phosphor-icons/react';
@@ -176,7 +177,7 @@ export default function OnlineGraphs({ open, onClose }: OnlineGraphsProps) {
     return () => { cancelled = true; };
   }, [open]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -188,7 +189,7 @@ export default function OnlineGraphs({ open, onClose }: OnlineGraphsProps) {
         >
           <div className="absolute inset-0 bg-overlay/80" onClick={onClose} />
           <motion.div
-            className="relative z-10 w-3xl max-w-[95vw] max-h-[85vh] overflow-y-auto rounded-xl bg-surface border border-background-border shadow-xl p-5 flex flex-col gap-4"
+            className="relative z-60 w-3xl max-w-[95vw] max-h-[85vh] overflow-y-auto rounded-xl bg-surface border border-background-border shadow-xl p-5 flex flex-col gap-4"
             initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 8 }}
@@ -238,6 +239,7 @@ export default function OnlineGraphs({ open, onClose }: OnlineGraphsProps) {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
