@@ -37,11 +37,10 @@ interface HelpModalProps {
 }
 
 const keybinds = [
-  { keys: ['Ctrl', '`'], description: 'Toggle Debug Console' },
   { keys: ['F6'], description: 'Open Help' },
   { keys: ['F8'], description: 'Preview Queue Pop SFX', debug: false },
   { keys: ['F9'], description: 'Open Debug Page', debug: true },
-  { keys: ['Ctrl', 'F9'], description: 'Upload last match to API', debug: true },
+  { keys: ['Ctrl', '`'], description: 'Toggle Debug Console', debug: true },
 ];
 
 const pageTitles: Record<Exclude<View, 'home'>, string> = {
