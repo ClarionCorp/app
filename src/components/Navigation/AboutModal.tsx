@@ -9,6 +9,7 @@ import {
   RssIcon,
 } from '@phosphor-icons/react';
 import { platform, version as osVersion, arch } from '@tauri-apps/plugin-os';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { getAppSettings, getUser } from '../../core/database/queries';
 import { formatBytes, getHardwareInfo, getIdentityPath, getLogPath, getTempDir, type HardwareInfo } from '../../core/utilities/system';
 import { version as appVersion, ClarionAPI, OdyAPI, AiMiAPI } from '../../core/constants';
@@ -55,7 +56,6 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
   const [user, setUser] = useState<UserTable | null>(null);
   const [hardware, setHardware] = useState<HardwareInfo | null>(null);
   const [identityPath, setIdentityPath] = useState<string | null>(null);
-  const [logPath, setLogPath] = useState<string | null>(null);
   const [tempDir, setTempDir] = useState<string | null>(null);
   const [appSettings, setAppSetts] = useState<AppSettingsTable | null>(null);
 
@@ -155,6 +155,13 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                   <Row key={label} label={label} value={url.replace('https://', '')} mono />
                 ))}
               </Section>
+
+              <div className="mt-1 flex flex-col items-center gap-0.5">
+                <span className="text-[11px] text-char-subtle">
+                  Made with ❤️ by {' '}
+                  <a onClick={() => openUrl('https://blals.com')} className="hover:text-match-ally hover:underline cursor-pointer transition-colors">blals</a>
+                </span>
+              </div>
             </div>
           </motion.div>
         </motion.div>
