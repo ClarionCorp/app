@@ -11,7 +11,7 @@ import {
 import { platform, version as osVersion, arch } from '@tauri-apps/plugin-os';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { getAppSettings, getUser } from '../../core/database/queries';
-import { formatBytes, getHardwareInfo, getIdentityPath, getLogPath, getTempDir, type HardwareInfo } from '../../core/utilities/system';
+import { formatBytes, getHardwareInfo, getIdentityPath, getTempDir, type HardwareInfo } from '../../core/utilities/system';
 import { version as appVersion, ClarionAPI, OdyAPI, AiMiAPI } from '../../core/constants';
 import type { AppSettingsTable, UserTable } from '../../types/database';
 
