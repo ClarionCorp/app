@@ -246,6 +246,13 @@
       "when": 1787943019794,
       "tag": "0034_dapper_mandroid",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "6",
+      "when": 1788572983814,
+      "tag": "0035_minor_steel_serpent",
+      "breakpoints": true
     }
   ]
 }

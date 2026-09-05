@@ -32,6 +32,7 @@ type Settings = {
   exitOnGameClose: boolean;
   sendMatchData: boolean;
   prefDataSource: PreferredDataSources;
+  openGameWithApp: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -43,6 +44,7 @@ const DEFAULT_SETTINGS: Settings = {
   exitOnGameClose: false,
   sendMatchData: false,
   prefDataSource: 'ClarionCorp',
+  openGameWithApp: false,
 };
 
 export default function SettingsPage() {
@@ -72,6 +74,7 @@ export default function SettingsPage() {
         exitOnGameClose: s.exitOnGameClose,
         sendMatchData: s.sendMatchData,
         prefDataSource: s.prefDataSource ?? 'ClarionCorp',
+        openGameWithApp: s.openGameWithApp,
       });
     });
   }, []);
@@ -181,6 +184,16 @@ export default function SettingsPage() {
                 await stopRpc();
               }
             }}
+          />
+        </SettingRow>
+
+        <SettingRow
+          title="Open Game with App"
+          subtitle="Automatically open Omega Strikers via Steam when the app is opened."
+        >
+          <Toggle
+            enabled={settings.openGameWithApp}
+            onChange={v => update({ openGameWithApp: v })}
           />
         </SettingRow>
 

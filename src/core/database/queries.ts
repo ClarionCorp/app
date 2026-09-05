@@ -241,6 +241,12 @@ export async function deleteCustomLobby() {
   await db.delete(customLobby).run();
 }
 
+export async function setGameState(gameState: string) {
+  await db.update(currentMatch)
+    .set({ gameState })
+    .where(eq(currentMatch.id, 1));
+}
+
 // 
 // Helpers
 // 

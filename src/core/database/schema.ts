@@ -17,6 +17,7 @@ export const appSettings = sqliteTable("appSettings", {
   exitOnGameClose: integer("exitOnGameClose", { mode: "boolean" }).notNull().default(false),
   sendMatchData: integer("sendMatchData", { mode: "boolean" }).notNull().default(false),
   prefDataSource: text("prefDataSource").$type<PreferredDataSources>().default('ClarionCorp'),
+  openGameWithApp: integer("openGameWithApp", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 

@@ -9,7 +9,7 @@ import { dirname, homeDir, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion, ensureCurrentMatch } from "../core/database/queries";
+import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion, ensureCurrentMatch, setGameState } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { db } from "../core/database/driver";
 import { matchPlayers } from "../core/database/schema";
@@ -23,10 +23,11 @@ import { platform } from "@tauri-apps/plugin-os";
 import { linux_launch_options, windows_default_gamedir, linux_default_gamedir } from "../core/constants";
 import { checkStartNewSession } from "../core/utilities/sessions";
 
-type StepId = "ue4ss" | "account" | "updates" | "discord";
+type StepId = "ue4ss" | "startup" | "account" | "updates" | "discord";
 
 const steps: { id: StepId; label: string; pct: number }[] = [
   { id: "ue4ss", label: "Checking UE4SS...", pct: 5 },
+  { id: "startup", label: "Starting background services...", pct: 30 },
   { id: "account", label: "Fetching account info...", pct: 40 },
   { id: "updates", label: "Checking for updates...", pct: 60 },
   { id: "discord", label: "Connecting to Discord...", pct: 75 },
@@ -139,12 +140,23 @@ export default function InitializationPage() {
           }
         }
 
-        // 1.5) (Hidden) Purge players table as we'll just fetch a new one anyway
-        await db.delete(matchPlayers).run();
-        // await updateGameState('None');
-        await checkStartNewSession();
+        // 2) Setup any pre-requisite tasks (misc)
+        goToStep("startup");
 
-        // 2) Fetch account info from Odyssey
+        // Purge players table as we'll just fetch a new one anyway
+        await db.delete(matchPlayers).run();
+        await checkStartNewSession();
+        await setGameState('None');
+        
+        // Open Game if told to, only if game isn't running already
+        if (settings.openGameWithApp) {
+          const gameRunning = await invoke<boolean>('is_process_running', { name: 'OmegaStrikers.exe' });
+          if (!gameRunning) {
+            await openUrl(`steam://rungameid/1869590`);
+          }
+        }
+
+        // 3) Fetch account info from Odyssey
         goToStep("account");
         try {
           const auth = await readIdentity();
@@ -164,7 +176,7 @@ export default function InitializationPage() {
           setConnectedStatus(false);
         }
 
-        // 3) Check for updates
+        // 4) Check for updates
         goToStep("updates");
         const updateCheck = await checkForUpdates();
         if (updateCheck.updateAvailable) {
@@ -188,7 +200,7 @@ export default function InitializationPage() {
           });
         }
 
-        // 4) Connect to Discord RPC
+        // 5) Connect to Discord RPC
         goToStep("discord");
         await stopRpc();
         await startRpc();
