@@ -115,8 +115,16 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
         <div className="relative flex items-center gap-3">
           {/* Rank icon */}
           <div className="shrink-0 w-18 flex flex-col items-center gap-1">
-            <RankIcon rating={player.rating ?? 0} size="xm" />
-            <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} />
+            {player.rating == null ? (
+              <div className="w-18 h-18 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-surface-overlay border-t-primary animate-spin" />
+              </div>
+            ) : (
+              <>
+                <RankIcon rating={player.rating} size="xm" />
+                <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} />
+              </>
+            )}
           </div>
 
           {/* Info */}
