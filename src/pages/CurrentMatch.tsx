@@ -11,7 +11,6 @@ import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { OutOfGamePanel } from '../components/LiveMatch/OutOfGame/OutOfGamePanel';
 import { AbilityCard } from '../components/LiveMatch/AbilityCard';
-import { MatchInfo } from '../components/LiveMatch/MatchInfo';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
@@ -150,8 +149,9 @@ export default function CurrentMatchPage() {
               animate="show"
             >
               {!showOutOfGame && <>
-                <MatchInfo match={match} myPlayer={myPlayer} />
-                <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
+                <div className='mt-4'>
+                  <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
+                </div>
               </>
               }
 

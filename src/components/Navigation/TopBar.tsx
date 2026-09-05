@@ -1,10 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { getCurrentMatch, getUser } from '../../core/database/queries';
+import { getCurrentMatch, getMyMatchPlayer, getUser } from '../../core/database/queries';
 import { StatusUrl } from '../../core/constants';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { fetchOnlineCount } from '../../core/utilities/appAPI';
 import OnlineGraphs from '../OnlineGraphs';
+import { getMapObjectFromID } from '../../core/objects/maps';
+import { getQueueObjectFromID } from '../../core/objects/queues';
+import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 // import { AppAPIRegion, getRegionObjectFromAppRegion, getServerObjectFromID } from '../../core/objects/regions';
 // import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES } from '../../core/objects/onlineStatus';
 
@@ -46,6 +49,8 @@ export default function TopBar({ border = false }: TopBarProps) {
   const [incident, setIncident] = useState<Incident | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [showGraphs, setShowGraphs] = useState(false);
+  const [match, setMatch] = useState<CurrentMatchTable | null>(null);
+  const [myPlayer, setMyPlayer] = useState<MatchPlayersTable | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -66,6 +71,16 @@ export default function TopBar({ border = false }: TopBarProps) {
 
     tick();
     const interval = setInterval(tick, 300_000); // 5 minutes in ms
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    async function tick() {
+      setMatch(await getCurrentMatch());
+      setMyPlayer(await getMyMatchPlayer());
+    }
+    tick();
+    const interval = setInterval(tick, 2_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -99,6 +114,11 @@ export default function TopBar({ border = false }: TopBarProps) {
   const status = incident ? (styleMap[incident.style] ?? styleMap.warning) : goodStatus;
   // const onlineLevel = getOnlineStatusLevel(region, online); // unused for now
 
+  const ping = myPlayer?.ping;
+  const isGood = (ping ?? 0) <= 60;
+  const isMid = (ping ?? 0) <= 120;
+  const pingColorClass = isGood ? 'text-green-400' : isMid ? 'text-match-mid' : 'text-match-loss';
+
   return (
     <div className={`fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
       {/* Left */}
@@ -111,6 +131,17 @@ export default function TopBar({ border = false }: TopBarProps) {
         </button>
       </div>
       <OnlineGraphs open={showGraphs} onClose={() => setShowGraphs(false)} />
+
+      {/* Center */}
+      {match?.map && (
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-sm text-char-subtle select-none pointer-events-none">
+          <span className="font-semibold text-char-secondary">{getQueueObjectFromID(match.queue).queueName}</span>
+          <span className="text-char-secondary">— {getMapObjectFromID(match.map).mapName}</span>
+          {ping != null && ping > 0 && (
+            <span className={pingColorClass}>({ping}ms)</span>
+          )}
+        </div>
+      )}
 
       {/* Right */}
       <div className="flex items-center gap-4 relative">
