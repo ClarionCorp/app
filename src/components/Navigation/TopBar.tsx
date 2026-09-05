@@ -51,6 +51,7 @@ export default function TopBar({ border = false }: TopBarProps) {
   const [showGraphs, setShowGraphs] = useState(false);
   const [match, setMatch] = useState<CurrentMatchTable | null>(null);
   const [myPlayer, setMyPlayer] = useState<MatchPlayersTable | null>(null);
+  const [now, setNow] = useState(() => new Date());
   const popupRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -81,6 +82,11 @@ export default function TopBar({ border = false }: TopBarProps) {
     }
     tick();
     const interval = setInterval(tick, 2_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -119,6 +125,13 @@ export default function TopBar({ border = false }: TopBarProps) {
   const isMid = (ping ?? 0) <= 120;
   const pingColorClass = isGood ? 'text-green-400' : isMid ? 'text-match-mid' : 'text-match-loss';
 
+  const matchDuration = match?.startedAt
+    ? Math.max(0, Math.floor((now.getTime() - new Date(match.startedAt).getTime()) / 1000))
+    : null;
+  const matchDurationDisplay = matchDuration != null
+    ? `${Math.floor(matchDuration / 60)}:${(matchDuration % 60).toString().padStart(2, '0')}`
+    : '--:--';
+
   return (
     <div className={`fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
       {/* Left */}
@@ -134,12 +147,20 @@ export default function TopBar({ border = false }: TopBarProps) {
 
       {/* Center */}
       {match?.map && (
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-sm text-char-subtle select-none pointer-events-none">
-          <span className="font-semibold text-char-secondary">{getQueueObjectFromID(match.queue).queueName}</span>
-          <span className="text-char-secondary">— {getMapObjectFromID(match.map).mapName}</span>
-          {ping != null && ping > 0 && (
-            <span className={pingColorClass}>({ping}ms)</span>
-          )}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 text-sm text-char-subtle select-none pointer-events-none leading-tight">
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-char-secondary">{getQueueObjectFromID(match.queue).queueName}</span>
+            <span className="text-char-secondary">— {getMapObjectFromID(match.map).mapName}</span>
+          </div>
+          <div className="flex items-center gap-1 text-xs">
+            <span className="">{matchDurationDisplay}</span>
+            
+            {ping != null && ping > 0 && (
+              <>
+                (<span className={pingColorClass}>{ping}ms</span>)
+              </>
+            )}
+          </div>
         </div>
       )}
 
