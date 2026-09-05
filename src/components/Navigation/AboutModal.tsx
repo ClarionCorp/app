@@ -20,7 +20,7 @@ const HEARTBEAT_STALE_AFTER_SECS = 300;
 
 function formatHeartbeatAgo(timestampSecs: number, nowMs: number): string {
   const diff = Math.max(0, Math.floor(nowMs / 1000 - timestampSecs));
-  if (diff < 60) return `${diff}s ago`;
+  if (diff < 70) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
@@ -87,7 +87,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
     const interval = setInterval(() => {
       getHeartbeat().then(setHeartBeat).catch(() => setHeartBeat(null));
       setNow(Date.now());
-    }, 1000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [open]);
 
