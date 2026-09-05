@@ -125,7 +125,7 @@ local function WriteRoster(ModName, PLAYERS_FILE)
         end
     end
     local snapshotChanged = (snapshot ~= LastSnapshot)
-    if not snapshotChanged and not pingChanged then return end
+    if not snapshotChanged and not pingChanged then return false end
     local writeReason = snapshotChanged and "content" or "ping"
     LastSnapshot = snapshot
 
@@ -157,11 +157,12 @@ local function WriteRoster(ModName, PLAYERS_FILE)
     -- includes any time blocked on the syscall -- e.g. AV/cloud-sync scanning the write.
     local writeStart = os.clock()
     local f = io.open(PLAYERS_FILE, "w")
-    if not f then print(string.format("[%s] Failed to write players file\n", ModName)) return end
+    if not f then print(string.format("[%s] Failed to write players file\n", ModName)) return false end
     f:write(body)
     f:close()
     local writeMs = (os.clock() - writeStart) * 1000
     print(string.format("[%s] Roster: Updated %d players (reason=%s, write=%.1fms)\n", ModName, #roster, writeReason, writeMs))
+    return true
 end
 
 function Module.Init(ModName, OUT_DIR)
@@ -176,7 +177,14 @@ function Module.Init(ModName, OUT_DIR)
     end)
 
     local function PollRoster()
-        pcall(function() WriteRoster(ModName, PLAYERS_FILE) end)
+        -- Only log calc time when a write actually happened.
+        -- otherwise every 3s poll that bails early (nothing changed) would spam the log for no reason.
+        local calcStart = os.clock()
+        local ok, didWrite = pcall(function() return WriteRoster(ModName, PLAYERS_FILE) end)
+        if ok and didWrite then
+            local calcMs = (os.clock() - calcStart) * 1000
+            print(string.format("[%s] [PLAYERS] PollRoster calc took %.2fms\n", ModName, calcMs))
+        end
         ExecuteWithDelay(3000, PollRoster)
     end
 
