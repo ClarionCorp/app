@@ -13,7 +13,18 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { getAppSettings, getUser } from '../../core/database/queries';
 import { formatBytes, getHardwareInfo, getIdentityPath, getTempDir, type HardwareInfo } from '../../core/utilities/system';
 import { version as appVersion, ClarionAPI, OdyAPI, AiMiAPI } from '../../core/constants';
+import { getHeartbeat } from '../../core/bridgeListener';
 import type { AppSettingsTable, UserTable } from '../../types/database';
+
+const HEARTBEAT_STALE_AFTER_SECS = 300;
+
+function formatHeartbeatAgo(timestampSecs: number, nowMs: number): string {
+  const diff = Math.max(0, Math.floor(nowMs / 1000 - timestampSecs));
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
 
 interface AboutModalProps {
   open: boolean;
@@ -58,6 +69,8 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
   const [identityPath, setIdentityPath] = useState<string | null>(null);
   const [tempDir, setTempDir] = useState<string | null>(null);
   const [appSettings, setAppSetts] = useState<AppSettingsTable | null>(null);
+  const [heartBeat, setHeartBeat] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!open) return;
@@ -66,6 +79,16 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
     getIdentityPath().then(setIdentityPath).catch(() => setIdentityPath(null));
     getTempDir().then(setTempDir).catch(() => setTempDir(null));
     getAppSettings().then(setAppSetts).catch(() => setAppSetts(null));
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    getHeartbeat().then(setHeartBeat).catch(() => setHeartBeat(null));
+    const interval = setInterval(() => {
+      getHeartbeat().then(setHeartBeat).catch(() => setHeartBeat(null));
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
   }, [open]);
 
   return (
@@ -118,13 +141,20 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                   <Section icon={<HeartbeatIcon size={14} weight="duotone" />} title="Modloader">
                     <div className="flex items-center justify-between py-2">
                       <span className="text-xs text-char-subtle">Heartbeat</span>
-                      <span className="flex items-center gap-1.5 text-xs font-medium text-char-subtle">
-                        <span className="relative flex size-1.5">
-                          <span className="absolute inline-flex h-full w-full rounded-full bg-char-subtle opacity-50 animate-ping" />
-                          <span className="relative inline-flex rounded-full size-1.5 bg-char-subtle" />
-                        </span>
-                        Not Implemented
-                      </span>
+                      {(() => {
+                        const isFresh = heartBeat != null && (now / 1000 - heartBeat) < HEARTBEAT_STALE_AFTER_SECS;
+                        const dotColor = heartBeat == null ? 'bg-char-subtle' : isFresh ? 'bg-success' : 'bg-error';
+                        const textColor = heartBeat == null ? 'text-char-subtle' : isFresh ? 'text-success' : 'text-error';
+                        return (
+                          <span className={`flex items-center gap-1.5 text-xs font-medium ${textColor}`}>
+                            <span className="relative flex size-1.5">
+                              <span className={`absolute inline-flex h-full w-full rounded-full opacity-50 animate-ping ${dotColor}`} />
+                              <span className={`relative inline-flex rounded-full size-1.5 ${dotColor}`} />
+                            </span>
+                            {heartBeat == null ? 'Not Detected' : `last pinged ${formatHeartbeatAgo(heartBeat, now)}`}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </Section>
                 </div>

@@ -65,3 +65,7 @@ export async function isProcessRunning(name: string): Promise<boolean> {
 export async function getLatestRegion(): Promise<string | null> {
   return invoke<string | null>('get_latest_region');
 }
+
+export async function getHeartbeat(): Promise<number | null> {
+  return invoke<number | null>('get_heartbeat');
+}

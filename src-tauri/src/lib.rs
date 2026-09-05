@@ -199,6 +199,7 @@ pub fn run() {
             flush_logs,
             log_watcher::get_latest_match_timestamp,
             log_watcher::get_latest_region,
+            file_watcher::get_heartbeat,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
