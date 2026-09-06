@@ -1,7 +1,6 @@
 import { getCurrentMatch, getMatchPlayers, getUser } from "./database/queries";
 import { PlaystyleType } from "../types/clarion";
 import { TimelineEntry } from "../types/ue4ss";
-import { getQueueObjectFromID } from "./objects/queues";
 
 // Matches what AppAPI expects
 export type POSTLiveMatchV1 = {
@@ -67,7 +66,7 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   const currentMatch = await getCurrentMatch();
   const matchPlayers = await getMatchPlayers();
   const currentUser = await getUser();
-  const queueName = getQueueObjectFromID(currentMatch.queue).queueName;
+  const queueName = currentMatch.queue;
 
   // Make sure we have all the required info to initiate a valid update
   if (!currentMatch || !currentUser || !matchPlayers) return null;
