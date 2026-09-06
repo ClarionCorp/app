@@ -12,6 +12,7 @@ import clsx from 'clsx';
 import BasicPopover from '../UI/BasicPopover';
 import { getQueueObjectFromID } from '../../core/objects/queues';
 import { getQueueGroup } from './PairedPlayers';
+import { useToast } from '../UI/Toast';
 
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
@@ -64,6 +65,7 @@ function RankBadge({ text, color }: { text: string, color: string }) {
 export function PlayerCard({ player, match, index, isBlue = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
   const rankInfo = getRankFromLP(player.rating);
   const queueGroup = getQueueGroup(player, teammates);
+  const { toast } = useToast();
 
   const borderClass = player.isMe
     ? 'border-blue-500/30 hover:border-blue-500/50'
@@ -83,6 +85,14 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
     ? PLAYSTYLE_CLASSES[playstyleType as keyof typeof PLAYSTYLE_CLASSES]
     : null;
 
+  let hideUsername = false;
+  if (match && !player.charId && match.queue == 'Ranked') { hideUsername = true };
+
+  function openUserOnCC(username: string) {
+    if (hideUsername) { toast('Players hidden until bans are picked. Sorry!', 'error') }
+    else { openUrl(`https://clarioncorp.net/pilot/${username}`) };
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -90,7 +100,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
       transition={{ delay: index * 0.07, duration: 0.25 }}
     >
       <button
-        onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
+        onClick={() => openUserOnCC(player.username)}
         title='Click to open profile on ClarionCorp'
         className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
@@ -133,7 +143,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
               {/* Username & Tags */}
               <span className="flex items-center gap-1 min-w-0">
                 <span className="text-base font-semibold text-char truncate">
-                  {player.username}
+                  {hideUsername ? '———' : player.username} { /* hide username pre-ban */ }
                 </span>
                 {player.tags.length > 0 && (
                   <span className="flex items-center gap-1 shrink-0">
