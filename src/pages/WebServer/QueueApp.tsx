@@ -59,8 +59,8 @@ export function QueueApp() {
   return (
     <main className="w-screen h-screen p-4 overflow-hidden">
       <div ref={viewportRef} className="w-full h-full flex items-center justify-center">
-        <div ref={cardRef} style={{ transform: `scale(${scale})` }}>
-          <AnimatePresence>
+        <div ref={cardRef} className="relative" style={{ transform: `scale(${scale})` }}>
+          <AnimatePresence mode="wait">
             {data && isSearching && <Queued key="queued" queue={data.queue} seconds={seconds} />}
             {data && isFoundMatch && <FoundMatch key="found" queue={data.queue} />}
           </AnimatePresence>
