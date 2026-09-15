@@ -11,10 +11,12 @@ import {
   HouseIcon,
   ClockCounterClockwiseIcon,
   InfoIcon,
+  BroadcastIcon,
 } from '@phosphor-icons/react';
 import { NAV_ITEMS } from '../../core/objects/navigation';
 import { collapsedWidth, expandedWidth, widthTransition } from './NavCorner';
 import { AboutModal } from './AboutModal';
+import { OverlayModal } from './OverlayModal';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   match: <ChartBarIcon size={18} weight="duotone" />,
@@ -34,11 +36,20 @@ interface SidebarProps {
 export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarProps) {
   const location = useLocation();
   const [gameRunning, setGameRunning] = useState(false);
+  const [streamToolRunning, setStreamToolRunning] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
   const expandTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     isProcessRunning('OmegaStrikers-Win64-Shipping.exe').then(setGameRunning);
+  }, []);
+
+  useEffect(() => {
+    Promise.all([
+      isProcessRunning('obs64.exe'),
+      isProcessRunning('MeldStudio.exe'),
+    ]).then(([obs, meld]) => setStreamToolRunning(obs || meld));
   }, []);
 
   useEffect(() => {
@@ -124,6 +135,23 @@ export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarPro
           })}
 
           <div className="mt-auto flex flex-col gap-1">
+            {streamToolRunning && (
+              <button
+                onClick={() => setOverlayOpen(true)}
+                className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg transition-colors cursor-pointer text-left text-char-subtle hover:bg-surface-overlay hover:text-char"
+              >
+                <span className="shrink-0">
+                  <BroadcastIcon size={18} weight="duotone" />
+                </span>
+                <motion.span
+                  className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                  animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : -6 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  Stream Overlay
+                </motion.span>
+              </button>
+            )}
             <button
               onClick={() => setAboutOpen(true)}
               className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg transition-colors cursor-pointer text-left text-char-subtle hover:bg-surface-overlay hover:text-char"
@@ -144,6 +172,7 @@ export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarPro
       </motion.aside>
 
       <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <OverlayModal open={overlayOpen} onClose={() => setOverlayOpen(false)} />
     </>
   );
 }

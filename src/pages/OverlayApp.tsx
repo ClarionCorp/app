@@ -48,11 +48,11 @@ export function OverlayApp() {
 
       {(showRanks || showTrainings) && (
         <>
-          <div className="absolute bottom-40 left-1 shadow-xl">
+          <div className="absolute bottom-30 left-1 shadow-xl">
             <TeamRoster players={myTeam} showRanks={showRanks} showTrainings={showTrainings} />
           </div>
           {enemyTeam.length > 0 && (
-            <div className="absolute bottom-40 right-1 shadow-xl">
+            <div className="absolute bottom-30 right-1 shadow-xl">
               <TeamRoster
                 players={enemyTeam}
                 showRanks={showRanks}

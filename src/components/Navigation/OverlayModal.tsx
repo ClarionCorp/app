@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { XIcon, CopySimpleIcon, CheckIcon } from '@phosphor-icons/react';
-import { getAppSettings, upsertAppSettings, getUser } from '../../core/database/queries';
+import { XIcon, ArrowLeftIcon, CopySimpleIcon, CheckIcon, HourglassSimpleMediumIcon, PuzzlePieceIcon } from '@phosphor-icons/react';
 import { Button } from '../UI/Button';
 import { Toggle } from '../UI/Toggle';
-import { UserTable } from '../../types/database';
+import { LocalWebServer } from '../../core/constants';
 
 const overlay_components = [
   { id: 'queue', label: 'Queue Information' },          // queue, party size
@@ -13,16 +12,17 @@ const overlay_components = [
   { id: 'trainings', label: 'Player Awakenings' },      // each player's awakenings
   { id: 'duration', label: 'Match Duration' },          // match timer
   { id: 'ranks', label: 'Player Ranks' },               // each player's ranks
-  // { id: 'rating', label: 'Session Rating History' },    // CCUI's live rating history (but better)
 ];
 
-interface StreamOverlayModalProps {
+type OverlayView = 'select' | 'ingame' | 'queue';
+
+interface OverlayModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
-  const [sendMatchData, setSendMatchData] = useState<boolean | null>(null);
+export function OverlayModal({ open, onClose }: OverlayModalProps) {
+  const [view, setView] = useState<OverlayView>('select');
   const [enabled, setEnabled] = useState<Record<string, boolean>>({
     queue: true,
     bans: true,
@@ -32,7 +32,6 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
     duration: true,
   });
   const [copied, setCopied] = useState(false);
-  const [user, setUser] = useState<UserTable | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [previewScale, setPreviewScale] = useState(1);
 
@@ -44,19 +43,16 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [open, sendMatchData]);
+  }, [view]);
 
   useEffect(() => {
     if (!open) return;
-    setSendMatchData(null);
-    getAppSettings().then(s => setSendMatchData(s?.sendMatchData ?? false));
-    getUser().then(setUser);
+    setView('select');
   }, [open]);
 
   const activeComponents = Object.entries(enabled).filter(([, v]) => v).map(([k]) => k).join(',');
-  const overlayUrl = `https://clarioncorp.net/app/overlay/${user?.username}?components=${activeComponents}`;
-  const previewUrl = `https://clarioncorp.net/app/overlay/${user?.username}?preview=true&components=${activeComponents}`;
-  // const previewUrl = `http://localhost:3000/app/overlay/${user?.username}?preview=true&components=${activeComponents}`;
+  const overlayUrl = `${LocalWebServer}/overlay?components=${activeComponents}`;
+  const previewUrl = `${LocalWebServer}/overlay?preview=true&components=${activeComponents}`;
 
   function handleCopy() {
     navigator.clipboard.writeText(overlayUrl);
@@ -64,17 +60,23 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const page_titles: Record<OverlayView, { title: string; subtitle: string }> = {
+    select: { title: 'OBS Stream Overlay', subtitle: 'Choose an overlay type to preview or edit' },
+    ingame: { title: 'In-Game Overlay', subtitle: 'Configure your OBS browser source overlay' },
+    queue: { title: 'Queue Overlay', subtitle: 'Configure your OBS browser source overlay' },
+  };
+
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-150 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
         >
-          <div className="absolute inset-0 bg-overlay/80" onClick={onClose} />
+          <div className="absolute inset-0 bg-overlay/60 backdrop-blur-xs" onClick={onClose} />
           <motion.div
             className="relative z-10 w-[90vw] max-w-[120vh] rounded-xl bg-surface border border-background-border shadow-xl p-5 flex flex-col gap-4"
             initial={{ opacity: 0, scale: 0.95, y: 8 }}
@@ -83,32 +85,47 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="flex items-center justify-between">
-              <div>
-                <span className="text-base font-semibold text-char">Stream Overlay</span>
-                <p className="text-xs text-char-subtle mt-0.5">Configure your OBS browser source overlay</p>
+              <div className="flex items-center gap-3">
+                {view !== 'select' && (
+                  <button
+                    onClick={() => setView('select')}
+                    className="text-char-subtle hover:text-char transition-colors cursor-pointer"
+                  >
+                    <ArrowLeftIcon size={16} />
+                  </button>
+                )}
+                <div>
+                  <span className="text-base font-semibold text-char">{page_titles[view].title}</span>
+                  <p className="text-xs text-char-subtle mt-0.5">{page_titles[view].subtitle}</p>
+                </div>
               </div>
               <button onClick={onClose} className="text-char-subtle hover:text-char transition-colors cursor-pointer">
                 <XIcon size={16} />
               </button>
             </div>
 
-            {sendMatchData === false && (
-              <div className="flex items-center justify-between gap-4 rounded-lg bg-surface-raised/40 border border-background-border px-4 py-3">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium text-char">Enable periodic data upload to continue</span>
-                  <span className="text-xs text-char-subtle">Live match data needs to be uploaded. This can be disabled in Settings.</span>
-                </div>
-                <Toggle
-                  enabled={false}
-                  onChange={async v => {
-                    await upsertAppSettings({ sendMatchData: v });
-                    setSendMatchData(v);
-                  }}
-                />
+            {view === 'select' && (
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setView('ingame')}
+                  className="flex flex-col items-center gap-2 rounded-lg border border-background-border bg-surface-raised/40 hover:bg-surface-overlay transition-colors px-4 py-8 cursor-pointer text-char"
+                >
+                  <PuzzlePieceIcon size={28} weight="duotone" />
+                  <span className="text-sm font-medium">In-Game Overlay</span>
+                  <span className="text-xs text-char-subtle">Build a custom Overlay with live match data</span>
+                </button>
+                <button
+                  disabled
+                  className="flex flex-col items-center gap-2 rounded-lg border border-background-border bg-surface-raised/20 px-4 py-8 opacity-40 cursor-not-allowed text-char-subtle"
+                >
+                  <HourglassSimpleMediumIcon size={28} weight="duotone" />
+                  <span className="text-sm font-medium">Queue Overlay</span>
+                  <span className="text-xs text-char-subtle">Display a custom queuing animation</span>
+                </button>
               </div>
             )}
 
-            {sendMatchData === true && (
+            {view === 'ingame' && (
               <>
                 <div ref={containerRef} className="aspect-video w-full rounded-lg overflow-hidden relative">
                   <img src="/overlay_preview.jpg" alt="Overlay layers" className="absolute inset-0 w-full h-full object-cover" />
@@ -120,6 +137,11 @@ export function StreamOverlayModal({ open, onClose }: StreamOverlayModalProps) {
                     />
                   </div>
                 </div>
+                
+                <p className="text-xs text-char-subtle">
+                  Add the URL below as a Browser Source in OBS or Meld Studio. It's served locally, so the overlay updates instantly.
+                  Use the toggles to choose which components appear. You can even re-use this in multiple sources if you want to rearrange things.
+                </p>
 
                 <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                   {overlay_components.map(c => (
