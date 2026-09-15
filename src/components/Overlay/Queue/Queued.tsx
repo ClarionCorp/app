@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SpinnerGapIcon } from '@phosphor-icons/react';
 import { formatClock } from '../../../core/utilities/system';
 
 // Diagonal streaks for the "Queued" card's background, each independently timed so they don't all pass at once.
@@ -52,9 +53,12 @@ export default function Queued({ queue, seconds }: { queue: string; seconds: num
       </div>
       <div className="absolute inset-0 bg-black/20 backdrop-blur-xs pointer-events-none" />
       <div className="relative flex flex-col gap-0.5">
-        <span className="text-white font-bold text-2xl leading-tight">{queue}</span>
+        <span className="text-white font-bold text-2xl leading-tight">Queuing {queue}</span>
         <div className="flex items-center gap-2 text-white/70 text-lg">
-          <span className="text-sky-300 font-semibold">Searching</span>
+          <span className="flex items-center gap-1.5 text-sky-300 font-semibold">
+            <SpinnerGapIcon size={16} weight="bold" className="animate-spin" />
+            Searching for a match...
+          </span>
           <span className="opacity-60">{formatClock(seconds)}</span>
         </div>
       </div>
