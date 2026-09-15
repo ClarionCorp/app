@@ -1,14 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useQueueData } from '../../core/utilities/webServer';
-import { formatClock } from '../../core/utilities/system';
 import Queued from '../../components/Overlay/Queue/Queued';
-
-const queueStateLabels: Record<string, string> = {
-  Queued: 'Searching',
-  FoundMatch: 'Match Found',
-  StartingGame: 'Starting',
-  InGame: 'In Match',
-};
+import FoundMatch from '../../components/Overlay/Queue/FoundMatch';
 
 export function QueueApp() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
@@ -38,20 +32,14 @@ export function QueueApp() {
 
   const seconds = enteredAt.current ? Math.max(0, Math.floor((now - enteredAt.current) / 1000)) : 0;
   const isSearching = data.queueState === 'Queued';
+  const isFoundMatch = data.queueState === 'FoundMatch';
 
   return (
     <main className="relative w-full min-h-screen">
-      {isSearching ? (
-        <Queued queue={data.queue} seconds={seconds} />
-      ) : (
-        <div className="absolute top-2 left-2 flex flex-col gap-0.5 rounded-xl border bg-black/80 border-white/10 px-4 py-2 w-fit shadow-xl">
-          <span className="text-white font-bold text-2xl leading-tight">{data.queue}</span>
-          <div className="flex items-center gap-2 text-white/70 text-lg">
-            <span>{queueStateLabels[data.queueState] ?? data.queueState}</span>
-            <span className="opacity-60">{formatClock(seconds)}</span>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {isSearching && <Queued key="queued" queue={data.queue} seconds={seconds} />}
+        {isFoundMatch && <FoundMatch key="found" queue={data.queue} />}
+      </AnimatePresence>
     </main>
   );
 }

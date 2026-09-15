@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { SpinnerGapIcon } from '@phosphor-icons/react';
 import { formatClock } from '../../../core/utilities/system';
+import { cardMotion } from './motion';
 
 // Diagonal streaks for the "Queued" card's background, each independently timed so they don't all pass at once.
 const SPEED_LINE_COLORS = ['#38bdf8', '#818cf8', '#f472b6'];
@@ -27,7 +29,10 @@ export default function Queued({ queue, seconds }: { queue: string; seconds: num
   const [speedLines] = useState(() => makeSpeedLines(6));
 
   return (
-    <div className="absolute top-2 left-2 min-w-64 w-fit overflow-hidden rounded-xl border bg-black/80 border-white/10 px-4 py-3 shadow-xl">
+    <motion.div
+      {...cardMotion}
+      className="absolute top-2 left-2 min-w-64 w-fit overflow-hidden rounded-xl border bg-black/80 border-white/10 px-4 py-3 shadow-xl"
+    >
       <style>{`
         @keyframes queue-speedline-move {
           0%   { transform: translateX(320%) skewX(18deg); opacity: 0; }
@@ -62,6 +67,6 @@ export default function Queued({ queue, seconds }: { queue: string; seconds: num
           <span className="opacity-60">{formatClock(seconds)}</span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
