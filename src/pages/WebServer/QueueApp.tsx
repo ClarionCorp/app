@@ -12,18 +12,20 @@ export function QueueApp() {
   const [now, setNow] = useState(() => Date.now());
   const enteredAt = useRef<number | null>(null);
 
+  // Auto-fit the card to whatever OBS source size it's given. 
+  // Scale comes from a hidden fixed reference, not the active card, so switching states doesn't change the zoom level.
   const viewportRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const referenceRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
-    const card = cardRef.current;
-    if (!viewport || !card) return;
+    const reference = referenceRef.current;
+    if (!viewport || !reference) return;
 
     const measure = () => {
-      const naturalWidth = card.scrollWidth;
-      const naturalHeight = card.scrollHeight;
+      const naturalWidth = reference.scrollWidth;
+      const naturalHeight = reference.scrollHeight;
       if (!naturalWidth || !naturalHeight) return;
       const { width, height } = viewport.getBoundingClientRect();
       setScale(Math.min(width / naturalWidth, height / naturalHeight));
@@ -32,7 +34,7 @@ export function QueueApp() {
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(viewport);
-    observer.observe(card);
+    observer.observe(reference);
     return () => observer.disconnect();
   }, []);
 
@@ -58,8 +60,13 @@ export function QueueApp() {
 
   return (
     <main className="w-screen h-screen p-4 overflow-hidden">
-      <div ref={viewportRef} className="w-full h-full flex items-center justify-center">
-        <div ref={cardRef} className="relative" style={{ transform: `scale(${scale})` }}>
+      <div ref={viewportRef} className="relative w-full h-full flex items-center justify-center">
+        {data && (
+          <div ref={referenceRef} className="invisible absolute pointer-events-none" aria-hidden>
+            <Queued queue={data.queue} seconds={seconds} />
+          </div>
+        )}
+        <div className="relative" style={{ transform: `scale(${scale})` }}>
           <AnimatePresence mode="wait">
             {data && isSearching && <Queued key="queued" queue={data.queue} seconds={seconds} />}
             {data && isFoundMatch && <FoundMatch key="found" queue={data.queue} />}

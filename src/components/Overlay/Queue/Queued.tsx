@@ -31,7 +31,7 @@ export default function Queued({ queue, seconds }: { queue: string; seconds: num
   return (
     <motion.div
       {...cardMotion}
-      className="relative min-w-64 w-fit overflow-hidden rounded-xl border bg-black/80 border-white/10 px-4 py-3 shadow-xl"
+      className="relative min-w-64 w-fit overflow-hidden rounded-xl border-2 bg-black/80 border-white/10 px-4 py-3 shadow-xl"
     >
       <style>{`
         @keyframes queue-speedline-move {
