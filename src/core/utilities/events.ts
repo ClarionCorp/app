@@ -39,6 +39,7 @@ export async function updatePlayers(data: PlayersJSON) {
     ping: p.ping_ms,
     trainings: p.trainings,
     knockouts: p.knockouts,
+    accLevel: p.account_level,
   }));
   if (incoming.length === 0) return;
 

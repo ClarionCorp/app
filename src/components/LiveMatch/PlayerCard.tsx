@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getRankFromLP, RankObject } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
-import { CrownSimpleIcon, ShieldIcon, SwordIcon, UsersIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
+import { ChartBarIcon, CrownSimpleIcon, ShieldIcon, StarIcon, SwordIcon, TrendUpIcon, UsersIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { TRAININGS } from '../../core/objects/trainings';
@@ -161,6 +161,13 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
                   </span>
                 )}
               </span>
+
+              {player.accLevel != null && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 border border-current/20 bg-current/5 text-char-secondary">
+                  <ChartBarIcon size={12} weight="duotone" />
+                  Lv. {player.accLevel}
+                </span>
+              )}
 
               <span
                 className={clsx(

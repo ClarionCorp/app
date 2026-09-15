@@ -253,6 +253,13 @@
       "when": 1788572983814,
       "tag": "0035_minor_steel_serpent",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "6",
+      "when": 1789458987460,
+      "tag": "0036_exotic_satana",
+      "breakpoints": true
     }
   ]
 }

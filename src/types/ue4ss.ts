@@ -64,7 +64,8 @@ export type PlayersJSON = {
     xp: number,
     ping_ms: number | null,
     knockouts: number, // earned this match
-    trainings: string[]
+    trainings: string[],
+    account_level: number | null,
   }[],
   timestamp: number, // last updated
 }

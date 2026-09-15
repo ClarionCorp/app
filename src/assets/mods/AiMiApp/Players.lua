@@ -63,7 +63,12 @@ local function GetIdentity(ps)
         local okGoalie, isGoalie = pcall(function() return ps:IsGoalie() end)
         if not okGoalie then return nil end
         local role = isGoalie and "Goalie" or "Forward"
-        return { name = name, playerId = playerId, team = team, charId = charId, charName = charName, role = role }
+
+        -- FPlayerPublicProfile.MasteryLevel is a plain int32, unlike the stale FOdyUIIntBinding account-level fields on PlayerUIData.
+        local okProfile, accountLevel = pcall(function() return ps.PlayerPublicProfile.MasteryLevel end)
+        accountLevel = okProfile and accountLevel or nil
+
+        return { name = name, playerId = playerId, team = team, charId = charId, charName = charName, role = role, accountLevel = accountLevel }
     end)
     if ok and identity and identity.charId then
         IdentityCache[ps] = identity
@@ -94,6 +99,7 @@ local function BuildRoster()
                     name = identity.name, team = identity.team, playerId = identity.playerId, role = identity.role,
                     charId = identity.charId, charName = identity.charName, trainings = trainings,
                     level = level, ping = pingMs, levelsGained = levelsGained, kos = kos,
+                    accountLevel = identity.accountLevel,
                 }
             end)
             if ok and entry then table.insert(roster, entry) end
@@ -116,7 +122,7 @@ local function WriteRoster(ModName, PLAYERS_FILE)
     for _, p in ipairs(roster) do
         snapshot = snapshot .. p.name .. "|" .. tostring(p.team) .. "|" .. p.role .. "|" .. tostring(p.charId)
             .. "|" .. tostring(p.level) .. "|" .. tostring(p.levelsGained) .. "|" .. tostring(p.kos)
-            .. "|" .. table.concat(p.trainings, ",") .. ";"
+            .. "|" .. tostring(p.accountLevel) .. "|" .. table.concat(p.trainings, ",") .. ";"
         if p.ping ~= nil then
             local last = LastPings[p.name]
             if last ~= nil and math.abs(p.ping - last) >= 20 then
@@ -138,11 +144,11 @@ local function WriteRoster(ModName, PLAYERS_FILE)
     for _, p in ipairs(roster) do
         table.insert(rosterParts, string.format(
             '    {"name":"%s","player_id":"%s","team":%s,"role":"%s","character_id":%s,"character_name":%s,' ..
-            '"xp":%s,"intermission_xp":%s,"ping_ms":%s,"knockouts":%d,"trainings":[%s]}',
+            '"xp":%s,"intermission_xp":%s,"account_level":%s,"ping_ms":%s,"knockouts":%d,"trainings":[%s]}',
             p.name, p.playerId, numOrNull(p.team), p.role,
             p.charId and ('"' .. p.charId .. '"') or "null",
             p.charName and ('"' .. p.charName .. '"') or "null",
-            numOrNull(p.level), numOrNull(p.levelsGained), numOrNull(p.ping), p.kos,
+            numOrNull(p.level), numOrNull(p.levelsGained), numOrNull(p.accountLevel), numOrNull(p.ping), p.kos,
             TrainingsJson(p.trainings)
         ))
     end

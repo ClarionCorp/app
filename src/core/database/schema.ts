@@ -93,6 +93,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   charName: text("charName"),
   charId: text("charId"),
   rating: integer("rating"),
+  accLevel: integer("accLevel"),
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
   xp: integer("xp").default(0),
   gainedXp: integer("gainedXp").default(0), // intermissionXp
