@@ -3,6 +3,7 @@ import { getCurrentMatch, getMyMatchPlayer } from '../../core/database/queries';
 import { getMapObjectFromID } from '../../core/objects/maps';
 import { getQueueObjectFromID } from '../../core/objects/queues';
 import { getGameStatus } from '../../core/objects/gameStates';
+import { formatClock } from '../../core/utilities/system';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 
 const queueStateLabels: Record<string, string> = {
@@ -10,12 +11,6 @@ const queueStateLabels: Record<string, string> = {
   FoundMatch: 'Match Found',
   StartingGame: 'Starting',
 };
-
-function formatDuration(totalSeconds: number): string {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
 
 export default function TopBarMatchStatus() {
   const [match, setMatch] = useState<CurrentMatchTable | null>(null);
@@ -76,7 +71,7 @@ export default function TopBarMatchStatus() {
           <span className="text-char-secondary">— {getMapObjectFromID(match.map).mapName}</span>
         </div>
         <div className="flex items-center gap-1 text-xs">
-          <span>{matchSeconds != null ? formatDuration(matchSeconds) : '--:--'}</span>
+          <span>{matchSeconds != null ? formatClock(matchSeconds) : '--:--'}</span>
           {ping != null && ping > 0 && (
             <>
               (<span className={pingColorClass}>{ping}ms</span>)
@@ -96,7 +91,7 @@ export default function TopBarMatchStatus() {
       <span className="font-semibold text-char-secondary">{queueName}</span>
       <div className="flex items-center gap-1 text-xs">
         <span>{queueStateLabels[match.queueState ?? ''] ?? 'Queued'}</span>
-        <span className="opacity-60">{formatDuration(queueSeconds)}</span>
+        <span className="opacity-60">{formatClock(queueSeconds)}</span>
       </div>
     </div>
   );

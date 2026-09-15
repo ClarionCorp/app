@@ -65,3 +65,23 @@ export function formatBytes(bytes: number): string {
 
   return `${exponent === 0 ? value : value.toFixed(1)} ${units[exponent]}`
 }
+
+// Compact clock style, e.g. "3:45".
+// For small always-on timers (queue/match status badges).
+export function formatClock(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60)
+  const s = totalSeconds % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+// Verbose word style, e.g. "3m 45s" or "1h 2m 3s".
+// For descriptive duration text.
+export function formatDuration(ms: number): string {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`
+  return `${minutes}m ${seconds}s`
+}

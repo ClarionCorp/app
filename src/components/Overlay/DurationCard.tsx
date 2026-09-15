@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react'
 import { TimelineEntry } from '../../types/ue4ss'
-
-function formatDuration(ms: number): string {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-
-  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`
-  return `${minutes}m ${seconds}s`
-}
+import { formatDuration } from '../../core/utilities/system'
 
 export default function DurationCard({
   startedAt,

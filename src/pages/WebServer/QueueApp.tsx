@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueueData } from '../../core/utilities/webServer';
+import { formatClock } from '../../core/utilities/system';
+import Queued from '../../components/Overlay/Queue/Queued';
 
 const queueStateLabels: Record<string, string> = {
   Queued: 'Searching',
@@ -7,12 +9,6 @@ const queueStateLabels: Record<string, string> = {
   StartingGame: 'Starting',
   InGame: 'In Match',
 };
-
-function formatDuration(totalSeconds: number): string {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
 
 export function QueueApp() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
@@ -41,16 +37,21 @@ export function QueueApp() {
   if (!data || !isQueueing) return null;
 
   const seconds = enteredAt.current ? Math.max(0, Math.floor((now - enteredAt.current) / 1000)) : 0;
+  const isSearching = data.queueState === 'Queued';
 
   return (
     <main className="relative w-full min-h-screen">
-      <div className="absolute top-2 left-2 flex flex-col gap-0.5 rounded-xl border bg-black/80 border-white/10 px-4 py-2 w-fit shadow-xl">
-        <span className="text-white font-bold text-2xl leading-tight">{data.queue}</span>
-        <div className="flex items-center gap-2 text-white/70 text-lg">
-          <span>{queueStateLabels[data.queueState] ?? data.queueState}</span>
-          <span className="opacity-60">{formatDuration(seconds)}</span>
+      {isSearching ? (
+        <Queued queue={data.queue} seconds={seconds} />
+      ) : (
+        <div className="absolute top-2 left-2 flex flex-col gap-0.5 rounded-xl border bg-black/80 border-white/10 px-4 py-2 w-fit shadow-xl">
+          <span className="text-white font-bold text-2xl leading-tight">{data.queue}</span>
+          <div className="flex items-center gap-2 text-white/70 text-lg">
+            <span>{queueStateLabels[data.queueState] ?? data.queueState}</span>
+            <span className="opacity-60">{formatClock(seconds)}</span>
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }
