@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getRankFromLP, RankObject } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
-import { ChartBarIcon, CrownSimpleIcon, ShieldIcon, StarIcon, SwordIcon, TrendUpIcon, UsersIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
+import { ChartBarIcon, CrownSimpleIcon, ShieldIcon, SwordIcon, UsersIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { TRAININGS } from '../../core/objects/trainings';

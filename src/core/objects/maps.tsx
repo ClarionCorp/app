@@ -159,7 +159,8 @@ export const MAPS: MapObject[] = [
       - Once one lock is broken, <a className='text-match-mid'>sound waves</a> will appear on the top and bottom.<br />
       - The <a className='text-match-mid'>sound waves</a> will push the <a className='text-match-mid'>core</a> away from its center.<br />
       <br />
-      <b className='text-match-enemy'>Common Bans:</b> No data
+      <b className='text-match-enemy'>Common Bans:</b><br />
+      - <a className='text-match-enemy'>Finii</a>'s <a className='bg-orange-300/40 px-1 rounded-sm'>SPECIAL</a> can be very controlling for a goalie, due to the circular lock.<br />
     </>
   },
   {
