@@ -11,7 +11,7 @@ function getBarColor(player: MatchPlayersTable, myTeamNum: number | null) {
   return ENEMY_COLOR;
 }
 
-export function XPLeaderboard({ players }: { players: MatchPlayersTable[] }) {
+export function XPLeaderboard({ players, shouldObfuscatePlayers }: { players: MatchPlayersTable[], shouldObfuscatePlayers: boolean }) {
   if (players.length === 0) {
     return (
       <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
@@ -68,7 +68,7 @@ export function XPLeaderboard({ players }: { players: MatchPlayersTable[] }) {
                     'text-xs font-medium truncate',
                     player.isMe ? 'text-char' : 'text-char-secondary'
                   )}>
-                    {player.username}
+                    {shouldObfuscatePlayers ? '——' : player.username}
                   </span>
                   <span className="text-xs font-semibold text-char-subtle shrink-0">
                     {xp.toLocaleString()}

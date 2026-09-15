@@ -86,7 +86,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
     : null;
 
   let hideUsername = false;
-  if (match && !player.charId && match.queue == 'Ranked') { hideUsername = true };
+  if (match && !player.charId) { hideUsername = true };
 
   function openUserOnCC(username: string) {
     if (hideUsername) { toast('Players hidden until bans are picked. Sorry!', 'error') }
@@ -143,7 +143,9 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
               {/* Username & Tags */}
               <span className="flex items-center gap-1 min-w-0">
                 <span className="text-base font-semibold text-char truncate">
-                  {hideUsername ? '———' : player.username} { /* hide username pre-ban */ }
+                  {hideUsername
+                    ? <span className="inline-block h-4 w-24 rounded bg-surface-active animate-pulse align-middle" />
+                    : player.username}
                 </span>
                 {player.tags.length > 0 && (
                   <span className="flex items-center gap-1 shrink-0">

@@ -8,7 +8,7 @@ function ordinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-export function IntermissionPredictions({ players }: { players: MatchPlayersTable[] }) {
+export function IntermissionPredictions({ players, shouldObfuscatePlayers }: { players: MatchPlayersTable[], shouldObfuscatePlayers: boolean }) {
   const myTeamNum = players.find(p => p.isMe)?.teamNum ?? 1;
 
   const byXpDesc = (a: MatchPlayersTable, b: MatchPlayersTable) => (b.gainedXp ?? 0) - (a.gainedXp ?? 0);
@@ -46,7 +46,7 @@ export function IntermissionPredictions({ players }: { players: MatchPlayersTabl
             return (
               <BasicPopover
                 key={player.username}
-                displayText={`${player.username} will be picking ${ordinal(index + 1)}`}
+                displayText={`${shouldObfuscatePlayers ? '—' : player.username} will be picking ${ordinal(index + 1)}`}
               >
                 <div className={clsx('w-12 h-12 rounded-full overflow-hidden shrink-0 border-[3px] shadow-md', borderClass)}>
                   {player.charId ? (
