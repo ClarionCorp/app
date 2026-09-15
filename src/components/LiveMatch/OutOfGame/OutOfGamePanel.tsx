@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapRotation } from './MapRotation';
 import { RatingChart } from './RatingChart';
+import { SeasonCountdown } from './SeasonCountdown';
 import { SessionMatches } from './SessionMatches';
 import { getCurrentSession } from '../../../core/database/queries';
 import { GameSessionsTable } from '../../../types/database';
@@ -24,6 +25,7 @@ export function OutOfGamePanel() {
       animate={{ opacity: 1 }}
       className="space-y-4"
     >
+      <SeasonCountdown />
 
       <div className="flex-1 min-w-0">
         <RatingChart session={session} />

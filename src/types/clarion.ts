@@ -114,3 +114,9 @@ export type SmurfResult = {
     abnormalWinrate: boolean,
   }
 }
+
+export type CurrentSeason = {
+  season: number,
+  startDate: Date,
+  endDate: Date,
+}

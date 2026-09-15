@@ -1,4 +1,4 @@
-import { Awakenings, Playstyle, SmurfResult } from "../../types/clarion";
+import { Awakenings, CurrentSeason, Playstyle, SmurfResult } from "../../types/clarion";
 import { ClarionAPI, version } from "../constants";
 
 
@@ -14,7 +14,7 @@ export async function getCurrentAwakeningRotation(): Promise<Awakenings[]> {
 
     return data;
   } catch (error) {
-    console.error(error);
+    console.error(`Failed to fetch current awakening rotation from CC!`, error);
     return []
   }
 }
@@ -31,7 +31,7 @@ export async function fetchPlayerPlayerstyle(username: string): Promise<Playstyl
 
     return data;
   } catch (error) {
-    console.error(error);
+    console.error(`Failed to fetch playstyle for ${username}!`, error);
     return null
   }
 }
@@ -48,7 +48,24 @@ export async function fetchPlayerSmurfEstimate(username: string): Promise<SmurfR
 
     return data;
   } catch (error) {
-    console.error(error);
+    console.error(`Failed to fetch smurf estimate for ${username}!`, error);
+    return null
+  }
+}
+
+export async function fetchCurrentSeason(): Promise<CurrentSeason | null> {
+  try {
+    const res = await fetch(`${ClarionAPI}/v2/tools/season/current`, {
+      method: 'GET',
+      headers: { 'User-Agent': `AiMisApp v${version}` }
+    });
+
+    const data: CurrentSeason = await res.json();
+    if (!res.ok) { throw new Error(`CC is currently unreachable! Please contact blals ASAP! (${res.status})`) };
+
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch current season!`, error);
     return null
   }
 }
