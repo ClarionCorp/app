@@ -6,7 +6,7 @@ export default function FoundMatch({ queue }: { queue: string; }) {
   return (
     <motion.div
       {...cardMotion}
-      className="absolute top-2 left-2 min-w-64 w-fit overflow-hidden rounded-xl border-2 border-emerald-400/80 bg-black/80 px-4 py-3 shadow-xl shadow-emerald-500/20"
+      className="relative min-w-64 w-fit overflow-hidden rounded-xl border-2 border-emerald-400/80 bg-black/80 px-4 py-3 shadow-xl shadow-emerald-500/20"
     >
       <style>{`
         @keyframes found-match-pulse {

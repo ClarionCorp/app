@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { XIcon, ArrowLeftIcon, CopySimpleIcon, CheckIcon, HourglassSimpleMediumIcon, PuzzlePieceIcon } from '@phosphor-icons/react';
+import { XIcon, ArrowLeftIcon, CopySimpleIcon, CheckIcon, PuzzlePieceIcon, HourglassSimpleMediumIcon } from '@phosphor-icons/react';
 import { Button } from '../UI/Button';
 import { Toggle } from '../UI/Toggle';
 import { LocalWebServer } from '../../core/constants';
@@ -53,17 +53,19 @@ export function OverlayModal({ open, onClose }: OverlayModalProps) {
   const activeComponents = Object.entries(enabled).filter(([, v]) => v).map(([k]) => k).join(',');
   const overlayUrl = `${LocalWebServer}/overlay?components=${activeComponents}`;
   const previewUrl = `${LocalWebServer}/overlay?preview=true&components=${activeComponents}`;
+  const queueUrl = `${LocalWebServer}/queue`;
+  const queuePreviewUrl = `${LocalWebServer}/queue?preview=true`;
 
-  function handleCopy() {
-    navigator.clipboard.writeText(overlayUrl);
+  function handleCopy(url: string) {
+    navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
   const page_titles: Record<OverlayView, { title: string; subtitle: string }> = {
     select: { title: 'OBS Stream Overlay', subtitle: 'Choose an overlay type to preview or edit' },
-    ingame: { title: 'In-Game Overlay', subtitle: 'Configure your OBS browser source overlay' },
-    queue: { title: 'Queue Overlay', subtitle: 'Configure your OBS browser source overlay' },
+    ingame: { title: 'In-Game Overlay', subtitle: 'Displays useful game info for your viewers' },
+    queue: { title: 'Queue Overlay', subtitle: 'Displays current queue status right in your stream' },
   };
 
   return (
@@ -115,8 +117,8 @@ export function OverlayModal({ open, onClose }: OverlayModalProps) {
                   <span className="text-xs text-char-subtle">Build a custom Overlay with live match data</span>
                 </button>
                 <button
-                  disabled
-                  className="flex flex-col items-center gap-2 rounded-lg border border-background-border bg-surface-raised/20 px-4 py-8 opacity-40 cursor-not-allowed text-char-subtle"
+                  onClick={() => setView('queue')}
+                  className="flex flex-col items-center gap-2 rounded-lg border border-background-border bg-surface-raised/40 hover:bg-surface-overlay transition-colors px-4 py-8 cursor-pointer text-char"
                 >
                   <HourglassSimpleMediumIcon size={28} weight="duotone" />
                   <span className="text-sm font-medium">Queue Overlay</span>
@@ -163,7 +165,40 @@ export function OverlayModal({ open, onClose }: OverlayModalProps) {
                     variant='success'
                     size="md"
                     iconLeft={copied ? <CheckIcon size={14} /> : <CopySimpleIcon size={14} />}
-                    onClick={handleCopy}
+                    onClick={() => handleCopy(overlayUrl)}
+                  >
+                    {copied ? 'Copied' : 'Copy'}
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {view === 'queue' && (
+              <>
+                <div ref={containerRef} className="aspect-video w-full rounded-lg overflow-hidden relative bg-surface-raised/40 border border-background-border">
+                  <div style={{ width: 1920, height: 1080, transformOrigin: 'top left', transform: `scale(${previewScale})`, position: 'absolute', top: 0, left: 0 }}>
+                    <iframe
+                      src={queuePreviewUrl}
+                      style={{ width: 1920, height: 1080, border: 'none' }}
+                      title="Queue Overlay Preview"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-xs text-char-subtle">
+                  Add the URL below as a Browser Source in OBS or Meld Studio. It's served locally, so the overlay updates instantly. <br />
+                  This widget automatically hides once in a match, so feel free to place over the Game Overlay
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-9 flex items-center px-3 rounded-md bg-surface-raised border border-background-border text-xs text-char-subtle font-mono truncate select-all">
+                    {queueUrl}
+                  </div>
+                  <Button
+                    variant='success'
+                    size="md"
+                    iconLeft={copied ? <CheckIcon size={14} /> : <CopySimpleIcon size={14} />}
+                    onClick={() => handleCopy(queueUrl)}
                   >
                     {copied ? 'Copied' : 'Copy'}
                   </Button>
