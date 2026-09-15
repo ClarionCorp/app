@@ -2,7 +2,7 @@
 
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
-import { formatLiveMatchInfo } from './overlay';
+import { formatLiveMatchInfo, formatQueueInfo } from './overlay';
 
 export interface FileChangePayload {
   file: string;
@@ -80,5 +80,15 @@ export async function pushOverlayState() {
     await invoke('update_overlay_state', { payload: data });
   } catch (err) {
     console.warn('[Overlay] Failed to push local overlay state:', err);
+  }
+}
+
+// Separate, simpler widget for pre-match queue status - see QueueApp.tsx / formatQueueInfo().
+export async function pushQueueState() {
+  try {
+    const data = await formatQueueInfo();
+    await invoke('update_queue_state', { payload: data });
+  } catch (err) {
+    console.warn('[Overlay] Failed to push local queue state:', err);
   }
 }

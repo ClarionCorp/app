@@ -1,4 +1,5 @@
 import { getCurrentMatch, getMatchPlayers, getUser } from "./database/queries";
+import { getQueueObjectFromID } from "./objects/queues";
 import { PlaystyleType } from "../types/clarion";
 import { TimelineEntry } from "../types/ue4ss";
 
@@ -135,4 +136,19 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   }
 
   return formattedMatch;
+}
+
+// A separate, simpler overlay for pre-match queue status - unlike formatLiveMatchInfo(),
+// this stays valid the whole time (Idle/Queued/etc.), not just once a match has started.
+export type QueueOverlayInfo = {
+  queue: string, // human-readable name, "Unknown" if not currently queued/matched
+  queueState: string, // Idle, Queued, FoundMatch, StartingGame, InGame, etc.
+}
+
+export async function formatQueueInfo(): Promise<QueueOverlayInfo> {
+  const currentMatch = await getCurrentMatch();
+  return {
+    queue: getQueueObjectFromID(currentMatch.queue).queueName,
+    queueState: currentMatch.queueState ?? 'Idle',
+  };
 }

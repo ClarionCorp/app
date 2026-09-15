@@ -5,7 +5,7 @@ import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import NavCorner from './components/Navigation/NavCorner';
-import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState } from './core/bridgeListener';
+import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { fetchSelfQuery } from './core/utilities/odyssey';
@@ -139,6 +139,7 @@ function App() {
       const matchTable = await updateGameState(data);
       await tryUpdateDiscordRPC();
       await pushOverlayState();
+      await pushQueueState();
 
       // Only once during Match Start, log the match start time in timeline entries if not there already.
       if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };
@@ -165,6 +166,7 @@ function App() {
 
       await tryUpdateDiscordRPC();
       await pushOverlayState();
+      await pushQueueState();
       await sessionHeartbeat();
     }),
   ]);

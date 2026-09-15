@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import QueueCard from '../components/Overlay/QueueCard';
-import BansCard from '../components/Overlay/BansCard';
-import DurationCard from '../components/Overlay/DurationCard';
-import TeamRoster from '../components/Overlay/TeamRoster';
-import TimelineCard from '../components/Overlay/TimelineCard';
-import { useOverlayData } from '../components/Overlay/useOverlayData';
+import QueueCard from '../../components/Overlay/QueueCard';
+import BansCard from '../../components/Overlay/BansCard';
+import DurationCard from '../../components/Overlay/DurationCard';
+import TeamRoster from '../../components/Overlay/TeamRoster';
+import TimelineCard from '../../components/Overlay/TimelineCard';
+import { useOverlayData } from '../../components/Overlay/useOverlayData';
 
 type OverlayComponent = 'queue' | 'bans' | 'trainings' | 'ranks' | 'timeline' | 'duration';
 

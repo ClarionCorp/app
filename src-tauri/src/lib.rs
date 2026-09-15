@@ -166,8 +166,7 @@ fn flush_logs(app: tauri::AppHandle, entries: Vec<LogEntryPayload>) -> Result<()
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let (overlay_state, _overlay_state_rx) =
-        tokio::sync::watch::channel::<Option<serde_json::Value>>(None);
+    let overlay_state = overlay::OverlayState::new();
 
     tauri::Builder::default()
         .manage(overlay_state.clone())
@@ -207,6 +206,7 @@ pub fn run() {
             log_watcher::get_latest_region,
             file_watcher::get_heartbeat,
             overlay::update_overlay_state,
+            overlay::update_queue_state,
             overlay::get_overlay_port,
         ])
         .run(tauri::generate_context!())

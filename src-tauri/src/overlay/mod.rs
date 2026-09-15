@@ -26,10 +26,28 @@ use tower_http::cors::CorsLayer;
 #[folder = "../dist-overlay"]
 struct OverlayAssets;
 
+type Channel = watch::Sender<Option<Value>>;
+
+fn new_channel() -> Channel {
+    watch::channel(None).0
+}
 
 // This is a loopback-only local webserver that forwards match data between the app and vite.
 // This is so we don't have to do a network roundtrip or NAT forwarding or whatever lol.
-pub type OverlayState = watch::Sender<Option<Value>>;
+#[derive(Clone)]
+pub struct OverlayState {
+    pub match_state: Channel,
+    pub queue_state: Channel,
+}
+
+impl OverlayState {
+    pub fn new() -> Self {
+        Self {
+            match_state: new_channel(),
+            queue_state: new_channel(),
+        }
+    }
+}
 
 pub const OVERLAY_PORT: u16 = 47822;
 
@@ -50,14 +68,18 @@ async fn overlay_page() -> Response {
     serve_embedded("overlay.html")
 }
 
+async fn queue_page() -> Response {
+    serve_embedded("queue.html")
+}
+
 // Catches everything else: Vite's own JS/CSS chunks under /assets/*, plus every image
 // under /characters/*, /trainings/*, etc. that the build copied straight out of public/.
 async fn serve_static(uri: Uri) -> Response {
     serve_embedded(uri.path().trim_start_matches('/'))
 }
 
-async fn get_state(State(state): State<OverlayState>) -> impl IntoResponse {
-    match state.borrow().clone() {
+fn channel_response(channel: &Channel) -> Response {
+    match channel.borrow().clone() {
         Some(value) => Json(value).into_response(),
         None => StatusCode::NO_CONTENT.into_response(),
     }
@@ -66,15 +88,33 @@ async fn get_state(State(state): State<OverlayState>) -> impl IntoResponse {
 // Pushes the current snapshot immediately on connect.
 // (watch::Receiver always starts with the latest value, even if it was sent before this client subscribed)
 // Then again every time update_overlay_state sends a new one. The overlay page just listens.
-async fn stream_state(
-    State(state): State<OverlayState>,
-) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let stream = WatchStream::new(state.subscribe()).map(|value| {
+fn channel_stream(channel: &Channel) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    let stream = WatchStream::new(channel.subscribe()).map(|value| {
         Ok(Event::default()
             .json_data(&value)
             .unwrap_or_else(|_| Event::default().data("null")))
     });
     Sse::new(stream).keep_alive(KeepAlive::default())
+}
+
+async fn get_match_state(State(state): State<OverlayState>) -> Response {
+    channel_response(&state.match_state)
+}
+
+async fn stream_match_state(
+    State(state): State<OverlayState>,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    channel_stream(&state.match_state)
+}
+
+async fn get_queue_state(State(state): State<OverlayState>) -> Response {
+    channel_response(&state.queue_state)
+}
+
+async fn stream_queue_state(
+    State(state): State<OverlayState>,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    channel_stream(&state.queue_state)
 }
 
 async fn health() -> &'static str {
@@ -85,7 +125,12 @@ async fn health() -> &'static str {
 pub fn update_overlay_state(state: tauri::State<'_, OverlayState>, payload: Value) {
     // Errs only when nobody is currently subscribed (e.g. OBS isn't open yet) - the
     // channel still keeps the value, so the next subscriber gets it immediately anyway.
-    let _ = state.send(Some(payload));
+    let _ = state.match_state.send(Some(payload));
+}
+
+#[tauri::command]
+pub fn update_queue_state(state: tauri::State<'_, OverlayState>, payload: Value) {
+    let _ = state.queue_state.send(Some(payload));
 }
 
 #[tauri::command]
@@ -97,8 +142,11 @@ pub fn start(state: OverlayState) {
     tauri::async_runtime::spawn(async move {
         let app = Router::new()
             .route("/overlay", get(overlay_page))
-            .route("/api/state", get(get_state))
-            .route("/api/state/stream", get(stream_state))
+            .route("/queue", get(queue_page))
+            .route("/api/state", get(get_match_state))
+            .route("/api/state/stream", get(stream_match_state))
+            .route("/api/queue", get(get_queue_state))
+            .route("/api/queue/stream", get(stream_queue_state))
             .route("/health", get(health))
             .fallback(serve_static)
             .layer(CorsLayer::permissive())
@@ -113,9 +161,9 @@ pub fn start(state: OverlayState) {
             }
         };
 
-        println!("[overlay] listening on http://{addr}/overlay");
+        println!("[Overlay] Listening on http://{addr} (Game: /overlay, Queue: /queue)");
         if let Err(e) = axum::serve(listener, app).await {
-            eprintln!("[overlay] server error: {e}");
+            eprintln!("[Overlay] Server error: {e}");
         }
     });
 }
