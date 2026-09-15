@@ -9,6 +9,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 mod file_watcher;
 mod hardware;
 mod log_watcher;
+mod overlay_server;
 
 // Checks for running processes (just for checking if game is running)
 #[tauri::command]
@@ -165,8 +166,11 @@ fn flush_logs(app: tauri::AppHandle, entries: Vec<LogEntryPayload>) -> Result<()
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let overlay_state: overlay_server::OverlayState = Default::default();
+
     tauri::Builder::default()
-        .setup(|app| {
+        .manage(overlay_state.clone())
+        .setup(move |app| {
             let data_dir = app.path().app_data_dir().unwrap();
             app.handle().plugin(
                 tauri_plugin_libsql::init_with_config(tauri_plugin_libsql::Config {
@@ -175,6 +179,7 @@ pub fn run() {
                 })
             )?;
             file_watcher::start_file_watcher(app.handle().clone());
+            overlay_server::start(overlay_state.clone());
             Ok(())
         })
         .plugin(tauri_plugin_process::init())
@@ -200,6 +205,8 @@ pub fn run() {
             log_watcher::get_latest_match_timestamp,
             log_watcher::get_latest_region,
             file_watcher::get_heartbeat,
+            overlay_server::update_overlay_state,
+            overlay_server::get_overlay_port,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

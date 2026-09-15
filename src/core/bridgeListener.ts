@@ -2,6 +2,7 @@
 
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
+import { formatLiveMatchInfo } from './overlay';
 
 export interface FileChangePayload {
   file: string;
@@ -68,4 +69,16 @@ export async function getLatestRegion(): Promise<string | null> {
 
 export async function getHeartbeat(): Promise<number | null> {
   return invoke<number | null>('get_heartbeat');
+}
+
+// Pushes the current live match snapshot into the local overlay HTTP server (Rust-side),
+// so it can be served to OBS's Browser Source over localhost, rather than going through CC/AppAPI.
+export async function pushOverlayState() {
+  try {
+    const data = await formatLiveMatchInfo();
+    if (!data) return;
+    await invoke('update_overlay_state', { payload: data });
+  } catch (err) {
+    console.warn('[Overlay] Failed to push local overlay state:', err);
+  }
 }

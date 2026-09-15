@@ -5,7 +5,7 @@ import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import NavCorner from './components/Navigation/NavCorner';
-import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange } from './core/bridgeListener';
+import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { fetchSelfQuery } from './core/utilities/odyssey';
@@ -120,7 +120,10 @@ function App() {
   // Rust Mod Bridge Listeners
   useEffect(() => {
   const unlistens = Promise.all([
-    onPlayersUpdate(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
+    onPlayersUpdate(async (payload) => {
+      await updatePlayers(JSON.parse(payload.content!) as PlayersJSON);
+      await pushOverlayState();
+    }),
     onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
     onCustomLobbyHeartbeat(async (payload) => { await updateCustomLobby(JSON.parse(payload.content!) as MetaJSON); }),
 
@@ -135,15 +138,17 @@ function App() {
       // Update database
       const matchTable = await updateGameState(data);
       await tryUpdateDiscordRPC();
+      await pushOverlayState();
 
       // Only once during Match Start, log the match start time in timeline entries if not there already.
       if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };
     }),
-    
+
     onMatchUpdate(async (payload) => {
       const data = JSON.parse(payload.content!) as MatchJSON;
       await updateScore(data);
       await tryUpdateDiscordRPC();
+      await pushOverlayState();
     }),
 
     onQueueChange(async (payload) => {
@@ -159,6 +164,7 @@ function App() {
       }
 
       await tryUpdateDiscordRPC();
+      await pushOverlayState();
       await sessionHeartbeat();
     }),
   ]);
