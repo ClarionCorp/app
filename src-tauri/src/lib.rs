@@ -166,7 +166,8 @@ fn flush_logs(app: tauri::AppHandle, entries: Vec<LogEntryPayload>) -> Result<()
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let overlay_state: overlay::OverlayState = Default::default();
+    let (overlay_state, _overlay_state_rx) =
+        tokio::sync::watch::channel::<Option<serde_json::Value>>(None);
 
     tauri::Builder::default()
         .manage(overlay_state.clone())
