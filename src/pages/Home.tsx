@@ -1,11 +1,14 @@
 import { motion, type Variants } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import { InfoIcon, BroadcastIcon } from "@phosphor-icons/react";
 import { AppContextType } from "../App";
 import { isProcessRunning } from "../core/bridgeListener";
 import { NAV_ITEMS } from "../core/objects/navigation";
 import { getAppSettings, getUser, upsertAppSettings } from "../core/database/queries";
 import { useDialogue } from "../components/UI/DialogueToast";
+import { AboutModal } from "../components/Navigation/AboutModal";
+import { OverlayModal } from "../components/Navigation/OverlayModal";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -29,7 +32,14 @@ const itemVariants: Variants = {
 export default function HomePage() {
   const { navigate } = useOutletContext<AppContextType>();
   const [gameRunning, setGameRunning] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
   const { showQueue } = useDialogue();
+
+  const QUICK_LINKS = [
+    { key: "about", label: "About", icon: <InfoIcon size={20} weight="duotone" />, onClick: () => setAboutOpen(true) },
+    { key: "overlay", label: "Stream Overlay", icon: <BroadcastIcon size={20} weight="duotone" />, onClick: () => setOverlayOpen(true) },
+  ];
 
   useEffect(() => {
     isProcessRunning('OmegaStrikers-Win64-Shipping.exe').then(setGameRunning);
@@ -85,7 +95,7 @@ export default function HomePage() {
         style={{ opacity: 'var(--theme-bg-overlay-opacity)' }}
       />
 
-      <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] px-8 pb-36">
+      <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] px-8 pb-28">
         <motion.div
           className="mb-10 short:my-7 text-center"
           initial={{ opacity: 0, y: -10 }}
@@ -109,21 +119,39 @@ export default function HomePage() {
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-2 gap-4 w-full max-w-2xl"
+          className="flex flex-col items-center gap-4 w-full max-w-2xl"
           variants={containerVariants}
           initial="hidden"
           animate="show"
         >
-          {NAV_ITEMS.map((item) => {
-            const disabled = item.online && !gameRunning;
-            return (
-              <motion.div key={item.slug} variants={itemVariants}>
-                <NavButton item={item} disabled={disabled} onClick={() => !disabled && navigate(item.slug)} />
-              </motion.div>
-            );
-          })}
+          <div className="grid grid-cols-2 gap-4 w-full">
+            {NAV_ITEMS.map((item) => {
+              const disabled = item.online && !gameRunning;
+              return (
+                <motion.div key={item.slug} variants={itemVariants}>
+                  <NavButton item={item} disabled={disabled} onClick={() => !disabled && navigate(item.slug)} />
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <motion.div className="flex flex-row gap-3 mt-1" variants={itemVariants}>
+            {QUICK_LINKS.map((link) => (
+              <button
+                key={link.key}
+                onClick={link.onClick}
+                title={link.label}
+                className="flex items-center justify-center h-11 w-11 rounded-xl border border-surface-border bg-surface-subtle text-char-subtle transition-colors hover:border-primary hover:text-primary cursor-pointer"
+              >
+                {link.icon}
+              </button>
+            ))}
+          </motion.div>
         </motion.div>
       </div>
+
+      <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <OverlayModal open={overlayOpen} onClose={() => setOverlayOpen(false)} />
     </div>
   );
 }
