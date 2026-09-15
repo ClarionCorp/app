@@ -35,6 +35,8 @@ tauri-plugin-dialog = "2"
 sysinfo = "0.38.4"
 axum = "0.7"
 tower-http = { version = "0.5", features = ["cors"] }
+rust-embed = "8"
+mime_guess = "2"
 notify = "6"
 tauri-plugin-libsql = { version = "0.1.0", default-features = false, features = ["core"] }
 tauri-plugin-single-instance = "2"

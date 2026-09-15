@@ -6,10 +6,12 @@
   "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && vite build --config vite.overlay.config.ts",
+    "build:overlay": "vite build --config vite.overlay.config.ts",
     "preview": "vite preview",
     "tauri": "tauri",
-    "tauri:linux": "NO_STRIP=true tauri build",
+    "build:windows": "tsc && vite build && vite build --config vite.overlay.config.ts && tauri build",
+    "build:linux": "NO_STRIP=true tsc && vite build && vite build --config vite.overlay.config.ts && tauri build",
     "regen": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "gen": "drizzle-kit generate"

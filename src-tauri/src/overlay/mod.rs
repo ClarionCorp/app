@@ -1,15 +1,26 @@
 use std::sync::Arc;
 
 use axum::{
+    body::Body,
     extract::State,
-    http::StatusCode,
-    response::{Html, IntoResponse, Json},
+    http::{header, StatusCode, Uri},
+    response::{IntoResponse, Json, Response},
     routing::get,
     Router,
 };
+use rust_embed::RustEmbed;
 use serde_json::Value;
 use tokio::{net::TcpListener, sync::RwLock};
 use tower_http::cors::CorsLayer;
+
+// The on-device OBS overlay page. Built separately from the main app (pnpm build:overlay,
+// see vite.overlay.config.ts) into ../dist-overlay, then baked into this binary at compile
+// time so there's nothing extra to ship or locate at runtime across platforms. In debug
+// builds rust-embed instead reads straight from that folder on disk, so `pnpm build:overlay`
+// alone is enough to see changes without recompiling Rust.
+#[derive(RustEmbed)]
+#[folder = "../dist-overlay"]
+struct OverlayAssets;
 
 // Loopback-only local server that mirrors the live match data we already send to the
 // cloud overlay, so OBS's Browser Source can hit it directly without a network round-trip.
@@ -17,31 +28,27 @@ pub type OverlayState = Arc<RwLock<Option<Value>>>;
 
 pub const OVERLAY_PORT: u16 = 47822;
 
-// Bare-bones test page so the pipeline (bridge event -> Rust state -> HTTP) can be
-// verified in a real browser / OBS before any real overlay UI is built.
-const TEST_PAGE: &str = r#"<!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Ai.Mi Overlay (dev)</title></head>
-<body style="background:transparent;color:#eee;font:14px monospace;margin:0;padding:12px;">
-<pre id="state">waiting for match data...</pre>
-<script>
-async function poll() {
-  try {
-    const res = await fetch('/api/state');
-    document.getElementById('state').textContent =
-      res.status === 204 ? 'no match data yet' : JSON.stringify(await res.json(), null, 2);
-  } catch (e) {
-    document.getElementById('state').textContent = 'error: ' + e;
-  }
-  setTimeout(poll, 1000);
+fn serve_embedded(path: &str) -> Response {
+    match OverlayAssets::get(path) {
+        Some(file) => {
+            let mime = mime_guess::from_path(path).first_or_octet_stream();
+            Response::builder()
+                .header(header::CONTENT_TYPE, mime.as_ref())
+                .body(Body::from(file.data.into_owned()))
+                .unwrap()
+        }
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
 }
-poll();
-</script>
-</body>
-</html>"#;
 
-async fn overlay_page() -> Html<&'static str> {
-    Html(TEST_PAGE)
+async fn overlay_page() -> Response {
+    serve_embedded("overlay.html")
+}
+
+// Catches everything else: Vite's own JS/CSS chunks under /assets/*, plus every image
+// under /characters/*, /trainings/*, etc. that the build copied straight out of public/.
+async fn serve_static(uri: Uri) -> Response {
+    serve_embedded(uri.path().trim_start_matches('/'))
 }
 
 async fn get_state(State(state): State<OverlayState>) -> impl IntoResponse {
@@ -75,6 +82,7 @@ pub fn start(state: OverlayState) {
             .route("/overlay", get(overlay_page))
             .route("/api/state", get(get_state))
             .route("/health", get(health))
+            .fallback(serve_static)
             .layer(CorsLayer::permissive())
             .with_state(state);
 
@@ -82,14 +90,14 @@ pub fn start(state: OverlayState) {
         let listener = match TcpListener::bind(&addr).await {
             Ok(listener) => listener,
             Err(e) => {
-                eprintln!("[overlay_server] failed to bind {addr}: {e}");
+                eprintln!("[overlay] failed to bind {addr}: {e}");
                 return;
             }
         };
 
-        println!("[overlay_server] listening on http://{addr}/overlay");
+        println!("[overlay] listening on http://{addr}/overlay");
         if let Err(e) = axum::serve(listener, app).await {
-            eprintln!("[overlay_server] server error: {e}");
+            eprintln!("[overlay] server error: {e}");
         }
     });
 }

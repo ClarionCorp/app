@@ -22,7 +22,7 @@ export type Ability = {
   description: string,
 }
 
-type Character = {
+export type Character = {
   id: string,
   name: string,
   abilities: Ability[],
@@ -870,3 +870,7 @@ export const characters: Character[] = [
     ]
   }
 ]
+
+export function getCharacterFromId(id: string): Character | undefined {
+  return characters.find(c => c.id === id);
+}
