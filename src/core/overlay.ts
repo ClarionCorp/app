@@ -67,14 +67,31 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   const matchPlayers = await getMatchPlayers();
   const currentUser = await getUser();
   const queueName = currentMatch.queue;
+  const myTeamNum = matchPlayers.find(p => p.isMe)?.teamNum;
 
   // Make sure we have all the required info to initiate a valid update
-  if (!currentMatch || !currentUser || !matchPlayers) return null;
+  if (!currentMatch || !currentUser || !matchPlayers) {
+    console.warn('[Overlay] formatLiveMatchInfo: missing base data', {
+      hasMatch: !!currentMatch,
+      hasUser: !!currentUser,
+      hasPlayers: !!matchPlayers,
+    });
+    return null;
+  }
   if (
     !queueName ||
-    !currentMatch.teamNum ||
+    !myTeamNum ||
     !currentMatch.startedAt
-  ) { return null };
+  ) {
+    console.warn('[Overlay] formatLiveMatchInfo: incomplete match data', {
+      queueName,
+      myTeamNum,
+      startedAt: currentMatch.startedAt,
+      playerCount: matchPlayers.length,
+      isMeCount: matchPlayers.filter(p => p.isMe).length,
+    });
+    return null;
+  };
 
   const isRanked = queueName === 'Ranked';
 
@@ -105,7 +122,7 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
     map: currentMatch.map,
     queue: queueName,
     partySize: currentMatch.partySize,
-    teamNumber: currentMatch.teamNum,
+    teamNumber: myTeamNum,
     seenTrainings: currentMatch.trainings,
     bans: currentMatch.bans,
     teamOnePts: currentMatch.teamOnePts ?? 0,
