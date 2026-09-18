@@ -13,8 +13,9 @@ import BasicPopover from '../UI/BasicPopover';
 import { getQueueObjectFromID } from '../../core/objects/queues';
 import { getQueueGroup } from './PairedPlayers';
 import { useToast } from '../UI/Toast';
+import PlayerProfile from './PlayerProfile';
 
-const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
+export const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
   'Midfielder': 'text-match-midfielder',
   'Hard Forward': 'text-match-hardfwd',
@@ -99,9 +100,9 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.25 }}
     >
+      <PlayerProfile player={player} disabled={hideUsername}>
       <button
         onClick={() => openUserOnCC(player.username)}
-        title='Click to open profile on ClarionCorp'
         className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
@@ -278,6 +279,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
           </div>
         )}
       </button>
+      </PlayerProfile>
     </motion.div>
   );
 }
