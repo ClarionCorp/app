@@ -19,6 +19,11 @@ The goal is to provide you with additional insight into your game. Though keep i
   - Works in all modes (Normal, Ranked, Custom)
   - Can be disabled by hosts for tournaments
 
+When out of a Match, the entire page is replaced with one that shows:
+  - A Rating Chart for changes in this playsession.
+  - Match History for matches played in this playsession.
+  - The current maps in rotation.
+
 
 <!-- Add updated preview image later -->
 
