@@ -5,8 +5,9 @@ import { fetch } from "@tauri-apps/plugin-http";
 import { getAppSettings } from "../database/queries";
 import { AiMiAPI, ClarionAPI } from "../constants";
 import { fetchOdyPlayerStats, fetchRankQuery } from "./odyssey";
-import { Player } from "../../types/clarion";
+import { Nameplate, Player } from "../../types/clarion";
 import { PairedPlayersV1 } from "../../types/appAPI";
+import { RankedQuery } from "../../types/odyssey";
 
 // An obj containing what we need in order to fill the database
 type ReqPlayerStats = {
@@ -18,6 +19,7 @@ type ReqPlayerStats = {
   normGames: number,
   rankedGames: number,
   tags: string[],
+  nameplate: Nameplate | null,
 }
 
 export type ProminentChar = {
@@ -26,6 +28,22 @@ export type ProminentChar = {
   role: 'Forward' | 'Goalie',
   games: number,
   winrate: number
+}
+
+function getNameplate(ccp?: Player, odyp?: RankedQuery | null): Nameplate | null {
+  if (ccp && ccp.nameplateId && ccp.assets?.nameplate) {
+    return {
+      nameplateId: ccp.nameplateId,
+      nameplateUrl: ccp.assets?.nameplate
+    }
+  } else if (odyp && odyp.nameplateId) {
+    return {
+      nameplateId: odyp.nameplateId,
+      nameplateUrl: `https://api.clarioncorp.net/assets/nameplate/${odyp.nameplateId}.webp` // might work
+    }
+  } else {
+    return null;
+  }
 }
 
 export async function fetchPlayerStats(username: string, playerId?: string): Promise<ReqPlayerStats> {
@@ -39,6 +57,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
     rankedGames: 0,
     rankedWR: 0,
     tags: [],
+    nameplate: null,
   };
 
   try {
@@ -58,6 +77,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
         rankedGames: data.ratings[0]?.games ?? 0,
         tags: data.tags,
+        nameplate: getNameplate(data),
       }
     }
 
@@ -78,6 +98,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
         rankedGames: data.ratings[0]?.games ?? 0,
         tags: data.tags,
+        nameplate: getNameplate(data),
       }
     }
 
@@ -181,6 +202,7 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         rankedWR: rankedTotals.wins / rankedTotals.games,
         rankedGames: rankedTotals.games,
         tags: rankQuery?.tags ?? [],
+        nameplate: getNameplate(undefined, rankQuery),
       }
     }
 

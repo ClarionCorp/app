@@ -23,6 +23,9 @@ export type Player = {
     currentLevelXp: number,
     totalXp: number,
     xpToNextLevel: number,
+  },
+  assets?: {
+    nameplate?: string, // url
   }
 }
 
@@ -119,4 +122,9 @@ export type CurrentSeason = {
   season: number,
   startDate: Date,
   endDate: Date,
+}
+
+export type Nameplate = {
+  nameplateId: string,
+  nameplateUrl: string,
 }

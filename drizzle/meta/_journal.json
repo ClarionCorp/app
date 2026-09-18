@@ -260,6 +260,13 @@
       "when": 1789458987460,
       "tag": "0036_exotic_satana",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "6",
+      "when": 1789724927907,
+      "tag": "0037_graceful_jackal",
+      "breakpoints": true
     }
   ]
 }

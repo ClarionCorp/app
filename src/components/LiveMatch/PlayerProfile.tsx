@@ -131,102 +131,127 @@ export default function PlayerProfile({
             className="fixed z-60 w-96 pointer-events-none"
             style={{ top: position.top, left: position.left }}
           >
-            <div className="rounded-xl border border-surface-border bg-surface shadow-2xl p-4 space-y-3">
-              {/* Header */}
-              <div className="flex items-center gap-3">
-                {player.rating == null ? (
-                  <div className="w-14 h-14 flex items-center justify-center shrink-0">
-                    <div className="w-9 h-9 rounded-full border-2 border-surface-overlay border-t-primary animate-spin" />
-                  </div>
-                ) : (
-                  <RankIcon rating={player.rating} size="xm" />
+            <div className="rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
+              <div className="relative">
+                {player.nameplate?.nameplateUrl && (
+                  <>
+                    <img
+                      src={player.nameplate.nameplateUrl}
+                      alt=""
+                      aria-hidden
+                      className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none select-none"
+                    />
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 pointer-events-none select-none"
+                      style={{ background: 'linear-gradient(to bottom, transparent 30%, var(--color-surface) 100%)' }}
+                    />
+                  </>
                 )}
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base font-semibold text-char truncate">{player.username}</span>
-                    {player.tags.length > 0 && (
-                      <span className="flex items-center gap-1 shrink-0">
-                        {player.tags.map(tag => (
-                          <img
-                            key={tag}
-                            src={`/tags/${tag}.webp`}
-                            alt={tag}
-                            title={tag}
-                            className="w-5 h-5"
-                          />
-                        ))}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-char-secondary mt-0.5 truncate">
-                    {rankInfo.name}
-                    {player.rating != null && (
-                      <> · <span className="text-char-subtle font-medium">{player.rating} Rating</span></>
-                    )}
+              <div className="relative p-4 pb-0 space-y-3">
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                  {player.rating == null ? (
+                    <div className="w-14 h-14 flex items-center justify-center shrink-0">
+                      <div className="w-9 h-9 rounded-full border-2 border-surface-overlay border-t-primary animate-spin" />
+                    </div>
+                  ) : (
+                    <RankIcon rating={player.rating} size="xm" />
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base font-semibold text-char truncate">{player.username}</span>
+                      {player.tags.length > 0 && (
+                        <span className="flex items-center gap-1 shrink-0">
+                          {player.tags.map(tag => (
+                            <img
+                              key={tag}
+                              src={`/tags/${tag}.webp`}
+                              alt={tag}
+                              title={tag}
+                              className="w-5 h-5"
+                            />
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-char-secondary mt-0.5 truncate">
+                      {rankInfo.name}
+                      {player.rating != null && (
+                        <> <span className="text-char-subtle font-medium">({player.rating} Rating)</span></>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Badges */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {player.accLevel != null && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5 text-char-secondary">
-                    <ChartBarIcon size={12} weight="duotone" />
-                    Lv. {player.accLevel}
-                  </span>
-                )}
+                {/* Badges */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {player.accLevel != null && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5 text-char-secondary">
+                      <ChartBarIcon size={12} weight="duotone" />
+                      Lv. {player.accLevel}
+                    </span>
+                  )}
 
-                {playstyleType && (
+                  {playstyleType && (
+                    <span className={clsx(
+                      'inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5',
+                      playstyleClass ?? 'text-char-secondary'
+                    )}>
+                      {player.role === 'Forward'
+                        ? <SwordIcon size={12} weight="duotone" />
+                        : <ShieldIcon size={12} weight="duotone" />}
+                      {playstyleType.replace('Generic ', '')}
+                    </span>
+                  )}
+
                   <span className={clsx(
                     'inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5',
-                    playstyleClass ?? 'text-char-secondary'
+                    smurfClasses[player.smurfProbability]
                   )}>
-                    {player.role === 'Forward'
-                      ? <SwordIcon size={12} weight="duotone" />
-                      : <ShieldIcon size={12} weight="duotone" />}
-                    {playstyleType.replace('Generic ', '')}
+                    <SmileySadIcon size={12} weight="duotone" />
+                    Smurf: {smurfLabels[player.smurfProbability]}
                   </span>
-                )}
-
-                <span className={clsx(
-                  'inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5',
-                  smurfClasses[player.smurfProbability]
-                )}>
-                  <SmileySadIcon size={12} weight="duotone" />
-                  Smurf: {smurfLabels[player.smurfProbability]}
-                </span>
+                </div>
+              </div>
               </div>
 
+              {/* Solid gap between the banner and the stats table */}
+              <div className="h-4" aria-hidden />
+
               {/* Queue stats */}
-              <table className="w-full text-xs border-t border-background-border/50 pt-2">
-                <thead>
-                  <tr className="text-char-subtle uppercase tracking-wide text-[10px]">
-                    <th className="text-left font-medium pb-1">Queue</th>
-                    <th className="text-left font-medium pb-1">Games</th>
-                    <th className="text-left font-medium pb-1">Winrate</th>
-                    <th className="text-left font-medium pb-1">Main Striker</th>
-                    <th className="text-left font-medium pb-1">Best Striker</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {queueRows.map(row => (
-                    <tr key={row.queue} className="border-t border-background-border/50">
-                      <td className="py-1 pr-1 text-char-secondary font-medium">{row.label}</td>
-                      <td className="py-1 pr-1 text-char-subtle">{row.games ?? '—'}</td>
-                      <td className={clsx('py-1 pr-1 font-medium', winrateClass(row.winrate))}>
-                        {row.winrate == null ? '—' : `${(row.winrate * 100).toFixed(0)}%`}
-                      </td>
-                      <td className="py-1 pr-1">
-                        <CharacterCell char={pickChar(player.favChar, row.queue, 'games')} />
-                      </td>
-                      <td className="py-1">
-                        <CharacterCell char={pickChar(player.bestChar, row.queue, 'winrate')} />
-                      </td>
+              <div className="px-4 pb-4">
+                <table className="w-full text-xs border-t border-background-border/50 pt-2">
+                  <thead>
+                    <tr className="text-char-subtle uppercase tracking-wide text-[10px]">
+                      <th className="text-left font-medium pb-1">Queue</th>
+                      <th className="text-left font-medium pb-1">Games</th>
+                      <th className="text-left font-medium pb-1">Winrate</th>
+                      <th className="text-left font-medium pb-1">Main Striker</th>
+                      <th className="text-left font-medium pb-1">Best Striker</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {queueRows.map(row => (
+                      <tr key={row.queue} className="border-t border-background-border/50">
+                        <td className="py-1 pr-1 text-char-secondary font-medium">{row.label}</td>
+                        <td className="py-1 pr-1 text-char-subtle">{row.games ?? '—'}</td>
+                        <td className={clsx('py-1 pr-1 font-medium', winrateClass(row.winrate))}>
+                          {row.winrate == null ? '—' : `${(row.winrate * 100).toFixed(0)}%`}
+                        </td>
+                        <td className="py-1 pr-1">
+                          <CharacterCell char={pickChar(player.favChar, row.queue, 'games')} />
+                        </td>
+                        <td className="py-1">
+                          <CharacterCell char={pickChar(player.bestChar, row.queue, 'winrate')} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </motion.div>
         )}

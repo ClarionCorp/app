@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer, TimelineEntry } from "../../types/ue4ss";
 import { QueueStates } from "../../types/database";
-import { Playstyle, SmurfConfidence } from "../../types/clarion";
+import { Nameplate, Playstyle, SmurfConfidence } from "../../types/clarion";
 import { PreferredDataSources } from "../../types/appAPI";
 import { ProminentChar } from "../utilities/players";
 
@@ -110,6 +110,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   knockouts: integer("knockouts"),
   smurfProbability: text("smurfProbability").$type<SmurfConfidence>().notNull().default('none'),
   queueMates: text("queueMates", { mode: "json" }).$type<string[]>().notNull().default([]),
+  nameplate: text("nameplate", { mode: "json" }).$type<Nameplate>(),
 });
 
 // Basic list of previous matches for local match history
