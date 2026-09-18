@@ -3,23 +3,27 @@
 The **Ai.Mi App** is a companion app that runs alongside **[Omega Strikers](https://www.odysseyinteractive.gg/omegastrikers)**. It is developed right here on GitHub by the makers of **[ClarionCorp](https://clarioncorp.net)**, a stats tracking database for Omega Strikers.
 
 
-The goal is to provide you with additional insight into your game. Though keep in mind, it is __NOT__ intended to give players an unfair advantage, just nice-to-haves (QoL).
+The goal is to provide you with additional insight into your game. Though keep in mind, it is **NOT** intended to give players an unfair advantage, just nice-to-haves (QoL).
 
-[![Download](/public/download.png)](https://github.com/ClarionCorp/app/releases/latest)
+[![Download](/public/download.png)](https://github.com/ClarionCorp/app/wiki)
 
 ---
 # Features
 
 ## 🏅 Live Match Summary
-  - Automatically fetch the rank of your opponents
+  - Automatically fetch detailed stats of all players
   - Track awakening pool and current selections
+  - Track XP earned per set, per goal, and per match
+  - Predict awakening pick order before intermission
+  - Show possible smurfs using simple prediction logic
+  - Works in all modes (Normal, Ranked, Custom)
+  - Can be disabled by hosts for tournaments
 
-The live match summary will automatically fetch the Name, Character, Rating, Rank, and WinRate of every player in the game. It will also show what awakenings are currently in rotation, and which ones have already been selected or shown.
 
 <!-- Add updated preview image later -->
 
 ## 📃 Instant Match History
-The app will automatically save completed games and be viewable completely in-app. This process only takes a couple of seconds after a match has finalized, and is much more detailed than its online counterparts.
+The app will automatically save completed games and be viewable completely in-app. This process only takes a couple of seconds after a match has finalized, and is much more detailed than its online counterparts. Soon, completed matches will be viewable on ClarionCorp too.
 
 |               | **Ai.Mi App** | **[ClarionCorp](https://clarioncorp.net/)** | **[Omega Stats](https://stats.omegastrikers.gg/)** |
 | ------------- | ------------- | ------------------------------------------- | -------------------------------------------------- |
@@ -54,10 +58,16 @@ The default OS Rich Presence kind of sucks. Just says you're playing OS and for 
 ![Discord RPC](https://clarioncorp.net/i/app/Discord-RPC.png)
 
 ## 👥 Online Player Counter
-Everyone using the app will have their gamestate periodically sent to the Ai.Mi API. This way, we can show a counter inside the app for how many people are currently playing. 😃
+Everyone using the app will have their gamestate periodically sent to the Ai.Mi API. Additionally, whenever you finish up a match, it is automatically sent to the helper API for processing. Once processed, all seen players will be accounted for and added to the total player count. (they expire if not seen again for an hour)
 
-We plan to add an option in settings in the future (before v2 release) to opt-out since we know some people don't like that sort of thing very much. 🩷
 
+## 🌿 Quality of Life
+- Queue Pop SFX: Play a sound when your queue pops to let you know to stop playing Risk of Rain 2 and tab back in.
+- Stream Overlay: Show app stats and/or queue state with customizable widgets on your stream. (fully local)
+- Theme Support: Pick from one of many pre-made themes, or make your own and have it added to the app.
+- Auto Open Game: Optionally ask the app to auto open OS via Steam when the app is launched.
+- Close with Game: Optionally ask the app to close itself when the game shuts down.
+- Match History Viewer: Sort and Filter Match History by **Queue**, **Map**, **Character**, **Account**, and **Players**.
 
 ## 🔎 Mod Manager (planned)
 No more fussing around with manually keeping track of your pak files. With this, you can view your currently installed mods, as well as download new ones straight from [GameBanana](https://gamebanana.com/games/17234).
@@ -73,48 +83,36 @@ Explore other queues that are available in the game for some reason. We also may
 ---
 # Notices
 
-## ⚠️ UE4SS Modding Framework
-v2 was built from the ground up to rely heavily on custom UE4SS mods that hook into the game directly. Upon launching the app, it will check for UE4SS and current mod versions. If UE4SS is undetected or outdated, it will automatically install a very minimized version of UE4SS to the game's directory.
+## 🔧 UE4SS Modding Framework
+v2 was built from the ground up to rely heavily on a custom UE4SS mod that hooks into the game directly. Upon launching the app, it will check for UE4SS and the current mod version. If UE4SS is undetected or outdated, it will automatically install it to the game's directory.
 
-If that doesn't sit right with you, do not use this app. This game doesn't have an anti-cheat, so none of this should get you banned or anything. :shrug:
+If that doesn't sit right with you, do not use this app. OS doesn't have an anti-cheat, so none of the mods will get you banned.
 
-## 🤏 Small Memory Footprint
-Built with Tauri, the Ai.Mi App uses just less than 10 MB of RAM currently. The package size is around 50 MB, but most of that is images used inside the app. Some images are retrieved from the cloud to minimize this footprint.
+## 🤏 Small Footprint
+Built with Tauri, the Ai.Mi App uses just less than 10 MB of RAM currently. The package size is around 100 MB, but most of that is images used inside the app. Some images are retrieved from the cloud to minimize this footprint.
 
----
+The UE4SS Mod has also been rigorously optimized several times to minimize the impact it has on performance. Unfortunately, there will always be *some* impact, since we cannot run hooks async from the game. Alas the performance difference should be virtually unnoticeable.
 
-# 🤔 Installation / Uninstallation
-During pre-release development, only standalone versions of the app will be shipped. So, just download it and run it, really. For releases, you can either download the standalone, or if you want automatic updates you can download the installer (setup). All downloads can be found in [releases](https://github.com/ClarionCorp/app/releases).
+## ⚠️ Privacy Notice
+This app occasionally sends data to the ClarionCorp/AppAPI for processing. This includes, but is not limited to:
+- Username
+- GameState
+- App Version
+- Entire Matches
 
-### ...For Linux Users
-All linux need to add the following arguments to their game's steam launch options. You can find this by opening steam, clicking Omega Strikers, clicking the cog gear on the right, Properties, and pasting this line in "Launch Options". This is required for the modloader to be able to hook into Proton.
-```sh
-WINEDLLOVERRIDES="dwmapi=n,b" %command%
-```
+This data is then processed for services like "Online Players", "Match History" on CC, and basic analytics like total monthly, active users.
 
-As for the release files, if you are on **Debian**, **Ubuntu**, or **Mint** you should use the `.deb`. If you are on **Fedora** or **Bazzite**, use the `.rpm`. Any and all other distributions can use the `.AppImage`. Also, the app only works if OS is installed to the default location (`~/.steam/`).
+Additionally, the following is automatically included when sending bug reports:
+- Discord ID (only if linked to OS account)
+- Operating System
+- Resolved File Paths (GameDir, Temp, etc.)
+- File names in `OmegaStrikers\Binaries\Win64`
+- Latest transcript of the app log
 
-
-### Uninstalling
-
-If you wish to uninstall, just run your operating system's uninstaller. (Search `Add or Remove Programs` in Windows Search)
-
-Keep in mind that if you uninstall the App (or decide to stop using it), UE4SS will continue to be installed. To uninstall UE4SS, open Settings and click the button at the bottom labeled "Uninstall UE4SS". It will delete the mod files, then close the app. You can now remove the app from your system.
-
----
-
-# 🛠️ Building from Source
-Don't trust my versions? That's fine lol. Or maybe you are wanting to try making a theme or adding features?
-
-1. Clone the repo or download whichever `Source.zip` you want in [releases](https://github.com/ClarionCorp/app/releases).
-2. Make sure you have [NodeJS 24](https://nodejs.org/en/download) or higher installed on your system. Then enable `pnpm` with `corepack enable pnpm`.
-3. Open the pulled repo in your terminal, and run `pnpm i` to install the packages.
-4. When finished, run `pnpm approve-builds` press `A` on your keyboard, then press `ENTER`.
-5. Next install [Rust](https://rust-lang.org/tools/install/) on your system.
-6. Run `pnpm tauri dev` to run a live version of the app from your IDE/terminal.
-7. Once you want to try building an executable (for your platform), run `pnpm tauri build` (linux uses `pnpm tauri:linux`).
-   - These are what are bundled in the releases, so if you JUST want a version to use, use this.
-   - The file(s) can be found in `src-tauri/target/release` when finished.
+We explicitly **do not**:
+- Link alt accounts together with this data
+- Sell anything or give it to advertisers
+- Read any unnecessary files (you can view all permissions [here](https://github.com/ClarionCorp/app/blob/v2-stable/src-tauri/capabilities/default.json))
 
 ---
 
