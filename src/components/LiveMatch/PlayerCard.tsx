@@ -63,14 +63,14 @@ function RankBadge({ text, color }: { text: string, color: string }) {
 }
 
 
-export function PlayerCard({ player, match, index, isBlue = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
+export function PlayerCard({ player, match, index, isAlly = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
   const rankInfo = getRankFromLP(player.rating);
   const queueGroup = getQueueGroup(player, teammates);
   const { toast } = useToast();
 
   const borderClass = player.isMe
     ? 'border-blue-500/30 hover:border-blue-500/50'
-    : isBlue
+    : isAlly
       ? 'border-background-border hover:border-blue-500/50'
       : 'border-background-border hover:border-primary/20';
 
@@ -87,7 +87,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
     : null;
 
   let hideUsername = false;
-  if (match && !player.charId && queue == 'Ranked') { hideUsername = true };
+  if (!isAlly && match && !player.charId && queue == 'Ranked') { hideUsername = true };
 
   function openUserOnCC(username: string) {
     if (hideUsername) { toast('Players hidden until bans are picked. Sorry!', 'error') }
@@ -100,7 +100,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.25 }}
     >
-      <PlayerProfile player={player} isEnemy={!isBlue} hideStrikers={hideUsername}>
+      <PlayerProfile player={player} isEnemy={!isAlly} hideStrikers={hideUsername}>
       <button
         onClick={() => openUserOnCC(player.username)}
         className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
