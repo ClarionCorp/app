@@ -23,7 +23,7 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
           Rating This Session
         </p>
         <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-32">
-          Not enough matches played this session yet.
+          Not enough ranked matches played this session yet.
         </div>
       </div>
     );

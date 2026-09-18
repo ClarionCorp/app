@@ -86,7 +86,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
     : null;
 
   let hideUsername = false;
-  if (match && !player.charId) { hideUsername = true };
+  if (match && !player.charId && queue == 'Ranked') { hideUsername = true };
 
   function openUserOnCC(username: string) {
     if (hideUsername) { toast('Players hidden until bans are picked. Sorry!', 'error') }

@@ -18,7 +18,7 @@ export function OverlayApp() {
   const isEnabled = (component: OverlayComponent) => enabledComponents.has(component);
 
   const data = useOverlayData(isPreview);
-  if (!data) return null;
+  if (!data || data.queueState == 'Queued' || data.queueState == 'FoundMatch' || data.queueState == 'StartingGame') return null;
 
   const showQueue = isEnabled('queue');
   const showBans = isEnabled('bans');

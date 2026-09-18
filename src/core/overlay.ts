@@ -9,6 +9,7 @@ export type POSTLiveMatchV1 = {
   gameState: string | null,
   map: string | null, // id (GMD_)
   queue: string, // human-readable name
+  queueState: string | null,
   partySize: number,
   teamNumber: 1 | 2,
   seenTrainings: string[],
@@ -122,6 +123,7 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
     gameState: currentMatch.gameState,
     map: currentMatch.map,
     queue: queueName,
+    queueState: currentMatch.queueState,
     partySize: currentMatch.partySize,
     teamNumber: myTeamNum,
     seenTrainings: currentMatch.trainings,
