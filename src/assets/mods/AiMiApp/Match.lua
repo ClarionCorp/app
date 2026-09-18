@@ -174,13 +174,10 @@ local function WriteMatchState(ModName, MATCH_FILE)
         os.time()
     )
 
-    local writeStart = os.clock()
     local f = io.open(MATCH_FILE, "w")
     if not f then print(string.format("[%s] Failed to write match file\n", ModName)) return end
     f:write(body)
     f:close()
-    local writeMs = (os.clock() - writeStart) * 1000
-    print(string.format("[%s] Match: Updated score (write=%.1fms)\n", ModName, writeMs))
 end
 
 function Module.Init(ModName, OUT_DIR)
@@ -190,7 +187,6 @@ function Module.Init(ModName, OUT_DIR)
     pcall(function()
         RegisterHook("/Script/Prometheus.PMPlayerControllerGame:MatchPhaseChanged",
             function(self, OldPhase, NewPhase)
-                local calcStart = os.clock() -- performance.now() ahh
                 pcall(function()
                     if NewPhase:get() == 1 then -- PreGame = new match starting
                         StartTime = os.time()
@@ -201,12 +197,10 @@ function Module.Init(ModName, OUT_DIR)
                         CachedBans = nil
                         MapResolved = false
                         BansResolved = false
-                        print(string.format("[%s] New match starting, start_time=%d\n", ModName, StartTime))
+                        print(string.format("[%s] New match starting, resetting cache...\n", ModName))
                     end
                     WriteMatchState(ModName, MATCH_FILE)
                 end)
-                local calcMs = (os.clock() - calcStart) * 1000
-                print(string.format("[%s] [MATCH] MatchPhaseChanged calc took %.2fms\n", ModName, calcMs))
             end
         )
         print(string.format("[%s] MatchPhaseChanged hook registered (match state)\n", ModName))
@@ -222,7 +216,6 @@ function Module.Init(ModName, OUT_DIR)
                     local trainings = GetTrainings(gs)
                     if #trainings == 0 then return end -- The game replicates CommonTrainings back to empty once intermission ends
                     LastTrainings = trainings
-                    print(string.format("[%s] Trainings updated (%d): %s\n", ModName, #LastTrainings, table.concat(LastTrainings, ",")))
                     WriteMatchState(ModName, MATCH_FILE)
                 end)
             end

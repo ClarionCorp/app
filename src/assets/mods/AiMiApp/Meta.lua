@@ -22,6 +22,19 @@ local MatchmakingStateNames = {
     [4] = "StartingGame", [5] = "InGame",
 }
 
+-- Party/queue can only actually change while out of a match,
+-- so only refetch them on phase transitions that land there.
+-- Setup and in-game phases reuse the cached values instead of rechecking each phase.
+local PhaseGroups = {
+    [0] = "out_of_game", [1] = "out_of_game", [13] = "out_of_game", [14] = "out_of_game",
+    [2] = "setup", [12] = "setup", [15] = "setup", [16] = "setup",
+    [18] = "setup", [19] = "setup", [20] = "setup", [21] = "setup",
+}
+local function GetPhaseGroup(phase)
+    return PhaseGroups[phase] or "in_game"
+end
+local CurrentPhaseGroup = "out_of_game" -- default until the first MatchPhaseChanged tells us otherwise
+
 local GameStateOld = nil
 local GameStateNew = nil
 local GameStateTimestamp = nil
@@ -146,10 +159,21 @@ local function ReadParty()
     return partySize, maxPartySize, members
 end
 
+local LastPartySize, LastMaxPartySize, LastMembers = 1, 3, {}
+local LastQueueName, LastMmStateName = nil, "Unknown"
+
 local function WriteMeta(ModName, META_FILE)
-    local partySize, maxPartySize, members = ReadParty()
+    local partySize, maxPartySize, members, queueName, mmStateName
+    if CurrentPhaseGroup == "out_of_game" then
+        partySize, maxPartySize, members = ReadParty()
+        queueName, mmStateName = GetQueueName()
+        LastPartySize, LastMaxPartySize, LastMembers = partySize, maxPartySize, members
+        LastQueueName, LastMmStateName = queueName, mmStateName
+    else
+        partySize, maxPartySize, members = LastPartySize, LastMaxPartySize, LastMembers
+        queueName, mmStateName = LastQueueName, LastMmStateName
+    end
     local localPlayerId = members[1] and members[1].player_id or nil
-    local queueName, mmStateName = GetQueueName()
 
     local memberKey = ""
     for _, m in ipairs(members) do
@@ -158,9 +182,17 @@ local function WriteMeta(ModName, META_FILE)
     local partyKey = tostring(localPlayerId) .. "|" .. tostring(partySize) .. "|" .. tostring(maxPartySize) .. "|" .. memberKey
     local queueKey = tostring(queueName) .. "|" .. mmStateName
     local gameStateKey = tostring(GameStateOld) .. "|" .. tostring(GameStateNew)
-    local customLobbyKey = tostring(CustomLobbyId) .. "|" .. tostring(CustomLobbyName) .. "|" ..
-        tostring(CustomLobbyIsPrivate) .. "|" .. table.concat(CustomLobbyRegions or {}, ",") .. "|" ..
-        tostring(CustomLobbyMemberCount) .. "|" .. tostring(CustomLobbySize)
+
+    -- Custom lobby info is only meaningful out of game or during setup.
+    -- Once in game it can't change, so stop reporting the lobby state in every write.
+    local customLobbyKey
+    if CurrentPhaseGroup == "in_game" then
+        customLobbyKey = "n/a"
+    else
+        customLobbyKey = tostring(CustomLobbyId) .. "|" .. tostring(CustomLobbyName) .. "|" ..
+            tostring(CustomLobbyIsPrivate) .. "|" .. table.concat(CustomLobbyRegions or {}, ",") .. "|" ..
+            tostring(CustomLobbyMemberCount) .. "|" .. tostring(CustomLobbySize)
+    end
     local snapshot = partyKey .. "||" .. queueKey .. "||" .. gameStateKey .. "||" .. customLobbyKey
 
     if snapshot == LastSnapshot then return end
@@ -207,7 +239,7 @@ local function WriteMeta(ModName, META_FILE)
     end
 
     local customLobbyJson = "null"
-    if CustomLobbyId or CustomLobbyName then
+    if CurrentPhaseGroup ~= "in_game" and (CustomLobbyId or CustomLobbyName) then
         local regionParts = {}
         for _, r in ipairs(CustomLobbyRegions or {}) do
             table.insert(regionParts, '"' .. r .. '"')
@@ -228,14 +260,10 @@ local function WriteMeta(ModName, META_FILE)
         lastChanged, queueJson, localStr, partySize, maxPartySize, membersJson, gameStateJson, customLobbyJson
     )
 
-    local writeStart = os.clock()
     local f = io.open(META_FILE, "w")
     if not f then print(string.format("[%s] Failed to write meta file\n", ModName)) return end
     f:write(body)
     f:close()
-    local writeMs = (os.clock() - writeStart) * 1000
-    print(string.format("[%s] Meta updated (party %d/%d, queue %s, reason=%s, write=%.1fms)\n",
-        ModName, partySize, maxPartySize, tostring(queueName), lastChanged, writeMs))
 end
 
 function Module.Init(ModName, OUT_DIR)
@@ -274,8 +302,6 @@ function Module.Init(ModName, OUT_DIR)
                     local resp = RosterResponseParam:get()
                     if not resp then return end
 
-                    print(string.format("[%s] Checking custom lobby for changes...\n", ModName))
-
                     -- AllPlayerProfiles is everyone currently in the lobby (players + spectators)
                     local newName = StringField(resp.Name)
                     local okCount, newMemberCount = pcall(function() return #resp.AllPlayerProfiles end)
@@ -308,11 +334,6 @@ function Module.Init(ModName, OUT_DIR)
                     -- Their sum is lobby capacity, separate from member_count.
                     pcall(function() CustomLobbySize = (resp.Team1Size or 0) + (resp.Team2Size or 0) end)
 
-                    print(string.format(
-                        "[%s] Custom lobby roster notified: name=%s id=%s requires_join_code=%s regions=%s members=%s/%s\n",
-                        ModName, tostring(CustomLobbyName), tostring(CustomLobbyId), tostring(CustomLobbyIsPrivate),
-                        table.concat(regions, ","), tostring(CustomLobbyMemberCount), tostring(CustomLobbySize)
-                    ))
                     WriteMeta(ModName, META_FILE)
                 end)
             end
@@ -324,19 +345,17 @@ function Module.Init(ModName, OUT_DIR)
     pcall(function()
         RegisterHook("/Script/Prometheus.PMPlayerControllerGame:MatchPhaseChanged",
             function(self, OldPhase, NewPhase)
-                local calcStart = os.clock() -- performance.now() ahh
                 local ok, err = pcall(function()
                     local oldPhase = OldPhase:get()
                     local newPhase = NewPhase:get()
                     GameStateOld = MatchPhaseNames[oldPhase] or tostring(oldPhase)
                     GameStateNew = MatchPhaseNames[newPhase] or tostring(newPhase)
                     GameStateTimestamp = os.time()
-                    print(string.format("[%s] State: %s -> %s", ModName, GameStateOld, GameStateNew))
+                    CurrentPhaseGroup = GetPhaseGroup(newPhase)
+                    -- print(string.format("[%s] State: %s -> %s\n", ModName, GameStateOld, GameStateNew))
 
                     WriteMeta(ModName, META_FILE)
                 end)
-                local calcMs = (os.clock() - calcStart) * 1000
-                print(string.format("[%s] [META] MatchPhaseChanged calc took %.2fms\n", ModName, calcMs))
                 if not ok then print(string.format("[%s] Meta MatchPhaseChanged ERROR: %s\n", ModName, tostring(err))) end
             end
         )

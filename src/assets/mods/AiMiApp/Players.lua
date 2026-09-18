@@ -9,6 +9,23 @@ local IdentityCache = {}
 -- Per-match knockout counts, keyed by PMPlayerId string; reset on PreGame.
 local KoCounts = {}
 
+-- Trainings only updates after setup (VersusScreen [18]), and after Intermissions (IntermissionOutro[10]).
+-- Only mark as dirty to refetch players' trainings after one of these phases has passed.
+local TrainingsCache = {}
+local TrainingsDirty = true
+
+-- Ping is only checked during setup phases.
+-- No longer polled in_game to reduce load on frametime.
+local PhaseGroups = {
+    [0] = "out_of_game", [1] = "out_of_game", [13] = "out_of_game", [14] = "out_of_game",
+    [2] = "setup", [12] = "setup", [15] = "setup", [16] = "setup",
+    [18] = "setup", [19] = "setup", [20] = "setup", [21] = "setup",
+}
+local function GetPhaseGroup(phase)
+    return PhaseGroups[phase] or "in_game"
+end
+local CurrentPhaseGroup = "out_of_game"
+
 local function fname(v)
     if not v then return "" end
     local ok, s = pcall(function() return v:ToString() end)
@@ -83,15 +100,25 @@ local function BuildRoster()
     end
     TrackedStates = valid
 
+    local refreshTrainings = TrainingsDirty
     local roster = {}
     for _, ps in ipairs(TrackedStates) do
         local identity = GetIdentity(ps)
         if identity then
             local ok, entry = pcall(function()
-                local trainings = GetTrainings(ps)
+                local trainings
+                if refreshTrainings or not TrainingsCache[ps] then
+                    trainings = GetTrainings(ps)
+                    TrainingsCache[ps] = trainings
+                else
+                    trainings = TrainingsCache[ps]
+                end
                 local level = ps.Level
-                local okPing, ping = pcall(function() return ps:GetPingInMilliseconds() end)
-                local pingMs = (okPing and ping) and math.floor(ping) or nil
+                local pingMs = nil
+                if CurrentPhaseGroup == "setup" then -- only update ping during setup (just look in the bottom right while in game lol)
+                    local okPing, ping = pcall(function() return ps:GetPingInMilliseconds() end)
+                    pingMs = (okPing and ping) and math.floor(ping) or nil
+                end
                 local okLvls, lvlsGained = pcall(function() return ps:GetCharacterLevelsGainedSinceIntermission() end)
                 local levelsGained = okLvls and lvlsGained or nil
                 local kos = identity.playerId ~= "" and (KoCounts[identity.playerId] or 0) or 0
@@ -105,6 +132,7 @@ local function BuildRoster()
             if ok and entry then table.insert(roster, entry) end
         end
     end
+    TrainingsDirty = false
     return roster
 end
 
@@ -132,7 +160,6 @@ local function WriteRoster(ModName, PLAYERS_FILE)
     end
     local snapshotChanged = (snapshot ~= LastSnapshot)
     if not snapshotChanged and not pingChanged then return false end
-    local writeReason = snapshotChanged and "content" or "ping"
     LastSnapshot = snapshot
 
     LastPings = {}
@@ -159,15 +186,10 @@ local function WriteRoster(ModName, PLAYERS_FILE)
         rosterJson, os.time()
     )
 
-    -- os.clock() is wall time on Windows (unlike POSIX, where it's CPU time), so this
-    -- includes any time blocked on the syscall -- e.g. AV/cloud-sync scanning the write.
-    local writeStart = os.clock()
     local f = io.open(PLAYERS_FILE, "w")
     if not f then print(string.format("[%s] Failed to write players file\n", ModName)) return false end
     f:write(body)
     f:close()
-    local writeMs = (os.clock() - writeStart) * 1000
-    print(string.format("[%s] Roster: Updated %d players (reason=%s, write=%.1fms)\n", ModName, #roster, writeReason, writeMs))
     return true
 end
 
@@ -183,15 +205,9 @@ function Module.Init(ModName, OUT_DIR)
     end)
 
     local function PollRoster()
-        -- Only log calc time when a write actually happened.
-        -- otherwise every 3s poll that bails early (nothing changed) would spam the log for no reason.
-        local calcStart = os.clock()
-        local ok, didWrite = pcall(function() return WriteRoster(ModName, PLAYERS_FILE) end)
-        if ok and didWrite then
-            local calcMs = (os.clock() - calcStart) * 1000
-            print(string.format("[%s] [PLAYERS] PollRoster calc took %.2fms\n", ModName, calcMs))
-        end
-        ExecuteWithDelay(3000, PollRoster)
+        pcall(function() WriteRoster(ModName, PLAYERS_FILE) end)
+        local pollDelay = (CurrentPhaseGroup == "setup") and 1000 or 3000
+        ExecuteWithDelay(pollDelay, PollRoster)
     end
 
     pcall(function()
@@ -203,7 +219,6 @@ function Module.Init(ModName, OUT_DIR)
                     local pid = fname(ins.PMPlayerId)
                     if pid == "" then return end
                     KoCounts[pid] = (KoCounts[pid] or 0) + 1
-                    print(string.format("[%s] KO! %s -> %d total\n", ModName, fname(ins.PMDisplayName), KoCounts[pid]))
                     WriteRoster(ModName, PLAYERS_FILE)
                 end)
             end
@@ -214,8 +229,12 @@ function Module.Init(ModName, OUT_DIR)
     pcall(function()
         RegisterHook("/Script/Prometheus.PMPlayerControllerGame:MatchPhaseChanged",
             function(self, OldPhase, NewPhase)
-                local calcStart = os.clock() -- performance.now() ahh
                 local phase = NewPhase:get()
+                local oldPhase = OldPhase:get()
+                CurrentPhaseGroup = GetPhaseGroup(phase)
+                if oldPhase == 18 or oldPhase == 10 then -- leaving VersusScreen or IntermissionOutro
+                    TrainingsDirty = true
+                end
                 if phase == 1 then -- PreGame = new match starting
                     KoCounts = {}
                     LastSnapshot = ""
@@ -224,6 +243,8 @@ function Module.Init(ModName, OUT_DIR)
                     -- so stale-but-still-valid PlayerStates from past matches can't linger all session.
                     TrackedStates = {}
                     IdentityCache = {}
+                    TrainingsCache = {}
+                    TrainingsDirty = true
                     local existing = FindAllOf("PMPlayerState")
                     if existing then
                         for _, ps in ipairs(existing) do
@@ -238,10 +259,10 @@ function Module.Init(ModName, OUT_DIR)
                     LastSnapshot = ""
                     TrackedStates = {}
                     IdentityCache = {}
+                    TrainingsCache = {}
+                    TrainingsDirty = true
                     print(string.format("[%s] Back to menus -- tracked states cleared\n", ModName))
                 end
-                local calcMs = (os.clock() - calcStart) * 1000
-                print(string.format("[%s] [PLAYERS] MatchPhaseChanged calc took %.2fms\n", ModName, calcMs))
             end
         )
         print(string.format("[%s] MatchPhaseChanged hook registered (roster)\n", ModName))
