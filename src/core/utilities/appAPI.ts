@@ -28,7 +28,7 @@ export async function fetchOnlineCount(username: string, gameState: string, regi
   const res = await fetch(`${AiMiAPI}/v1/online`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
-    body: JSON.stringify({ username, gameState, region }),
+    body: JSON.stringify({ username, gameState, region, version }),
   });
   if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, gameState }, null, 0)) };
   const data = await res.json() as OnlinePlayersV1;
