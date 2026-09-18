@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import clsx from 'clsx';
 import {
   ChartBarIcon,
+  LockSimpleIcon,
   ShieldIcon,
   SmileySadIcon,
   SwordIcon,
@@ -50,6 +51,15 @@ function winrateClass(winrate: number | null | undefined) {
   return 'text-match-mid';
 }
 
+function RedactedCell() {
+  return (
+    <span className="inline-flex items-center gap-1 text-char-subtle/60 italic">
+      <LockSimpleIcon size={12} weight="duotone" />
+      Hidden
+    </span>
+  );
+}
+
 function CharacterCell({ char }: { char: ProminentChar | undefined }) {
   if (!char || char.games === 0) {
     return <span className="text-char-subtle">—</span>;
@@ -73,13 +83,17 @@ function CharacterCell({ char }: { char: ProminentChar | undefined }) {
 
 export default function PlayerProfile({
   player,
-  disabled = false,
+  isEnemy = false,
+  hideStrikers = false,
   children,
 }: {
   player: MatchPlayersTable;
-  disabled?: boolean;
+  isEnemy?: boolean;
+  hideStrikers?: boolean;
   children: React.ReactNode;
 }) {
+  const redactStrikers = isEnemy && hideStrikers;
+
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -113,7 +127,7 @@ export default function PlayerProfile({
     <>
       <div
         ref={triggerRef}
-        onMouseEnter={() => !disabled && setIsOpen(true)}
+        onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
         className="w-full"
       >
@@ -121,7 +135,7 @@ export default function PlayerProfile({
       </div>
 
       <AnimatePresence>
-        {isOpen && !disabled && (
+        {isOpen && (
           <motion.div
             ref={popoverRef}
             initial={{ opacity: 0, y: 4 }}
@@ -242,10 +256,14 @@ export default function PlayerProfile({
                           {row.winrate == null ? '—' : `${(row.winrate * 100).toFixed(0)}%`}
                         </td>
                         <td className="py-1 pr-1">
-                          <CharacterCell char={pickChar(player.favChar, row.queue, 'games')} />
+                          {redactStrikers
+                            ? <RedactedCell />
+                            : <CharacterCell char={pickChar(player.favChar, row.queue, 'games')} />}
                         </td>
                         <td className="py-1">
-                          <CharacterCell char={pickChar(player.bestChar, row.queue, 'winrate')} />
+                          {redactStrikers
+                            ? <RedactedCell />
+                            : <CharacterCell char={pickChar(player.bestChar, row.queue, 'winrate')} />}
                         </td>
                       </tr>
                     ))}
