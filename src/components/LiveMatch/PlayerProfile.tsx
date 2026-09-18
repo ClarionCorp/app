@@ -9,13 +9,20 @@ import {
   SwordIcon,
 } from '@phosphor-icons/react';
 import { MatchPlayersTable } from '../../types/database';
-import { SmurfConfidence } from '../../types/clarion';
+import { PlaystyleType, SmurfConfidence } from '../../types/clarion';
 import { getRankFromLP } from '../../core/objects/ranks';
 import { getCharacterFromId } from '../../core/objects/characters';
 import { ProminentChar } from '../../core/utilities/players';
 import { getClampedPopoverPosition } from '../../core/utilities/popover';
 import RankIcon from '../Rank';
-import { PLAYSTYLE_CLASSES } from './PlayerCard';
+
+const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
+  'Brawler': 'text-match-brawler',
+  'Midfielder': 'text-match-midfielder',
+  'Hard Forward': 'text-match-hardfwd',
+  'Offensive Goalie': 'text-match-offgoalie',
+  'Defensive Goalie': 'text-match-defgoalie',
+};
 
 const smurfLabels: Record<SmurfConfidence, string> = {
   none: 'No',

@@ -15,7 +15,7 @@ import { getQueueGroup } from './PairedPlayers';
 import { useToast } from '../UI/Toast';
 import PlayerProfile from './PlayerProfile';
 
-export const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
+const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
   'Midfielder': 'text-match-midfielder',
   'Hard Forward': 'text-match-hardfwd',
