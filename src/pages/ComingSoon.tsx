@@ -13,7 +13,7 @@ export default function ComingSoonPage() {
         className="w-40 aspect-square rounded-xl object-cover absolute top-48"
       />
       <p className="text-3xl font-bold text-primary">Coming Soon!</p>
-      <p className="text-xs text-char-secondary whitespace-pre-wrap mb-4">This page is still under construction! Sorry!</p>
+      <p className="text-xs text-char-secondary whitespace-pre-wrap mb-4">This page will be added in a future update! Sorry!</p>
       <Button
         variant="primary"
         size="md"
