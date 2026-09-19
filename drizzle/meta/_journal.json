@@ -267,6 +267,13 @@
       "when": 1789724927907,
       "tag": "0037_graceful_jackal",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "6",
+      "when": 1789820446612,
+      "tag": "0038_military_white_tiger",
+      "breakpoints": true
     }
   ]
 }

@@ -44,7 +44,7 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
       <div className="max-h-56">
         <Line
           data={{
-            labels: data.map((_, i) => `Match ${i + 1}`),
+            labels: data.map((_, i) => (i === 0 ? 'Start' : `Match ${i}`)),
             datasets: [
               {
                 label: 'Rating',

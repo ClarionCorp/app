@@ -1,0 +1,1 @@
+ALTER TABLE `gameSessions` ADD `playerId` text;

@@ -2,12 +2,13 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "../database/driver";
-import { getCurrentSession, getLatestMatchHistory } from "../database/queries";
+import { getCurrentSession, getLatestMatchHistory, getUser } from "../database/queries";
 import { gameSessions } from "../database/schema";
 import { fetchPlayerStats } from "./players";
 
 export async function checkStartNewSession() {
   const active = await getCurrentSession();
+  const user = await getUser();
   let start_new_session = false;
 
   if (!active || !active.lastUpdated) { start_new_session = true }
@@ -20,8 +21,9 @@ export async function checkStartNewSession() {
       startedAt: new Date(),
       lastUpdated: new Date(),
       active: true,
-      endOfMatchLPs: [],
+      endOfMatchLPs: [user?.rating ?? 0],
       matchHistories: [],
+      playerId: user?.playerId,
     });
     console.log('Starting a new session...');
     return;
