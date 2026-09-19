@@ -4,9 +4,10 @@ import BansCard from '../../components/Overlay/BansCard';
 import DurationCard from '../../components/Overlay/DurationCard';
 import TeamRoster from '../../components/Overlay/TeamRoster';
 import TimelineCard from '../../components/Overlay/TimelineCard';
+import XPLeaderboardCard from '../../components/Overlay/XPLeaderboardCard';
 import { useOverlayData } from '../../components/Overlay/useOverlayData';
 
-type OverlayComponent = 'queue' | 'bans' | 'trainings' | 'ranks' | 'timeline' | 'duration';
+type OverlayComponent = 'queue' | 'bans' | 'trainings' | 'ranks' | 'timeline' | 'leaderboard' | 'duration';
 
 export function OverlayApp() {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
@@ -24,8 +25,13 @@ export function OverlayApp() {
   const showBans = isEnabled('bans');
   const showTrainings = isEnabled('trainings');
   const showRanks = isEnabled('ranks');
-  const showTimeline = isEnabled('timeline');
   const showDuration = isEnabled('duration');
+
+  // Timeline and leaderboard share the same corner slot,
+  // so a stale/hand-edited URL that requests both must still only render one.
+  // In this event, leaderboard takes priority.
+  const showLeaderboard = isEnabled('leaderboard');
+  const showTimeline = isEnabled('timeline') && !showLeaderboard;
 
   const myTeam = data.players.filter((p) => p.teamNumber === data.teamNumber);
   const enemyTeam = data.players.filter((p) => p.teamNumber !== data.teamNumber);
@@ -40,9 +46,13 @@ export function OverlayApp() {
         </div>
       )}
 
-      {showTimeline && (
+      {(showTimeline || showLeaderboard) && (
         <div className="absolute top-2 right-2 w-96 shadow-xl">
-          <TimelineCard timeline={data.timeline} players={data.players} myTeam={data.teamNumber} />
+          {showLeaderboard ? (
+            <XPLeaderboardCard players={data.players} myTeam={data.teamNumber} />
+          ) : (
+            <TimelineCard timeline={data.timeline} players={data.players} myTeam={data.teamNumber} />
+          )}
         </div>
       )}
 

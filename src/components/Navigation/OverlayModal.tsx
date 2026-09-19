@@ -7,12 +7,16 @@ import { LocalWebServer } from '../../core/constants';
 
 const overlay_components = [
   { id: 'queue', label: 'Queue Information' },          // queue, party size
-  { id: 'timeline', label: 'XP Timeline' },             // xpGoals timeline graph
+  { id: 'leaderboard', label: 'XP Leaderboard' },       // gainedXp leaderboard (shares a slot with timeline)
   { id: 'bans', label: 'Banned Characters' },           // banned characters (ranked & customs only)
+  { id: 'timeline', label: 'XP Timeline' },             // xpGoals timeline graph
   { id: 'trainings', label: 'Player Awakenings' },      // each player's awakenings
   { id: 'duration', label: 'Match Duration' },          // match timer
   { id: 'ranks', label: 'Player Ranks' },               // each player's ranks
 ];
+
+// Components that occupy the same overlay slot, so enabling one must disable the other.
+const EXCLUSIVE_COMPONENTS = ['timeline', 'leaderboard'];
 
 type OverlayView = 'select' | 'ingame' | 'queue';
 
@@ -28,7 +32,8 @@ export function OverlayModal({ open, onClose }: OverlayModalProps) {
     bans: true,
     trainings: true,
     ranks: true,
-    timeline: true,
+    timeline: false,
+    leaderboard: true,
     duration: true,
   });
   const [copied, setCopied] = useState(false);
@@ -151,7 +156,15 @@ export function OverlayModal({ open, onClose }: OverlayModalProps) {
                       <span className="text-sm text-char-secondary">{c.label}</span>
                       <Toggle
                         enabled={enabled[c.id]}
-                        onChange={v => setEnabled(prev => ({ ...prev, [c.id]: v }))}
+                        onChange={v => setEnabled(prev => {
+                          const next = { ...prev, [c.id]: v };
+                          if (v && EXCLUSIVE_COMPONENTS.includes(c.id)) {
+                            for (const other of EXCLUSIVE_COMPONENTS) {
+                              if (other !== c.id) next[other] = false;
+                            }
+                          }
+                          return next;
+                        })}
                       />
                     </div>
                   ))}
