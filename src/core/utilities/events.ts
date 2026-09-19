@@ -5,7 +5,7 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
-import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
+import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON, TimelineEventType } from "../../types/ue4ss";
 import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getLatestMatchHistory, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
@@ -305,6 +305,11 @@ export async function uploadLatestMatch() {
       bans: latestEntry.bans,
       avgRating: avgRating ?? 0,
       myTeam: latestEntry.myTeam,
+      timeline: latestEntry.timeline.map(e => ({
+        when: new Date(e.when),
+        event: e.event as TimelineEventType,
+        team: e.team,
+      })),
 
       playerId: myPlayerId,
       username: latestEntry.players.find(p => p.playerId === myPlayerId)?.name ?? user.username,

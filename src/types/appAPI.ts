@@ -46,6 +46,12 @@ export type POSTMatchHistoryV1 = {
   t2_pts: number,
   myTeam: number,
 
+  timeline?: {
+    when: Date,
+    event: string,
+    team?: 1 | 2
+  }[],
+
   region: AppAPIRegion,
   playedAt: number,
 }
