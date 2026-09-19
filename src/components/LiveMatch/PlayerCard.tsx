@@ -86,8 +86,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
     ? PLAYSTYLE_CLASSES[playstyleType as keyof typeof PLAYSTYLE_CLASSES]
     : null;
 
-  let hideUsername = false;
-  if (!isAlly && (match && !player.charId && queue == 'Ranked')) { hideUsername = true };
+  const hideUsername = !isAlly && !!match && !player.charId && queue === 'Ranked';
 
   function openUserOnCC(username: string) {
     if (hideUsername) { toast('Players hidden until bans are picked. Sorry!', 'error') }
