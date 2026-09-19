@@ -307,7 +307,7 @@ export async function uploadLatestMatch() {
       myTeam: latestEntry.myTeam,
 
       playerId: myPlayerId,
-      username: latestEntry.players.find(p => p.playerId === myPlayerId)?.playerId ?? user.playerId,
+      username: latestEntry.players.find(p => p.playerId === myPlayerId)?.name ?? user.username,
       players: formattedPlayers,
 
       t1_pts: latestEntry.t1_pts,
