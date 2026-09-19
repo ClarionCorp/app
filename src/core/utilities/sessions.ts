@@ -13,6 +13,7 @@ export async function checkStartNewSession() {
 
   if (!active || !active.lastUpdated) { start_new_session = true }
   else if (Date.now() - active.lastUpdated.getTime() > (3 * 3600000)) { start_new_session = true } // 3 hours
+  if (active.playerId !== user?.playerId) { start_new_session = true }; // start new session if on different account
   // else { start_new_session = false };
 
   if (start_new_session == true) {
