@@ -295,6 +295,7 @@ export async function uploadLatestMatch() {
       redirects: p.redirects,
       orbs: p.orbs,
       mvp: p.mvp,
+      rating: p.rating ?? 0,
     }));
 
     const formattedBody: POSTMatchHistoryV1 = {

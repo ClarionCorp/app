@@ -73,7 +73,8 @@ export type POSTMatchHistoryPlayerV1 = {
   shots: number,
   redirects: number,
   orbs: number,
-  mvp: boolean, // unused for now, just leave omitted
+  mvp: boolean,
+  rating: number,
 }
 
 // /v1/player/:username/teammates
