@@ -6,8 +6,8 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { fetchOnlineCount } from '../../core/utilities/appAPI';
 import OnlineGraphs from '../OnlineGraphs';
 import TopBarMatchStatus from './TopBarMatchStatus';
+import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES } from '../../core/objects/onlineStatus';
 // import { AppAPIRegion, getRegionObjectFromAppRegion, getServerObjectFromID } from '../../core/objects/regions';
-// import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES } from '../../core/objects/onlineStatus';
 
 
 interface Incident {
@@ -98,7 +98,7 @@ export default function TopBar({ border = false }: TopBarProps) {
   }, [showPopup]);
 
   const status = incident ? (styleMap[incident.style] ?? styleMap.warning) : goodStatus;
-  // const onlineLevel = getOnlineStatusLevel(region, online); // unused for now
+  const onlineLevel = getOnlineStatusLevel('Global', online);
 
   return (
     <div className={`fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
@@ -108,7 +108,7 @@ export default function TopBar({ border = false }: TopBarProps) {
           className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
           onClick={() => setShowGraphs(true)}
         >
-          Online: {online}
+          Online: <span className={`${ONLINE_STATUS_CLASSES[onlineLevel]} brightness-75`}>{online}</span>
         </button>
       </div>
       <OnlineGraphs open={showGraphs} onClose={() => setShowGraphs(false)} />
