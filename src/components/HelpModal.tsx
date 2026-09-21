@@ -19,7 +19,7 @@ import { AiMiAPI, linux_launch_options, version } from '../core/constants';
 import { getUser } from '../core/database/queries';
 import { useToast } from './UI/Toast';
 import { useDialogue } from './UI/DialogueToast';
-import { gatherSystemInfo, grabLatestAppLog, grabLatestModLogs } from '../core/utilities/reporting';
+import { gatherSystemInfo, grabLatestAppLog } from '../core/utilities/reporting';
 
 type View = 'home' | 'keybinds' | 'bug-report' | 'feedback';
 
@@ -65,7 +65,6 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   const [bugDescription, setBugDescription] = useState('');
   const [bugDropOpen, setBugDropOpen] = useState(false);
   const [bugCreditMe, setCreditMe] = useState(false);
-  const [inclModLogs, setInclModLogs] = useState(false);
   const [feedbackEntry, setFeedbackEntry] = useState('');
   const [feedbackEnjoying, setFeedbackEnjoying] = useState(true);
   const [feedbackIsReview, setFeedbackIsReview] = useState(false);
@@ -115,7 +114,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
     toast('Copied to clipboard!', 'success');
   };
 
-  async function submitBugReport(report: BugReport, inclModLogs: boolean) {
+  async function submitBugReport(report: BugReport) {
     const gatheredSystemInfo = await gatherSystemInfo();
     const latestLog = await grabLatestAppLog();
     const bundled = {
@@ -125,7 +124,6 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
       playerId: currentUser?.playerId,
       discordId: currentUser?.discordId,
       appLogs: latestLog,
-      modLogs: inclModLogs ? await grabLatestModLogs() : undefined,
     }
     console.debug(`Submitting bug report${gatheredSystemInfo ? ' with sysInfo included' : ''}:`, bundled);
 
@@ -193,7 +191,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
   }
 
   const bugPageItems: DropdownItem[] = 
-    ['Home', 'Current Match', 'Match History', 'Stream Overlay', 'Settings', 'Other']
+    ['Home', 'Current Match', 'Match History', 'Stream Overlay', 'Performance', 'Settings', 'Other']
     .map(page => ({
       label: page,
       onClick: () => setBugPage(page),
@@ -357,6 +355,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                           onChange={e => setBugDescription(e.target.value)}
                           className="w-full h-28 resize-none rounded-lg bg-surface-raised border border-background-border text-sm text-char placeholder:text-char-subtle px-3 py-2 outline-none focus:border-primary/60 transition-colors"
                         />
+                        <a className='text-[11px] text-char-subtle'>If you are experiencing performance issues in game, please describe the steps to replicate.</a>
 
                         <div className="flex items-center gap-2">
                           <div className="flex-1">
@@ -364,15 +363,9 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1">
-                            <Checkbox checked={inclModLogs} onChange={setInclModLogs} label="Include Mod Logs" description='Helpful if reporting performance issues or incorrect data.' />
-                          </div>
-                        </div>
-
                         <div className="flex justify-end">
                           <motion.button
-                            onClick={() => { submitBugReport({ page: bugPage ?? '', content: bugDescription, credit: bugCreditMe }, inclModLogs); onClose(); }}
+                            onClick={() => { submitBugReport({ page: bugPage ?? '', content: bugDescription, credit: bugCreditMe }); onClose(); }}
                             whileTap={{ scale: 0.96 }}
                             transition={buttonTap}
                             className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-secondary transition-colors cursor-pointer"
