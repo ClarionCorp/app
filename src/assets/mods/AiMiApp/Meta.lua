@@ -38,38 +38,20 @@ local CurrentPhaseGroup = "out_of_game" -- default until the first MatchPhaseCha
 local GameStateOld = nil
 local GameStateNew = nil
 local GameStateTimestamp = nil
-local CachedQueueName = nil -- GetQueueName clears this once matchmaking is idle again
+local CachedQueueName = nil -- cleared whenever CurrentMmState goes back to Idle
+local CurrentMmState = 1 -- Keep track of the actual MM State, which proves to be more accurate than the actual fuckin game lol
 
 -- Tracks when the resolved queue name/state last actually changed
 -- (not when it was last merely checked), same idea as GameStateTimestamp above.
 local QueueTimestamp = nil
 local LastQueueValue = nil
 local HasCheckedQueue = false
-
--- PMMatchmakingUIData is a long-lived client-session singleton 
--- Cache the ref instead of FindFirstOf on every call, only re-fetching once it goes invalid.
-local CachedMatchmakingUI = nil
-local function GetMatchmakingUI()
-    if not (CachedMatchmakingUI and CachedMatchmakingUI:IsValid()) then
-        CachedMatchmakingUI = FindFirstOf("PMMatchmakingUIData")
-    end
-    return CachedMatchmakingUI
-end
+local SuppressNextQueuedBounce = false -- as mentioned, this is to ignore the stupid fake-requeue the game does for some reason
 
 -- Returns (name, state)
--- Name is the resolved/fallback queue label.
--- State is the raw EMatchmakingStateV2 as a string (like "Queued").
+-- Name is the resolved/fallback queue label. State is CurrentMmState as a string.
 local function GetQueueName()
-    local mmState = 0
-    pcall(function()
-        local mmUI = GetMatchmakingUI()
-        if mmUI and mmUI:IsValid() then
-            mmState = mmUI:GetMatchmakingState()
-        end
-    end)
-
-    if mmState == 1 then CachedQueueName = nil end
-
+    local mmState = CurrentMmState
     local name = CachedQueueName or (mmState == 5 and "queue:custom:NvM" or nil)
     local stateName = MatchmakingStateNames[mmState] or tostring(mmState)
 
@@ -160,19 +142,16 @@ local function ReadParty()
 end
 
 local LastPartySize, LastMaxPartySize, LastMembers = 1, 3, {}
-local LastQueueName, LastMmStateName = nil, "Unknown"
 
 local function WriteMeta(ModName, META_FILE)
-    local partySize, maxPartySize, members, queueName, mmStateName
+    local partySize, maxPartySize, members
     if CurrentPhaseGroup == "out_of_game" then
         partySize, maxPartySize, members = ReadParty()
-        queueName, mmStateName = GetQueueName()
         LastPartySize, LastMaxPartySize, LastMembers = partySize, maxPartySize, members
-        LastQueueName, LastMmStateName = queueName, mmStateName
     else
         partySize, maxPartySize, members = LastPartySize, LastMaxPartySize, LastMembers
-        queueName, mmStateName = LastQueueName, LastMmStateName
     end
+    local queueName, mmStateName = GetQueueName() -- QueueName is now cheap to read, so never cache it
     local localPlayerId = members[1] and members[1].player_id or nil
 
     local memberKey = ""
@@ -278,12 +257,18 @@ function Module.Init(ModName, OUT_DIR)
                 pcall(function()
                     local s = MatchmakingStatus:get()
                     local state = s.State
-                    if state == 1 then
-                        CachedQueueName = nil
-                    elseif state == 2 then
+                    if state == 2 then
+                        if SuppressNextQueuedBounce then
+                            SuppressNextQueuedBounce = false
+                            print(string.format("[%s] Ignoring stale Queued bounce right after Unqueue", ModName))
+                            return
+                        end
                         local ok, v = pcall(function() return s.Queued.Queue:ToString() end)
                         if ok and v and v ~= "" and v ~= "None" then
+                            CurrentMmState = 2
                             CachedQueueName = v
+                            GameStateNew = "None" -- force GameState to be None while in queue (it can't be anything else here)
+                            GameStateTimestamp = os.time()
                             print(string.format("[%s] Queuing for: %s", ModName, v))
                         end
                     end
@@ -292,6 +277,23 @@ function Module.Init(ModName, OUT_DIR)
             end
         )
         print(string.format("[%s] HandleMatchmakingStatusChanged hook registered\n", ModName))
+    end)
+
+    -- Fires when the player cancels queue.
+    -- Immidiately set to Idle rather than waiting for HandleMatchmakingStatusChanged.
+    -- This is because the game fake re-queues after unqueuing for whatever reason.
+    pcall(function()
+        RegisterHook("/Script/Prometheus.PMMatchmakingUIData:Unqueue",
+            function(self)
+                pcall(function()
+                    CurrentMmState = 1
+                    CachedQueueName = nil
+                    SuppressNextQueuedBounce = true
+                    WriteMeta(ModName, META_FILE)
+                end)
+            end
+        )
+        print(string.format("[%s] Unqueue hook registered\n", ModName))
     end)
 
     -- Sent when a custom lobby changes, both host and clients receive this
@@ -353,6 +355,14 @@ function Module.Init(ModName, OUT_DIR)
                     GameStateTimestamp = os.time()
                     CurrentPhaseGroup = GetPhaseGroup(newPhase)
                     -- print(string.format("[%s] State: %s -> %s\n", ModName, GameStateOld, GameStateNew))
+
+                    -- Derive Idle/InGame off the phase transition itself (see CurrentMmState above).
+                    if CurrentPhaseGroup == "out_of_game" then
+                        CurrentMmState = 1
+                        CachedQueueName = nil
+                    else
+                        CurrentMmState = 5
+                    end
 
                     WriteMeta(ModName, META_FILE)
                 end)
