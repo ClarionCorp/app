@@ -24,7 +24,7 @@ export function SessionMatches({ session }: { session: GameSessionsTable | null 
       </p>
 
       {sorted.length === 0 ? (
-        <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-32">
+        <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-char-subtle text-sm min-h-32">
           No matches played this session yet.
         </div>
       ) : (

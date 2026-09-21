@@ -41,7 +41,7 @@ export const themeMeta: Record<string, ThemeMeta> = {
     type: 'light',
   },
   'Clarion': {
-    label: 'Clarion',
+    label: 'Clarion Dark',
     description: 'A green variant of the Ai.Mi theme.',
     icon: '/emoticons/ClarionCorp.webp',
     type: 'dark',
@@ -49,7 +49,7 @@ export const themeMeta: Record<string, ThemeMeta> = {
   'Clarion-L': {
     label: 'Clarion Light',
     description: 'A light version of Clarion Dark.',
-    icon: '/emoticons/ClarionCorp.webp',
+    icon: '/emoticons/RasmusGlasses.webp',
     type: 'light',
   },
   'Beach': {
@@ -74,6 +74,12 @@ export const themeMeta: Record<string, ThemeMeta> = {
     label: 'Kazan',
     description: 'Dark gray with slices of orange. Also works for Halloween!',
     icon: '/emoticons/KazanLosinIt.webp',
+    type: 'dark',
+  },
+  'Solarized': {
+    label: 'Solarized Dark',
+    description: 'Based on the popular "Solarized" theme for terminals.',
+    icon: '/emoticons/NaoRest.webp',
     type: 'dark',
   },
 };

@@ -161,7 +161,7 @@
   --theme-slate: #0A0A0A;
   --theme-surface: #0e0e0e;
   --theme-surface-border: #191a1b;
-  --theme-surface-subtle: #09010a;
+  --theme-surface-subtle: #070808;
   --theme-surface-raised: #1a1a1a;
   --theme-surface-overlay: #202020;
   --theme-surface-active: #111111;
@@ -480,7 +480,7 @@
   --theme-dialogue-success-subtle: #bbf7d0;
 }
 
-/* Kazan (dark, orange & gunmetal) */
+/* Kazan (dark, orange & dark gray) */
 [data-theme="Kazan"] {
   --theme-background: #0c0c0e;
   --theme-background-border: #1e212e;
@@ -533,5 +533,60 @@
   --theme-dialogue-success: #40a02b;
   --theme-dialogue-success-surface: #11111b;
   --theme-dialogue-success-char: #a6d189;
+  --theme-dialogue-success-subtle: #14532d;
+}
+
+/* Solarized */
+[data-theme="Solarized"] {
+  --theme-background: #002b36;
+  --theme-background-border: #03212b;
+  --theme-overlay: rgba(0, 0, 0, 0.9);
+  --theme-bg-image: url('/backgrounds/MusicStage.webp');
+  --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
+  --theme-slate: #00232c;
+  --theme-surface: #002b36;
+  --theme-surface-border: #042e38;
+  --theme-surface-subtle: #073642;
+  --theme-surface-raised: #073642;
+  --theme-surface-overlay: #586e75;
+  --theme-surface-active: #586e75;
+  --theme-primary: #268bd2;
+  --theme-secondary: #2aa198;
+  --theme-tertiary: #6c71c4;
+  --theme-error: #dc322f;
+  --theme-pink: #d33682;
+  --theme-char: #fdf6e3;
+  --theme-char-secondary: #eee8d5;
+  --theme-char-subtle: #93a1a1;
+  --theme-char-accent: #268bd2;
+  --theme-match-ally: #268bd2;
+  --theme-match-enemy: #cb4b16;
+  --theme-match-win: #859900;
+  --theme-match-mid: #b58900;
+  --theme-match-loss: #dc322f;
+  --theme-match-brawler: #dc322f;
+  --theme-match-midfielder: #2aa198;
+  --theme-match-hardfwd: #cb4b16;
+  --theme-match-offgoalie: #d33682;
+  --theme-match-defgoalie: #268bd2;
+  --theme-dialogue-info: #268bd2;
+  --theme-dialogue-info-surface: #002b36;
+  --theme-dialogue-info-char: #399ee6;
+  --theme-dialogue-info-subtle: #1e3a8a;
+  --theme-dialogue-warning: #b58900;
+  --theme-dialogue-warning-surface: #1a1400;
+  --theme-dialogue-warning-char: #fde047;
+  --theme-dialogue-warning-subtle: #713f12;
+  --theme-dialogue-danger: #f97316;
+  --theme-dialogue-danger-surface: #1a0d00;
+  --theme-dialogue-danger-char: #fdba74;
+  --theme-dialogue-danger-subtle: #7c2d12;
+  --theme-dialogue-error: #dc322f;
+  --theme-dialogue-error-surface: #1a0000;
+  --theme-dialogue-error-char: #fca5a5;
+  --theme-dialogue-error-subtle: #7f1d1d;
+  --theme-dialogue-success: #859900;
+  --theme-dialogue-success-surface: #002b36;
+  --theme-dialogue-success-char: #859900;
   --theme-dialogue-success-subtle: #14532d;
 }

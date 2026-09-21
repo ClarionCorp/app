@@ -22,7 +22,7 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
         <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
           Rating This Session
         </p>
-        <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-32">
+        <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-char-subtle text-sm min-h-32">
           Not enough ranked matches played this session yet.
         </div>
       </div>
