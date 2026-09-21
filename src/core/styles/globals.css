@@ -479,3 +479,59 @@
   --theme-dialogue-success-char: #14532d;
   --theme-dialogue-success-subtle: #bbf7d0;
 }
+
+/* Kazan (dark, orange & gunmetal) */
+:root[data-theme="Kazan"] {
+  --theme-background: #0c0c0e;
+  --theme-background-border: #1e212e;
+  --theme-overlay: rgba(0, 0, 0, 0.8);
+  --theme-bg-image: url('/backgrounds/BassDrop.webp');
+  --theme-bg-overlay-opacity: 0.95; /* Just for the home page */
+  --theme-slate: #1a1a1f;
+  --theme-surface: #111116;
+  --theme-surface-border: #191a1b;
+  --theme-surface-subtle: #121216;
+  --theme-surface-raised: #26272e;
+  --theme-surface-overlay: #2b2b35;
+  --theme-surface-active: #2d2d33;
+  --theme-primary: #fa7a30;
+  --theme-secondary: #bb5d26;
+  --theme-tertiary: #8a4e2c;
+  --theme-success: #40a02b;
+  --theme-error: #d20f39;
+  --theme-pink: #ea76cb;
+  --theme-char: #cdd6f4;
+  --theme-char-secondary: #bac2de;
+  --theme-char-subtle: #a6adc8;
+  --theme-char-accent: #d48e32;
+  --theme-match-ally: #04a5e5;
+  --theme-match-enemy: #e64553;
+  --theme-match-win: #2c91d4;
+  --theme-match-mid: #e49c38;
+  --theme-match-loss: #e64553;
+  --theme-match-brawler: #d20f39;
+  --theme-match-midfielder: #179299;
+  --theme-match-hardfwd: #fe640b;
+  --theme-match-offgoalie: #e64553;
+  --theme-match-defgoalie: #04a5e5;
+  --theme-dialogue-info: #816a53;
+  --theme-dialogue-info-surface: #121214;
+  --theme-dialogue-info-char: #caa988;
+  --theme-dialogue-info-subtle: #856c57;
+  --theme-dialogue-warning: #df8e1d;
+  --theme-dialogue-warning-surface: #11111b;
+  --theme-dialogue-warning-char: #fde047;
+  --theme-dialogue-warning-subtle: #713f12;
+  --theme-dialogue-danger: #8839ef;
+  --theme-dialogue-danger-surface: #11111b;
+  --theme-dialogue-danger-char: #a363f7;
+  --theme-dialogue-danger-subtle: #8839ef;
+  --theme-dialogue-error: #d20f39;
+  --theme-dialogue-error-surface: #11111b;
+  --theme-dialogue-error-char: #fca5a5;
+  --theme-dialogue-error-subtle: #7f1d1d;
+  --theme-dialogue-success: #40a02b;
+  --theme-dialogue-success-surface: #11111b;
+  --theme-dialogue-success-char: #a6d189;
+  --theme-dialogue-success-subtle: #14532d;
+}
