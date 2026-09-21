@@ -1,4 +1,4 @@
-import { AuthTable, UserTable } from "../../types/database";
+import { AuthTable, QueueStates, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
@@ -244,6 +244,12 @@ export async function deleteCustomLobby() {
 export async function setGameState(gameState: string) {
   await db.update(currentMatch)
     .set({ gameState })
+    .where(eq(currentMatch.id, 1));
+}
+
+export async function setQueueState(queueState: QueueStates) {
+  await db.update(currentMatch)
+    .set({ queueState })
     .where(eq(currentMatch.id, 1));
 }
 

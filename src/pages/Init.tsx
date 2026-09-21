@@ -9,7 +9,7 @@ import { dirname, homeDir, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion, ensureCurrentMatch, setGameState } from "../core/database/queries";
+import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion, ensureCurrentMatch, setGameState, setQueueState } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { db } from "../core/database/driver";
 import { matchPlayers } from "../core/database/schema";
@@ -147,6 +147,7 @@ export default function InitializationPage() {
         await db.delete(matchPlayers).run();
         await checkStartNewSession();
         await setGameState('None');
+        await setQueueState('Idle');
         
         // Open Game if told to, only if game isn't running already
         if (settings.openGameWithApp) {
