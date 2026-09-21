@@ -96,7 +96,7 @@
 }
 
 /* AiMi (dark, default) */
-:root[data-theme="Ai.Mi"] {
+[data-theme="Ai.Mi"] {
   --theme-background: #080108;
   --theme-background-border: #191a1b;
   --theme-overlay: rgba(0, 0, 0, 0.7);
@@ -152,7 +152,7 @@
 }
 
 /* Clarion (dark) */
-:root[data-theme="Clarion"] {
+[data-theme="Clarion"] {
   --theme-background: #070707;
   --theme-background-border: #191a1b;
   --theme-overlay: rgba(0, 0, 0, 0.9);
@@ -207,7 +207,7 @@
 }
 
 /* Ai.Mi Light (light, wip) */
-:root[data-theme="Ai.Mi-L"] {
+[data-theme="Ai.Mi-L"] {
   --theme-background: #ebeae4;
   --theme-background-border: #c7c7c7;
   --theme-overlay: rgba(0, 0, 0, 0.5);
@@ -260,7 +260,7 @@
 }
 
 /* Clarion Light (light, wip) */
-:root[data-theme="Clarion-L"] {
+[data-theme="Clarion-L"] {
   --theme-background: #ebeae4;
   --theme-background-border: #c7c7c7;
   --theme-overlay: rgba(0, 0, 0, 0.5);
@@ -314,7 +314,7 @@
 
 
 /* Obscura, based loosely on Catppuccin */
-:root[data-theme="Obscura"] {
+[data-theme="Obscura"] {
   --theme-background: #11111b;
   --theme-background-border: #2b2f47;
   --theme-overlay: rgba(0, 0, 0, 0.8);
@@ -370,7 +370,7 @@
 }
 
 /* Maelstrom (dark) */
-:root[data-theme="Maelstrom"] {
+[data-theme="Maelstrom"] {
   --theme-background: #101013;
   --theme-background-border: #1e212e;
   --theme-overlay: rgba(0, 0, 0, 0.8);
@@ -426,7 +426,7 @@
 }
 
 /* SSR (light) */
-:root[data-theme="Beach"] {
+[data-theme="Beach"] {
   --theme-background: #fdddad;
   --theme-background-border: #e6b266;
   --theme-overlay: rgba(0, 0, 0, 0.5);
@@ -481,7 +481,7 @@
 }
 
 /* Kazan (dark, orange & gunmetal) */
-:root[data-theme="Kazan"] {
+[data-theme="Kazan"] {
   --theme-background: #0c0c0e;
   --theme-background-border: #1e212e;
   --theme-overlay: rgba(0, 0, 0, 0.8);

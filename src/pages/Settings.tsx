@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { CaretDownIcon, FireIcon, FolderOpenIcon } from "@phosphor-icons/react";
+import { CaretDownIcon, FireIcon, FolderOpenIcon, PaletteIcon } from "@phosphor-icons/react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { dirname } from "@tauri-apps/api/path";
 import { getAppSettings, upsertAppSettings } from "../core/database/queries";
@@ -11,7 +11,7 @@ import { Input } from "../components/UI/Input";
 import { Dropdown } from "../components/UI/Dropdown";
 import { discordRpc, startRpc, stopRpc, DEFAULT_ACTIVITY } from "../core/utilities/discord";
 import { useTheme } from "../components/UI/Theme/ThemeProvider";
-import { themes } from "../core/styles/theme";
+import { ThemePicker } from "../components/UI/Theme/ThemePicker";
 import { resetDatabase } from "../core/database/driver";
 import { ConfirmModal } from "../components/UI/ConfirmModal";
 import { ProgressBar } from "../components/UI/ProgressBar";
@@ -53,11 +53,10 @@ export default function SettingsPage() {
   const [uninstallProgress, setUninstallProgress] = useState<{ percent: number | null; message: string } | null>(null);
   const [queuePopTypeOpen, setQueuePopTypeOpen] = useState(false);
   const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
-  const [themeOpen, setThemeOpen] = useState(false);
-  const themeTriggerRef = useRef<HTMLButtonElement>(null);
   const [dataSourceOpen, setDataSourceOpen] = useState(false);
   const dsTriggerRef = useRef<HTMLButtonElement>(null);
-  const { theme, setTheme } = useTheme();
+  const [themePickerOpen, setThemePickerOpen] = useState(false);
+  const { theme } = useTheme();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -206,24 +205,16 @@ export default function SettingsPage() {
 
         <SettingRow
           title="Theme"
-          subtitle="Color theme for the app."
+          subtitle={`Color theme for the app. Currently using ${theme} theme.`}
         >
-          <div className="relative">
-            <button
-              ref={themeTriggerRef}
-              onClick={() => setThemeOpen(o => !o)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-background-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer capitalize"
-            >
-              {theme}
-              <CaretDownIcon size={12} className="opacity-60" />
-            </button>
-            <Dropdown
-              triggerRef={themeTriggerRef}
-              open={themeOpen}
-              onClose={() => setThemeOpen(false)}
-              items={themes.map(t => ({ label: t, onClick: () => setTheme(t as typeof theme) }))}
-            />
-          </div>
+          <Button
+            variant="surface"
+            size="sm"
+            onClick={() => setThemePickerOpen(true)}
+            iconLeft={<PaletteIcon size={14} />}
+          >
+            Change Theme
+          </Button>
         </SettingRow>
 
         <SettingRow
@@ -311,6 +302,8 @@ export default function SettingsPage() {
         </div>
       </div>
     </motion.div>
+
+    <ThemePicker open={themePickerOpen} onClose={() => setThemePickerOpen(false)} />
 
     <ConfirmModal
       open={uninstallModalOpen}
