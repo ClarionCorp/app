@@ -34,7 +34,7 @@ export function ThemePicker({ open, onClose }: ThemePickerProps) {
             <div className="flex items-center justify-between px-5 pt-5 pb-6 shrink-0">
               <div className="flex flex-col gap-0.5">
                 <span className="text-base font-semibold text-char">Choose a Theme</span>
-                <span className="text-xs text-char-subtle">Pick a color theme for the app.</span>
+                <span className="text-xs text-char-subtle">Pick your preferred colorway for the app.</span>
               </div>
               <button
                 onClick={onClose}
@@ -45,8 +45,8 @@ export function ThemePicker({ open, onClose }: ThemePickerProps) {
             </div>
 
             <div className="overflow-y-auto px-5 pb-5 flex flex-col gap-5">
-              <ThemeGroup label="Dark Themes:" keys={darkThemes} theme={theme} setTheme={setTheme} />
-              <ThemeGroup label="Light Themes:" keys={lightThemes} theme={theme} setTheme={setTheme} />
+              <ThemeGroup label="Dark Themes" keys={darkThemes} theme={theme} setTheme={setTheme} />
+              <ThemeGroup label="Light Themes" keys={lightThemes} theme={theme} setTheme={setTheme} />
             </div>
           </motion.div>
         </motion.div>
@@ -92,9 +92,12 @@ interface ThemeTileProps {
 
 function ThemeTile({ themeKey, meta, selected, onSelect }: ThemeTileProps) {
   return (
-    <button
+    <motion.button
       onClick={onSelect}
-      className={`group flex flex-col text-left rounded-lg border overflow-hidden transition-colors duration-150 cursor-pointer ${
+      whileHover={{ y: -2.5 }}
+      whileTap={{ y: -1 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+      className={`group flex flex-col text-left rounded-lg border overflow-hidden cursor-pointer transition-[background-color,border-color,box-shadow] duration-150 hover:shadow-lg hover:shadow-black/20 ${
         selected
           ? 'border-primary bg-surface-raised shadow-accent-sm'
           : 'border-background-border bg-surface-subtle hover:border-surface-active hover:bg-surface-raised'
@@ -155,7 +158,7 @@ function ThemeTile({ themeKey, meta, selected, onSelect }: ThemeTileProps) {
           <span className="text-[11px] text-char-subtle leading-snug">{meta.description}</span>
         </div>
       </div>
-    </button>
+    </motion.button>
   );
 }
 

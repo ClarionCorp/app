@@ -27,36 +27,34 @@ export interface ThemeMeta {
   type: ThemeType;
 }
 
-export const themes = ['Ai.Mi', 'Ai.Mi-L', 'Clarion', 'Clarion-L', 'Beach', 'Obscura', 'Maelstrom', 'Kazan'];
-
 export const themeMeta: Record<string, ThemeMeta> = {
   'Ai.Mi': {
     label: 'Ai.Mi',
-    description: 'The signature dark theme, with vivid pink accents.',
+    description: 'The signature dark theme, with lots of colorful pink accents.',
     icon: '/aimi/Laser.png',
     type: 'dark',
   },
   'Ai.Mi-L': {
     label: 'Ai.Mi Light',
-    description: 'A light take on Ai.Mi. Work in progress.',
+    description: 'A light take on the dark Ai.Mi theme.',
     icon: '/aimi/Pat.png',
     type: 'light',
   },
   'Clarion': {
     label: 'Clarion',
-    description: 'Sleek dark theme with a punchy green accent.',
+    description: 'A green variant of the Ai.Mi theme.',
     icon: '/emoticons/ClarionCorp.webp',
     type: 'dark',
   },
   'Clarion-L': {
     label: 'Clarion Light',
-    description: 'A light take on Clarion. Work in progress.',
+    description: 'A light version of Clarion Dark.',
     icon: '/emoticons/ClarionCorp.webp',
     type: 'light',
   },
   'Beach': {
     label: 'Beach',
-    description: 'Warm sand tones with a breezy blue accent.',
+    description: 'Warm sand tones with an ocean blue vibe.',
     icon: '/emoticons/JunoHappy.webp',
     type: 'light',
   },
@@ -68,14 +66,16 @@ export const themeMeta: Record<string, ThemeMeta> = {
   },
   'Maelstrom': {
     label: 'Maelstrom',
-    description: 'Stormy neutral tones with a golden accent.',
+    description: 'Gray, neutral tones with a yellow accent.',
     icon: '/emoticons/TeamTech.webp',
     type: 'dark',
   },
   'Kazan': {
     label: 'Kazan',
-    description: 'Gunmetal and orange, built for late-night sets.',
+    description: 'Dark gray with slices of orange. Also works for Halloween!',
     icon: '/emoticons/KazanLosinIt.webp',
     type: 'dark',
   },
 };
+
+export const themes = Object.keys(themeMeta);
