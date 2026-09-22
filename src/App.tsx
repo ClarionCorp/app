@@ -144,6 +144,12 @@ function App() {
 
       // Only once during Match Start, log the match start time in timeline entries if not there already.
       if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };
+    
+      // Only during match end
+      if (data.game_state.new_phase == 'PostGameSummary' || data.game_state.new_phase == 'EndGame') {
+        const user = await getUser();
+        await fetchOnlineCount(user!.username, user!.matchmakingRegion, version, data.queue.id, data.queue.state, user!.rating)
+      }
     }),
 
     onMatchUpdate(async (payload) => {
