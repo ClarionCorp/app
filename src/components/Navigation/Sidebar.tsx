@@ -72,7 +72,7 @@ export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarPro
         initial={{ width: collapsedWidth }}
         animate={{ width: hovered ? expandedWidth : collapsedWidth }}
         transition={widthTransition}
-        className="fixed left-0 top-12 bottom-0 z-40 flex flex-col bg-surface-subtle overflow-hidden"
+        className="fixed left-0 top-12 bottom-0 z-40 flex flex-col bg-navbar overflow-hidden"
       >
         <nav className="flex flex-col gap-1 p-2 flex-1">
           <button

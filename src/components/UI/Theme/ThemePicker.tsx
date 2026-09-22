@@ -106,14 +106,14 @@ function ThemeTile({ themeKey, meta, selected, onSelect }: ThemeTileProps) {
       {/* A preview for a mini skeleton of the Settings page using that theme's own colors */}
       <div data-theme={themeKey} className="relative shrink-0">
         <div className="relative flex h-44 overflow-hidden bg-(--theme-background)">
-          <div className="flex w-6 shrink-0 flex-col items-center gap-2 border-r border-(--theme-surface-border) bg-(--theme-surface) py-2.5">
+          <div className="flex w-6 shrink-0 flex-col items-center gap-2 border-r border-(--theme-surface-border) bg-(--theme-navbar) py-2.5">
             <span className="size-2 rounded-sm bg-(--theme-char-subtle)/30" />
             <span className="size-2 rounded-sm bg-(--theme-char-subtle)/30" />
             <span className="size-2 rounded-sm bg-(--theme-char-subtle)/30" />
             <span className="size-2 rounded-sm bg-(--theme-char-subtle)/30" />
             <div className="flex-1" />
-            <span className="flex size-3.5 items-center justify-center rounded-sm bg-(--theme-primary)">
-              <span className="size-1.5 rounded-full bg-(--theme-background)" />
+            <span className="flex size-3.5 items-center justify-center rounded-sm bg-(--theme-primary)/20">
+              <span className="size-1.5 rounded-full bg-(--theme-primary)" />
             </span>
           </div>
 

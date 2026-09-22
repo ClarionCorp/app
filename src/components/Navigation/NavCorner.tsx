@@ -35,7 +35,7 @@ export default function NavCorner({ hovered }: NavCornerProps) {
           top: topBarHeight,
           width: cornerRadius,
           height: cornerRadius,
-          background: `radial-gradient(circle at bottom right, transparent ${cornerRadius}px, var(--color-surface-subtle) ${cornerRadius}px)`,
+          background: `radial-gradient(circle at bottom right, transparent ${cornerRadius}px, var(--color-navbar) ${cornerRadius}px)`,
         }}
         initial={{ left: collapsedWidth }}
         animate={{ left: sidebarEdge }}

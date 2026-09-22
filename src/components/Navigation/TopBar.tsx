@@ -123,7 +123,7 @@ export default function TopBar({ border = false }: TopBarProps) {
   const onlineLevel = getOnlineStatusLevel('Global', online);
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-40 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
+    <div className={`fixed top-0 left-0 right-0 z-40 h-12 flex items-center justify-between px-5 bg-navbar${border ? ' border-b border-background-border' : ''}`}>
       {/* Left */}
       <div className="flex items-center gap-2">
         <button

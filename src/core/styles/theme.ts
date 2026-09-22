@@ -88,6 +88,12 @@ export const themeMeta: Record<string, ThemeMeta> = {
     icon: '/emoticons/DubuHUH.webp',
     type: 'dark',
   },
+  'Zentaro': {
+    label: 'Zen',
+    description: "Based on Zen(taro)'s based skin Dark gray with crimson accents.",
+    icon: '/emoticons/ZentaroPause.webp',
+    type: 'dark',
+  },
 };
 
 export const themes = Object.keys(themeMeta);

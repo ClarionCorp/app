@@ -45,6 +45,7 @@
   --color-background-border: var(--theme-background-border);
   --color-overlay: var(--theme-overlay); /* Should be black or white */
   --color-slate: var(--theme-slate);
+  --color-navbar: var(--theme-navbar);
   --color-surface: var(--theme-surface);
   --color-surface-border: var(--theme-surface-border);
   --color-surface-subtle: var(--theme-surface-subtle);
@@ -103,6 +104,7 @@
   --theme-bg-image: url('/backgrounds/Bedroom.jpg');
   --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
   --theme-slate: #0A0A0A;
+  --theme-navbar: #0b070c;
   --theme-surface: #0f090f;
   --theme-surface-border: #191a1b;
   --theme-surface-subtle: #0b070c;
@@ -159,6 +161,7 @@
   --theme-bg-image: url('/backgrounds/MusicStage.webp');
   --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #0A0A0A;
+  --theme-navbar: #070808;
   --theme-surface: #0e0e0e;
   --theme-surface-border: #191a1b;
   --theme-surface-subtle: #070808;
@@ -212,6 +215,7 @@
   --theme-background-border: #c7c7c7;
   --theme-overlay: rgba(0, 0, 0, 0.5);
   --theme-slate: #cecbcb;
+  --theme-navbar: #d4d4d4;
   --theme-surface: #cccaca;
   --theme-surface-border: #a3a3a3;
   --theme-surface-subtle: #d4d4d4;
@@ -265,6 +269,7 @@
   --theme-background-border: #c7c7c7;
   --theme-overlay: rgba(0, 0, 0, 0.5);
   --theme-slate: #cecbcb;
+  --theme-navbar: #d4d2d4;
   --theme-surface: #cccaca;
   --theme-surface-border: #a3a3a3;
   --theme-surface-subtle: #d4d2d4;
@@ -321,6 +326,7 @@
   --theme-bg-image: url('/backgrounds/Campfire.jpg');
   --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
   --theme-slate: #181825;
+  --theme-navbar: #181825;
   --theme-surface: #1e1e2e;
   --theme-surface-border: #191a1b;
   --theme-surface-subtle: #181825;
@@ -377,6 +383,7 @@
   --theme-bg-image: url('/backgrounds/MusicStage.webp');
   --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
   --theme-slate: #181825;
+  --theme-navbar: #17171d;
   --theme-surface: #1c1c24;
   --theme-surface-border: #191a1b;
   --theme-surface-subtle: #17171d;
@@ -433,6 +440,7 @@
   --theme-bg-image: url('/backgrounds/Beach.webp');
   --theme-bg-overlay-opacity: 0.70; /* Just for the home page */
   --theme-slate: #f8d7a6;
+  --theme-navbar: #ffd89d;
   --theme-surface: #f8ce8e;
   --theme-surface-border: #f3be6e;
   --theme-surface-subtle: #ffd89d;
@@ -488,6 +496,7 @@
   --theme-bg-image: url('/backgrounds/BassDrop.webp');
   --theme-bg-overlay-opacity: 0.95; /* Just for the home page */
   --theme-slate: #1a1a1f;
+  --theme-navbar: #121216;
   --theme-surface: #111116;
   --theme-surface-border: #191a1b;
   --theme-surface-subtle: #121216;
@@ -544,6 +553,7 @@
   --theme-bg-image: url('/backgrounds/MusicStage.webp');
   --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #00232c;
+  --theme-navbar: #073642;
   --theme-surface: #013846;
   --theme-surface-border: #042e38;
   --theme-surface-subtle: #073642;
@@ -591,35 +601,95 @@
   --theme-dialogue-success-subtle: #14532d;
 }
 
-/* skin: ffc9c7 */
-/* fur: d32f75 */
-/* clothes: 1e1537 */
-/* darker clothes: 1c1630 */
-/* accents: e7caaa */
+/* skin: ffda93 */
+/* fur: ef9e45 */
+/* clothes: 53464d */
+/* darker clothes: 383042 */
+/* accents: ed6345 */
 
 /* Rosie Dubu (light theme) */
 [data-theme="Dubu"] {
-  --theme-background: #1e1537;
-  --theme-background-border: #0f0c1a;
+  --theme-background: #383042;
+  --theme-background-border: #272629;
   --theme-overlay: rgba(0, 0, 0, 0.8);
   --theme-bg-image: url('/backgrounds/BassDrop.webp');
   --theme-bg-overlay-opacity: 0.95; /* Just for the home page */
   --theme-slate: #1c1630;
-  --theme-surface: #1c1630;
-  --theme-surface-border: #801141;
-  --theme-surface-subtle: #9e1651;
-  --theme-surface-raised: #e42377;
+  --theme-navbar: #ed6345;
+  --theme-surface: #53464d;
+  --theme-surface-border: #383042;
+  --theme-surface-subtle: #ed6345;
+  --theme-surface-raised: #61595e;
   --theme-surface-overlay: #c5ab8f;
   --theme-surface-active: #1e1537;
-  --theme-primary: #e7caaa;
-  --theme-secondary: #e7caaa;
+  --theme-primary: #ef9e45;
+  --theme-secondary: #ef9e45;
   --theme-tertiary: #e7caaa;
   --theme-success: #40a02b;
   --theme-error: #d20f39;
   --theme-pink: #ea76cb;
   --theme-char: #ffffff;
-  --theme-char-secondary: #c2cff5;
-  --theme-char-subtle: #c2cff5;
+  --theme-char-secondary: #ffffff;
+  --theme-char-subtle: #d4d4d4;
+  --theme-char-accent: #ffdf98;
+  --theme-match-ally: #04a5e5;
+  --theme-match-enemy: #e64553;
+  --theme-match-win: #2c91d4;
+  --theme-match-mid: #e49c38;
+  --theme-match-loss: #e64553;
+  --theme-match-brawler: #d20f39;
+  --theme-match-midfielder: #179299;
+  --theme-match-hardfwd: #fe640b;
+  --theme-match-offgoalie: #e64553;
+  --theme-match-defgoalie: #04a5e5;
+  --theme-dialogue-info: #816a53;
+  --theme-dialogue-info-surface: #121214;
+  --theme-dialogue-info-char: #caa988;
+  --theme-dialogue-info-subtle: #856c57;
+  --theme-dialogue-warning: #df8e1d;
+  --theme-dialogue-warning-surface: #11111b;
+  --theme-dialogue-warning-char: #fde047;
+  --theme-dialogue-warning-subtle: #713f12;
+  --theme-dialogue-danger: #8839ef;
+  --theme-dialogue-danger-surface: #11111b;
+  --theme-dialogue-danger-char: #a363f7;
+  --theme-dialogue-danger-subtle: #8839ef;
+  --theme-dialogue-error: #d20f39;
+  --theme-dialogue-error-surface: #11111b;
+  --theme-dialogue-error-char: #fca5a5;
+  --theme-dialogue-error-subtle: #7f1d1d;
+  --theme-dialogue-success: #40a02b;
+  --theme-dialogue-success-surface: #11111b;
+  --theme-dialogue-success-char: #a6d189;
+  --theme-dialogue-success-subtle: #14532d;
+}
+
+
+
+/* Zen(taro) (dark, crimson & dark gray) */
+[data-theme="Zentaro"] {
+  --theme-background: #0c0c0e;
+  --theme-background-border: #1e212e;
+  --theme-overlay: rgba(0, 0, 0, 0.8);
+  --theme-bg-image: url('/backgrounds/BassDrop.webp');
+  --theme-bg-overlay-opacity: 0.95; /* Just for the home page */
+  --theme-slate: #1a1a1f;
+  --theme-navbar: #731431;
+  --theme-surface: #111116;
+  --theme-surface-border: #191a1b;
+  --theme-surface-subtle: #191a1b;
+  --theme-surface-raised: #26272e;
+  --theme-surface-overlay: #2b2b35;
+  --theme-surface-active: #2d2d33;
+  --theme-primary: #fa7a30;
+  --theme-secondary: #bb5d26;
+  --theme-tertiary: #8a4e2c;
+  --theme-success: #40a02b;
+  --theme-error: #d20f39;
+  --theme-pink: #ea76cb;
+  --theme-char: #cdd6f4;
+  --theme-char-secondary: #bac2de;
+  --theme-char-subtle: #a6adc8;
   --theme-char-accent: #d48e32;
   --theme-match-ally: #04a5e5;
   --theme-match-enemy: #e64553;
