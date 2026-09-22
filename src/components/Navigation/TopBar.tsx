@@ -59,7 +59,7 @@ export default function TopBar({ border = false }: TopBarProps) {
       const username = user?.username;
 
       if (state && username) {
-        const count = await fetchOnlineCount(username, state, user.region);
+        const count = await fetchOnlineCount(username, state, user.region, user.rating);
         setOnline(count);
         // setRegion(getRegionObjectFromAppRegion(getServerObjectFromID(user.region).region).apiRegion);
       }

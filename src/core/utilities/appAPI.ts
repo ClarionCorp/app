@@ -23,12 +23,12 @@ export async function checkForUpdates(): Promise<VersionCheck> {
   }
 }
 
-export async function fetchOnlineCount(username: string, gameState: string, region: string | null): Promise<number> {
+export async function fetchOnlineCount(username: string, gameState: string, region: string | null, rating?: number | null): Promise<number> {
   console.debug(`Fetching online player count...`);
   const res = await fetch(`${AiMiAPI}/v1/online`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
-    body: JSON.stringify({ username, gameState, region, version }),
+    body: JSON.stringify({ username, gameState, region, version, rating }),
   });
   if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, gameState }, null, 0)) };
   const data = await res.json() as OnlinePlayersV1;
