@@ -8,6 +8,8 @@ import OnlineGraphs from '../OnlineGraphs';
 import TopBarMatchStatus from './TopBarMatchStatus';
 import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES } from '../../core/objects/onlineStatus';
 import BasicPopover from '../UI/BasicPopover';
+import { useDialogue } from '../UI/DialogueToast';
+import { getQueueName } from '../../core/objects/ody';
 // import { AppAPIRegion, getRegionObjectFromAppRegion, getServerObjectFromID } from '../../core/objects/regions';
 
 
@@ -43,8 +45,10 @@ interface TopBarProps {
 }
 
 export default function TopBar({ border = false }: TopBarProps) {
+  const { show: showDialogue } = useDialogue();
   const [online, setOnline] = useState(0);
   const [queuing, setQueuing] = useState<number | null>(null);
+  const [queue, setQueue] = useState<string>('queue:none');
   // const [region, setRegion] = useState<AppAPIRegion>('None');
   const [incident, setIncident] = useState<Incident | null>(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -81,6 +85,7 @@ export default function TopBar({ border = false }: TopBarProps) {
       const inQueue = match.queueState === 'Queued' || match.queueState === 'FoundMatch' || match.queueState === 'StartingGame';
       setQueuing(inQueue ? counts.in_your_queue : null);
       setOnline(counts.total);
+      setQueue(match.queue ?? 'queue:none');
     }
 
     tick();
@@ -130,9 +135,18 @@ export default function TopBar({ border = false }: TopBarProps) {
         </button>
         {queuing !== null && (
           <BasicPopover displayText="Other App Users in your queue & region right now" preferBelow>
-            <span className="text-xs text-char-subtle">
+            <button
+              className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
+              onClick={() => showDialogue({
+                variant: 'info',
+                image: '/aimi/Yapping.gif',
+                title: 'What does "Queued" mean?',
+                message: `I can only track the queue states of other Ai.Mi App users. So for your queue (${getQueueName(queue)}), there is ${queuing} player(s) in your region queuing right now.`,
+                autoDismiss: 20000
+              })}
+            >
               Queued: <span className="text-char-default brightness-75">{queuing}</span>
-            </span>
+            </button>
           </BasicPopover>
         )}
       </div>
