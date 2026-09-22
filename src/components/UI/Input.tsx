@@ -12,8 +12,8 @@ const errorAnim: Variants = {
 };
 
 const baseInputStyles = cn(
-  'w-full bg-surface-overlay text-char placeholder:text-char-subtle',
-  'border border-background-border rounded-md',
+  'w-full bg-surface-raised text-char placeholder:text-char-subtle',
+  'border border-surface-border rounded-md',
   'transition-[border-color,box-shadow] duration-200',
   'outline-none caret-primary',
   'hover:border-surface-active',

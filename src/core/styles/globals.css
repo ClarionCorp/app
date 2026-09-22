@@ -544,10 +544,10 @@
   --theme-bg-image: url('/backgrounds/MusicStage.webp');
   --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #00232c;
-  --theme-surface: #002b36;
+  --theme-surface: #013846;
   --theme-surface-border: #042e38;
   --theme-surface-subtle: #073642;
-  --theme-surface-raised: #073642;
+  --theme-surface-raised: #0a3f4d;
   --theme-surface-overlay: #586e75;
   --theme-surface-active: #586e75;
   --theme-primary: #268bd2;

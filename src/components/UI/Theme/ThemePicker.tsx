@@ -25,7 +25,7 @@ export function ThemePicker({ open, onClose }: ThemePickerProps) {
         >
           <div className="absolute inset-0 bg-overlay/60 backdrop-blur-xs" onClick={onClose} />
           <motion.div
-            className="relative z-10 w-4xl max-w-[95vw] max-h-[85vh] flex flex-col rounded-xl bg-surface border border-background-border shadow-xl"
+            className="relative z-10 w-4xl max-w-[95vw] max-h-[85vh] flex flex-col rounded-xl bg-surface border border-surface-border shadow-xl"
             initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 8 }}
@@ -100,13 +100,13 @@ function ThemeTile({ themeKey, meta, selected, onSelect }: ThemeTileProps) {
       className={`group flex flex-col text-left rounded-lg border overflow-hidden cursor-pointer transition-[background-color,border-color,box-shadow] duration-150 hover:shadow-lg hover:shadow-black/20 ${
         selected
           ? 'border-primary bg-surface-raised shadow-accent-sm'
-          : 'border-background-border bg-surface-subtle hover:border-surface-active hover:bg-surface-raised'
+          : 'border-surface-border bg-surface-subtle hover:border-surface-active hover:bg-surface-raised'
       }`}
     >
       {/* A preview for a mini skeleton of the Settings page using that theme's own colors */}
       <div data-theme={themeKey} className="relative shrink-0">
         <div className="relative flex h-44 overflow-hidden bg-(--theme-background)">
-          <div className="flex w-6 shrink-0 flex-col items-center gap-2 border-r border-(--theme-background-border) bg-(--theme-surface) py-2.5">
+          <div className="flex w-6 shrink-0 flex-col items-center gap-2 border-r border-(--theme-surface-border) bg-(--theme-surface) py-2.5">
             <span className="size-2 rounded-sm bg-(--theme-char-subtle)/30" />
             <span className="size-2 rounded-sm bg-(--theme-char-subtle)/30" />
             <span className="size-2 rounded-sm bg-(--theme-char-subtle)/30" />
@@ -133,7 +133,7 @@ function ThemeTile({ themeKey, meta, selected, onSelect }: ThemeTileProps) {
 
             <div className="flex-1" />
 
-            <div className="flex items-center justify-between border-t border-(--theme-background-border)/70 pt-1.5">
+            <div className="flex items-center justify-between border-t border-(--theme-surface-border)/70 pt-1.5">
               <span className="h-1 w-7 rounded-full bg-(--theme-error)/60" />
               <span className="h-2 w-5 rounded-sm bg-(--theme-error)" />
             </div>
@@ -164,7 +164,7 @@ function ThemeTile({ themeKey, meta, selected, onSelect }: ThemeTileProps) {
 
 function SkeletonRow({ accent }: { accent: 'toggle-on' | 'toggle-off' | 'field' }) {
   return (
-    <div className="flex items-center justify-between border-b border-(--theme-background-border)/60 pb-1.5">
+    <div className="flex items-center justify-between border-b border-(--theme-surface-border)/60 pb-1.5">
       <div className="flex flex-col gap-1">
         <span className="h-1 w-8 rounded-full bg-(--theme-char-subtle)/60" />
         <span className="h-1 w-6 rounded-full bg-(--theme-char-subtle)/35" />

@@ -151,7 +151,7 @@ export default function SettingsPage() {
             <button
               ref={dsTriggerRef}
               onClick={() => setDataSourceOpen(o => !o)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-background-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer capitalize"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-surface-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer capitalize"
             >
               {settings.prefDataSource}
               <CaretDownIcon size={12} className="opacity-60" />
@@ -236,7 +236,7 @@ export default function SettingsPage() {
             <button
               ref={queuePopTypeTriggerRef}
               onClick={() => setQueuePopTypeOpen(o => !o)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-background-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-surface-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer"
             >
               {settings.queuePopType}
               <CaretDownIcon size={12} className="opacity-60" />
