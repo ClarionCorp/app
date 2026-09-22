@@ -91,8 +91,6 @@ export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarPro
             </motion.span>
           </button>
 
-          <div className="my-1 border-t border-background-border" />
-
           {NAV_ITEMS.map((item) => {
             const isActive = currentSlug === item.slug;
             const disabled = item.online && !gameRunning;

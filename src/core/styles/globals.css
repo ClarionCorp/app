@@ -669,33 +669,33 @@
 /* Zen(taro) (dark, crimson & dark gray) */
 [data-theme="Zentaro"] {
   --theme-background: #0c0c0e;
-  --theme-background-border: #1e212e;
+  --theme-background-border: #2c1313;
   --theme-overlay: rgba(0, 0, 0, 0.8);
-  --theme-bg-image: url('/backgrounds/BassDrop.webp');
-  --theme-bg-overlay-opacity: 0.95; /* Just for the home page */
+  --theme-bg-image: url('/backgrounds/Temple.webp');
+  --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #1a1a1f;
   --theme-navbar: #731431;
-  --theme-surface: #111116;
+  --theme-surface: #121518;
   --theme-surface-border: #191a1b;
-  --theme-surface-subtle: #191a1b;
-  --theme-surface-raised: #26272e;
-  --theme-surface-overlay: #2b2b35;
+  --theme-surface-subtle: #121216;
+  --theme-surface-raised: #29282f;
+  --theme-surface-overlay: #c01f52;
   --theme-surface-active: #2d2d33;
-  --theme-primary: #fa7a30;
-  --theme-secondary: #bb5d26;
-  --theme-tertiary: #8a4e2c;
+  --theme-primary: #be1d50;
+  --theme-secondary: #be1c4f;
+  --theme-tertiary: #a01441;
   --theme-success: #40a02b;
   --theme-error: #d20f39;
   --theme-pink: #ea76cb;
-  --theme-char: #cdd6f4;
-  --theme-char-secondary: #bac2de;
+  --theme-char: #dee6ff;
+  --theme-char-secondary: #cdd6f4;
   --theme-char-subtle: #a6adc8;
   --theme-char-accent: #d48e32;
   --theme-match-ally: #04a5e5;
   --theme-match-enemy: #e64553;
   --theme-match-win: #2c91d4;
   --theme-match-mid: #e49c38;
-  --theme-match-loss: #e64553;
+  --theme-match-loss: #e02f3e;
   --theme-match-brawler: #d20f39;
   --theme-match-midfielder: #179299;
   --theme-match-hardfwd: #fe640b;

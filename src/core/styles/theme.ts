@@ -76,22 +76,22 @@ export const themeMeta: Record<string, ThemeMeta> = {
     icon: '/emoticons/KazanLosinIt.webp',
     type: 'dark',
   },
-  'Solarized': {
-    label: 'Solarized Dark',
-    description: 'Based on the popular "Solarized" theme for terminals.',
-    icon: '/emoticons/NaoRest.webp',
-    type: 'dark',
-  },
-  'Dubu': {
-    label: 'Rosie Dubu',
-    description: 'Based on the Rosie Dubu skin for real dubers.',
-    icon: '/emoticons/DubuHUH.webp',
-    type: 'dark',
-  },
+  // 'Dubu': {
+  //   label: 'Rosie Dubu',
+  //   description: 'Based on the Rosie Dubu skin for real dubers.',
+  //   icon: '/emoticons/DubuHUH.webp',
+  //   type: 'dark',
+  // },
   'Zentaro': {
     label: 'Zen',
     description: "Based on Zen(taro)'s based skin Dark gray with crimson accents.",
     icon: '/emoticons/ZentaroPause.webp',
+    type: 'dark',
+  },
+  'Solarized': {
+    label: 'Solarized Dark',
+    description: 'Based on the popular "Solarized" theme for terminals.',
+    icon: '/emoticons/NaoRest.webp',
     type: 'dark',
   },
 };

@@ -127,14 +127,14 @@ export default function TopBar({ border = false }: TopBarProps) {
       {/* Left */}
       <div className="flex items-center gap-2">
         <button
-          className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
+          className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-transparent hover:border-surface-raised rounded-md py-1 px-1.5"
           onClick={() => setShowGraphs(true)}
         >
           Online: <span className={`${ONLINE_STATUS_CLASSES[onlineLevel]} brightness-75`}>{online}</span>
         </button>
         {queuing !== null && (
           <button
-            className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
+            className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-transparent hover:border-surface-raised rounded-md py-1 px-1.5"
             onClick={() => showDialogue({
               variant: 'info',
               image: '/aimi/Yapping.gif',
@@ -156,7 +156,7 @@ export default function TopBar({ border = false }: TopBarProps) {
       <div className="flex items-center gap-4 relative">
         <button
           ref={triggerRef}
-          className="flex items-center gap-1.5 text-xs text-char-subtle hover:text-char-default transition cursor-pointer select-none border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
+          className="flex items-center gap-1.5 text-xs text-char-subtle hover:text-char-default transition cursor-pointer select-none border-2 border-transparent hover:border-surface-raised rounded-md py-1 px-1.5"
           onClick={() => setShowPopup(v => !v)}
         >
           API Status: <span className={status.color}>{status.label}</span>
