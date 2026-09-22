@@ -22,6 +22,10 @@ local MatchmakingStateNames = {
     [4] = "StartingGame", [5] = "InGame",
 }
 
+-- Sub-struct name on FMatchmakingStatusV2Union holding that state's own .Queue field
+-- (Idle has neither a sub-struct field worth reading nor a queue name).
+local MatchmakingSubStructField = { [2] = "Queued", [3] = "FoundMatch", [4] = "StartingGame", [5] = "InGame" }
+
 -- Party/queue can only actually change while out of a match,
 -- so only refetch them on phase transitions that land there.
 -- Setup and in-game phases reuse the cached values instead of rechecking each phase.
@@ -210,12 +214,11 @@ local function WriteMeta(ModName, META_FILE)
     end
     local membersJson = (#memberParts > 0) and ("[\n" .. table.concat(memberParts, ",\n") .. "\n  ]") or "[]"
 
-    local gameStateJson = "null"
-    if GameStateOld and GameStateNew then
-        gameStateJson = string.format(
-            '{"old_phase":"%s","new_phase":"%s","timestamp":%d}', GameStateOld, GameStateNew, GameStateTimestamp
-        )
-    end
+    -- old_phase/new_phase are nil until the first real MatchPhaseChanged (treat as 'None' until set properly)
+    local gameStateJson = string.format(
+        '{"old_phase":"%s","new_phase":"%s","timestamp":%s}',
+        GameStateOld or "None", GameStateNew or "None", GameStateTimestamp and tostring(GameStateTimestamp) or "null"
+    )
 
     local customLobbyJson = "null"
     if CurrentPhaseGroup ~= "in_game" and (CustomLobbyId or CustomLobbyName) then
@@ -257,19 +260,28 @@ function Module.Init(ModName, OUT_DIR)
                 pcall(function()
                     local s = MatchmakingStatus:get()
                     local state = s.State
-                    if state == 2 then
-                        if SuppressNextQueuedBounce then
-                            SuppressNextQueuedBounce = false
-                            print(string.format("[%s] Ignoring stale Queued bounce right after Unqueue", ModName))
-                            return
-                        end
-                        local ok, v = pcall(function() return s.Queued.Queue:ToString() end)
+
+                    if state == 2 and SuppressNextQueuedBounce then
+                        SuppressNextQueuedBounce = false
+                        print(string.format("[%s] Ignoring stale Queued bounce right after Unqueue", ModName))
+                        return
+                    end
+
+                    -- Queued/FoundMatch/StartingGame/InGame each carry their own .Queue field.
+                    -- Use that instead of only trusting Queued and hoping CachedQueueName survives until InGame.
+                    local subStructField = MatchmakingSubStructField[state]
+                    if subStructField then
+                        local ok, v = pcall(function() return s[subStructField].Queue:ToString() end)
                         if ok and v and v ~= "" and v ~= "None" then
-                            CurrentMmState = 2
+                            CurrentMmState = state
                             CachedQueueName = v
-                            GameStateNew = "None" -- force GameState to be None while in queue (it can't be anything else here)
-                            GameStateTimestamp = os.time()
-                            print(string.format("[%s] Queuing for: %s", ModName, v))
+                            if state == 2 then
+                                GameStateNew = "None" -- force GameState to be None while in queue (it can't be anything else here)
+                                GameStateTimestamp = os.time()
+                                print(string.format("[%s] Queuing for: %s", ModName, v))
+                            else
+                                print(string.format("[%s] %s (queue: %s)", ModName, MatchmakingStateNames[state] or tostring(state), v))
+                            end
                         end
                     end
                     WriteMeta(ModName, META_FILE)
@@ -353,16 +365,19 @@ function Module.Init(ModName, OUT_DIR)
                     GameStateOld = MatchPhaseNames[oldPhase] or tostring(oldPhase)
                     GameStateNew = MatchPhaseNames[newPhase] or tostring(newPhase)
                     GameStateTimestamp = os.time()
-                    CurrentPhaseGroup = GetPhaseGroup(newPhase)
+                    local newPhaseGroup = GetPhaseGroup(newPhase)
                     -- print(string.format("[%s] State: %s -> %s\n", ModName, GameStateOld, GameStateNew))
 
-                    -- Derive Idle/InGame off the phase transition itself (see CurrentMmState above).
-                    if CurrentPhaseGroup == "out_of_game" then
-                        CurrentMmState = 1
-                        CachedQueueName = nil
-                    else
-                        CurrentMmState = 5
+                    -- Derive Idle/InGame off the phase GROUP actually changing to ignore "fake requeue" from leaving queue
+                    if newPhaseGroup ~= CurrentPhaseGroup then
+                        if newPhaseGroup == "out_of_game" then
+                            CurrentMmState = 1
+                            CachedQueueName = nil
+                        else
+                            CurrentMmState = 5
+                        end
                     end
+                    CurrentPhaseGroup = newPhaseGroup
 
                     WriteMeta(ModName, META_FILE)
                 end)
