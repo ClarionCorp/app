@@ -84,8 +84,14 @@ export const themeMeta: Record<string, ThemeMeta> = {
   // },
   'Zentaro': {
     label: 'Zen',
-    description: "Based on Zen(taro)'s based skin Dark gray with crimson accents.",
+    description: "Based on Zen(taro)'s default skin. Dark gray with crimson accents.",
     icon: '/emoticons/ZentaroPause.webp',
+    type: 'dark',
+  },
+  'Finii': {
+    label: 'Finii',
+    description: "Based on Finii's default skin. Cotton candy vibes.",
+    icon: '/emoticons/FiniiTeehee.webp',
     type: 'dark',
   },
   'Solarized': {

@@ -668,8 +668,6 @@
   --theme-dialogue-success-subtle: #14532d;
 }
 
-
-
 /* Zen(taro) (dark, crimson & dark gray) */
 [data-theme="Zentaro"] {
   --theme-background: #0c0c0e;
@@ -700,6 +698,63 @@
   --theme-match-win: #2c91d4;
   --theme-match-mid: #e49c38;
   --theme-match-loss: #e02f3e;
+  --theme-match-brawler: #d20f39;
+  --theme-match-midfielder: #179299;
+  --theme-match-hardfwd: #fe640b;
+  --theme-match-offgoalie: #e64553;
+  --theme-match-defgoalie: #04a5e5;
+  --theme-dialogue-info: #816a53;
+  --theme-dialogue-info-surface: #121214;
+  --theme-dialogue-info-char: #caa988;
+  --theme-dialogue-info-subtle: #856c57;
+  --theme-dialogue-warning: #df8e1d;
+  --theme-dialogue-warning-surface: #11111b;
+  --theme-dialogue-warning-char: #fde047;
+  --theme-dialogue-warning-subtle: #713f12;
+  --theme-dialogue-danger: #8839ef;
+  --theme-dialogue-danger-surface: #11111b;
+  --theme-dialogue-danger-char: #a363f7;
+  --theme-dialogue-danger-subtle: #8839ef;
+  --theme-dialogue-error: #d20f39;
+  --theme-dialogue-error-surface: #11111b;
+  --theme-dialogue-error-char: #fca5a5;
+  --theme-dialogue-error-subtle: #7f1d1d;
+  --theme-dialogue-success: #40a02b;
+  --theme-dialogue-success-surface: #11111b;
+  --theme-dialogue-success-char: #a6d189;
+  --theme-dialogue-success-subtle: #14532d;
+}
+
+/* Finii (idk yet) */
+[data-theme="Finii"] {
+  --theme-background: #120a13;
+  --theme-background-border: #1f132c;
+  --theme-overlay: rgba(0, 0, 0, 0.8);
+  --theme-bg-image: url('/backgrounds/Temple.webp');
+  --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
+  --theme-slate: #1a1a1f;
+  --theme-navbar: #9c2553;
+  --theme-surface: #140f1b;
+  --theme-surface-border: #191a1b;
+  --theme-surface-subtle: #22182e;
+  --theme-surface-raised: #221924;
+  --theme-surface-overlay: #6e83dd;
+  --theme-surface-active: #3c4672;
+  --theme-primary: #98d0fe;
+  --theme-secondary: #6e83dd;
+  --theme-tertiary: #5a6bb9;
+  --theme-success: #40a02b;
+  --theme-error: #d20f39;
+  --theme-pink: #ea76cb;
+  --theme-char: #fee1e5;
+  --theme-char-secondary: #fff0ca;
+  --theme-char-subtle: #fddda9;
+  --theme-char-accent: #f97e9d;
+  --theme-match-ally: #04a5e5;
+  --theme-match-enemy: #fa5a73;
+  --theme-match-win: #7690ec;
+  --theme-match-mid: #e49c38;
+  --theme-match-loss: #fa5a73;
   --theme-match-brawler: #d20f39;
   --theme-match-midfielder: #179299;
   --theme-match-hardfwd: #fe640b;

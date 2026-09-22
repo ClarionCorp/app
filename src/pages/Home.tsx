@@ -112,7 +112,7 @@ export default function HomePage() {
                 Welcome back!
               </p>
               <h1 className="text-2xl font-extrabold tracking-tight text-char">
-                How can I <span className="text-primary">help</span>?
+                How can I <span className="text-char-accent">help</span>?
               </h1>
             </div>
           </div>
