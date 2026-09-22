@@ -102,14 +102,14 @@
   --theme-background-border: #191a1b;
   --theme-overlay: rgba(0, 0, 0, 0.7);
   --theme-bg-image: url('/backgrounds/Bedroom.jpg');
-  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
+  --theme-bg-overlay-opacity: 0.80; /* Just for the home page */
   --theme-slate: #0A0A0A;
-  --theme-navbar: #0b070c;
+  --theme-navbar: #161018;
   --theme-surface: #0f090f;
   --theme-surface-border: #191a1b;
-  --theme-surface-subtle: #0b070c;
+  --theme-surface-subtle: #100a11;
   --theme-surface-raised: #291d29;
-  --theme-surface-overlay: #1c141d;
+  --theme-surface-overlay: #281e29;
   --theme-surface-active: #3b2a3b;
   --theme-primary: #f258d8;
   --theme-secondary: #cf4da8;
@@ -161,7 +161,7 @@
   --theme-bg-image: url('/backgrounds/MusicStage.webp');
   --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #0A0A0A;
-  --theme-navbar: #070808;
+  --theme-navbar: #121412;
   --theme-surface: #0e0e0e;
   --theme-surface-border: #191a1b;
   --theme-surface-subtle: #070808;
@@ -213,12 +213,14 @@
 [data-theme="Ai.Mi-L"] {
   --theme-background: #ebeae4;
   --theme-background-border: #c7c7c7;
-  --theme-overlay: rgba(0, 0, 0, 0.5);
+  --theme-bg-image: url('/backgrounds/Beach.webp');
+  --theme-bg-overlay-opacity: 0.75; /* Just for the home page */
+  --theme-overlay: rgba(0, 0, 0, 0.4);
   --theme-slate: #cecbcb;
   --theme-navbar: #d4d4d4;
-  --theme-surface: #cccaca;
-  --theme-surface-border: #a3a3a3;
-  --theme-surface-subtle: #d4d4d4;
+  --theme-surface: #e2e2e2;
+  --theme-surface-border: #c4c4c4;
+  --theme-surface-subtle: #dfdfdf;
   --theme-surface-raised: #e4dde5;
   --theme-surface-overlay: #d4d2d4;
   --theme-surface-active: #b6b6b6;
@@ -267,15 +269,17 @@
 [data-theme="Clarion-L"] {
   --theme-background: #ebeae4;
   --theme-background-border: #c7c7c7;
-  --theme-overlay: rgba(0, 0, 0, 0.5);
+  --theme-bg-image: url('/backgrounds/ClarionCorp.webp');
+  --theme-bg-overlay-opacity: 0.75; /* Just for the home page */
+  --theme-overlay: rgba(0, 0, 0, 0.4);
   --theme-slate: #cecbcb;
-  --theme-navbar: #d4d2d4;
-  --theme-surface: #cccaca;
-  --theme-surface-border: #a3a3a3;
-  --theme-surface-subtle: #d4d2d4;
-  --theme-surface-raised: #dde5dd;
+  --theme-navbar: #d4d4d4;
+  --theme-surface: #e2e2e2;
+  --theme-surface-border: #c4c4c4;
+  --theme-surface-subtle: #dfdfdf;
+  --theme-surface-raised: #e4dde5;
   --theme-surface-overlay: #d4d2d4;
-  --theme-surface-active: #c5c5c5;
+  --theme-surface-active: #b6b6b6;
   --theme-primary: #109910;
   --theme-secondary: #2eaa42;
   --theme-tertiary: #279427;
