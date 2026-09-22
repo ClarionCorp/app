@@ -2,7 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "../database/driver";
-import { getCurrentSession, getLatestMatchHistory, getUser, updateRating } from "../database/queries";
+import { getCurrentSession, getLatestMatchHistory, getUser } from "../database/queries";
 import { gameSessions, user } from "../database/schema";
 import { fetchPlayerStats } from "./players";
 

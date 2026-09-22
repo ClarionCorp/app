@@ -85,13 +85,13 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
     !myTeamNum ||
     !currentMatch.startedAt
   ) {
-    console.warn('[Overlay] formatLiveMatchInfo: incomplete match data', {
-      queueName,
-      myTeamNum,
-      startedAt: currentMatch.startedAt,
-      playerCount: matchPlayers.length,
-      isMeCount: matchPlayers.filter(p => p.isMe).length,
-    });
+    // console.warn('[Overlay] formatLiveMatchInfo: incomplete match data', {
+    //   queueName,
+    //   myTeamNum,
+    //   startedAt: currentMatch.startedAt,
+    //   playerCount: matchPlayers.length,
+    //   isMeCount: matchPlayers.filter(p => p.isMe).length,
+    // });
     return null;
   };
 
