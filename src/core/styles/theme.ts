@@ -29,20 +29,20 @@ export interface ThemeMeta {
 
 export const themeMeta: Record<string, ThemeMeta> = {
   'Ai.Mi': {
-    label: 'Ai.Mi',
+    label: 'Glitch.Pop',
     description: 'The signature dark theme, with lots of colorful pink accents.',
     icon: '/aimi/Laser.png',
     type: 'dark',
   },
   'Ai.Mi-L': {
-    label: 'Ai.Mi Light',
-    description: 'A light take on the dark Ai.Mi theme.',
+    label: 'Glitch.Pop Light',
+    description: 'A light take on the Glitchpop theme.',
     icon: '/aimi/Pat.png',
     type: 'light',
   },
   'Clarion': {
     label: 'Clarion Dark',
-    description: 'A green variant of the Ai.Mi theme.',
+    description: 'A green variant of the default theme.',
     icon: '/emoticons/ClarionCorp.webp',
     type: 'dark',
   },
@@ -71,7 +71,7 @@ export const themeMeta: Record<string, ThemeMeta> = {
     type: 'dark',
   },
   'Kazan': {
-    label: 'Kazan',
+    label: 'Frenzy',
     description: 'Dark gray with slices of orange. Also works for Halloween!',
     icon: '/emoticons/KazanLosinIt.webp',
     type: 'dark',
@@ -89,7 +89,7 @@ export const themeMeta: Record<string, ThemeMeta> = {
     type: 'dark',
   },
   'Finii': {
-    label: 'Finii',
+    label: 'Circus',
     description: "Based on Finii's default skin. Cotton candy vibes.",
     icon: '/emoticons/FiniiTeehee.webp',
     type: 'dark',

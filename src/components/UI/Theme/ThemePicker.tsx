@@ -155,7 +155,7 @@ function ThemeTile({ themeKey, meta, selected, onSelect }: ThemeTileProps) {
         />
         <div className="flex flex-col justify-center gap-0.5 min-w-0">
           <span className="text-sm font-medium text-char">{meta.label}</span>
-          <span className="text-[11px] text-char-subtle leading-snug">{meta.description}</span>
+          <span className="text-[11px] text-char-secondary leading-snug">{meta.description}</span>
         </div>
       </div>
     </motion.button>
