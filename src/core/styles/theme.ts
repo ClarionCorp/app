@@ -82,6 +82,12 @@ export const themeMeta: Record<string, ThemeMeta> = {
     icon: '/emoticons/NaoRest.webp',
     type: 'dark',
   },
+  'Dubu': {
+    label: 'Rosie Dubu',
+    description: 'Based on the Rosie Dubu skin for real dubers.',
+    icon: '/emoticons/DubuHUH.webp',
+    type: 'dark',
+  },
 };
 
 export const themes = Object.keys(themeMeta);

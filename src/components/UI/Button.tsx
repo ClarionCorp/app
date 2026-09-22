@@ -24,7 +24,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-white border border-secondary hover:bg-secondary hover:shadow-accent active:bg-tertiary',
   secondary: 'bg-secondary text-white border border-secondary hover:bg-tertiary hover:shadow-accent active:bg-tertiary',
   'secondary-ghost': 'bg-transparent text-secondary/80 border border-transparent hover:border-secondary',
-  surface: 'bg-surface text-char-secondary hover:text-char border border-surface-border hover:bg-surface-overlay',
+  surface: 'bg-surface text-char-secondary hover:text-char border border-surface-border hover:bg-surface-raised',
   success: 'bg-success/80 text-white hover:bg-success/60 hover:shadow-accent active:bg-success/50',
   ghost: 'bg-transparent text-char-secondary border border-transparent hover:bg-surface-active hover:text-char active:bg-surface-raised',
   danger: 'bg-error text-white border border-error hover:brightness-110 hover:shadow-danger active:brightness-90',
@@ -55,8 +55,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
         disabled={isDisabled}
         className={cn(
-          'inline-flex items-center justify-center font-medium select-none cursor-pointer outline-none',
-          'transition-all duration-200',
+          'inline-flex items-center justify-center font-medium select-none cursor-pointer outline-none transition-all',
           'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
           variantStyles[variant],
