@@ -2,8 +2,8 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "../database/driver";
-import { getCurrentSession, getLatestMatchHistory, getUser } from "../database/queries";
-import { gameSessions } from "../database/schema";
+import { getCurrentSession, getLatestMatchHistory, getUser, updateRating } from "../database/queries";
+import { gameSessions, user } from "../database/schema";
 import { fetchPlayerStats } from "./players";
 
 export async function checkStartNewSession() {
@@ -48,6 +48,8 @@ export async function updateSession(username: string) {
       endOfMatchLPs: [...session.endOfMatchLPs, newStats.rating],
       matchHistories: latestEntry ? [...session.matchHistories, latestEntry.id] : session.matchHistories,
     }).where(eq(gameSessions.id, session.id));
+
+    db.update(user).set({ rating: newStats.rating }).where(eq(user.username, username)).run(); // update rating cache
 
     console.log(`Updated session! (#${session.id})`)
   } catch (e) {
