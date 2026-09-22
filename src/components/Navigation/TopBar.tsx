@@ -7,7 +7,6 @@ import { fetchOnlineCount } from '../../core/utilities/appAPI';
 import OnlineGraphs from '../OnlineGraphs';
 import TopBarMatchStatus from './TopBarMatchStatus';
 import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES } from '../../core/objects/onlineStatus';
-import BasicPopover from '../UI/BasicPopover';
 import { useDialogue } from '../UI/DialogueToast';
 import { getQueueName } from '../../core/objects/ody';
 // import { AppAPIRegion, getRegionObjectFromAppRegion, getServerObjectFromID } from '../../core/objects/regions';
@@ -124,7 +123,7 @@ export default function TopBar({ border = false }: TopBarProps) {
   const onlineLevel = getOnlineStatusLevel('Global', online);
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-60 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
+    <div className={`fixed top-0 left-0 right-0 z-40 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
       {/* Left */}
       <div className="flex items-center gap-2">
         <button
@@ -134,20 +133,18 @@ export default function TopBar({ border = false }: TopBarProps) {
           Online: <span className={`${ONLINE_STATUS_CLASSES[onlineLevel]} brightness-75`}>{online}</span>
         </button>
         {queuing !== null && (
-          <BasicPopover displayText="Other App Users in your queue & region right now" preferBelow>
-            <button
-              className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
-              onClick={() => showDialogue({
-                variant: 'info',
-                image: '/aimi/Yapping.gif',
-                title: 'What does "Queued" mean?',
-                message: `I can only track the queue states of other Ai.Mi App users. So for your queue (${getQueueName(queue)}), there is ${queuing} player(s) in your region queuing right now.`,
-                autoDismiss: 20000
-              })}
-            >
-              Queued: <span className="text-char-default brightness-75">{queuing}</span>
-            </button>
-          </BasicPopover>
+          <button
+            className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
+            onClick={() => showDialogue({
+              variant: 'info',
+              image: '/aimi/Yapping.gif',
+              title: 'What does "Queued" mean?',
+              message: `I can only track the queue states of other Ai.Mi App users. So for your queue (${getQueueName(queue)}), there is ${queuing} player(s) in your region queuing right now.`,
+              autoDismiss: 20000
+            })}
+          >
+            Queued: <span className="text-char-default brightness-75">{queuing}</span>
+          </button>
         )}
       </div>
       <OnlineGraphs open={showGraphs} onClose={() => setShowGraphs(false)} />
