@@ -164,3 +164,16 @@ export const gameSessions = sqliteTable("gameSessions", {
   endOfMatchLPs: text("endOfMatchLPs", { mode: "json" }).$type<number[]>().notNull().default([]),
   matchHistories: text("matchHistories", { mode: "json" }).$type<number[]>().notNull().default([]), // match history IDs for this session
 });
+
+
+// A one-line table for keeping a basic cache of online player count data
+export const onlinePlayers = sqliteTable("onlinePlayers", {
+  id: integer("id").primaryKey(),
+  total: integer("total").notNull().default(0),
+  in_game: integer("in_game").notNull().default(0),
+  idling: integer("idling").notNull().default(0),
+  seen: integer("seen").notNull().default(0),
+  in_your_queue: integer("in_your_queue"),
+
+  lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
+});

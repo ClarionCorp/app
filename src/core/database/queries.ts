@@ -2,9 +2,10 @@ import { AuthTable, QueueStates, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
 import { SelfQuery, StatsQuery } from "../../types/odyssey";
 import { db } from "./driver";
-import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby, gameSessions } from "./schema";
+import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby, gameSessions, onlinePlayers } from "./schema";
 import { desc, eq, inArray, sql } from "drizzle-orm";
 import { ProminentChar } from "../utilities/players";
+import { POSTOnlinePlayersV2 } from "../../types/appAPI";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -86,6 +87,10 @@ export async function getCurrentSession() {
 export async function getLatestMatchHistory(orderCol = matchHistory.id) {
   const rows = await db.select().from(matchHistory).orderBy(desc(orderCol)).limit(1);
   return rows[0] ?? null;
+}
+
+export async function getOnlineCache() {
+  return db.select().from(onlinePlayers).limit(1).then(r => r[0] ?? null);
 }
 
 
@@ -251,6 +256,22 @@ export async function setQueueState(queueState: QueueStates) {
   await db.update(currentMatch)
     .set({ queueState })
     .where(eq(currentMatch.id, 1));
+}
+
+export async function updateOnlineCache(jason: POSTOnlinePlayersV2) {
+  const values = {
+    total: jason.total,
+    idling: jason.idling,
+    in_game: jason.in_game,
+    seen: jason.seen,
+    in_your_queue: jason.in_your_queue,
+    lastUpdated: new Date(),
+  };
+
+  return db.insert(onlinePlayers)
+    .values({ id: 1, ...values })
+    .onConflictDoUpdate({ target: onlinePlayers.id, set: values })
+    .run();
 }
 
 // 

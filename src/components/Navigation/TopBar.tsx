@@ -1,12 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { getCurrentMatch, getUser } from '../../core/database/queries';
+import { getCurrentMatch, getOnlineCache, getUser, updateOnlineCache } from '../../core/database/queries';
 import { StatusUrl, version } from '../../core/constants';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { fetchOnlineCount } from '../../core/utilities/appAPI';
 import OnlineGraphs from '../OnlineGraphs';
 import TopBarMatchStatus from './TopBarMatchStatus';
 import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES } from '../../core/objects/onlineStatus';
+import BasicPopover from '../UI/BasicPopover';
 // import { AppAPIRegion, getRegionObjectFromAppRegion, getServerObjectFromID } from '../../core/objects/regions';
 
 
@@ -43,6 +44,7 @@ interface TopBarProps {
 
 export default function TopBar({ border = false }: TopBarProps) {
   const [online, setOnline] = useState(0);
+  const [queuing, setQueuing] = useState<number | null>(null);
   // const [region, setRegion] = useState<AppAPIRegion>('None');
   const [incident, setIncident] = useState<Incident | null>(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -50,6 +52,7 @@ export default function TopBar({ border = false }: TopBarProps) {
   const popupRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  // Update cache table
   useEffect(() => {
     async function tick() {
       const match = await getCurrentMatch();
@@ -58,14 +61,30 @@ export default function TopBar({ border = false }: TopBarProps) {
       const username = user?.username;
 
       if (match && username) {
-        const count = await fetchOnlineCount(username, user.matchmakingRegion, version, match.queue, match.queueState ?? 'Idle', user.rating);
-        setOnline(count);
-        // setRegion(getRegionObjectFromAppRegion(getServerObjectFromID(user.region).region).apiRegion);
+        const jason = await fetchOnlineCount(username, user.matchmakingRegion, version, match.queue, match.queueState ?? 'Idle', user.rating);
+        await updateOnlineCache(jason);
+        console.debug(`Updated online cache!`);
       }
     }
 
     tick();
     const interval = setInterval(tick, 300_000); // 5 minutes in ms
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update counter from cache
+  useEffect(() => {
+    async function tick() {
+      const match = await getCurrentMatch();
+      const counts = await getOnlineCache();
+
+      const inQueue = match.queueState === 'Queued' || match.queueState === 'FoundMatch' || match.queueState === 'StartingGame';
+      setQueuing(inQueue ? counts.in_your_queue : null);
+      setOnline(counts.total);
+    }
+
+    tick();
+    const interval = setInterval(tick, 5_000); // 5 seconds in ms
     return () => clearInterval(interval);
   }, []);
 
@@ -100,15 +119,22 @@ export default function TopBar({ border = false }: TopBarProps) {
   const onlineLevel = getOnlineStatusLevel('Global', online);
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
+    <div className={`fixed top-0 left-0 right-0 z-60 h-12 flex items-center justify-between px-5 bg-surface-subtle${border ? ' border-b border-background-border' : ''}`}>
       {/* Left */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         <button
           className="text-xs text-char-subtle hover:text-char-default transition cursor-pointer border-2 border-surface-subtle hover:border-surface-raised rounded-md py-1 px-1.5"
           onClick={() => setShowGraphs(true)}
         >
           Online: <span className={`${ONLINE_STATUS_CLASSES[onlineLevel]} brightness-75`}>{online}</span>
         </button>
+        {queuing !== null && (
+          <BasicPopover displayText="Other App Users in your queue & region right now" preferBelow>
+            <span className="text-xs text-char-subtle">
+              Queued: <span className="text-char-default brightness-75">{queuing}</span>
+            </span>
+          </BasicPopover>
+        )}
       </div>
       <OnlineGraphs open={showGraphs} onClose={() => setShowGraphs(false)} />
 

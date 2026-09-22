@@ -274,6 +274,13 @@
       "when": 1789820446612,
       "tag": "0038_military_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "6",
+      "when": 1790075132612,
+      "tag": "0039_daily_moondragon",
+      "breakpoints": true
     }
   ]
 }
