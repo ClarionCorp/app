@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { getCurrentMatch, getUser } from '../../core/database/queries';
-import { StatusUrl } from '../../core/constants';
+import { StatusUrl, version } from '../../core/constants';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { fetchOnlineCount } from '../../core/utilities/appAPI';
 import OnlineGraphs from '../OnlineGraphs';
@@ -53,13 +53,12 @@ export default function TopBar({ border = false }: TopBarProps) {
   useEffect(() => {
     async function tick() {
       const match = await getCurrentMatch();
-      const state = match?.gameState;
 
       const user = await getUser();
       const username = user?.username;
 
-      if (state && username) {
-        const count = await fetchOnlineCount(username, state, user.region, user.rating);
+      if (match && username) {
+        const count = await fetchOnlineCount(username, user.matchmakingRegion, version, match.queue, match.queueState ?? 'Idle', user.rating);
         setOnline(count);
         // setRegion(getRegionObjectFromAppRegion(getServerObjectFromID(user.region).region).apiRegion);
       }

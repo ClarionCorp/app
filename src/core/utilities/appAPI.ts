@@ -1,6 +1,6 @@
 // This refers to the Ai.Mi App API at https://api.aimis.app.
 
-import { OnlineHistoryV1, OnlinePlayersV1, VersionCheck } from "../../types/appAPI";
+import { OnlineHistoryV1, POSTOnlinePlayersV2, VersionCheck } from "../../types/appAPI";
 import { AiMiAPI, version } from "../constants";
 
 export async function checkForUpdates(): Promise<VersionCheck> {
@@ -23,15 +23,16 @@ export async function checkForUpdates(): Promise<VersionCheck> {
   }
 }
 
-export async function fetchOnlineCount(username: string, gameState: string, region: string | null, rating?: number | null): Promise<number> {
+// Fetches total online + updates AppAPI with our queueState & ID.
+export async function fetchOnlineCount(username: string, region: string | null, version: string, queueId: string | null, queueState: string, rating?: number | null): Promise<number> {
   console.debug(`Fetching online player count...`);
-  const res = await fetch(`${AiMiAPI}/v1/online`, {
+  const res = await fetch(`${AiMiAPI}/v2/online`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
-    body: JSON.stringify({ username, gameState, region, version, rating }),
+    body: JSON.stringify({ username, region, version, queueId, queueState, ...(rating != null && { rating }) }),
   });
-  if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, gameState }, null, 0)) };
-  const data = await res.json() as OnlinePlayersV1;
+  if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, region, version, rating, queueId, queueState }, null, 0)) };
+  const data = await res.json() as POSTOnlinePlayersV2;
   console.debug(`Receieved online players: ${JSON.stringify(data, null, 1)}`);
   return data.total;
 }

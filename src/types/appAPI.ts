@@ -11,6 +11,28 @@ export type OnlinePlayersV1 = {
   seen: number,
 }
 
+// POST /v2/online
+export type POSTOnlinePlayersV2 = {
+  total: number,
+  in_game: number,
+  idling: number,
+  seen: number,
+  in_your_queue: number,
+}
+
+// GET /v2/online
+export type GETOnlinePlayersV2 = {
+  total: number,
+  in_game: number,
+  idling: number,
+  seen: number,
+  queues: {
+    queueId: string,
+    count: number,
+  }[],
+}
+
+
 // /v1/online/detailed
 export type OnlineHistoryV1 = {
   counts: OnlinePlayersV1,

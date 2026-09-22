@@ -13,11 +13,12 @@ import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
-import { AiMiAPI, heartbeat_interval } from './core/constants';
+import { AiMiAPI, heartbeat_interval, version } from './core/constants';
 import { formatLiveMatchInfo } from './core/overlay';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
 import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 import { sessionHeartbeat } from './core/utilities/sessions';
+import { fetchOnlineCount } from './core/utilities/appAPI';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -155,6 +156,7 @@ function App() {
     onQueueChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
       const previous = await getCurrentMatch();
+      const user = await getUser();
       await updateGameState(data); // we are really just updating the queue object
 
       if (previous.queueState == 'Queued' && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
@@ -168,6 +170,7 @@ function App() {
       await pushOverlayState();
       await pushQueueState();
       await sessionHeartbeat();
+      if (user) { await fetchOnlineCount(user.username, user.matchmakingRegion, version, data.queue.id, data.queue.state, user.rating) } // should always be set but whatever
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
