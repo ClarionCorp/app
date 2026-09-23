@@ -186,7 +186,7 @@ export async function saveMatchToHistory(data: PostGameJSON) {
     await uploadLatestMatch(); // automatically upload match to AppAPI for processing
 
     // wait a few seconds for OdyAPI to update LP before updating session
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 10_000));
     await updateSession(currentUser.username);
   } catch (e) {
     console.error('Something went wrong while saving the match!', e);
