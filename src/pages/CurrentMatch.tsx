@@ -175,7 +175,7 @@ export default function CurrentMatchPage() {
 
                       <div className="space-y-3">
                         {blueTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={index} isBlue isMvp={player.username === mvp?.username} teammates={blueTeam} />
+                          <PlayerCard key={player.username} player={player} match={match} index={index} isAlly isMvp={player.username === mvp?.username} teammates={blueTeam} />
                         ))}
                       </div>
 

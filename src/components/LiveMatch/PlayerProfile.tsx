@@ -90,17 +90,14 @@ function CharacterCell({ char }: { char: ProminentChar | undefined }) {
 
 export default function PlayerProfile({
   player,
-  isEnemy = false,
-  hideStrikers = false,
+  obfuscate = false,
   children,
 }: {
   player: MatchPlayersTable;
   isEnemy?: boolean;
-  hideStrikers?: boolean;
+  obfuscate?: boolean;
   children: React.ReactNode;
 }) {
-  const redactStrikers = isEnemy && hideStrikers;
-
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -183,7 +180,7 @@ export default function PlayerProfile({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-base font-semibold text-char truncate">{player.username}</span>
+                      <span className="text-base font-semibold text-char truncate">{obfuscate ? '——' : player.username}</span>
                       {player.tags.length > 0 && (
                         <span className="flex items-center gap-1 shrink-0">
                           {player.tags.map(tag => (
@@ -263,12 +260,12 @@ export default function PlayerProfile({
                           {row.winrate == null ? '—' : `${(row.winrate * 100).toFixed(0)}%`}
                         </td>
                         <td className="py-1 pr-1">
-                          {redactStrikers
+                          {obfuscate
                             ? <RedactedCell />
                             : <CharacterCell char={pickChar(player.favChar, row.queue, 'games')} />}
                         </td>
                         <td className="py-1">
-                          {redactStrikers
+                          {obfuscate
                             ? <RedactedCell />
                             : <CharacterCell char={pickChar(player.bestChar, row.queue, 'winrate')} />}
                         </td>

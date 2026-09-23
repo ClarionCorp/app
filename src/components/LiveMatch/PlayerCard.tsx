@@ -99,7 +99,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.25 }}
     >
-      <PlayerProfile player={player} isEnemy={!isAlly} hideStrikers={hideUsername}>
+      <PlayerProfile player={player} obfuscate={hideUsername}>
       <button
         onClick={() => openUserOnCC(player.username)}
         className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
