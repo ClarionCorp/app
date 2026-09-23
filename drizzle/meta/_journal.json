@@ -281,6 +281,13 @@
       "when": 1790075132612,
       "tag": "0039_daily_moondragon",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "6",
+      "when": 1790100553296,
+      "tag": "0040_chubby_gamma_corps",
+      "breakpoints": true
     }
   ]
 }

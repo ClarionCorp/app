@@ -128,3 +128,8 @@ export type Nameplate = {
   nameplateId: string,
   nameplateUrl: string,
 }
+
+export type PeakRating = {
+  rating: number,
+  date: Date,
+}

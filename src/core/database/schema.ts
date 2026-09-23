@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer, TimelineEntry } from "../../types/ue4ss";
 import { QueueStates } from "../../types/database";
-import { Nameplate, Playstyle, SmurfConfidence } from "../../types/clarion";
+import { Nameplate, PeakRating, Playstyle, SmurfConfidence } from "../../types/clarion";
 import { PreferredDataSources } from "../../types/appAPI";
 import { ProminentChar } from "../utilities/players";
 
@@ -93,6 +93,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   charName: text("charName"),
   charId: text("charId"),
   rating: integer("rating"),
+  peakRating: text("peakRating", { mode: "json" }).$type<PeakRating>(),
   accLevel: integer("accLevel"),
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
   xp: integer("xp").default(0),
