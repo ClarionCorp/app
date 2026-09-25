@@ -10,7 +10,7 @@ export type OnlineThreshold = {
 // these are kinda up in the air rn since "seen" data isn't available yet
 // better colors will be available later on in a "hotfix"
 export const ONLINE_THRESHOLDS: Record<AppAPIRegion, OnlineThreshold> = {
-  Global: { yellow: 20, green: 40 },
+  Global: { yellow: 20, green: 30 },
   NorthAmerica: { yellow: 15, green: 30 },
   Europe: { yellow: 15, green: 25 },
   Asia: { yellow: 5, green: 10 },
