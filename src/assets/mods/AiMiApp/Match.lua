@@ -215,7 +215,25 @@ function Module.Init(ModName, OUT_DIR)
                     if not gs or not gs:IsValid() then return end
                     local trainings = GetTrainings(gs)
                     if #trainings == 0 then return end -- The game replicates CommonTrainings back to empty once intermission ends
-                    LastTrainings = trainings
+
+                    -- Append new trainings to array instead of overwriting
+                    local added = false
+                    for _, id in ipairs(trainings) do
+                        local alreadySeen = false
+                        for _, existing in ipairs(LastTrainings) do
+                            if existing == id then
+                                alreadySeen = true
+                                break
+                            end
+                        end
+                        if not alreadySeen then
+                            table.insert(LastTrainings, id)
+                            added = true
+                        end
+                    end
+                    if not added then return end
+                    table.sort(LastTrainings)
+
                     WriteMatchState(ModName, MATCH_FILE)
                 end)
             end
