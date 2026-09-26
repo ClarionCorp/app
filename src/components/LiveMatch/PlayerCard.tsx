@@ -112,7 +112,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
               src={`/characters/goalscore/${player.charId}.webp`}
               alt=""
               aria-hidden
-              className="absolute right-0 top-[-20%] h-[200%] aspect-square object-cover opacity-20 pointer-events-none select-none"
+              className="absolute right-0 top-[-20%] h-[200%] aspect-square object-cover opacity-35 pointer-events-none select-none"
             />
             <div
               aria-hidden
