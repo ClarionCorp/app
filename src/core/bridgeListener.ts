@@ -76,8 +76,8 @@ export async function getHeartbeat(): Promise<number | null> {
 export async function pushOverlayState() {
   try {
     const data = await formatLiveMatchInfo();
-    if (!data) return;
-    await invoke('update_overlay_state', { payload: obfuscateHiddenPlayers(data) });
+    // No valid match (e.g. the players table was just cleared) -> push null so the overlay hides, instead of leaving the previous match on screen.
+    await invoke('update_overlay_state', { payload: data ? obfuscateHiddenPlayers(data) : null });
   } catch (err) {
     console.warn('[Overlay] Failed to push local overlay state:', err);
   }

@@ -274,6 +274,11 @@ export async function updateOnlineCache(jason: POSTOnlinePlayersV2) {
     .run();
 }
 
+export async function resetPlayerTable(reason?: string) {
+  console.debug(`Clearing matchPlayers table... (Reason: ${reason ?? 'Not provided'})`);
+  await db.delete(matchPlayers).run();
+}
+
 // 
 // Helpers
 // 

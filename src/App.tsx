@@ -6,7 +6,7 @@ import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import NavCorner from './components/Navigation/NavCorner';
 import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState } from './core/bridgeListener';
-import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch } from './core/database/queries';
+import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch, resetPlayerTable } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { fetchSelfQuery } from './core/utilities/odyssey';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
@@ -170,6 +170,11 @@ function App() {
         if (settings.notifyQueuePop) {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
         }
+      }
+
+      // On queue, reset players table and refresh overlay (to hide it)
+      if (data.queue.state == 'Queued' || data.queue.state == 'FoundMatch') {
+        await resetPlayerTable('Entered Queue');
       }
 
       await tryUpdateDiscordRPC();

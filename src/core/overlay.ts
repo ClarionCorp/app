@@ -67,6 +67,7 @@ export type LiveMatchPlayer = {
 export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   const currentMatch = await getCurrentMatch();
   const matchPlayers = await getMatchPlayers();
+  if (matchPlayers.length === 0) { return null };
   const currentUser = await getUser();
   const queueName = getQueueObjectFromID(currentMatch.queue).queueName;
   const myTeamNum = matchPlayers.find(p => p.isMe)?.teamNum;
@@ -142,7 +143,7 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
 
 // Hide enemy usernames until after ban/char lock in Ranked to avoid targeting
 export function obfuscateHiddenPlayers(data: POSTLiveMatchV1): POSTLiveMatchV1 {
-  if (getQueueObjectFromID(data.queue).queueName !== 'Ranked') return data;
+  if (data.queue !== 'Ranked') return data;
 
   let enemyNum = 0;
   const players = data.players.map(p => {

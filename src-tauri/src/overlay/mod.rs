@@ -122,10 +122,11 @@ async fn health() -> &'static str {
 }
 
 #[tauri::command]
-pub fn update_overlay_state(state: tauri::State<'_, OverlayState>, payload: Value) {
+pub fn update_overlay_state(state: tauri::State<'_, OverlayState>, payload: Option<Value>) {
     // Errs only when nobody is currently subscribed (e.g. OBS isn't open yet) - the
     // channel still keeps the value, so the next subscriber gets it immediately anyway.
-    let _ = state.match_state.send(Some(payload));
+    // A null payload (None) clears the snapshot, which hides the overlay.
+    let _ = state.match_state.send(payload);
 }
 
 #[tauri::command]
