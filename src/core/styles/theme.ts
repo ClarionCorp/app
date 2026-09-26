@@ -71,7 +71,7 @@ export const themeMeta: Record<string, ThemeMeta> = {
     type: 'dark',
   },
   'Kazan': {
-    label: 'Frenzy',
+    label: 'Madness',
     description: 'Dark gray with slices of orange. Also works for Halloween!',
     icon: '/emoticons/KazanLosinIt.webp',
     type: 'dark',
