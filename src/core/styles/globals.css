@@ -605,27 +605,21 @@
   --theme-dialogue-success-subtle: #14532d;
 }
 
-/* skin: ffda93 */
-/* fur: ef9e45 */
-/* clothes: 53464d */
-/* darker clothes: 383042 */
-/* accents: ed6345 */
-
-/* Rosie Dubu (light theme) */
-[data-theme="Dubu"] {
-  --theme-background: #383042;
+/* Ludwig Dubu (dark theme) */
+[data-theme="LudwigDubu"] {
+  --theme-background: #0f0f15;
   --theme-background-border: #272629;
   --theme-overlay: rgba(0, 0, 0, 0.8);
-  --theme-bg-image: url('/backgrounds/BassDrop.webp');
-  --theme-bg-overlay-opacity: 0.95; /* Just for the home page */
-  --theme-slate: #1c1630;
-  --theme-navbar: #ed6345;
-  --theme-surface: #53464d;
+  --theme-bg-image: url('/backgrounds/Bedroom.jpg');
+  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
+  --theme-slate: #1d1a26;
+  --theme-navbar: #161525;
+  --theme-surface: #282336;
   --theme-surface-border: #383042;
-  --theme-surface-subtle: #ed6345;
-  --theme-surface-raised: #61595e;
-  --theme-surface-overlay: #c5ab8f;
-  --theme-surface-active: #1e1537;
+  --theme-surface-subtle: #161525;
+  --theme-surface-raised: #1d1a26;
+  --theme-surface-overlay: #be8f5b;
+  --theme-surface-active: #383042;
   --theme-primary: #ef9e45;
   --theme-secondary: #ef9e45;
   --theme-tertiary: #e7caaa;

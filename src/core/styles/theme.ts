@@ -76,12 +76,12 @@ export const themeMeta: Record<string, ThemeMeta> = {
     icon: '/emoticons/KazanLosinIt.webp',
     type: 'dark',
   },
-  // 'Dubu': {
-  //   label: 'Rosie Dubu',
-  //   description: 'Based on the Rosie Dubu skin for real dubers.',
-  //   icon: '/emoticons/DubuHUH.webp',
-  //   type: 'dark',
-  // },
+  'LudwigDubu': {
+    label: 'Ludwig Dubu',
+    description: 'Based on the Ludwig Dubu skin for real dubers.',
+    icon: '/emoticons/DubuHUH.webp',
+    type: 'dark',
+  },
   'Zentaro': {
     label: 'Zen',
     description: "Based on Zen(taro)'s default skin. Dark gray with crimson accents.",
