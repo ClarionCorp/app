@@ -40,7 +40,7 @@ export default function BasicPopover({ displayText, children, preferBelow = fals
       {isOpen && (
         <div
           ref={popoverRef}
-          className="fixed z-62 px-2 py-1 text-xs rounded bg-surface-overlay border border-background-border text-char pointer-events-none whitespace-nowrap"
+          className="fixed z-62 px-2 py-1 text-xs rounded bg-surface-active border border-background-border text-char pointer-events-none whitespace-nowrap"
           style={{ top: `${position.top}px`, left: `${position.left}px` }}
         >
           {displayText}

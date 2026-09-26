@@ -55,10 +55,10 @@ export function XPLeaderboard({ players, shouldObfuscatePlayers }: { players: Ma
                   <img
                     src={`/characters/portrait/${player.charId}.webp`}
                     alt=""
-                    className="w-full h-full object-cover bg-surface"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-surface-overlay" />
+                  <div className="w-full h-full bg-surface" />
                 )}
               </div>
 
@@ -74,7 +74,7 @@ export function XPLeaderboard({ players, shouldObfuscatePlayers }: { players: Ma
                     {xp.toLocaleString()}
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-surface-overlay overflow-hidden">
+                <div className="h-1.5 rounded-full bg-surface overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: color }}

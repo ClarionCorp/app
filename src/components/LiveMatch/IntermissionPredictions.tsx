@@ -53,10 +53,10 @@ export function IntermissionPredictions({ players, shouldObfuscatePlayers }: { p
                     <img
                       src={`/characters/portrait/${player.charId}.webp`}
                       alt={player.charName ?? ''}
-                      className="w-full h-full object-cover bg-surface"
+                      className="w-full h-full object-cover bg-surface-subtle"
                     />
                   ) : (
-                    <div className="w-full h-full bg-surface-overlay" />
+                    <div className="w-full h-full bg-surface" />
                   )}
                 </div>
               </BasicPopover>
