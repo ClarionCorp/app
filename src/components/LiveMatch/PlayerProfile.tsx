@@ -116,6 +116,7 @@ export default function PlayerProfile({
   }, [isOpen]);
 
   const rankInfo = getRankFromLP(player.rating);
+  const peakRankInfo = player.peakRating?.rating ? getRankFromLP(player.peakRating.rating) : null;
   const roleKey = (player.role?.toLowerCase() ?? null) as 'forward' | 'goalie' | null;
   const playstyleType = roleKey ? player.playstyle?.[roleKey]?.type : undefined;
   const playstyleClass = playstyleType && playstyleType in PLAYSTYLE_CLASSES
@@ -146,7 +147,7 @@ export default function PlayerProfile({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
-            className="fixed z-60 w-96 pointer-events-none"
+            className="fixed z-60 w-lg pointer-events-none"
             style={{ top: position.top, left: position.left }}
           >
             <div className="rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
@@ -206,6 +207,16 @@ export default function PlayerProfile({
 
                 {/* Badges */}
                 <div className="flex items-center gap-1.5 flex-wrap">
+                  {peakRankInfo && player.peakRating && (
+                    <span
+                      className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5"
+                      style={{ color: peakRankInfo.color }}
+                    >
+                      <img src={peakRankInfo.image} alt="" className="w-4 h-4 shrink-0" />
+                      Peak: Season {player.peakRating.season}
+                    </span>
+                  )}
+
                   {player.accLevel != null && (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5 text-char-secondary">
                       <ChartBarIcon size={12} weight="duotone" />
@@ -230,7 +241,7 @@ export default function PlayerProfile({
                     smurfClasses[player.smurfProbability]
                   )}>
                     <SmileySadIcon size={12} weight="duotone" />
-                    Smurf: {smurfLabels[player.smurfProbability]}
+                    Smurfing: {smurfLabels[player.smurfProbability]}
                   </span>
                 </div>
               </div>
