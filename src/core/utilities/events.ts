@@ -80,6 +80,7 @@ export async function updatePlayers(data: PlayersJSON) {
         tags: playerStats.tags,
         queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
         nameplate: playerStats.nameplate,
+        peakRating: playerStats.peakRating,
       }).where(eq(matchPlayers.username, localPlayer.username));
     } catch (e) {
       console.warn(`No rank data could be found for ${localPlayer.username}.`);

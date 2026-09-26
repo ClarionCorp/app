@@ -26,7 +26,8 @@ export type Player = {
   },
   assets?: {
     nameplate?: string, // url
-  }
+  },
+  peak?: PlayerRating
 }
 
 export type PlayerRating = {
@@ -118,12 +119,6 @@ export type SmurfResult = {
   }
 }
 
-export type CurrentSeason = {
-  season: number,
-  startDate: Date,
-  endDate: Date,
-}
-
 export type Nameplate = {
   nameplateId: string,
   nameplateUrl: string,
@@ -131,5 +126,12 @@ export type Nameplate = {
 
 export type PeakRating = {
   rating: number,
+  season: number,
   date: Date,
+}
+
+export type Season = {
+  season: number,
+  startDate: Date,
+  endDate: Date
 }

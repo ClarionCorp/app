@@ -5,9 +5,10 @@ import { fetch } from "@tauri-apps/plugin-http";
 import { getAppSettings } from "../database/queries";
 import { AiMiAPI, ClarionAPI } from "../constants";
 import { fetchOdyPlayerStats, fetchRankQuery } from "./odyssey";
-import { Nameplate, Player } from "../../types/clarion";
+import { Nameplate, PeakRating, Player } from "../../types/clarion";
 import { PairedPlayersV1 } from "../../types/appAPI";
 import { RankedQuery } from "../../types/odyssey";
+import { getSeasonFromDate } from "./clarion";
 
 // An obj containing what we need in order to fill the database
 type ReqPlayerStats = {
@@ -20,6 +21,7 @@ type ReqPlayerStats = {
   rankedGames: number,
   tags: string[],
   nameplate: Nameplate | null,
+  peakRating?: PeakRating,
 }
 
 export type ProminentChar = {
@@ -78,6 +80,11 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         rankedGames: data.ratings[0]?.games ?? 0,
         tags: data.tags,
         nameplate: getNameplate(data),
+        peakRating: data.peak ? {
+          rating: data.peak.rating,
+          date: data.peak.createdAt,
+          season: (await getSeasonFromDate(data.peak.createdAt)).season
+        } : undefined
       }
     }
 
