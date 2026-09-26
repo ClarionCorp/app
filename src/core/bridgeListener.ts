@@ -2,7 +2,7 @@
 
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
-import { formatLiveMatchInfo, formatQueueInfo } from './overlay';
+import { formatLiveMatchInfo, formatQueueInfo, obfuscateHiddenPlayers } from './overlay';
 
 export interface FileChangePayload {
   file: string;
@@ -77,7 +77,7 @@ export async function pushOverlayState() {
   try {
     const data = await formatLiveMatchInfo();
     if (!data) return;
-    await invoke('update_overlay_state', { payload: data });
+    await invoke('update_overlay_state', { payload: obfuscateHiddenPlayers(data) });
   } catch (err) {
     console.warn('[Overlay] Failed to push local overlay state:', err);
   }

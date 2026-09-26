@@ -68,7 +68,7 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   const currentMatch = await getCurrentMatch();
   const matchPlayers = await getMatchPlayers();
   const currentUser = await getUser();
-  const queueName = currentMatch.queue;
+  const queueName = getQueueObjectFromID(currentMatch.queue).queueName;
   const myTeamNum = matchPlayers.find(p => p.isMe)?.teamNum;
 
   // Make sure we have all the required info to initiate a valid update
@@ -138,6 +138,20 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   }
 
   return formattedMatch;
+}
+
+// Hide enemy usernames until after ban/char lock in Ranked to avoid targeting
+export function obfuscateHiddenPlayers(data: POSTLiveMatchV1): POSTLiveMatchV1 {
+  if (getQueueObjectFromID(data.queue).queueName !== 'Ranked') return data;
+
+  let enemyNum = 0;
+  const players = data.players.map(p => {
+    if (p.teamNumber === data.teamNumber || p.characterId) return p;
+    enemyNum++;
+    return { ...p, username: `Enemy ${enemyNum}` };
+  });
+
+  return { ...data, players };
 }
 
 // A separate, simpler overlay for pre-match queue status - unlike formatLiveMatchInfo(),
