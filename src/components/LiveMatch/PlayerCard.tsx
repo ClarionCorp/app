@@ -12,8 +12,8 @@ import clsx from 'clsx';
 import BasicPopover from '../UI/BasicPopover';
 import { getQueueObjectFromID } from '../../core/objects/queues';
 import { getQueueGroup } from './PairedPlayers';
-import { useToast } from '../UI/Toast';
 import PlayerProfile from './PlayerProfile';
+import { useDialogue } from '../UI/DialogueToast';
 
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
@@ -66,7 +66,7 @@ function RankBadge({ text, color }: { text: string, color: string }) {
 export function PlayerCard({ player, match, index, isAlly = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
   const rankInfo = getRankFromLP(player.rating);
   const queueGroup = getQueueGroup(player, teammates);
-  const { toast } = useToast();
+  const { show: showDialogue } = useDialogue();
 
   const borderClass = player.isMe
     ? 'border-blue-500/30 hover:border-blue-500/50'
@@ -89,7 +89,15 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
   const hideUsername = !isAlly && !!match && !player.charId && queue === 'Ranked';
 
   function openUserOnCC(username: string) {
-    if (hideUsername) { toast('Players hidden until bans are picked. Sorry!', 'error') }
+    if (hideUsername) {
+      showDialogue({
+        variant: 'warning',
+        image: '/aimi/Tank.png',
+        title: 'Sorry!',
+        message: `In order to prevent targeting specific players, I can only show you usernames after each person has locked in a character.`,
+        autoDismiss: 5000
+      })
+    }
     else { openUrl(`https://clarioncorp.net/pilot/${username}`) };
   }
 
