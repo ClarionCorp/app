@@ -104,7 +104,7 @@ export default function HomePage() {
         >
           <img
             src={'/aimi/Custom_Greeting.webp'}
-            className="absolute z-0 -left-16 -bottom-36 w-96 aspect-square rounded-xl object-cover object-top"
+            className="absolute z-0 -left-16 -bottom-36 w-96 aspect-square rounded-xl object-cover object-top brightness-90"
             style={{
               maskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)',
             }}

@@ -115,7 +115,7 @@ export function OverlayModal({ open, onClose }: OverlayModalProps) {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => setView('ingame')}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-background-border bg-surface-raised/40 hover:bg-surface-overlay transition-colors px-4 py-8 cursor-pointer text-char"
+                  className="flex flex-col items-center gap-2 rounded-lg border border-background-border bg-surface-raised/40 hover:bg-surface-overlay/80 transition-colors px-4 py-8 cursor-pointer text-char"
                 >
                   <PuzzlePieceIcon size={28} weight="duotone" />
                   <span className="text-sm font-medium">In-Game Overlay</span>

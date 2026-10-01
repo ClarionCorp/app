@@ -102,7 +102,7 @@
   --theme-background-border: #191a1b;
   --theme-overlay: rgba(0, 0, 0, 0.7);
   --theme-bg-image: url('/backgrounds/Bedroom.jpg');
-  --theme-bg-overlay-opacity: 0.80; /* Just for the home page */
+  --theme-bg-overlay-opacity: 0.85; /* Just for the home page */
   --theme-slate: #0A0A0A;
   --theme-navbar: #161018;
   --theme-surface: #0f090f;
@@ -758,6 +758,63 @@
   --theme-dialogue-info-surface: #121214;
   --theme-dialogue-info-char: #caa988;
   --theme-dialogue-info-subtle: #856c57;
+  --theme-dialogue-warning: #df8e1d;
+  --theme-dialogue-warning-surface: #11111b;
+  --theme-dialogue-warning-char: #fde047;
+  --theme-dialogue-warning-subtle: #713f12;
+  --theme-dialogue-danger: #8839ef;
+  --theme-dialogue-danger-surface: #11111b;
+  --theme-dialogue-danger-char: #a363f7;
+  --theme-dialogue-danger-subtle: #8839ef;
+  --theme-dialogue-error: #d20f39;
+  --theme-dialogue-error-surface: #11111b;
+  --theme-dialogue-error-char: #fca5a5;
+  --theme-dialogue-error-subtle: #7f1d1d;
+  --theme-dialogue-success: #40a02b;
+  --theme-dialogue-success-surface: #11111b;
+  --theme-dialogue-success-char: #a6d189;
+  --theme-dialogue-success-subtle: #14532d;
+}
+
+/* Idol */
+[data-theme="Idol"] {
+  --theme-background: #0a0c0e;
+  --theme-background-border: #1f2335;
+  --theme-overlay: rgba(0, 0, 0, 0.8);
+  --theme-bg-image: url('/backgrounds/MusicShow.webp');
+  --theme-bg-overlay-opacity: 0.90; /* Just for the home page */
+  --theme-slate: #181825;
+  --theme-navbar: #00121f;
+  --theme-surface: #10101b;
+  --theme-surface-border: #191a1b;
+  --theme-surface-subtle: #0f0f1a;
+  --theme-surface-raised: #242538;
+  --theme-surface-overlay: #00566e;
+  --theme-surface-active: #585b70;
+  --theme-primary: #6ad4fa;
+  --theme-secondary: #9950df;
+  --theme-tertiary: #2450b3;
+  --theme-success: #5ace37;
+  --theme-error: #e2274f;
+  --theme-pink: #ea76cb;
+  --theme-char: #cdd6f4;
+  --theme-char-secondary: #bac2de;
+  --theme-char-subtle: #7b8097;
+  --theme-char-accent: #6cdbff;
+  --theme-match-ally: #04a5e5;
+  --theme-match-enemy: #e64553;
+  --theme-match-win: #42b1fc;
+  --theme-match-mid: #e49c38;
+  --theme-match-loss: #e64553;
+  --theme-match-brawler: #d20f39;
+  --theme-match-midfielder: #179299;
+  --theme-match-hardfwd: #fe640b;
+  --theme-match-offgoalie: #e64553;
+  --theme-match-defgoalie: #04a5e5;
+  --theme-dialogue-info: #04a5e5;
+  --theme-dialogue-info-surface: #11111b;
+  --theme-dialogue-info-char: #74c7ec;
+  --theme-dialogue-info-subtle: #1e3a8a;
   --theme-dialogue-warning: #df8e1d;
   --theme-dialogue-warning-surface: #11111b;
   --theme-dialogue-warning-char: #fde047;

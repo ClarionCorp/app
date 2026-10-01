@@ -94,6 +94,12 @@ export const themeMeta: Record<string, ThemeMeta> = {
     icon: '/emoticons/FiniiTeehee.webp',
     type: 'dark',
   },
+  'Idol': {
+    label: 'Idol',
+    description: "Based on Ai.Mi's Idol skin.",
+    icon: '/emoticons/WithLove.webp',
+    type: 'dark',
+  },
   'Solarized': {
     label: 'Solarized Dark',
     description: 'Based on the popular "Solarized" theme for terminals.',
