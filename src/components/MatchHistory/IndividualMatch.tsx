@@ -17,7 +17,9 @@ function formatRelativeTime(date: Date): string {
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
-  return date.toLocaleDateString()
+  if (diff < 2629800) return `${Math.floor(diff / 604800)}w ago`
+  if (diff < 31557600) return `${Math.floor(diff / 2629800)}mo ago`
+  return `${Math.floor(diff / 31557600)}y ago`
 }
 
 export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistoryTable; myPlayerId: string | null }) {
@@ -174,7 +176,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="border-t border-background-border overflow-hidden"
+            className="border-t border-surface-border overflow-hidden"
           >
             {/* Header */}
             <div className="px-4 py-2 bg-surface-raised/10 grid grid-cols-3 items-center text-xs">
@@ -244,7 +246,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
             </div>
 
             {/* Enemy team */}
-            <div className="px-4 py-3 space-y-2 border-t border-background-border/50">
+            <div className="px-4 py-3 space-y-2 border-t border-surface-border/50">
               <div className="text-xs font-semibold text-char-subtle mb-2">Enemy Team</div>
               <div className="space-y-1">
                 <TeamListing players={enemyTeamPlayers} myUsername={myUsername} />

@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getRankFromLP, RankObject } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
-import { CrownSimpleIcon, ShieldIcon, SwordIcon, UsersIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
+import { ChartBarIcon, CrownSimpleIcon, ShieldIcon, SwordIcon, UsersIcon, UsersThreeIcon, WarningIcon } from '@phosphor-icons/react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 import { TRAININGS } from '../../core/objects/trainings';
@@ -12,6 +12,8 @@ import clsx from 'clsx';
 import BasicPopover from '../UI/BasicPopover';
 import { getQueueObjectFromID } from '../../core/objects/queues';
 import { getQueueGroup } from './PairedPlayers';
+import PlayerProfile from './PlayerProfile';
+import { useDialogue } from '../UI/DialogueToast';
 
 const PLAYSTYLE_CLASSES: Record<Exclude<PlaystyleType, 'Generic Forward' | 'Generic Goalie'>, string> = {
   'Brawler': 'text-match-brawler',
@@ -61,13 +63,14 @@ function RankBadge({ text, color }: { text: string, color: string }) {
 }
 
 
-export function PlayerCard({ player, match, index, isBlue = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isBlue?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
+export function PlayerCard({ player, match, index, isAlly = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
   const rankInfo = getRankFromLP(player.rating);
   const queueGroup = getQueueGroup(player, teammates);
+  const { show: showDialogue } = useDialogue();
 
   const borderClass = player.isMe
     ? 'border-blue-500/30 hover:border-blue-500/50'
-    : isBlue
+    : isAlly
       ? 'border-background-border hover:border-blue-500/50'
       : 'border-background-border hover:border-primary/20';
 
@@ -83,15 +86,30 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
     ? PLAYSTYLE_CLASSES[playstyleType as keyof typeof PLAYSTYLE_CLASSES]
     : null;
 
+  const hideUsername = !isAlly && !!match && !player.charId && queue === 'Ranked';
+
+  function openUserOnCC(username: string) {
+    if (hideUsername) {
+      showDialogue({
+        variant: 'warning',
+        image: '/aimi/Tank.png',
+        title: 'Sorry!',
+        message: `In order to prevent targeting specific players, I can only show you usernames after each person has locked in a character.`,
+        autoDismiss: 5000
+      })
+    }
+    else { openUrl(`https://clarioncorp.net/pilot/${username}`) };
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.25 }}
     >
+      <PlayerProfile player={player} obfuscate={hideUsername}>
       <button
-        onClick={() => openUrl(`https://clarioncorp.net/pilot/${player.username}`)}
-        title='Click to open profile on ClarionCorp'
+        onClick={() => openUserOnCC(player.username)}
         className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
@@ -102,7 +120,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
               src={`/characters/goalscore/${player.charId}.webp`}
               alt=""
               aria-hidden
-              className="absolute right-0 top-[-20%] h-[200%] aspect-square object-cover opacity-20 pointer-events-none select-none"
+              className="absolute right-0 top-[-20%] h-[200%] aspect-square object-cover opacity-35 pointer-events-none select-none"
             />
             <div
               aria-hidden
@@ -115,8 +133,16 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
         <div className="relative flex items-center gap-3">
           {/* Rank icon */}
           <div className="shrink-0 w-18 flex flex-col items-center gap-1">
-            <RankIcon rating={player.rating ?? 0} size="xm" />
-            <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} />
+            {player.rating == null ? (
+              <div className="w-18 h-18 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-surface-overlay border-t-primary animate-spin" />
+              </div>
+            ) : (
+              <>
+                <RankIcon rating={player.rating} size="xm" />
+                <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} />
+              </>
+            )}
           </div>
 
           {/* Info */}
@@ -125,7 +151,9 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
               {/* Username & Tags */}
               <span className="flex items-center gap-1 min-w-0">
                 <span className="text-base font-semibold text-char truncate">
-                  {player.username}
+                  {hideUsername
+                    ? <span className="inline-block h-4 w-24 rounded bg-surface-active animate-pulse align-middle" />
+                    : player.username}
                 </span>
                 {player.tags.length > 0 && (
                   <span className="flex items-center gap-1 shrink-0">
@@ -141,6 +169,13 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
                   </span>
                 )}
               </span>
+
+              {player.accLevel != null && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 border border-current/20 bg-current/5 text-char-secondary">
+                  <ChartBarIcon size={12} weight="duotone" />
+                  Lv. {player.accLevel}
+                </span>
+              )}
 
               <span
                 className={clsx(
@@ -251,6 +286,7 @@ export function PlayerCard({ player, match, index, isBlue = false, isMvp = false
           </div>
         )}
       </button>
+      </PlayerProfile>
     </motion.div>
   );
 }

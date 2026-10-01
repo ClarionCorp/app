@@ -51,14 +51,14 @@ export function CheckboxGroup<T extends string>({ options, value, onChange, disa
               'flex items-center gap-3.5 p-3.5 rounded-xl border transition-all text-left cursor-pointer',
               selected
                 ? 'bg-primary/10 border-primary/40'
-                : 'bg-surface-raised border-background-border hover:border-primary/20 hover:bg-surface-overlay',
+                : 'bg-surface-raised border-surface-border hover:border-primary/20 hover:bg-surface-overlay',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
             {opt.icon && (
               <div className={cn(
                 'size-9 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-                selected ? 'bg-primary/20 text-primary' : 'bg-surface-overlay text-char-subtle'
+                selected ? 'bg-primary/20 text-primary' : 'bg-surface text-char-subtle'
               )}>
                 {opt.icon}
               </div>
@@ -94,14 +94,14 @@ export function Checkbox({ checked, onChange, label, description, icon, disabled
         'flex items-center gap-3.5 p-3.5 rounded-xl border transition-all text-left cursor-pointer w-full',
         checked
           ? 'bg-primary/10 border-primary/40'
-          : 'bg-surface border-background-border hover:border-secondary/30',
+          : 'bg-surface border-surface-border hover:border-secondary/30',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
       {icon && (
         <div className={cn(
           'size-9 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-          checked ? 'bg-primary/20 text-primary' : 'bg-surface-overlay text-char-subtle'
+          checked ? 'bg-primary/20 text-primary' : 'bg-surface text-char-subtle'
         )}>
           {icon}
         </div>

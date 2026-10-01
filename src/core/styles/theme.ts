@@ -18,4 +18,88 @@ export const themeScript = `
 })();
 `.trim();
 
-export const themes = ['Ai.Mi', 'Ai.Mi-L', 'Clarion', 'Clarion-L', 'Obscura', 'Maelstrom', 'Beach'];
+export type ThemeType = 'dark' | 'light';
+
+export interface ThemeMeta {
+  label: string;
+  description: string;
+  icon: string;
+  type: ThemeType;
+}
+
+export const themeMeta: Record<string, ThemeMeta> = {
+  'Ai.Mi': {
+    label: 'Glitch.Pop',
+    description: 'The signature dark theme, with lots of colorful pink accents.',
+    icon: '/aimi/Laser.png',
+    type: 'dark',
+  },
+  'Ai.Mi-L': {
+    label: 'Glitch.Pop Light',
+    description: 'A light take on the Glitchpop theme.',
+    icon: '/aimi/Pat.png',
+    type: 'light',
+  },
+  'Clarion': {
+    label: 'Clarion Dark',
+    description: 'A green variant of the default theme.',
+    icon: '/emoticons/ClarionCorp.webp',
+    type: 'dark',
+  },
+  'Clarion-L': {
+    label: 'Clarion Light',
+    description: 'A light version of Clarion Dark.',
+    icon: '/emoticons/RasmusGlasses.webp',
+    type: 'light',
+  },
+  'Beach': {
+    label: 'Beach',
+    description: 'Warm sand tones with an ocean blue vibe.',
+    icon: '/emoticons/JunoHappy.webp',
+    type: 'light',
+  },
+  'Obscura': {
+    label: 'Obscura',
+    description: 'Moody purple theme, loosely based on Catppuccin.',
+    icon: '/emoticons/RuneCreepy.webp',
+    type: 'dark',
+  },
+  'Maelstrom': {
+    label: 'Maelstrom',
+    description: 'Gray, neutral tones with a yellow accent.',
+    icon: '/emoticons/TeamTech.webp',
+    type: 'dark',
+  },
+  'Kazan': {
+    label: 'Madness',
+    description: 'Dark gray with slices of orange. Also works for Halloween!',
+    icon: '/emoticons/KazanLosinIt.webp',
+    type: 'dark',
+  },
+  'LudwigDubu': {
+    label: 'Ludwig Dubu',
+    description: 'Based on the Ludwig Dubu skin for real dubers.',
+    icon: '/emoticons/DubuHUH.webp',
+    type: 'dark',
+  },
+  'Zentaro': {
+    label: 'Zen',
+    description: "Based on Zen(taro)'s default skin. Dark gray with crimson accents.",
+    icon: '/emoticons/ZentaroPause.webp',
+    type: 'dark',
+  },
+  'Finii': {
+    label: 'Circus',
+    description: "Based on Finii's default skin. Cotton candy vibes.",
+    icon: '/emoticons/FiniiTeehee.webp',
+    type: 'dark',
+  },
+  'Solarized': {
+    label: 'Solarized Dark',
+    description: 'Based on the popular "Solarized" theme for terminals.',
+    icon: '/emoticons/NaoRest.webp',
+    type: 'dark',
+  },
+};
+
+export const themes = Object.keys(themeMeta);

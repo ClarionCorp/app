@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer, TimelineEntry } from "../../types/ue4ss";
 import { QueueStates } from "../../types/database";
-import { Playstyle, SmurfConfidence } from "../../types/clarion";
+import { Nameplate, PeakRating, Playstyle, SmurfConfidence } from "../../types/clarion";
 import { PreferredDataSources } from "../../types/appAPI";
 import { ProminentChar } from "../utilities/players";
 
@@ -17,6 +17,7 @@ export const appSettings = sqliteTable("appSettings", {
   exitOnGameClose: integer("exitOnGameClose", { mode: "boolean" }).notNull().default(false),
   sendMatchData: integer("sendMatchData", { mode: "boolean" }).notNull().default(false),
   prefDataSource: text("prefDataSource").$type<PreferredDataSources>().default('ClarionCorp'),
+  openGameWithApp: integer("openGameWithApp", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 
@@ -92,6 +93,8 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   charName: text("charName"),
   charId: text("charId"),
   rating: integer("rating"),
+  peakRating: text("peakRating", { mode: "json" }).$type<PeakRating>(),
+  accLevel: integer("accLevel"),
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
   xp: integer("xp").default(0),
   gainedXp: integer("gainedXp").default(0), // intermissionXp
@@ -108,6 +111,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   knockouts: integer("knockouts"),
   smurfProbability: text("smurfProbability").$type<SmurfConfidence>().notNull().default('none'),
   queueMates: text("queueMates", { mode: "json" }).$type<string[]>().notNull().default([]),
+  nameplate: text("nameplate", { mode: "json" }).$type<Nameplate>(),
 });
 
 // Basic list of previous matches for local match history
@@ -156,7 +160,21 @@ export const gameSessions = sqliteTable("gameSessions", {
   startedAt: integer("startedAt", { mode: "timestamp" }),
   lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
+  playerId: text("playerId"),
 
   endOfMatchLPs: text("endOfMatchLPs", { mode: "json" }).$type<number[]>().notNull().default([]),
   matchHistories: text("matchHistories", { mode: "json" }).$type<number[]>().notNull().default([]), // match history IDs for this session
+});
+
+
+// A one-line table for keeping a basic cache of online player count data
+export const onlinePlayers = sqliteTable("onlinePlayers", {
+  id: integer("id").primaryKey(),
+  total: integer("total").notNull().default(0),
+  in_game: integer("in_game").notNull().default(0),
+  idling: integer("idling").notNull().default(0),
+  seen: integer("seen").notNull().default(0),
+  in_your_queue: integer("in_your_queue"),
+
+  lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
 });

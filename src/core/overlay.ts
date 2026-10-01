@@ -1,7 +1,7 @@
 import { getCurrentMatch, getMatchPlayers, getUser } from "./database/queries";
+import { getQueueObjectFromID } from "./objects/queues";
 import { PlaystyleType } from "../types/clarion";
 import { TimelineEntry } from "../types/ue4ss";
-import { getQueueObjectFromID } from "./objects/queues";
 
 // Matches what AppAPI expects
 export type POSTLiveMatchV1 = {
@@ -9,6 +9,7 @@ export type POSTLiveMatchV1 = {
   gameState: string | null,
   map: string | null, // id (GMD_)
   queue: string, // human-readable name
+  queueState: string | null,
   partySize: number,
   teamNumber: 1 | 2,
   seenTrainings: string[],
@@ -66,16 +67,34 @@ export type LiveMatchPlayer = {
 export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   const currentMatch = await getCurrentMatch();
   const matchPlayers = await getMatchPlayers();
+  if (matchPlayers.length === 0) { return null };
   const currentUser = await getUser();
   const queueName = getQueueObjectFromID(currentMatch.queue).queueName;
+  const myTeamNum = matchPlayers.find(p => p.isMe)?.teamNum;
 
   // Make sure we have all the required info to initiate a valid update
-  if (!currentMatch || !currentUser || !matchPlayers) return null;
+  if (!currentMatch || !currentUser || !matchPlayers) {
+    console.warn('[Overlay] formatLiveMatchInfo: missing base data', {
+      hasMatch: !!currentMatch,
+      hasUser: !!currentUser,
+      hasPlayers: !!matchPlayers,
+    });
+    return null;
+  }
   if (
     !queueName ||
-    !currentMatch.teamNum ||
+    !myTeamNum ||
     !currentMatch.startedAt
-  ) { return null };
+  ) {
+    // console.warn('[Overlay] formatLiveMatchInfo: incomplete match data', {
+    //   queueName,
+    //   myTeamNum,
+    //   startedAt: currentMatch.startedAt,
+    //   playerCount: matchPlayers.length,
+    //   isMeCount: matchPlayers.filter(p => p.isMe).length,
+    // });
+    return null;
+  };
 
   const isRanked = queueName === 'Ranked';
 
@@ -105,8 +124,9 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
     gameState: currentMatch.gameState,
     map: currentMatch.map,
     queue: queueName,
+    queueState: currentMatch.queueState,
     partySize: currentMatch.partySize,
-    teamNumber: currentMatch.teamNum,
+    teamNumber: myTeamNum,
     seenTrainings: currentMatch.trainings,
     bans: currentMatch.bans,
     teamOnePts: currentMatch.teamOnePts ?? 0,
@@ -119,4 +139,33 @@ export async function formatLiveMatchInfo(): Promise<POSTLiveMatchV1 | null> {
   }
 
   return formattedMatch;
+}
+
+// Hide enemy usernames until after ban/char lock in Ranked to avoid targeting
+export function obfuscateHiddenPlayers(data: POSTLiveMatchV1): POSTLiveMatchV1 {
+  if (data.queue !== 'Ranked') return data;
+
+  let enemyNum = 0;
+  const players = data.players.map(p => {
+    if (p.teamNumber === data.teamNumber || p.characterId) return p;
+    enemyNum++;
+    return { ...p, username: `Enemy ${enemyNum}` };
+  });
+
+  return { ...data, players };
+}
+
+// A separate, simpler overlay for pre-match queue status - unlike formatLiveMatchInfo(),
+// this stays valid the whole time (Idle/Queued/etc.), not just once a match has started.
+export type QueueOverlayInfo = {
+  queue: string, // human-readable name, "Unknown" if not currently queued/matched
+  queueState: string, // Idle, Queued, FoundMatch, StartingGame, InGame, etc.
+}
+
+export async function formatQueueInfo(): Promise<QueueOverlayInfo> {
+  const currentMatch = await getCurrentMatch();
+  return {
+    queue: getQueueObjectFromID(currentMatch.queue).queueName,
+    queueState: currentMatch.queueState ?? 'Idle',
+  };
 }

@@ -1,5 +1,5 @@
 local ModName = "AiMiApp"
-local ModVersion = "1.2.2"
+local ModVersion = "1.4.4"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 
@@ -28,9 +28,6 @@ Match.Init(ModName, OUT_DIR)
 local PostGame = require("PostGame")
 PostGame.Init(ModName, OUT_DIR)
 
--- Diagnostic: report current heap incase it's getting too full
-local function ReportMemory()
-    print(string.format("[%s] Lua heap: %.1f KB\n", ModName, collectgarbage("count")))
-    ExecuteWithDelay(60000, ReportMemory)
-end
-ExecuteWithDelay(30000, ReportMemory)
+-- Writes heartbeat.json in place, once on load and every minute after.
+local Heartbeat = require("Heartbeat")
+Heartbeat.Init(ModName, OUT_DIR)

@@ -187,6 +187,7 @@ export async function tryUpdateDiscordRPC(clear?: boolean) {
     await discordRpc.updateActivity({
       details: `${queueName} - ${mapObject.mapName}`,
       state: `Voting on Match Settings...`,
+      largeImage: matchTable.map?.toLowerCase() ?? DRPC_LOGO_KEY,
       startTimestamp: Date.now(),
       endTimestamp: remainingSetupTimestamp,
       buttons: [{ label: "Download Companion App", url: "https://clarioncorp.net/app" }],

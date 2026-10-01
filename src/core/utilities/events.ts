@@ -5,13 +5,13 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
-import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from "../../types/ue4ss";
+import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON, TimelineEventType } from "../../types/ue4ss";
 import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getLatestMatchHistory, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
-import { getRegionObjectFromAppRegion, getServerObjectFromID } from "../objects/regions";
+import { getRegionObjectFromOdyRegion, getServerObjectFromID } from "../objects/regions";
 import { checkSaveTimelineEntries } from "../timeline";
 import { getQueueObjectFromID } from "../objects/queues";
 import { fetchPlayerStats, getInferredQueueMates } from "./players";
@@ -39,6 +39,7 @@ export async function updatePlayers(data: PlayersJSON) {
     ping: p.ping_ms,
     trainings: p.trainings,
     knockouts: p.knockouts,
+    accLevel: p.account_level,
   }));
   if (incoming.length === 0) return;
 
@@ -78,6 +79,8 @@ export async function updatePlayers(data: PlayersJSON) {
         smurfProbability: smurf?.confidence,
         tags: playerStats.tags,
         queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
+        nameplate: playerStats.nameplate,
+        peakRating: playerStats.peakRating,
       }).where(eq(matchPlayers.username, localPlayer.username));
     } catch (e) {
       console.warn(`No rank data could be found for ${localPlayer.username}.`);
@@ -184,7 +187,7 @@ export async function saveMatchToHistory(data: PostGameJSON) {
     await uploadLatestMatch(); // automatically upload match to AppAPI for processing
 
     // wait a few seconds for OdyAPI to update LP before updating session
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 10_000));
     await updateSession(currentUser.username);
   } catch (e) {
     console.error('Something went wrong while saving the match!', e);
@@ -293,6 +296,7 @@ export async function uploadLatestMatch() {
       redirects: p.redirects,
       orbs: p.orbs,
       mvp: p.mvp,
+      rating: p.rating ?? 0,
     }));
 
     const formattedBody: POSTMatchHistoryV1 = {
@@ -303,9 +307,14 @@ export async function uploadLatestMatch() {
       bans: latestEntry.bans,
       avgRating: avgRating ?? 0,
       myTeam: latestEntry.myTeam,
+      timeline: latestEntry.timeline.map(e => ({
+        when: new Date(e.when),
+        event: e.event as TimelineEventType,
+        team: e.team,
+      })),
 
       playerId: myPlayerId,
-      username: latestEntry.players.find(p => p.playerId === myPlayerId)?.playerId ?? user.playerId,
+      username: latestEntry.players.find(p => p.playerId === myPlayerId)?.name ?? user.username,
       players: formattedPlayers,
 
       t1_pts: latestEntry.t1_pts,
@@ -313,7 +322,7 @@ export async function uploadLatestMatch() {
       t1_sets: latestEntry.t1_sets,
       t2_sets: latestEntry.t2_sets,
 
-      region: getRegionObjectFromAppRegion(user.matchmakingRegion).apiRegion,
+      region: getRegionObjectFromOdyRegion(user.matchmakingRegion).apiRegion,
       playedAt: Math.floor(latestEntry.createdAt.getTime() / 1000),
     }
 

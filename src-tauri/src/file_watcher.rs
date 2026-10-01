@@ -111,6 +111,17 @@ fn resolve_temp_dir() -> PathBuf {
     }
 }
 
+#[derive(Deserialize)]
+struct HeartbeatPayload {
+    timestamp: u64,
+}
+
+#[tauri::command]
+pub fn get_heartbeat() -> Option<u64> {
+    let content = std::fs::read_to_string(resolve_temp_dir().join("heartbeat.json")).ok()?;
+    serde_json::from_str::<HeartbeatPayload>(&content).ok().map(|p| p.timestamp)
+}
+
 pub fn start_file_watcher(app: AppHandle) {
     let temp_dir = resolve_temp_dir();
 

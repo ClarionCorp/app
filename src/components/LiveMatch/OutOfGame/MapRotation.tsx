@@ -29,7 +29,7 @@ function MapTile({ map }: { map: Map }) {
       onMouseLeave={() => setHovered(false)}
       className="flex flex-col gap-1.5 rounded-lg p-2 hover:bg-surface-overlay transition-colors duration-200"
     >
-      <div className="w-full aspect-video overflow-hidden rounded-md bg-background-border border-surface-border border shadow-md">
+      <div className="w-full aspect-video overflow-hidden rounded-md bg-surface-border border-surface-border border shadow-md">
         <img
           src={map.imageUrl}
           alt={map.name}
@@ -48,7 +48,7 @@ function MapTile({ map }: { map: Map }) {
             className="fixed z-60 w-100 pointer-events-none"
             style={{ top: position.top, left: position.left }}
           >
-            <div className="rounded-lg border border-background-border bg-surface shadow-xl p-3">
+            <div className="rounded-lg border border-surface-border bg-surface shadow-xl p-3">
               <p className="text-2xl font-bold text-char mb-1">{mapInfo.mapName}</p>
               <div className="text-sm text-char-secondary leading-relaxed whitespace-pre-line p-2">
                 {mapInfo.description || 'No additional info for this map yet.'}
@@ -74,7 +74,7 @@ export function MapRotation() {
   }, []);
 
   return (
-    <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
+    <div className="bg-surface-subtle border border-surface-border rounded-xl p-4">
       <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
         Current Maps in Rotation
       </p>

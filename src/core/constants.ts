@@ -1,12 +1,13 @@
 // Just a central file to edit constant variables across updates.
 // I don't recommend changing this unless you know what you are doing.
 
-export const version = '2.0.0-pre8';
+export const version = '2.0.0-pre9';
 export const ClarionAPI = 'https://api.clarioncorp.net';
 export const OdyAPI = 'https://prometheus-proxy.odysseyinteractive.gg/api';
 export const AiMiAPI = 'https://api.aimis.app';
 // export const AiMiAPI = 'http://localhost:12240';
 export const StatusUrl = 'https://status.blals.com';
+export const LocalWebServer = 'http://127.0.0.1:47822'; // app now hosts a local webserver for stuff like Overlay
 
 // Proton Paths
 export const proton_root = '.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/'; // prefix

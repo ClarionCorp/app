@@ -2,6 +2,7 @@
 
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
+import { formatLiveMatchInfo, formatQueueInfo, obfuscateHiddenPlayers } from './overlay';
 
 export interface FileChangePayload {
   file: string;
@@ -64,4 +65,30 @@ export async function isProcessRunning(name: string): Promise<boolean> {
 
 export async function getLatestRegion(): Promise<string | null> {
   return invoke<string | null>('get_latest_region');
+}
+
+export async function getHeartbeat(): Promise<number | null> {
+  return invoke<number | null>('get_heartbeat');
+}
+
+// Pushes the current live match snapshot into the local overlay HTTP server (Rust-side),
+// so it can be served to OBS's Browser Source over localhost, rather than going through CC/AppAPI.
+export async function pushOverlayState() {
+  try {
+    const data = await formatLiveMatchInfo();
+    // No valid match (e.g. the players table was just cleared) -> push null so the overlay hides, instead of leaving the previous match on screen.
+    await invoke('update_overlay_state', { payload: data ? obfuscateHiddenPlayers(data) : null });
+  } catch (err) {
+    console.warn('[Overlay] Failed to push local overlay state:', err);
+  }
+}
+
+// Separate, simpler widget for pre-match queue status - see QueueApp.tsx / formatQueueInfo().
+export async function pushQueueState() {
+  try {
+    const data = await formatQueueInfo();
+    await invoke('update_queue_state', { payload: data });
+  } catch (err) {
+    console.warn('[Overlay] Failed to push local queue state:', err);
+  }
 }

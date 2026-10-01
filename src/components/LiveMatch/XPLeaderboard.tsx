@@ -11,7 +11,7 @@ function getBarColor(player: MatchPlayersTable, myTeamNum: number | null) {
   return ENEMY_COLOR;
 }
 
-export function XPLeaderboard({ players }: { players: MatchPlayersTable[] }) {
+export function XPLeaderboard({ players, shouldObfuscatePlayers }: { players: MatchPlayersTable[], shouldObfuscatePlayers: boolean }) {
   if (players.length === 0) {
     return (
       <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
@@ -55,10 +55,10 @@ export function XPLeaderboard({ players }: { players: MatchPlayersTable[] }) {
                   <img
                     src={`/characters/portrait/${player.charId}.webp`}
                     alt=""
-                    className="w-full h-full object-cover bg-surface"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-surface-overlay" />
+                  <div className="w-full h-full bg-surface" />
                 )}
               </div>
 
@@ -68,13 +68,13 @@ export function XPLeaderboard({ players }: { players: MatchPlayersTable[] }) {
                     'text-xs font-medium truncate',
                     player.isMe ? 'text-char' : 'text-char-secondary'
                   )}>
-                    {player.username}
+                    {shouldObfuscatePlayers ? '——' : player.username}
                   </span>
                   <span className="text-xs font-semibold text-char-subtle shrink-0">
                     {xp.toLocaleString()}
                   </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-surface-overlay overflow-hidden">
+                <div className="h-1.5 rounded-full bg-surface overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: color }}

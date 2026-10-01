@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, type Variants } from 'framer-motion';
-import { HouseIcon } from '@phosphor-icons/react';
+import { HouseIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { Button } from '../components/UI/Button';
 import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
 import { getCurrentMatch, getCustomLobby, getMatchPlayers } from '../core/database/queries';
@@ -11,14 +11,15 @@ import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { OutOfGamePanel } from '../components/LiveMatch/OutOfGame/OutOfGamePanel';
 import { AbilityCard } from '../components/LiveMatch/AbilityCard';
-import { MatchInfo } from '../components/LiveMatch/MatchInfo';
 import { Awakenings } from '../types/clarion';
 import { getCurrentAwakeningRotation } from '../core/utilities/clarion';
 import { characters } from '../core/objects/characters';
 import { getGameStatus } from '../core/objects/gameStates';
 import { checkBlocked } from '../core/utilities/events';
+import { getQueueObjectFromID } from '../core/objects/queues';
 import { XPTimeline } from '../components/LiveMatch/XPTimeline';
 import { XPLeaderboard } from '../components/LiveMatch/XPLeaderboard';
+import { IntermissionPredictions } from '../components/LiveMatch/IntermissionPredictions';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -73,7 +74,7 @@ export default function CurrentMatchPage() {
       const lobby = await getCustomLobby();
       const decision = await checkBlocked(lobby, matchDb);
       setBlocked(decision);
-    }, 2000);
+    }, 1000);
     return () => clearInterval(id);
   }, [loading]);
 
@@ -94,6 +95,10 @@ export default function CurrentMatchPage() {
     if (!best || (best.gainedXp ?? 0) < p.gainedXp) return p;
     return best;
   }, undefined);
+
+  const shouldObfuscatePlayers = !!match
+    && getQueueObjectFromID(match.queue).queueName === 'Ranked'
+    && players.some(p => !p.charId);
 
   // always show maps (default state) unless in game
   const gameStatus = getGameStatus(match?.gameState);
@@ -149,8 +154,9 @@ export default function CurrentMatchPage() {
               animate="show"
             >
               {!showOutOfGame && <>
-                <MatchInfo match={match} myPlayer={myPlayer} />
-                <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
+                <div className='mt-4'>
+                  <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
+                </div>
               </>
               }
 
@@ -160,9 +166,16 @@ export default function CurrentMatchPage() {
                     <OutOfGamePanel />
                   ) : (
                     <>
+                      {shouldObfuscatePlayers && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-surface border-error/30 text-char text-xs">
+                          <WarningCircleIcon size={16} className="text-error shrink-0" weight="fill" />
+                          Players obfuscated until characters are locked in to prevent targeted banning in Ranked.
+                        </div>
+                      )}
+
                       <div className="space-y-3">
                         {blueTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={index} isBlue isMvp={player.username === mvp?.username} teammates={blueTeam} />
+                          <PlayerCard key={player.username} player={player} match={match} index={index} isAlly isMvp={player.username === mvp?.username} teammates={blueTeam} />
                         ))}
                       </div>
 
@@ -184,8 +197,9 @@ export default function CurrentMatchPage() {
                 {!showOutOfGame && <>
                   <div className="hidden lg:block w-px mx-2 self-stretch" />
 
-                  <div className="hidden lg:block flex-1 min-w-0 space-y-3 overflow-y-auto pb-16">
-                    <XPLeaderboard players={players} />
+                  <div className="hidden lg:block flex-1 min-w-0 space-y-3 pb-16">
+                    <IntermissionPredictions players={players} shouldObfuscatePlayers={shouldObfuscatePlayers} />
+                    <XPLeaderboard players={players} shouldObfuscatePlayers={shouldObfuscatePlayers} />
                     <XPTimeline />
                     {myChar ? (
                       <>

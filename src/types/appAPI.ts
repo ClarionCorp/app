@@ -11,6 +11,28 @@ export type OnlinePlayersV1 = {
   seen: number,
 }
 
+// POST /v2/online
+export type POSTOnlinePlayersV2 = {
+  total: number,
+  in_game: number,
+  idling: number,
+  seen: number,
+  in_your_queue: number,
+}
+
+// GET /v2/online
+export type GETOnlinePlayersV2 = {
+  total: number,
+  in_game: number,
+  idling: number,
+  seen: number,
+  queues: {
+    queueId: string,
+    count: number,
+  }[],
+}
+
+
 // /v1/online/detailed
 export type OnlineHistoryV1 = {
   counts: OnlinePlayersV1,
@@ -46,6 +68,12 @@ export type POSTMatchHistoryV1 = {
   t2_pts: number,
   myTeam: number,
 
+  timeline?: {
+    when: Date,
+    event: string,
+    team?: 1 | 2
+  }[],
+
   region: AppAPIRegion,
   playedAt: number,
 }
@@ -67,7 +95,8 @@ export type POSTMatchHistoryPlayerV1 = {
   shots: number,
   redirects: number,
   orbs: number,
-  mvp: boolean, // unused for now, just leave omitted
+  mvp: boolean,
+  rating: number,
 }
 
 // /v1/player/:username/teammates

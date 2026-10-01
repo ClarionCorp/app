@@ -18,12 +18,12 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
 
   if (data.length < 2) {
     return (
-      <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
+      <div className="bg-surface-subtle border border-surface-border rounded-xl p-4">
         <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
           Rating This Session
         </p>
-        <div className="flex items-center justify-center rounded-lg border border-dashed border-background-border text-zinc-600 text-sm min-h-32">
-          Not enough matches played this session yet.
+        <div className="flex items-center justify-center rounded-lg border border-dashed border-surface-border text-char-subtle text-sm min-h-32">
+          Not enough ranked matches played this session yet.
         </div>
       </div>
     );
@@ -36,7 +36,7 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
   const lastColor = getRankFromLP(data[data.length - 1]).color;
 
   return (
-    <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
+    <div className="bg-surface-subtle border border-surface-border rounded-xl p-4">
       <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
         Rating This Session
       </p>
@@ -44,7 +44,7 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
       <div className="max-h-56">
         <Line
           data={{
-            labels: data.map((_, i) => `Match ${i + 1}`),
+            labels: data.map((_, i) => (i === 0 ? 'Start' : `Match ${i}`)),
             datasets: [
               {
                 label: 'Rating',

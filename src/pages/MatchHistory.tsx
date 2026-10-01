@@ -112,6 +112,13 @@ export default function MatchHistoryPage() {
   const showAccountFilter = users.length > 1
   const selectedUser = users.find(u => u.playerId === accountFilter)
 
+  const usedCharacterIds = new Set(
+    filtered
+      .map(m => m.players.find(p => p.playerId === m.playerId)?.characterId)
+      .filter((id): id is string => !!id)
+  )
+  const availableCharacters = characters.filter(c => usedCharacterIds.has(c.id))
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -159,7 +166,7 @@ export default function MatchHistoryPage() {
           label={characters.find(c => c.id === characterFilter)?.name ?? 'All Characters'}
           active={characterFilter !== null}
           onClear={() => setCharacterFilter(null)}
-          items={characters.map(c => ({
+          items={availableCharacters.map(c => ({
             label: c.name,
             icon: <img src={`/characters/portrait/${c.id}.webp`} alt="" className="w-6 aspect-square rounded-full object-cover" />,
             onClick: () => setCharacterFilter(c.id === characterFilter ? null : c.id),

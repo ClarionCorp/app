@@ -246,6 +246,48 @@
       "when": 1787943019794,
       "tag": "0034_dapper_mandroid",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "6",
+      "when": 1788572983814,
+      "tag": "0035_minor_steel_serpent",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "6",
+      "when": 1789458987460,
+      "tag": "0036_exotic_satana",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "6",
+      "when": 1789724927907,
+      "tag": "0037_graceful_jackal",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "6",
+      "when": 1789820446612,
+      "tag": "0038_military_white_tiger",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "6",
+      "when": 1790075132612,
+      "tag": "0039_daily_moondragon",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "6",
+      "when": 1790100553296,
+      "tag": "0040_chubby_gamma_corps",
+      "breakpoints": true
     }
   ]
 }

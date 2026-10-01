@@ -39,14 +39,14 @@ export function RadioGroup<T extends string>({ options, value, onChange, disable
             'flex items-center gap-3.5 p-3.5 rounded-xl border transition-all text-left cursor-pointer',
             value === opt.value
               ? 'bg-primary/10 border-primary/40'
-              : 'bg-surface-raised border-background-border hover:border-primary/20 hover:bg-surface-overlay',
+              : 'bg-surface-raised border-surface-border hover:border-primary/20 hover:bg-surface-overlay',
             disabled && 'opacity-50 cursor-not-allowed'
           )}
         >
           {opt.icon && (
             <div className={cn(
               'size-9 rounded-lg flex items-center justify-center shrink-0 transition-colors',
-              value === opt.value ? 'bg-primary/20 text-primary' : 'bg-surface-overlay text-char-subtle'
+              value === opt.value ? 'bg-primary/20 text-primary' : 'bg-surface text-char-subtle'
             )}>
               {opt.icon}
             </div>

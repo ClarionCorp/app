@@ -32,6 +32,12 @@ export function getRegionObjectFromAppRegion(appRegion: Region | null | undefine
   return target;
 }
 
+export function getRegionObjectFromOdyRegion(odyRegion: OdyRegion | null | undefined | string): RegionObject {
+  let target = REGIONS.find(m => m.odyRegion === odyRegion);
+  if (!target) { target = REGIONS[0] }; // Unknown
+  return target;
+}
+
 export function getRegionObjectFromAPIRegion(apiRegion: AppAPIRegion | null | undefined): RegionObject {
   let target = REGIONS.find(m => m.apiRegion === apiRegion);
   if (!target) { target = REGIONS[0] }; // Unknown

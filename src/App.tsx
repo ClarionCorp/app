@@ -5,19 +5,20 @@ import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import NavCorner from './components/Navigation/NavCorner';
-import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange } from './core/bridgeListener';
-import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch } from './core/database/queries';
+import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState } from './core/bridgeListener';
+import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch, resetPlayerTable } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { fetchSelfQuery } from './core/utilities/odyssey';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
-import { AiMiAPI, heartbeat_interval } from './core/constants';
+import { AiMiAPI, heartbeat_interval, version } from './core/constants';
 import { formatLiveMatchInfo } from './core/overlay';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
 import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 import { sessionHeartbeat } from './core/utilities/sessions';
+import { fetchOnlineCount } from './core/utilities/appAPI';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -120,7 +121,10 @@ function App() {
   // Rust Mod Bridge Listeners
   useEffect(() => {
   const unlistens = Promise.all([
-    onPlayersUpdate(async (payload) => { await updatePlayers(JSON.parse(payload.content!) as PlayersJSON); }),
+    onPlayersUpdate(async (payload) => {
+      await updatePlayers(JSON.parse(payload.content!) as PlayersJSON);
+      await pushOverlayState();
+    }),
     onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
     onCustomLobbyHeartbeat(async (payload) => { await updateCustomLobby(JSON.parse(payload.content!) as MetaJSON); }),
 
@@ -135,20 +139,30 @@ function App() {
       // Update database
       const matchTable = await updateGameState(data);
       await tryUpdateDiscordRPC();
+      await pushOverlayState();
+      await pushQueueState();
 
       // Only once during Match Start, log the match start time in timeline entries if not there already.
       if (data.game_state.new_phase == 'VersusScreen' && !matchTable.timeline.some(e => e.event === 'GAME_START')) { await appendTimelineEntry({ when: new Date(), event: 'GAME_START', }) };
-    }),
     
+      // Only during match end
+      if (data.game_state.new_phase == 'PostGameSummary' || data.game_state.new_phase == 'EndGame') {
+        const user = await getUser();
+        await fetchOnlineCount(user!.username, user!.matchmakingRegion, version, data.queue.id, data.queue.state, user!.rating)
+      }
+    }),
+
     onMatchUpdate(async (payload) => {
       const data = JSON.parse(payload.content!) as MatchJSON;
       await updateScore(data);
       await tryUpdateDiscordRPC();
+      await pushOverlayState();
     }),
 
     onQueueChange(async (payload) => {
       const data = JSON.parse(payload.content!) as MetaJSON;
       const previous = await getCurrentMatch();
+      const user = await getUser();
       await updateGameState(data); // we are really just updating the queue object
 
       if (previous.queueState == 'Queued' && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
@@ -158,8 +172,16 @@ function App() {
         }
       }
 
+      // On queue, reset players table and refresh overlay (to hide it)
+      if (data.queue.state == 'Queued' || data.queue.state == 'FoundMatch') {
+        await resetPlayerTable('Entered Queue');
+      }
+
       await tryUpdateDiscordRPC();
+      await pushOverlayState();
+      await pushQueueState();
       await sessionHeartbeat();
+      if (user) { await fetchOnlineCount(user.username, user.matchmakingRegion, version, data.queue.id, data.queue.state, user.rating) } // should always be set but whatever
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };

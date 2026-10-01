@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `openGameWithApp` integer DEFAULT false NOT NULL;

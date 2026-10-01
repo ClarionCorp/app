@@ -23,7 +23,11 @@ export type Player = {
     currentLevelXp: number,
     totalXp: number,
     xpToNextLevel: number,
-  }
+  },
+  assets?: {
+    nameplate?: string, // url
+  },
+  peak?: PlayerRating
 }
 
 export type PlayerRating = {
@@ -113,4 +117,21 @@ export type SmurfResult = {
     lowLevel: boolean,
     abnormalWinrate: boolean,
   }
+}
+
+export type Nameplate = {
+  nameplateId: string,
+  nameplateUrl: string,
+}
+
+export type PeakRating = {
+  rating: number,
+  season: number,
+  date: Date,
+}
+
+export type Season = {
+  season: number,
+  startDate: Date,
+  endDate: Date
 }

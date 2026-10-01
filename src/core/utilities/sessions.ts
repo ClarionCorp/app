@@ -2,16 +2,18 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "../database/driver";
-import { getCurrentSession, getLatestMatchHistory } from "../database/queries";
-import { gameSessions } from "../database/schema";
+import { getCurrentSession, getLatestMatchHistory, getUser } from "../database/queries";
+import { gameSessions, user } from "../database/schema";
 import { fetchPlayerStats } from "./players";
 
 export async function checkStartNewSession() {
   const active = await getCurrentSession();
+  const user = await getUser();
   let start_new_session = false;
 
   if (!active || !active.lastUpdated) { start_new_session = true }
   else if (Date.now() - active.lastUpdated.getTime() > (3 * 3600000)) { start_new_session = true } // 3 hours
+  if (active.playerId !== user?.playerId) { start_new_session = true }; // start new session if on different account
   // else { start_new_session = false };
 
   if (start_new_session == true) {
@@ -20,8 +22,9 @@ export async function checkStartNewSession() {
       startedAt: new Date(),
       lastUpdated: new Date(),
       active: true,
-      endOfMatchLPs: [],
+      endOfMatchLPs: [user?.rating ?? 0],
       matchHistories: [],
+      playerId: user?.playerId,
     });
     console.log('Starting a new session...');
     return;
@@ -45,6 +48,8 @@ export async function updateSession(username: string) {
       endOfMatchLPs: [...session.endOfMatchLPs, newStats.rating],
       matchHistories: latestEntry ? [...session.matchHistories, latestEntry.id] : session.matchHistories,
     }).where(eq(gameSessions.id, session.id));
+
+    db.update(user).set({ rating: newStats.rating }).where(eq(user.username, username)).run(); // update rating cache
 
     console.log(`Updated session! (#${session.id})`)
   } catch (e) {

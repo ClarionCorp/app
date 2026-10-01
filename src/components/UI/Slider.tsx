@@ -29,7 +29,7 @@ export function Slider({ min, max, value, onChange, stops, unit, disabled }: Sli
       {/* Track + thumb */}
       <div className="relative flex items-center h-6">
         {/* Track background: inset by 8px (half thumb) on each side to align with thumb center */}
-        <div className="absolute inset-x-2 h-1.5 rounded-full bg-surface-overlay" />
+        <div className="absolute inset-x-2 h-1.5 rounded-full bg-surface-raised" />
         {/* Filled portion */}
         <div
           className="absolute left-2 h-1.5 rounded-full bg-secondary"

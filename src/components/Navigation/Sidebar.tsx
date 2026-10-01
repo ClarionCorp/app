@@ -10,9 +10,13 @@ import {
   GearIcon,
   HouseIcon,
   ClockCounterClockwiseIcon,
+  InfoIcon,
+  BroadcastIcon,
 } from '@phosphor-icons/react';
 import { NAV_ITEMS } from '../../core/objects/navigation';
 import { collapsedWidth, expandedWidth, widthTransition } from './NavCorner';
+import { AboutModal } from './AboutModal';
+import { OverlayModal } from './OverlayModal';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   match: <ChartBarIcon size={18} weight="duotone" />,
@@ -32,6 +36,8 @@ interface SidebarProps {
 export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarProps) {
   const location = useLocation();
   const [gameRunning, setGameRunning] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
   const expandTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -59,13 +65,14 @@ export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarPro
   const currentSlug = location.pathname.replace('/', '');
 
   return (
+    <>
       <motion.aside
         onHoverStart={handleHoverStart}
         onHoverEnd={handleHoverEnd}
         initial={{ width: collapsedWidth }}
         animate={{ width: hovered ? expandedWidth : collapsedWidth }}
         transition={widthTransition}
-        className="fixed left-0 top-12 bottom-0 z-40 flex flex-col bg-surface-subtle overflow-hidden"
+        className="fixed left-0 top-12 bottom-0 z-40 flex flex-col bg-navbar overflow-hidden"
       >
         <nav className="flex flex-col gap-1 p-2 flex-1">
           <button
@@ -83,8 +90,6 @@ export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarPro
               Home
             </motion.span>
           </button>
-
-          <div className="my-1 border-t border-background-border" />
 
           {NAV_ITEMS.map((item) => {
             const isActive = currentSlug === item.slug;
@@ -118,7 +123,44 @@ export default function Sidebar({ navigate, hovered, onHoverChange }: SidebarPro
               </button>
             );
           })}
+
+          <div className="mt-auto flex flex-col gap-1">
+            <button
+              onClick={() => setOverlayOpen(true)}
+              className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg transition-colors cursor-pointer text-left text-char-subtle hover:bg-surface-overlay hover:text-char"
+            >
+              <span className="shrink-0">
+                <BroadcastIcon size={18} weight="duotone" />
+              </span>
+              <motion.span
+                className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : -6 }}
+                transition={{ duration: 0.15 }}
+              >
+                Stream Overlay
+              </motion.span>
+            </button>
+            <button
+              onClick={() => setAboutOpen(true)}
+              className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg transition-colors cursor-pointer text-left text-char-subtle hover:bg-surface-overlay hover:text-char"
+            >
+              <span className="shrink-0">
+                <InfoIcon size={18} weight="duotone" />
+              </span>
+              <motion.span
+                className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : -6 }}
+                transition={{ duration: 0.15 }}
+              >
+                About
+              </motion.span>
+            </button>
+          </div>
         </nav>
       </motion.aside>
+
+      <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <OverlayModal open={overlayOpen} onClose={() => setOverlayOpen(false)} />
+    </>
   );
 }
