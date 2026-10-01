@@ -19,6 +19,7 @@ import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
 import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 import { sessionHeartbeat } from './core/utilities/sessions';
 import { fetchOnlineCount } from './core/utilities/appAPI';
+import { ThemePicker } from './components/UI/Theme/ThemePicker';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -33,6 +34,7 @@ export interface AppContextType {
 function App() {
   const [odyAuth, setOdyAuth] = useState<OdyAuth>();
   const [connectedToOdy, setConnectedStatus] = useState<boolean>(false);
+  const [themePickerOpen, setThemePickerOpen] = useState(false);
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -52,6 +54,7 @@ function App() {
         await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
       };
       if (e.key === 'F9') navigate('/debug');
+      if (e.key === 'F4') setThemePickerOpen(true);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -205,6 +208,7 @@ function App() {
       </div>
  
       <GlobalButtons />
+      <ThemePicker open={themePickerOpen} onClose={() => setThemePickerOpen(false)} />
     </div>
   );
 }
