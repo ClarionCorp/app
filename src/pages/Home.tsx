@@ -97,24 +97,22 @@ export default function HomePage() {
 
       <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] px-8 pb-28">
         <motion.div
-          className="mb-10 short:my-7 text-center"
+          className="relative mb-10 w-full max-w-2xl"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="relative flex flex-col items-center">
-            <img
-              src={'/aimi/Yapping.gif'}
-              className="w-40 aspect-square rounded-xl object-cover my-10 short:my-7"
-            />
-            <div className="text-center mb-5">
-              <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
-                Welcome back!
-              </p>
-              <h1 className="text-2xl font-extrabold tracking-tight text-char">
-                How can I <span className="text-char-accent">help</span>?
-              </h1>
-            </div>
+          <img
+            src={'/aimi/Custom_Greeting.webp'}
+            className="absolute z-0 -left-16 -bottom-36 w-96 aspect-square rounded-xl object-cover object-top"
+            style={{
+              maskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)',
+            }}
+          />
+          <div className="text-center py-32 translate-y-4 translate-x-6">
+            <h1 className="text-2xl font-extrabold tracking-tight text-char italic">
+              How can I <span className="text-char-accent">help</span>?
+            </h1>
           </div>
         </motion.div>
 
@@ -124,7 +122,7 @@ export default function HomePage() {
           initial="hidden"
           animate="show"
         >
-          <div className="grid grid-cols-2 gap-4 w-full">
+          <div className="relative z-10 grid grid-cols-2 gap-4 w-full">
             {NAV_ITEMS.map((item) => {
               const disabled = item.online && !gameRunning;
               return (
@@ -167,7 +165,7 @@ function NavButton({ item, disabled, onClick }: NavButtonProps) {
     <motion.button
       onClick={onClick}
       disabled={disabled}
-      className={`relative h-32 w-full rounded-2xl overflow-hidden border border-surface-border group focus:outline-none p-2 shadow-lg ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary cursor-pointer"}`}
+      className={`relative h-32 w-full rounded-2xl overflow-hidden border border-surface-border group focus:outline-none p-2 shadow-[0_0_12px_rgba(0,0,0,0.5)] ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary cursor-pointer"}`}
       whileHover={disabled ? {} : { scale: 1.03 }}
       whileTap={disabled ? {} : { scale: 0.97 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
