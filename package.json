@@ -10,8 +10,8 @@
     "build:overlay": "vite build --config vite.overlay.config.ts",
     "preview": "vite preview",
     "tauri": "tauri",
-    "build:windows": "tsc && vite build && vite build --config vite.overlay.config.ts && tauri build",
-    "build:linux": "NO_STRIP=true tsc && vite build && vite build --config vite.overlay.config.ts && tauri build",
+    "build:windows": "tauri build",
+    "build:linux": "NO_STRIP=true tauri build",
     "regen": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "gen": "drizzle-kit generate"

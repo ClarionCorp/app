@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchCurrentSeason } from '../../../core/utilities/clarion';
-import { CurrentSeason } from '../../../types/clarion';
+import { Season } from '../../../types/clarion';
 
 type TimeLeft = {
   days: number,
@@ -33,7 +33,7 @@ function formatTimeLeft(timeLeft: TimeLeft): string {
 }
 
 export function SeasonCountdown() {
-  const [seasonInfo, setSeasonInfo] = useState<CurrentSeason | null>(null);
+  const [seasonInfo, setSeasonInfo] = useState<Season | null>(null);
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
   useEffect(() => {
