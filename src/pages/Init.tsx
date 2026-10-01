@@ -148,7 +148,7 @@ export default function InitializationPage() {
         await setQueueState('Idle');
         
         // Open Game if told to, only if game isn't running already
-        if (settings.openGameWithApp) {
+        if (settings?.openGameWithApp === true) {
           const gameRunning = await invoke<boolean>('is_process_running', { name: 'OmegaStrikers.exe' });
           if (!gameRunning) {
             await openUrl(`steam://rungameid/1869590`);
