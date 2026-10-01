@@ -191,6 +191,10 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                   Made with ❤️ by {' '}
                   <a onClick={() => openUrl('https://blals.com')} className="hover:text-match-ally hover:underline cursor-pointer transition-colors">blals</a>
                 </span>
+                <span className="text-[11px] text-char-subtle">
+                  Ai.Mi illustrations by {' '}
+                  <a onClick={() => openUrl('https://linktr.ee/Neo0536')} className="hover:text-match-ally hover:underline cursor-pointer transition-colors">Neo</a>
+                </span>
               </div>
             </div>
           </motion.div>
