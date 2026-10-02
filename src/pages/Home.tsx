@@ -58,15 +58,17 @@ export default function HomePage() {
         {
           variant: 'info',
           title: `Hello, ${usernameText}! (1/3)`,
-          message: "Welcome to the new Ai.Mi App! I'm Ai.Mi, and I'll be your assistant while playing Omega Strikers.",
-          image: '/aimi/NOM.png',
+          message: "Welcome to the new Ai.Mi App! I'm Ai.Mi, and I'll be your assistant while playing Corestrike.",
+          image: '/aimi/Custom_Welcome_1.webp',
+          xlImage: true,
           buttons: [{ label: 'Okay!', dismisses: true }],
         },
         {
           variant: 'info',
           title: 'Need Help? (2/3)',
           message: "You can call me from any page at any time by pressing F6 (or Fn + F6) on your keyboard!",
-          image: '/aimi/Yapping.gif',
+          image: '/aimi/Custom_Welcome_2.webp',
+          xlImage: true,
           buttons: [{ label: 'Got it, thanks!', dismisses: true }],
         },
         {

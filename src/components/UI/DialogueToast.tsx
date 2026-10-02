@@ -37,6 +37,7 @@ export interface DialogueConfig {
   buttons?: DialogueButtonConfig[];
   autoDismiss?: number;
   dismissible?: boolean;
+  xlImage?: boolean;
 }
 
 interface DialogueData extends DialogueConfig {
@@ -200,7 +201,7 @@ function DialogueBox({
               src={dialogue.image}
               alt=""
               draggable={false}
-              className="absolute bottom-3 left-1 h-36 w-auto z-10 object-contain pointer-events-none select-none"
+              className={`absolute bottom-3 left-1 ${dialogue.xlImage ? 'h-38' : 'h-36'} w-auto z-10 object-contain pointer-events-none select-none`}
             />
           )}
           <div
