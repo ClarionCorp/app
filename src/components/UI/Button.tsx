@@ -5,7 +5,7 @@ import { motion, HTMLMotionProps, type Transition } from 'framer-motion';
 import { CircleNotchIcon } from '@phosphor-icons/react';
 import { cn } from '../../core/styles/theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'surface' | 'success' | 'ghost' | 'danger' | 'danger-ghost' | 'secondary-ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'surface' | 'success' | 'ghost' | 'danger' | 'danger-ghost' | 'secondary-ghost' | 'aimi';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
@@ -29,6 +29,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   ghost: 'bg-transparent text-char-secondary border border-transparent hover:bg-surface-active hover:text-char active:bg-surface-raised',
   danger: 'bg-error text-white border border-error hover:brightness-110 hover:shadow-danger active:brightness-90',
   'danger-ghost': 'bg-transparent text-error border border-transparent hover:bg-error/10 hover:text-error/80 active:bg-error/10',
+  aimi: 'bg-[#cf4da8] text-white border border-error hover:brightness-110 hover:shadow-danger active:brightness-90',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

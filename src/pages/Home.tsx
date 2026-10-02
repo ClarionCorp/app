@@ -56,30 +56,29 @@ export default function HomePage() {
       await upsertAppSettings({ seenWelcome: true });
       showQueue([
         {
-          variant: 'info',
+          variant: 'aimi',
           title: `Hello, ${usernameText}! (1/3)`,
           message: "Welcome to the new Ai.Mi App! I'm Ai.Mi, and I'll be your assistant while playing Corestrike.",
           image: '/aimi/Custom_Welcome_1.webp',
           xlImage: true,
-          buttons: [{ label: 'Okay!', dismisses: true }],
+          buttons: [{ label: 'Okay!', variant: 'aimi', dismisses: true }],
         },
         {
-          variant: 'info',
           title: 'Need Help? (2/3)',
           message: "You can call me from any page at any time by pressing F6 (or Fn + F6) on your keyboard!",
           image: '/aimi/Custom_Welcome_2.webp',
           xlImage: true,
-          buttons: [{ label: 'Got it, thanks!', dismisses: true }],
+          buttons: [{ label: 'Got it, thanks!', variant: 'aimi', dismisses: true }],
         },
         {
-          variant: 'info',
+          variant: 'aimi',
           title: 'Customization (3/3)',
           message: "One last thing before I go, I recommend heading to Settings to really make the app your own!",
           image: '/aimi/Custom_Welcome_3.webp',
           xlImage: true,
           buttons: [
-            { label: 'Open Settings', onClick: () => { navigate('/settings') }, dismisses: true },
-            { label: 'Close', dismisses: true },
+            { label: 'Open Settings', onClick: () => { navigate('/settings') }, variant: 'secondary', dismisses: true },
+            { label: 'Close', variant: 'surface', dismisses: true },
           ],
         }
       ]);

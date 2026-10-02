@@ -18,13 +18,13 @@ import {
   type ReactNode,
 } from 'react';
 import { cn } from '../../core/styles/theme';
-import { Button } from './Button';
+import { Button, ButtonVariant } from './Button';
 
-export type DialogueVariant = 'info' | 'warning' | 'danger' | 'error' | 'success';
+export type DialogueVariant = 'info' | 'warning' | 'aimi' | 'error' | 'success';
 
 export interface DialogueButtonConfig {
   label: string;
-  variant?: 'primary' | 'secondary' | 'surface' | 'ghost' | 'danger' | 'danger-ghost' | 'success';
+  variant?: ButtonVariant;
   onClick?: () => void;
   dismisses?: boolean;
 }
@@ -116,7 +116,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
 const variantBg: Record<DialogueVariant, string> = {
   info: 'bg-dialogue-info-surface',
   warning: 'bg-dialogue-warning-surface',
-  danger: 'bg-dialogue-danger-surface',
+  aimi: 'bg-dialogue-aimi-surface',
   error: 'bg-dialogue-error-surface',
   success: 'bg-dialogue-success-surface',
 };
@@ -124,7 +124,7 @@ const variantBg: Record<DialogueVariant, string> = {
 const variantBorder: Record<DialogueVariant, string> = {
   info: 'border-dialogue-info',
   warning: 'border-dialogue-warning',
-  danger: 'border-dialogue-danger',
+  aimi: 'border-dialogue-aimi',
   error: 'border-dialogue-error',
   success: 'border-dialogue-success',
 };
@@ -132,7 +132,7 @@ const variantBorder: Record<DialogueVariant, string> = {
 const variantShadow: Record<DialogueVariant, string> = {
   info: 'shadow-[0_0_40px_rgba(96,165,250,0.2)]',
   warning: 'shadow-[0_0_40px_rgba(250,204,21,0.2)]',
-  danger: 'shadow-[0_0_40px_rgba(249,115,22,0.2)]',
+  aimi: 'shadow-[0_0_40px_rgba(249,115,22,0.2)]',
   error: 'shadow-[0_0_40px_rgba(239,68,68,0.2)]',
   success: 'shadow-[0_0_40px_rgba(34,197,94,0.2)]',
 };
@@ -140,7 +140,7 @@ const variantShadow: Record<DialogueVariant, string> = {
 const variantDivider: Record<DialogueVariant, string> = {
   info: 'border-dialogue-info-subtle',
   warning: 'border-dialogue-warning-subtle',
-  danger: 'border-dialogue-danger-subtle',
+  aimi: 'border-dialogue-aimi-subtle',
   error: 'border-dialogue-error-subtle',
   success: 'border-dialogue-success-subtle',
 };
@@ -148,7 +148,7 @@ const variantDivider: Record<DialogueVariant, string> = {
 const variantTitleColor: Record<DialogueVariant, string> = {
   info: 'text-dialogue-info-char',
   warning: 'text-dialogue-warning-char',
-  danger: 'text-dialogue-danger-char',
+  aimi: 'text-dialogue-aimi-char',
   error: 'text-dialogue-error-char',
   success: 'text-dialogue-success-char',
 };
@@ -156,7 +156,7 @@ const variantTitleColor: Record<DialogueVariant, string> = {
 const variantIcons: Record<DialogueVariant, ReactNode> = {
   info: <InfoIcon size={22} weight="fill" className="text-dialogue-info shrink-0" />,
   warning: <WarningIcon size={22} weight="fill" className="text-dialogue-warning shrink-0" />,
-  danger: <WarningOctagonIcon size={22} weight="fill" className="text-dialogue-danger shrink-0" />,
+  aimi: <WarningOctagonIcon size={22} weight="fill" className="text-dialogue-aimi shrink-0" />,
   error: <WarningCircleIcon size={22} weight="fill" className="text-dialogue-error shrink-0" />,
   success: <CheckCircleIcon size={22} weight="fill" className="text-dialogue-success shrink-0" />,
 };
@@ -164,7 +164,7 @@ const variantIcons: Record<DialogueVariant, ReactNode> = {
 const variantLabel: Record<DialogueVariant, string> = {
   info: 'Info',
   warning: 'Warning',
-  danger: 'Alert',
+  aimi: 'Ai.Mi',
   error: 'Error',
   success: 'Success',
 };
@@ -201,9 +201,9 @@ function DialogueBox({
               src={dialogue.image}
               alt=""
               draggable={false}
-              className={`absolute w-auto z-10 object-contain pointer-events-none select-none ${dialogue.xlImage
-                ? 'bottom-2 left-1 h-38'
-                : 'bottom-3 left-1 h-36'
+              className={`absolute z-10 object-contain pointer-events-none select-none ${dialogue.xlImage
+                ? 'bottom-2 left-1 h-auto w-38'
+                : 'bottom-3 left-1 h-36 w-auto'
               }`}
             />
           )}

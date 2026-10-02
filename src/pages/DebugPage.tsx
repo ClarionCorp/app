@@ -49,13 +49,14 @@ const dialoguePreviews: { label: string; config: DialogueConfig }[] = [
     },
   },
   {
-    label: 'Alert',
+    label: 'Ai.Mi',
     config: {
-      variant: 'danger',
-      message: "This variant is mostly unused, but it's here so whatever lol",
-      image: '/aimi/Free.png',
+      variant: 'aimi',
+      message: "This variant is used for whenever Ai.Mi is 'talking'. Like in the welcome screen.",
+      image: '/aimi/Custom_Welcome_1.webp',
       dismissible: false,
-      buttons: [{ label: "o7", dismisses: true }],
+      xlImage: true,
+      buttons: [{ label: "o7", variant: 'aimi', dismisses: true }],
     },
   },
 ];
