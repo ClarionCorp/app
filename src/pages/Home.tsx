@@ -64,6 +64,7 @@ export default function HomePage() {
           buttons: [{ label: 'Okay!', variant: 'aimi', dismisses: true }],
         },
         {
+          variant: 'aimi',
           title: 'Need Help? (2/3)',
           message: "You can call me from any page at any time by pressing F6 (or Fn + F6) on your keyboard!",
           image: '/aimi/Custom_Welcome_2.webp',
@@ -111,7 +112,7 @@ export default function HomePage() {
               maskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)',
             }}
           />
-          <div className="text-center py-32 translate-y-4 translate-x-6">
+          <div className="text-center py-32 translate-y-3 translate-x-7">
             <h1 className="text-2xl font-extrabold tracking-tight text-char italic">
               How can I <span className="text-char-accent">help</span>?
             </h1>
