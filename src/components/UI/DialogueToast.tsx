@@ -201,7 +201,10 @@ function DialogueBox({
               src={dialogue.image}
               alt=""
               draggable={false}
-              className={`absolute bottom-3 left-1 ${dialogue.xlImage ? 'h-38' : 'h-36'} w-auto z-10 object-contain pointer-events-none select-none`}
+              className={`absolute w-auto z-10 object-contain pointer-events-none select-none ${dialogue.xlImage
+                ? 'bottom-2 left-1 h-38'
+                : 'bottom-3 left-1 h-36'
+              }`}
             />
           )}
           <div

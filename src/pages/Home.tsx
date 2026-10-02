@@ -75,7 +75,8 @@ export default function HomePage() {
           variant: 'info',
           title: 'Customization (3/3)',
           message: "One last thing before I go, I recommend heading to Settings to really make the app your own!",
-          image: '/aimi/Noted.gif',
+          image: '/aimi/Custom_Welcome_3.webp',
+          xlImage: true,
           buttons: [
             { label: 'Open Settings', onClick: () => { navigate('/settings') }, dismisses: true },
             { label: 'Close', dismisses: true },
