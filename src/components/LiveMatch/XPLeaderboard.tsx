@@ -53,7 +53,7 @@ export function XPLeaderboard({ players, shouldObfuscatePlayers }: { players: Ma
               >
                 {player.charId ? (
                   <img
-                    src={`/characters/portrait/${player.charId}.webp`}
+                    src={`/characters/portrait/custom/${player.charId}.webp`}
                     alt=""
                     className="w-full h-full object-cover"
                   />

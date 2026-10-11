@@ -98,7 +98,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
 
             {/* Character */}
             <img
-              src={`/characters/portrait/${myPlayer.characterId}.webp`}
+              src={`/characters/portrait/custom/${myPlayer.characterId}.webp`}
               alt={getCharName(myPlayer.characterId) ?? myPlayer.characterId}
               className="w-10 h-10 rounded object-cover shrink-0"
             />
@@ -185,7 +185,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
                 {row.bans.map((id, index) => (
                   <BasicPopover key={`${id}-${index}`} displayText={`Banned ${getCharName(id) ?? id}`}>
                     <img
-                      src={`/characters/portrait/${id}.webp`}
+                      src={`/characters/portrait/custom/${id}.webp`}
                       alt={getCharName(id) ?? id}
                       className="w-8 h-8 rounded object-cover grayscale opacity-75"
                     />

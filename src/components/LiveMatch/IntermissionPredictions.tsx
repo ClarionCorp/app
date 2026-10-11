@@ -51,7 +51,7 @@ export function IntermissionPredictions({ players, shouldObfuscatePlayers }: { p
                 <div className={clsx('w-12 h-12 rounded-full overflow-hidden shrink-0 border-[3px] shadow-md', borderClass)}>
                   {player.charId ? (
                     <img
-                      src={`/characters/portrait/${player.charId}.webp`}
+                      src={`/characters/portrait/custom/${player.charId}.webp`}
                       alt={player.charName ?? ''}
                       className="w-full h-full object-cover bg-surface-subtle"
                     />

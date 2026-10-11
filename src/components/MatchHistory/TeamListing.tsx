@@ -20,11 +20,13 @@ export function TeamListing({ players, myUsername }: { players: MatchPlayer[]; m
         >
           {/* Character + Username */}
           <div className="flex items-center gap-2 w-full max-w-1/5 shrink-0">
-            <img
-              src={`/characters/portrait/${p.characterId}.webp`}
-              alt={getCharName(p.characterId) ?? p.characterId}
-              className="w-8 h-8 rounded object-cover"
-            />
+            <BasicPopover key={`${p.playerId}-${p.characterId}`} displayText={`Played ${getCharName(p.characterId)}`}>
+              <img
+                src={`/characters/portrait/custom/${p.characterId}.webp`}
+                alt={getCharName(p.characterId) ?? p.characterId}
+                className="w-8 h-8 rounded object-cover"
+              />
+            </BasicPopover>
             <BasicPopover displayText={`${getRankFromLP(p.rating).name}`}>
               <img
                 src={`${getRankFromLP(p.rating).image}`}
