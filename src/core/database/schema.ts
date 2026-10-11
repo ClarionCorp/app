@@ -2,7 +2,7 @@ import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer, TimelineEntry } from "../../types/ue4ss";
 import { QueueStates } from "../../types/database";
 import { Nameplate, PeakRating, Playstyle, SmurfConfidence } from "../../types/clarion";
-import { PreferredDataSources } from "../../types/appAPI";
+import { PreferredDataSources, ReleaseChannel } from "../../types/appAPI";
 import { ProminentChar } from "../utilities/players";
 
 // Only one row that stores basic app settings
@@ -18,6 +18,7 @@ export const appSettings = sqliteTable("appSettings", {
   sendMatchData: integer("sendMatchData", { mode: "boolean" }).notNull().default(false),
   prefDataSource: text("prefDataSource").$type<PreferredDataSources>().default('ClarionCorp'),
   openGameWithApp: integer("openGameWithApp", { mode: "boolean" }).notNull().default(false),
+  releaseChannel: text("releaseChannel").$type<ReleaseChannel>().notNull().default('Stable'),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 

@@ -116,3 +116,6 @@ export type VersionCheck = {
 
 export type PreferredDataSources = 'ClarionCorp' | 'Cached' | 'Odyssey';
 export const PreferredDataSources = ['ClarionCorp', 'Cached', 'Odyssey'];
+
+export type ReleaseChannel = 'Stable' | 'Beta';
+export const ReleaseChannel = ['Stable', 'Beta'];

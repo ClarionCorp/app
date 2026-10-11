@@ -288,6 +288,13 @@
       "when": 1790100553296,
       "tag": "0040_chubby_gamma_corps",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1791702059706,
+      "tag": "0041_nervous_black_widow",
+      "breakpoints": true
     }
   ]
 }

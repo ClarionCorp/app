@@ -19,7 +19,7 @@ import { unInstallUE4SS } from "../core/utilities/ue4ss";
 import { useToast } from "../components/UI/Toast";
 // import { uploadAllMatches } from "../core/utilities/appAPI";
 import { exit } from "@tauri-apps/plugin-process";
-import { PreferredDataSources } from "../types/appAPI";
+import { PreferredDataSources, ReleaseChannel } from "../types/appAPI";
 
 export type QueuePopType = 'Ai.Mi' | 'Generic';
 
@@ -32,6 +32,7 @@ type Settings = {
   exitOnGameClose: boolean;
   prefDataSource: PreferredDataSources;
   openGameWithApp: boolean;
+  releaseChannel: ReleaseChannel;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -43,6 +44,7 @@ const DEFAULT_SETTINGS: Settings = {
   exitOnGameClose: false,
   prefDataSource: 'ClarionCorp',
   openGameWithApp: false,
+  releaseChannel: 'Stable'
 };
 
 export default function SettingsPage() {
@@ -55,6 +57,8 @@ export default function SettingsPage() {
   const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
   const [dataSourceOpen, setDataSourceOpen] = useState(false);
   const dsTriggerRef = useRef<HTMLButtonElement>(null);
+  const [relChannelOpen, setrelChannelOpen] = useState(false);
+  const rcTriggerRef = useRef<HTMLButtonElement>(null);
   const [themePickerOpen, setThemePickerOpen] = useState(false);
   const { theme } = useTheme();
   const { toast } = useToast();
@@ -71,6 +75,7 @@ export default function SettingsPage() {
         exitOnGameClose: s.exitOnGameClose,
         prefDataSource: s.prefDataSource ?? 'ClarionCorp',
         openGameWithApp: s.openGameWithApp,
+        releaseChannel: s.releaseChannel,
       });
     });
   }, []);
@@ -140,6 +145,28 @@ export default function SettingsPage() {
             >
               Browse
             </Button>
+          </div>
+        </SettingRow>
+
+        <SettingRow
+          title="Update Release Channel"
+          subtitle="Would you prefer the latest features or stability?"
+        >
+          <div className="relative">
+            <button
+              ref={rcTriggerRef}
+              onClick={() => setrelChannelOpen(o => !o)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-surface-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer capitalize"
+            >
+              {settings.releaseChannel}
+              <CaretDownIcon size={12} className="opacity-60" />
+            </button>
+            <Dropdown
+              triggerRef={rcTriggerRef}
+              open={relChannelOpen}
+              onClose={() => setrelChannelOpen(false)}
+              items={ReleaseChannel.map(v => ({ label: v, onClick: () => update({ releaseChannel: v as ReleaseChannel }) }))}
+            />
           </div>
         </SettingRow>
 

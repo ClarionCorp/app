@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `releaseChannel` text DEFAULT 'Stable' NOT NULL;

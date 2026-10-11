@@ -2,10 +2,12 @@
 
 import { OnlineHistoryV1, POSTOnlinePlayersV2, VersionCheck } from "../../types/appAPI";
 import { AiMiAPI, version } from "../constants";
+import { getAppSettings } from "../database/queries";
 
 export async function checkForUpdates(): Promise<VersionCheck> {
+  const appSettings = await getAppSettings();
   try {
-    const res = await fetch(`${AiMiAPI}/v1/update/check?currentVer=${version}&channel=beta`, {
+    const res = await fetch(`${AiMiAPI}/v1/update/check?currentVer=${version}&channel=${appSettings.releaseChannel.toLowerCase()}`, {
       method: 'GET',
       headers: { 'Accept': 'application/json' }
     });
