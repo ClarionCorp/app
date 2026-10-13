@@ -150,7 +150,7 @@ export default function SettingsPage() {
 
         <SettingRow
           title="Update Release Channel"
-          subtitle="Would you prefer the latest features or stability?"
+          subtitle="Beta is the same pre-release cycle. Stable is the most tested version every few months."
         >
           <div className="relative">
             <button
