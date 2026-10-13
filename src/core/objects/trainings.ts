@@ -89,18 +89,16 @@ export const TRAININGS: Record<string, TrainingInfo> = {
     disabled: true
   },
   "TD_CounterStrikeHitPower": {
-    awakeningId: "",
+    awakeningId: "T_CounterStrikeHitPower",
     image: "/trainings/TD_CounterStrikeHitPower.webp",
     name: "Heavy Handed",
-    description: "Hit the Core harder. COUNTER STRIKING hits the much harder and grants a burst of speed.",
-    disabled: true
+    description: "Hit the Core harder. Counter STRIKING hits the much harder.",
   },
   "TD_CounterStrikeSpeed": {
-    awakeningId: "",
+    awakeningId: "T_CounterStrikeSpeed",
     image: "/trainings/TD_CounterStrikeSpeed.webp",
     name: "Quick Reflexes",
-    description: "Gain a burst of speed whenever you SNAP STRIKE",
-    disabled: true
+    description: "Gain Speed. Counter STRIKING grants an additional speed boost.",
   },
   "TD_CreationLifeTime": {
     awakeningId: "",
