@@ -169,6 +169,17 @@ pub fn run() {
     let overlay_state = overlay::OverlayState::new();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // Bring the existing window to focus
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_focus();
+            }
+        }))
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                .with_denylist(&["overlay"])
+                .build(),
+        )
         .manage(overlay_state.clone())
         .setup(move |app| {
             let data_dir = app.path().app_data_dir().unwrap();
@@ -189,13 +200,6 @@ pub fn run() {
         .plugin(tauri_plugin_drpc::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            // Bring the existing window to focus
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.set_focus();
-            }
-        }))
         .invoke_handler(tauri::generate_handler![
             is_process_running,
             hardware::get_hardware_info,
