@@ -85,6 +85,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
   const playstyleClass = playstyleType && playstyleType in PLAYSTYLE_CLASSES
     ? PLAYSTYLE_CLASSES[playstyleType as keyof typeof PLAYSTYLE_CLASSES]
     : null;
+  const peakRank = getRankFromLP(player.peakRating?.rating);
 
   const hideUsername = !isAlly && !player.charId && (!match || !queue || queue === 'Ranked'); // test this later
 
@@ -169,6 +170,16 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
                   </span>
                 )}
               </span>
+
+              {player.peakRating != null && (
+                <span
+                  className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5"
+                  style={{ color: peakRank.color }}
+                >
+                  <img src={peakRank.image} alt="" className="w-4 h-4 shrink-0" />
+                  Peak: S{player.peakRating.season}
+                </span>
+              )}
 
               {player.accLevel != null && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 border border-current/20 bg-current/5 text-char-secondary">
