@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
-import type { CurrentMatchTable, MatchPlayersTable } from '../types/database';
+import { getCurrentMatch, getMatchPlayers, getUser } from '../core/database/queries';
+import type { CurrentMatchTable, MatchPlayersTable, UserTable } from '../types/database';
 import { TRAININGS } from '../core/objects/trainings';
 import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
 import { getLatestRegion } from '../core/bridgeListener';
@@ -101,6 +101,7 @@ export default function DebugPage() {
   const [region, setRegion] = useState<string | null>();
   const polling_rate = 2000;
   const { show: showDialogue } = useDialogue();
+  const [user, setUser] = useState<UserTable | null>();
 
   useEffect(() => {
     async function poll() {
@@ -117,6 +118,7 @@ export default function DebugPage() {
   useEffect(() => {
     async function fetchOnce() {
       setRegion(await getLatestRegion());
+      setUser(await getUser());
     }
 
     fetchOnce();
@@ -136,7 +138,8 @@ export default function DebugPage() {
           <p className="text-xs text-char-subtle mb-6">Polling every {polling_rate / 1000}s</p>
 
           <div className="bg-surface-subtle border border-background-border rounded-xl px-4">
-            <SectionHeader title="Match State" />
+            <SectionHeader title="Various Values" />
+            <DebugRow label="Username" value={user?.username} />
             <DebugRow label="Game State" value={match?.gameState} />
             <DebugRow label="Map" value={match?.map} />
             <DebugRow label="Queue" value={match?.queue} />

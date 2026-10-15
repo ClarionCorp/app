@@ -7,7 +7,7 @@ use tauri::{AppHandle, Emitter};
 
 // Each file gets its own function for custom filtering down the line.
 // We wanna deal with it here because Rust is a gazillion times faster than TS.
-const WATCHED_FILES: &[&str] = &["meta.json", "match.json", "players.json", "postgame.json"];
+const WATCHED_FILES: &[&str] = &["meta.json", "match.json", "players.json", "postgame.json", "heartbeat.json"];
 
 #[derive(Serialize, Clone)]
 pub struct FileChangeEvent {
@@ -82,12 +82,24 @@ fn handle_postgame(app: &AppHandle, file: &str, kind: &str, content: String) {
     );
 }
 
+fn handle_heartbeat(app: &AppHandle, file: &str, kind: &str, content: String) {
+    let _ = app.emit(
+        "onModHeartbeat",
+        FileChangeEvent {
+            file: file.to_string(),
+            kind: kind.to_string(),
+            content,
+        },
+    );
+}
+
 fn dispatch(app: &AppHandle, file: &str, kind: &str, content: String) {
     match file {
         "meta.json" => handle_meta(app, file, kind, content),
         "match.json" => handle_match(app, file, kind, content),
         "players.json" => handle_players(app, file, kind, content),
         "postgame.json" => handle_postgame(app, file, kind, content),
+        "heartbeat.json" => handle_heartbeat(app, file, kind, content),
         _ => {}
     }
 }

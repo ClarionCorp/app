@@ -1,9 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import { RankedQuery, SelfQuery, StatsQuery, UserQuery } from "../../types/odyssey";
 import { OdyAPI } from "../constants";
 import { db } from "../database/driver";
 import { getUser } from "../database/queries";
 import { user } from "../database/schema";
 import { readIdentity } from "../init";
+import { relaunch } from "@tauri-apps/plugin-process";
 
 type QueryJSON ={
   matches: UserQuery[]
@@ -111,4 +113,16 @@ export async function refreshRating(): Promise<number | null> {
   if (!ranked) return null;
   await db.update(user).set({ rating: ranked.rating }).run();
   return ranked.rating;
+}
+
+export async function checkForAccountChange(): Promise<boolean> {
+  console.debug('Checking for an account change...');
+  const [selfQuery, currentUser] = await Promise.all([fetchSelfQuery(), getUser()]);
+
+  if (!currentUser) return false;
+  if (selfQuery.username !== currentUser.username || selfQuery.playerId !== currentUser.playerId) {
+    console.error('User identity mismatch detected, relaunching...');
+    return true;
+  }
+  return false;
 }

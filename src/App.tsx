@@ -5,17 +5,16 @@ import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import NavCorner from './components/Navigation/NavCorner';
-import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState } from './core/bridgeListener';
+import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState, onModHeartbeat } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch, resetPlayerTable } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
-import { fetchSelfQuery } from './core/utilities/odyssey';
+import { checkForAccountChange } from './core/utilities/odyssey';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
-import { exit, relaunch } from '@tauri-apps/plugin-process';
+import { exit } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
-import { AiMiAPI, heartbeat_interval, version } from './core/constants';
-import { formatLiveMatchInfo } from './core/overlay';
-import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
+import { heartbeat_interval, version } from './core/constants';
+import { HeartbeatJSON, MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
 import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 import { sessionHeartbeat } from './core/utilities/sessions';
 import { fetchOnlineCount } from './core/utilities/appAPI';
@@ -67,40 +66,11 @@ function App() {
       if (firstFire) { firstFire = false; return; }
       try {
         console.log('Checking in with Odyssey for routine heartbeat...');
-        const [selfQuery, currentUser] = await Promise.all([fetchSelfQuery(), getUser()]);
-        if (!currentUser) return;
-        if (selfQuery.username !== currentUser.username || selfQuery.playerId !== currentUser.playerId) {
-          console.error('User identity mismatch detected, relaunching...');
-          await relaunch();
-        }
+        if (await checkForAccountChange()) navigate('/', { replace: true });
       } catch {
         // game may not be running, just skip silently
       }
     }, heartbeat_interval);
-    return () => clearInterval(id);
-  }, []);
-
-  // Periodic match data upload (every 30s) [only if allowed by settings]
-  useEffect(() => {
-    const uploadMatchData = async () => {
-      const settings = await getAppSettings();
-      if (settings.sendMatchData == false) { return };
-
-      const buildData = await formatLiveMatchInfo();
-      if (!buildData) { console.debug("Skipping live sync due to incomplete object data!"); return; }; // kinda spammy
-
-      const res = await fetch(`${AiMiAPI}/v1/overlay/sync`, {
-        method: 'POST',
-        headers: { "x-user-agent": "aimi-app", "Content-Type": "application/json" },
-        body: JSON.stringify(buildData),
-      });
-
-      const data = await res.json();
-      if (!res.ok) { console.warn(`Live Sync with AppAPI failed! (${res.status} ${res.statusText})`, data); return; };
-      // console.debug(`Successfully synced live match data with AppAPI.`); // turn off later, might get spammy lol
-      return;
-    };
-    const id = setInterval(uploadMatchData, 30_000);
     return () => clearInterval(id);
   }, []);
 
@@ -178,6 +148,7 @@ function App() {
       // On queue, reset players table and refresh overlay (to hide it)
       if (data.queue.state == 'Queued' || data.queue.state == 'FoundMatch') {
         await resetPlayerTable('Entered Queue');
+        if (await checkForAccountChange()) navigate('/', { replace: true }); // force a check on queue/pop
       }
 
       await tryUpdateDiscordRPC();
@@ -185,6 +156,11 @@ function App() {
       await pushQueueState();
       await sessionHeartbeat();
       if (user) { await fetchOnlineCount(user.username, user.matchmakingRegion, version, data.queue.id, data.queue.state, user.rating) } // should always be set but whatever
+    }),
+
+    onModHeartbeat(async (payload) => {
+      const data = JSON.parse(payload.content!) as HeartbeatJSON;
+      if (data.firstBoot == true) { if (await checkForAccountChange()) navigate('/', { replace: true }); };
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
