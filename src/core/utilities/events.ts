@@ -17,6 +17,7 @@ import { getQueueObjectFromID } from "../objects/queues";
 import { fetchPlayerStats, getInferredQueueMates } from "./players";
 import { updateSession } from "./sessions";
 import { AiMiAPI } from "../constants";
+import { GOALIE_GEAR } from "../objects/trainings";
 import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1 } from "../../types/appAPI";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
@@ -56,6 +57,23 @@ export async function updatePlayers(data: PlayersJSON) {
       knockouts: sql`excluded.knockouts`,
     },
   }).returning();
+
+  // If there are 4+ players in the game, there should be at least 2 goalies.
+  // If a team has none, overwrite whoever is running goalie gear.
+  // This is a check because of edge-cases like extremely customized custom games.
+  if (players.length >= 4 && players.filter(p => p.role === 'Goalie').length < 2) {
+    for (const team of [1, 2]) {
+      const teamPlayers = players.filter(p => p.teamNum === team);
+      if (teamPlayers.some(p => p.role === 'Goalie')) continue;
+
+      const goalie = teamPlayers.find(p => p.trainings.some(t => GOALIE_GEAR.includes(t)));
+      if (!goalie) continue;
+
+      console.warn(`Team ${team} has no goalie, overriding ${goalie.username} to Goalie based on their gear.`);
+      goalie.role = 'Goalie';
+      await db.update(matchPlayers).set({ role: 'Goalie' }).where(eq(matchPlayers.username, goalie.username));
+    }
+  }
 
   // For any players who have no rating, run a bunch of one-time stuff.
   // Here, we grab their rating, playstyle, smurf rating, and basic stats.
