@@ -1,11 +1,9 @@
-import { useNavigate } from "react-router-dom";
 import { RankedQuery, SelfQuery, StatsQuery, UserQuery } from "../../types/odyssey";
 import { OdyAPI } from "../constants";
 import { db } from "../database/driver";
 import { getUser } from "../database/queries";
 import { user } from "../database/schema";
 import { readIdentity } from "../init";
-import { relaunch } from "@tauri-apps/plugin-process";
 
 type QueryJSON ={
   matches: UserQuery[]

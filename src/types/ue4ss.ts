@@ -128,8 +128,3 @@ export type MatchPlayer = {
   saves: number,
   mvp: boolean
 }
-
-export type HeartbeatJSON = {
-  timestamp: number,
-  firstBoot: boolean,
-}

@@ -5,7 +5,7 @@ import { GlobalButtons } from './components/GlobalButtons';
 import Sidebar from './components/Navigation/Sidebar';
 import TopBar from './components/Navigation/TopBar';
 import NavCorner from './components/Navigation/NavCorner';
-import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState, onModHeartbeat } from './core/bridgeListener';
+import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch, resetPlayerTable } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
 import { checkForAccountChange } from './core/utilities/odyssey';
@@ -14,7 +14,7 @@ import { QueuePopType } from './pages/Settings';
 import { exit } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { heartbeat_interval, version } from './core/constants';
-import { HeartbeatJSON, MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
+import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
 import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 import { sessionHeartbeat } from './core/utilities/sessions';
 import { fetchOnlineCount } from './core/utilities/appAPI';
@@ -60,19 +60,19 @@ function App() {
   }, []);
 
   // Identity heartbeat: Relaunch if the active Odyssey account changes
-  useEffect(() => {
-    let firstFire = true;
-    const id = setInterval(async () => {
-      if (firstFire) { firstFire = false; return; }
-      try {
-        console.log('Checking in with Odyssey for routine heartbeat...');
-        if (await checkForAccountChange()) navigate('/', { replace: true });
-      } catch {
-        // game may not be running, just skip silently
-      }
-    }, heartbeat_interval);
-    return () => clearInterval(id);
-  }, []);
+  // useEffect(() => {
+  //   let firstFire = true;
+  //   const id = setInterval(async () => {
+  //     if (firstFire) { firstFire = false; return; }
+  //     try {
+  //       console.log('Checking in with Odyssey for routine heartbeat...');
+  //       if (await checkForAccountChange()) navigate('/', { replace: true });
+  //     } catch {
+  //       // game may not be running, just skip silently
+  //     }
+  //   }, heartbeat_interval);
+  //   return () => clearInterval(id);
+  // }, []);
 
   // Auto-close when game exits (if enabled in settings)
   useEffect(() => {
@@ -138,7 +138,7 @@ function App() {
       const user = await getUser();
       await updateGameState(data); // we are really just updating the queue object
 
-      if (previous.queueState == 'Queued' && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
+      if (previous?.queueState == 'Queued' && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
         const settings = await getAppSettings();
         if (settings.notifyQueuePop) {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
@@ -156,11 +156,6 @@ function App() {
       await pushQueueState();
       await sessionHeartbeat();
       if (user) { await fetchOnlineCount(user.username, user.matchmakingRegion, version, data.queue.id, data.queue.state, user.rating) } // should always be set but whatever
-    }),
-
-    onModHeartbeat(async (payload) => {
-      const data = JSON.parse(payload.content!) as HeartbeatJSON;
-      if (data.firstBoot == true) { if (await checkForAccountChange()) navigate('/', { replace: true }); };
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
