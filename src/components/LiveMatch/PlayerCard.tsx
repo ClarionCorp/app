@@ -87,7 +87,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
     : null;
   const peakRank = getRankFromLP(player.peakRating?.rating);
 
-  const hideUsername = !isAlly && !player.charId && (!match || !queue || queue === 'Ranked'); // test this later
+  const hideUsername = !isAlly && !player.charId && (!match || !queue || queue === 'Ranked');
 
   function openUserOnCC(username: string) {
     if (hideUsername) {
@@ -137,7 +137,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
             src={player.nameplate.nameplateUrl}
             alt=""
             aria-hidden
-            className="absolute inset-y-0 left-0 w-3/4 h-full object-cover opacity-15 brightness-50 pointer-events-none select-none blur-xs"
+            className="absolute inset-y-0 left-0 w-3/4 h-full object-cover opacity-15 brightness-50 pointer-events-none select-none"
             style={{ maskImage: 'linear-gradient(to right, black 40%, transparent 100%)' }}
           />
         )}

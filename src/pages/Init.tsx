@@ -143,7 +143,6 @@ export default function InitializationPage() {
 
         // Purge players table as we'll just fetch a new one anyway
         await resetPlayerTable('App Start');
-        await checkStartNewSession();
         await setGameState('None');
         await setQueueState('Idle');
         
@@ -174,6 +173,8 @@ export default function InitializationPage() {
           console.warn('Failed to fetch account data, some features disabled.', e);
           setConnectedStatus(false);
         }
+
+        await checkStartNewSession(); // moved to AFTER fetching info from Odyssey
 
         // 4) Check for updates
         goToStep("updates");
