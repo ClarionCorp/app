@@ -53,7 +53,7 @@ function pickChar(
 
 function winrateClass(winrate: number | null | undefined) {
   if (winrate == null) return 'text-char-subtle';
-  if (winrate >= 0.6) return 'text-match-win';
+  if (winrate >= 0.6) return 'text-success';
   if (winrate <= 0.4) return 'text-match-loss';
   return 'text-match-mid';
 }

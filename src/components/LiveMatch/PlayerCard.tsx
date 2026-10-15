@@ -219,7 +219,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
                 Winrate: <span className={
                   `font-medium
                   ${winrate == null ? 'text-char-subtle'
-                    : winrate >= 0.6 ? 'text-match-win'
+                    : winrate >= 0.6 ? 'text-success'
                     : winrate <= 0.4 ? 'text-match-loss'
                     : 'text-match-mid'}
                   `}>

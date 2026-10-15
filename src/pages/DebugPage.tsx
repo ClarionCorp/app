@@ -267,8 +267,13 @@ export default function DebugPage() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded bg-match-win shrink-0" />
-                <span className="text-xs text-match-win font-medium">98% Winrate</span>
+                <span className="text-xs text-match-win font-medium">Victory!</span>
                 <span className="text-xs text-char-subtle ml-auto font-mono">match-win</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-success shrink-0" />
+                <span className="text-xs text-success font-medium">98% Winrate</span>
+                <span className="text-xs text-char-subtle ml-auto font-mono">success</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded bg-match-mid shrink-0" />
