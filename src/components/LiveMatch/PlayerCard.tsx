@@ -126,9 +126,20 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
             <div
               aria-hidden
               className="absolute inset-y-0 right-0 w-full pointer-events-none select-none"
-              style={{ background: 'linear-gradient(to right, var(--color-surface-subtle) 70%, transparent 90%)' }}
+              style={{ background: 'linear-gradient(to right, var(--color-surface-subtle) 60%, transparent 90%)' }}
             />
           </>
+        )}
+
+        {/* Background nameplate (left side, fades out to the right) */}
+        {!hideUsername && player.nameplate?.nameplateUrl && (
+          <img
+            src={player.nameplate.nameplateUrl}
+            alt=""
+            aria-hidden
+            className="absolute inset-y-0 left-0 w-3/4 h-full object-cover opacity-10 pointer-events-none select-none blur-xs"
+            style={{ maskImage: 'linear-gradient(to right, black 40%, transparent 100%)' }}
+          />
         )}
 
         <div className="relative flex items-center gap-3">
