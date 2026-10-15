@@ -15,7 +15,7 @@ import { exit } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
 import { heartbeat_interval, version } from './core/constants';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
-import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
+import { checkLocalPlayer, saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 import { sessionHeartbeat } from './core/utilities/sessions';
 import { fetchOnlineCount } from './core/utilities/appAPI';
 import { ThemePicker } from './components/UI/Theme/ThemePicker';
@@ -148,7 +148,12 @@ function App() {
       // On queue, reset players table and refresh overlay (to hide it)
       if (data.queue.state == 'Queued' || data.queue.state == 'FoundMatch') {
         await resetPlayerTable('Entered Queue');
-        if (await checkForAccountChange()) navigate('/', { replace: true }); // force a check on queue/pop
+      }
+
+      // Check local_player string against current active user.
+      if (data.local_player) {
+        const result = await checkLocalPlayer(data.local_player);
+        if (result == false) { navigate('/', { replace: true }) };
       }
 
       await tryUpdateDiscordRPC();

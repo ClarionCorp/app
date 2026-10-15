@@ -340,3 +340,12 @@ export async function uploadLatestMatch() {
     console.error(e);
   }
 }
+
+// False means they failed the check and the app should relaunch.
+export async function checkLocalPlayer(localPlayer: string): Promise<boolean> {
+  const currentUser = await getUser();
+  if (currentUser?.playerId !== localPlayer) {
+    console.warn(`Current PlayerID does not match App's PlayerID! (${currentUser?.playerId} -> ${localPlayer})`);
+    return false;
+  } else return true;
+}
