@@ -8,12 +8,11 @@ import NavCorner from './components/Navigation/NavCorner';
 import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch, resetPlayerTable } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
-import { checkForAccountChange } from './core/utilities/odyssey';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
 import { exit } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
-import { heartbeat_interval, version } from './core/constants';
+import { version } from './core/constants';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
 import { checkLocalPlayer, saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 import { sessionHeartbeat } from './core/utilities/sessions';
@@ -58,21 +57,6 @@ function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
-
-  // Identity heartbeat: Relaunch if the active Odyssey account changes
-  // useEffect(() => {
-  //   let firstFire = true;
-  //   const id = setInterval(async () => {
-  //     if (firstFire) { firstFire = false; return; }
-  //     try {
-  //       console.log('Checking in with Odyssey for routine heartbeat...');
-  //       if (await checkForAccountChange()) navigate('/', { replace: true });
-  //     } catch {
-  //       // game may not be running, just skip silently
-  //     }
-  //   }, heartbeat_interval);
-  //   return () => clearInterval(id);
-  // }, []);
 
   // Auto-close when game exits (if enabled in settings)
   useEffect(() => {
@@ -153,7 +137,10 @@ function App() {
       // Check local_player string against current active user.
       if (data.local_player) {
         const result = await checkLocalPlayer(data.local_player);
-        if (result == false) { navigate('/', { replace: true }) };
+        if (result == false) {
+          localStorage.setItem('reload_reason', JSON.stringify({ reason: 'ACCOUNT_CHANGE', acknowledged: false }));
+          navigate('/', { replace: true })
+        };
       }
 
       await tryUpdateDiscordRPC();

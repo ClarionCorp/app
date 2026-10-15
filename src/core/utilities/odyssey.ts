@@ -112,15 +112,3 @@ export async function refreshRating(): Promise<number | null> {
   await db.update(user).set({ rating: ranked.rating }).run();
   return ranked.rating;
 }
-
-export async function checkForAccountChange(): Promise<boolean> {
-  console.debug('Checking for an account change...');
-  const [selfQuery, currentUser] = await Promise.all([fetchSelfQuery(), getUser()]);
-
-  if (!currentUser) return false;
-  if (selfQuery.username !== currentUser.username || selfQuery.playerId !== currentUser.playerId) {
-    console.error('User identity mismatch detected, relaunching...');
-    return true;
-  }
-  return false;
-}

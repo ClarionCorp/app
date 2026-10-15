@@ -9,6 +9,7 @@ import { getAppSettings, getUser, upsertAppSettings } from "../core/database/que
 import { useDialogue } from "../components/UI/DialogueToast";
 import { AboutModal } from "../components/Navigation/AboutModal";
 import { OverlayModal } from "../components/Navigation/OverlayModal";
+import { ReloadReason } from "../types/storage";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -34,7 +35,7 @@ export default function HomePage() {
   const [gameRunning, setGameRunning] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [overlayOpen, setOverlayOpen] = useState(false);
-  const { showQueue } = useDialogue();
+  const { show: showDialogue, showQueue } = useDialogue();
 
   const QUICK_LINKS = [
     { key: "about", label: "About", icon: <InfoIcon size={20} weight="duotone" />, onClick: () => setAboutOpen(true) },
@@ -85,6 +86,27 @@ export default function HomePage() {
       ]);
     };
     checkNewUser();
+  }, []);
+
+  useEffect(() => {
+    const rr = JSON.parse(localStorage.getItem('reload_reason') ?? '{}') as ReloadReason | null;
+    if (rr?.acknowledged) return;
+
+    switch (rr?.reason) {
+      case 'ACCOUNT_CHANGE':
+        showDialogue({
+          variant: 'info',
+          image: '/aimi/Custom_Welcome_3.webp',
+          title: 'App Reloaded!',
+          message: `It appears you changed account without restarting the app. I've gone ahead and done that for you now. Happy Striking!`,
+          xlImage: true,
+          autoDismiss: 10_000
+        });
+        localStorage.setItem('reload_reason', JSON.stringify({ ...rr, acknowledged: true }));
+        return;
+      default:
+        return;
+    }
   }, []);
 
   return (
