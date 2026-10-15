@@ -86,7 +86,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
     ? PLAYSTYLE_CLASSES[playstyleType as keyof typeof PLAYSTYLE_CLASSES]
     : null;
 
-  const hideUsername = !isAlly && !!match && !player.charId && queue === 'Ranked';
+  const hideUsername = !isAlly && !player.charId && (!match || !queue || queue === 'Ranked'); // test this later
 
   function openUserOnCC(username: string) {
     if (hideUsername) {
