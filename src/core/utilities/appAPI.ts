@@ -13,6 +13,7 @@ export async function checkForUpdates(): Promise<VersionCheck> {
     });
 
     const data = await res.json() as VersionCheck;
+    if (!data.release) { throw new Error(`Couldn't find any releases for branch ${appSettings.releaseChannel.toUpperCase()}!`) };
     if (data.release?.author.id !== 89052946) { throw new Error("Release author ID doesn't match blals!") }; // I'll remove later but I'm paranoid rn lol
     if (data.updateAvailable) { console.log(`Update Available! (${version} ->${data.latest})`) }
     else { console.log(`App is up-to-date!`) };
