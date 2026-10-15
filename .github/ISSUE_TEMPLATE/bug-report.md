@@ -24,9 +24,9 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
+**Desktop (please replace examples with your info):**
  - OS: [e.g. Windows 10]
- - Version [e.g. 2.0.0-pre9]
+ - App Version: [e.g. 2.0.0-pre9]
 
 **Hardware (only complete if you know it):**
  - CPU: [e.g. Ryzen 7800X3D]
