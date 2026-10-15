@@ -147,6 +147,19 @@ end
 
 local LastPartySize, LastMaxPartySize, LastMembers = 1, 3, {}
 
+-- Escapes a value for use inside a JSON string literal (ody prevents most of this, but still good to do here too)
+local JsonEscapes = { ['"'] = '\\"', ['\\'] = '\\\\', ['\b'] = '\\b', ['\f'] = '\\f', ['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t' }
+local function JsonEscape(s)
+    return (tostring(s):gsub('[%c"\\]', function(c)
+        return JsonEscapes[c] or string.format("\\u%04x", c:byte())
+    end))
+end
+
+-- Quoted JSON string, or null when nil
+local function JsonString(s)
+    return s ~= nil and ('"' .. JsonEscape(s) .. '"') or "null"
+end
+
 local function WriteMeta(ModName, META_FILE)
     local partySize, maxPartySize, members
     -- Only re-read the party while Idle/Queued. FoundMatch/StartingGame fire during the menu -> match transition, when the party UObjects may be getting torn down.
@@ -199,38 +212,38 @@ local function WriteMeta(ModName, META_FILE)
     LastGameStateKey = gameStateKey
     LastCustomLobbyKey = customLobbyKey
 
-    local localStr = localPlayerId and ('"' .. localPlayerId .. '"') or "null"
-    local queueNameStr = queueName and ('"' .. queueName .. '"') or "null"
+    local localStr = JsonString(localPlayerId)
+    local queueNameStr = JsonString(queueName)
     local queueJson = string.format(
-        '{"id":%s,"state":"%s","timestamp":%s}',
-        queueNameStr, mmStateName, QueueTimestamp and tostring(QueueTimestamp) or "null"
+        '{"id":%s,"state":%s,"timestamp":%s}',
+        queueNameStr, JsonString(mmStateName), QueueTimestamp and tostring(QueueTimestamp) or "null"
     )
 
     local memberParts = {}
     for _, m in ipairs(members) do
         table.insert(memberParts, string.format(
-            '    {"player_id":"%s","level":%d,"is_local":%s}',
-            m.player_id, m.level, tostring(m.is_local)
+            '    {"player_id":%s,"level":%d,"is_local":%s}',
+            JsonString(m.player_id), m.level, tostring(m.is_local)
         ))
     end
     local membersJson = (#memberParts > 0) and ("[\n" .. table.concat(memberParts, ",\n") .. "\n  ]") or "[]"
 
     -- old_phase/new_phase are nil until the first real MatchPhaseChanged (treat as 'None' until set properly)
     local gameStateJson = string.format(
-        '{"old_phase":"%s","new_phase":"%s","timestamp":%s}',
-        GameStateOld or "None", GameStateNew or "None", GameStateTimestamp and tostring(GameStateTimestamp) or "null"
+        '{"old_phase":%s,"new_phase":%s,"timestamp":%s}',
+        JsonString(GameStateOld or "None"), JsonString(GameStateNew or "None"), GameStateTimestamp and tostring(GameStateTimestamp) or "null"
     )
 
     local customLobbyJson = "null"
     if CurrentPhaseGroup ~= "in_game" and (CustomLobbyId or CustomLobbyName) then
         local regionParts = {}
         for _, r in ipairs(CustomLobbyRegions or {}) do
-            table.insert(regionParts, '"' .. r .. '"')
+            table.insert(regionParts, JsonString(r))
         end
         customLobbyJson = string.format(
             '{"lobby_name":%s,"lobby_id":%s,"is_private":%s,"regions":[%s],"member_count":%s,"lobby_size":%s}',
-            CustomLobbyName and ('"' .. CustomLobbyName .. '"') or "null",
-            CustomLobbyId and ('"' .. CustomLobbyId .. '"') or "null",
+            JsonString(CustomLobbyName),
+            JsonString(CustomLobbyId),
             CustomLobbyIsPrivate == nil and "null" or tostring(CustomLobbyIsPrivate),
             table.concat(regionParts, ","),
             CustomLobbyMemberCount == nil and "null" or tostring(CustomLobbyMemberCount),
@@ -239,8 +252,8 @@ local function WriteMeta(ModName, META_FILE)
     end
 
     local body = string.format(
-        '{\n  "last_changed": "%s",\n  "queue": %s,\n  "local_player": %s,\n  "party_size": %d,\n  "max_party_size": %d,\n  "party_members": %s,\n  "game_state": %s,\n  "custom_lobby": %s\n}\n',
-        lastChanged, queueJson, localStr, partySize, maxPartySize, membersJson, gameStateJson, customLobbyJson
+        '{\n  "last_changed": %s,\n  "queue": %s,\n  "local_player": %s,\n  "party_size": %d,\n  "max_party_size": %d,\n  "party_members": %s,\n  "game_state": %s,\n  "custom_lobby": %s\n}\n',
+        JsonString(lastChanged), queueJson, localStr, partySize, maxPartySize, membersJson, gameStateJson, customLobbyJson
     )
 
     local f = io.open(META_FILE, "w")
