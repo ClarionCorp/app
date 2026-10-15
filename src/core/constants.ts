@@ -27,3 +27,6 @@ export const linux_log = `${proton_root}/users/steamuser/AppData/Local/OmegaStri
 
 // Steam launch option needed on Linux/Proton so UE4SS's dwmapi.dll proxy actually gets loaded
 export const linux_launch_options = 'WINEDLLOVERRIDES="dwmapi=n,b" %command%';
+
+// Just an easy way to switch database file amongst other things.
+export const dev_mode = false;
