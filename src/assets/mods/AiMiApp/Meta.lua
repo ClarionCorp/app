@@ -149,7 +149,8 @@ local LastPartySize, LastMaxPartySize, LastMembers = 1, 3, {}
 
 local function WriteMeta(ModName, META_FILE)
     local partySize, maxPartySize, members
-    if CurrentPhaseGroup == "out_of_game" then
+    -- Only re-read the party while Idle/Queued. FoundMatch/StartingGame fire during the menu -> match transition, when the party UObjects may be getting torn down.
+    if CurrentPhaseGroup == "out_of_game" and (CurrentMmState == 1 or CurrentMmState == 2) then
         partySize, maxPartySize, members = ReadParty()
         LastPartySize, LastMaxPartySize, LastMembers = partySize, maxPartySize, members
     else
