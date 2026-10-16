@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getCurrentMatch, getMyMatchPlayer } from '../../core/database/queries';
 import { getMapObjectFromID } from '../../core/objects/maps';
 import { getQueueObjectFromID } from '../../core/objects/queues';
@@ -16,7 +16,6 @@ export default function TopBarMatchStatus() {
   const [match, setMatch] = useState<CurrentMatchTable | null>(null);
   const [myPlayer, setMyPlayer] = useState<MatchPlayersTable | null>(null);
   const [now, setNow] = useState(() => new Date());
-  const queueEnteredAt = useRef<Date | null>(null);
 
   useEffect(() => {
     async function tick() {
@@ -41,14 +40,6 @@ export default function TopBarMatchStatus() {
 
   const isQueueing = match?.queueState === 'Queued' || match?.queueState === 'FoundMatch' || match?.queueState === 'StartingGame';
   const isInMatch = !!match && !showOutOfGame;
-
-  useEffect(() => {
-    if (isQueueing) {
-      if (!queueEnteredAt.current) queueEnteredAt.current = new Date();
-    } else {
-      queueEnteredAt.current = null;
-    }
-  }, [isQueueing]);
 
   if (!match || (!isQueueing && !isInMatch)) return null;
 
@@ -82,8 +73,8 @@ export default function TopBarMatchStatus() {
     );
   }
 
-  const queueSeconds = queueEnteredAt.current
-    ? Math.max(0, Math.floor((now.getTime() - queueEnteredAt.current.getTime()) / 1000))
+  const queueSeconds = match.queuedAt
+    ? Math.max(0, Math.floor((now.getTime() - match.queuedAt.getTime()) / 1000))
     : 0;
 
   return (
