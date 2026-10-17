@@ -1,4 +1,5 @@
 local Module = {}
+local Refs = require("Refs")
 
 -- Edits meta.json in place (evolving state, not a discrete event)
 local StartTime = nil
@@ -107,18 +108,9 @@ local function ResolveBans(GameState)
     BansResolved = true
 end
 
--- PMGameState is a long-lived per-match singleton.
--- Cache the ref instead of FindFirstOf on every call, only re-fetching once it goes invalid.
-local CachedGameState = nil
-local function GetGameState()
-    if not (CachedGameState and CachedGameState:IsValid()) then
-        CachedGameState = FindFirstOf("PMGameState")
-    end
-    return CachedGameState
-end
-
+-- Game thread only (see Refs.lua). Only searches with FindFirstOf if the cached GameState path stopped resolving.
 local function WriteMatchState(ModName, MATCH_FILE)
-    local GameState = GetGameState()
+    local GameState = Refs.GameState:Get(true)
     if not (GameState and GameState:IsValid()) then return end
 
     local wasMapResolved = MapResolved
@@ -213,6 +205,7 @@ function Module.Init(ModName, OUT_DIR)
                 pcall(function()
                     local gs = self:get()
                     if not gs or not gs:IsValid() then return end
+                    Refs.GameState:Set(gs)
                     local trainings = GetTrainings(gs)
                     if #trainings == 0 then return end -- The game replicates CommonTrainings back to empty once intermission ends
 
@@ -242,7 +235,9 @@ function Module.Init(ModName, OUT_DIR)
     end)
 
     -- Capture state on mod load too (hook won't fire for the current phase).
-    ExecuteWithDelay(3000, function() pcall(function() WriteMatchState(ModName, MATCH_FILE) end) end)
+    ExecuteWithDelay(3000, function()
+        ExecuteInGameThread(function() pcall(function() WriteMatchState(ModName, MATCH_FILE) end) end)
+    end)
 end
 
 return Module

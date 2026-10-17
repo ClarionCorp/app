@@ -1,10 +1,14 @@
 local Module = {}
+local Refs = require("Refs")
 
 -- Edits players.json in place (evolving state, not a discrete event)
-local TrackedStates = {}
 local LastSnapshot = ""
 local LastPings = {}
+-- Keyed by PlayerState path string, never by the UObject (see Refs.lua).
 local IdentityCache = {}
+
+-- Set when back at menus, so last match's roster isn't reported until the next PreGame.
+local RosterCleared = false
 
 -- Per-match knockout counts, keyed by PMPlayerId string; reset on PreGame.
 local KoCounts = {}
@@ -65,8 +69,8 @@ local function GetTrainings(ps)
 end
 
 -- Resolves once and caches: display name, playerId, team, character, and role
-local function GetIdentity(ps)
-    local cached = IdentityCache[ps]
+local function GetIdentity(ps, key)
+    local cached = IdentityCache[key]
     if cached then return cached end
 
     local ok, identity = pcall(function()
@@ -88,30 +92,45 @@ local function GetIdentity(ps)
         return { name = name, playerId = playerId, team = team, charId = charId, charName = charName, role = role, accountLevel = accountLevel }
     end)
     if ok and identity and identity.charId then
-        IdentityCache[ps] = identity
+        IdentityCache[key] = identity
     end
     return ok and identity or nil
 end
 
-local function BuildRoster()
-    local valid = {}
-    for _, ps in ipairs(TrackedStates) do
-        if ps and ps:IsValid() then table.insert(valid, ps) end
-    end
-    TrackedStates = valid
+-- Read fresh from the GameState every time instead of caching PlayerState refs across polls.
+-- The engine removes PlayerStates from PlayerArray as they're destroyed, so everything in it is live.
+local function GetPlayerStates()
+    local states = {}
+    if RosterCleared then return states end
+    local gs = Refs.GameState:Get()
+    if not gs then return states end
+    pcall(function()
+        local arr = gs.PlayerArray
+        for i = 1, #arr do
+            local ps = arr[i]
+            if ps and ps:IsValid() then
+                local okKey, key = pcall(function() return ps:GetFullName() end)
+                if okKey and key then table.insert(states, { ps = ps, key = key }) end
+            end
+        end
+    end)
+    return states
+end
 
+local function BuildRoster()
     local refreshTrainings = TrainingsDirty
     local roster = {}
-    for _, ps in ipairs(TrackedStates) do
-        local identity = GetIdentity(ps)
+    for _, s in ipairs(GetPlayerStates()) do
+        local ps, key = s.ps, s.key
+        local identity = GetIdentity(ps, key)
         if identity then
             local ok, entry = pcall(function()
                 local trainings
-                if refreshTrainings or not TrainingsCache[ps] then
+                if refreshTrainings or not TrainingsCache[key] then
                     trainings = GetTrainings(ps)
-                    TrainingsCache[ps] = trainings
+                    TrainingsCache[key] = trainings
                 else
-                    trainings = TrainingsCache[ps]
+                    trainings = TrainingsCache[key]
                 end
                 local level = ps.Level
                 local pingMs = nil
@@ -197,15 +216,12 @@ function Module.Init(ModName, OUT_DIR)
     local PLAYERS_FILE = OUT_DIR .. "\\players.json"
     print(string.format("[%s] Writing roster to: %s\n", ModName, PLAYERS_FILE))
 
-    -- Cache PlayerState refs as they're created, same as PlayerFinderMod. (optimization)
-    NotifyOnNewObject("/Script/Prometheus.PMPlayerState", function(ps)
-        if ps and ps:IsValid() then
-            table.insert(TrackedStates, ps)
-        end
-    end)
-
+    -- ExecuteWithDelay runs on UE4SS's async thread, which races the game's GC.
+    -- All UObject access is handed to the game thread-only. Plain Lua values are read here.
     local function PollRoster()
-        pcall(function() WriteRoster(ModName, PLAYERS_FILE) end)
+        ExecuteInGameThread(function()
+            pcall(function() WriteRoster(ModName, PLAYERS_FILE) end)
+        end)
         local pollDelay = (CurrentPhaseGroup == "setup") and 1000 or 3000
         ExecuteWithDelay(pollDelay, PollRoster)
     end
@@ -239,29 +255,22 @@ function Module.Init(ModName, OUT_DIR)
                     KoCounts = {}
                     LastSnapshot = ""
 
-                    -- Hard reset instead of relying solely on :IsValid() pruning next poll,
-                    -- so stale-but-still-valid PlayerStates from past matches can't linger all session.
-                    TrackedStates = {}
+                    RosterCleared = false
                     IdentityCache = {}
                     TrainingsCache = {}
                     TrainingsDirty = true
-                    local existing = FindAllOf("PMPlayerState")
-                    if existing then
-                        for _, ps in ipairs(existing) do
-                            if ps and ps:IsValid() then table.insert(TrackedStates, ps) end
-                        end
-                    end
+                    pcall(function() Refs.GameState:Get(true) end) -- NotifyOnNewObject normally has the new GameState already; only searches if it was missed.
 
-                    print(string.format("[%s] PreGame -- KO counts reset, tracked states reset (%d)\n", ModName, #TrackedStates))
+                    print(string.format("[%s] PreGame -- KO counts reset, roster caches reset\n", ModName))
                 elseif phase == 0 then -- None = back at menus, no active match
                     -- Otherwise PollRoster keeps polling last match's roster (trainings/ping/level calls, every 3s) for however long you sit in menus before queuing again.
                     KoCounts = {}
                     LastSnapshot = ""
-                    TrackedStates = {}
+                    RosterCleared = true
                     IdentityCache = {}
                     TrainingsCache = {}
                     TrainingsDirty = true
-                    print(string.format("[%s] Back to menus -- tracked states cleared\n", ModName))
+                    print(string.format("[%s] Back to menus -- roster cleared\n", ModName))
                 end
             end
         )
@@ -273,14 +282,11 @@ function Module.Init(ModName, OUT_DIR)
         print(string.format("[%s] Force refresh triggered\n", ModName))
     end)
 
-    -- Seed cache with any states that already exist (mod loaded mid-game), then start polling.
+    -- Find a GameState that already exists (mod loaded mid-game), then start polling.
     ExecuteWithDelay(1000, function()
-        local existing = FindAllOf("PMPlayerState")
-        if existing then
-            for _, ps in ipairs(existing) do
-                if ps and ps:IsValid() then table.insert(TrackedStates, ps) end
-            end
-        end
+        ExecuteInGameThread(function()
+            pcall(function() Refs.GameState:Get(true) end)
+        end)
         PollRoster()
     end)
 end

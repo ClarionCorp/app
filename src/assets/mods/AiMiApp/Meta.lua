@@ -1,4 +1,5 @@
 local Module = {}
+local Refs = require("Refs")
 
 -- Edits meta.json in place (evolving state, not a discrete event)
 local LastSnapshot = ""
@@ -104,13 +105,10 @@ local function ReadPlayer(playerUI)
 end
 
 -- PMGroupUIData is a long-lived client-session singleton.
--- Cache the ref instead of FindFirstOf on every call, only re-fetching once it goes invalid.
-local CachedGroupUI = nil
+-- Keep only its path (see Refs.lua), only searching with FindFirstOf once that stops resolving.
+local GroupUIRef = Refs.New("PMGroupUIData")
 local function GetGroupUI()
-    if not (CachedGroupUI and CachedGroupUI:IsValid()) then
-        CachedGroupUI = FindFirstOf("PMGroupUIData")
-    end
-    return CachedGroupUI
+    return GroupUIRef:Get(true)
 end
 
 -- We assume that slot 0 is the local player, needs more testing
@@ -147,7 +145,7 @@ end
 
 local LastPartySize, LastMaxPartySize, LastMembers = 1, 3, {}
 
--- Escapes a value for use inside a JSON string literal (ody prevents most of this, but still good to do here too)
+-- Escapes a value for use inside a JSON string literal (user-typed lobby names can contain anything)
 local JsonEscapes = { ['"'] = '\\"', ['\\'] = '\\\\', ['\b'] = '\\b', ['\f'] = '\\f', ['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t' }
 local function JsonEscape(s)
     return (tostring(s):gsub('[%c"\\]', function(c)
@@ -162,7 +160,8 @@ end
 
 local function WriteMeta(ModName, META_FILE)
     local partySize, maxPartySize, members
-    -- Only re-read the party while Idle/Queued. FoundMatch/StartingGame fire during the menu -> match transition, when the party UObjects may be getting torn down.
+    -- Only re-read the party while Idle/Queued. FoundMatch/StartingGame fire during
+    -- the menu -> match transition, when the party UObjects may be getting torn down.
     if CurrentPhaseGroup == "out_of_game" and (CurrentMmState == 1 or CurrentMmState == 2) then
         partySize, maxPartySize, members = ReadParty()
         LastPartySize, LastMaxPartySize, LastMembers = partySize, maxPartySize, members
@@ -402,7 +401,9 @@ function Module.Init(ModName, OUT_DIR)
     end)
 
     -- Capture once on mod load too (hooks won't fire for the current state).
-    ExecuteWithDelay(2000, function() pcall(function() WriteMeta(ModName, META_FILE) end) end)
+    ExecuteWithDelay(2000, function()
+        ExecuteInGameThread(function() pcall(function() WriteMeta(ModName, META_FILE) end) end)
+    end)
 end
 
 return Module
