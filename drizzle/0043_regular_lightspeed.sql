@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `nameplateTransparency` integer DEFAULT 50 NOT NULL;

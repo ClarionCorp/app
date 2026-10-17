@@ -19,6 +19,7 @@ export const appSettings = sqliteTable("appSettings", {
   prefDataSource: text("prefDataSource").$type<PreferredDataSources>().default('ClarionCorp'),
   openGameWithApp: integer("openGameWithApp", { mode: "boolean" }).notNull().default(false),
   releaseChannel: text("releaseChannel").$type<ReleaseChannel>().notNull().default('Stable'),
+  nameplateTransparency: integer("nameplateTransparency").notNull().default(50),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 

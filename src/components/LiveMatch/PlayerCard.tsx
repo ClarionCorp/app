@@ -63,7 +63,7 @@ function RankBadge({ text, color }: { text: string, color: string }) {
 }
 
 
-export function PlayerCard({ player, match, index, isAlly = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
+export function PlayerCard({ player, match, index, isAlly = false, isMvp = false, teammates = [], nameplateOpacity = 50 }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[], nameplateOpacity?: number }) {
   const rankInfo = getRankFromLP(player.rating);
   const queueGroup = getQueueGroup(player, teammates);
   const { show: showDialogue } = useDialogue();
@@ -137,8 +137,8 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
             src={player.nameplate.nameplateUrl}
             alt=""
             aria-hidden
-            className="absolute inset-y-0 left-0 w-3/4 h-full object-cover opacity-15 brightness-50 pointer-events-none select-none"
-            style={{ maskImage: 'linear-gradient(to right, black 40%, transparent 100%)' }}
+            className={`absolute inset-y-0 left-0 w-3/4 h-full object-cover brightness-30 pointer-events-none select-none`}
+            style={{ maskImage: 'linear-gradient(to right, black 40%, transparent 100%)', opacity: nameplateOpacity / 100 }}
           />
         )}
 

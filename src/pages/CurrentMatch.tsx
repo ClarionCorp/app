@@ -6,7 +6,7 @@ import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { HouseIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { Button } from '../components/UI/Button';
 import { CurrentMatchTable, MatchPlayersTable } from '../types/database';
-import { getCurrentMatch, getCustomLobby, getMatchPlayers } from '../core/database/queries';
+import { getAppSettings, getCurrentMatch, getCustomLobby, getMatchPlayers } from '../core/database/queries';
 import { PlayerCard } from '../components/LiveMatch/PlayerCard';
 import { AvailableTrainings } from '../components/LiveMatch/AvailableTrainings';
 import { OutOfGamePanel } from '../components/LiveMatch/OutOfGame/OutOfGamePanel';
@@ -35,6 +35,11 @@ export default function CurrentMatchPage() {
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
   const [allTrainings, setTrainings] = useState<Awakenings[]>([]);
   const [blocked, setBlocked] = useState<boolean>(false);
+  const [nameplateOpacity, setNameplateOpacity] = useState(50);
+
+  useEffect(() => {
+    getAppSettings().then(s => { if (s) setNameplateOpacity(s.nameplateTransparency); });
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -175,7 +180,7 @@ export default function CurrentMatchPage() {
 
                       <div className="space-y-3">
                         {blueTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={index} isAlly isMvp={player.username === mvp?.username} teammates={blueTeam} />
+                          <PlayerCard key={player.username} player={player} match={match} index={index} isAlly isMvp={player.username === mvp?.username} teammates={blueTeam} nameplateOpacity={nameplateOpacity} />
                         ))}
                       </div>
 
@@ -187,7 +192,7 @@ export default function CurrentMatchPage() {
 
                       <div className="space-y-3">
                         {redTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} isMvp={player.username === mvp?.username} teammates={redTeam} />
+                          <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} isMvp={player.username === mvp?.username} teammates={redTeam} nameplateOpacity={nameplateOpacity} />
                         ))}
                       </div>
                     </>

@@ -3,7 +3,9 @@ import { motion } from "framer-motion";
 import { CaretDownIcon, FireIcon, FolderOpenIcon, PaletteIcon } from "@phosphor-icons/react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { dirname } from "@tauri-apps/api/path";
-import { getAppSettings, upsertAppSettings } from "../core/database/queries";
+import { getAppSettings, getUser, upsertAppSettings } from "../core/database/queries";
+import { PlayerCard } from "../components/LiveMatch/PlayerCard";
+import { MatchPlayersTable } from "../types/database";
 import { Toggle } from "../components/UI/Toggle";
 import { Slider } from "../components/UI/Slider";
 import { Button } from "../components/UI/Button";
@@ -33,6 +35,7 @@ type Settings = {
   prefDataSource: PreferredDataSources;
   openGameWithApp: boolean;
   releaseChannel: ReleaseChannel;
+  nameplateTransparency: number;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -44,7 +47,8 @@ const DEFAULT_SETTINGS: Settings = {
   exitOnGameClose: false,
   prefDataSource: 'ClarionCorp',
   openGameWithApp: false,
-  releaseChannel: 'Stable'
+  releaseChannel: 'Stable',
+  nameplateTransparency: 50,
 };
 
 export default function SettingsPage() {
@@ -60,6 +64,7 @@ export default function SettingsPage() {
   const [relChannelOpen, setrelChannelOpen] = useState(false);
   const rcTriggerRef = useRef<HTMLButtonElement>(null);
   const [themePickerOpen, setThemePickerOpen] = useState(false);
+  const [previewPlayer, setPreviewPlayer] = useState<MatchPlayersTable>(PREVIEW_PLAYER);
   const { theme } = useTheme();
   const { toast } = useToast();
 
@@ -76,7 +81,23 @@ export default function SettingsPage() {
         prefDataSource: s.prefDataSource ?? 'ClarionCorp',
         openGameWithApp: s.openGameWithApp,
         releaseChannel: s.releaseChannel,
+        nameplateTransparency: s.nameplateTransparency
       });
+    });
+    getUser().then(u => {
+      if (!u) return;
+      setPreviewPlayer(p => ({
+        ...p,
+        username: u.username,
+        playerId: u.playerId,
+        tags: u.tags,
+        rating: u.rating ?? p.rating,
+        accLevel: u.masteryLevel,
+        nameplate: {
+          nameplateId: u.nameplateId,
+          nameplateUrl: `https://api.clarioncorp.net/assets/nameplate/${u.nameplateId}.webp`,
+        },
+      }));
     });
   }, []);
 
@@ -295,6 +316,29 @@ export default function SettingsPage() {
             disabled={!settings.notifyQueuePop}
           />
         </SettingRow>
+
+        <SettingRow
+          title="Nameplate Transparency"
+          subtitle="Change the opacity of nameplates on Player Cards"
+          vertical
+        >
+          <div className="mb-3 pointer-events-none">
+            <PlayerCard
+              player={previewPlayer}
+              match={undefined}
+              index={0}
+              isAlly
+              nameplateOpacity={settings.nameplateTransparency}
+            />
+          </div>
+          <Slider
+            min={0}
+            max={100}
+            value={settings.nameplateTransparency}
+            onChange={v => update({ nameplateTransparency: v })}
+            unit="%"
+          />
+        </SettingRow>
       </div>
 
       {/* Danger Zone */}
@@ -372,3 +416,35 @@ function SettingRow({ title, subtitle, children, vertical, stretch, disabled }: 
     </div>
   );
 }
+
+
+
+const PREVIEW_PLAYER: MatchPlayersTable = {
+  username: 'Striker',
+  playerId: 'preview',
+  tags: [],
+  teamNum: 1,
+  role: 'Forward',
+  charName: null,
+  charId: null,
+  rating: 2350,
+  peakRating: null,
+  accLevel: 120,
+  isMe: true,
+  xp: 0,
+  gainedXp: 0,
+  xpGoals: [],
+  ping: 0,
+  trainings: [],
+  favChar: [],
+  bestChar: [],
+  normWR: 0.54,
+  rankedWR: 0.54,
+  normGames: 312,
+  rankedGames: 312,
+  playstyle: null,
+  knockouts: null,
+  smurfProbability: 'none',
+  queueMates: [],
+  nameplate: null,
+};
