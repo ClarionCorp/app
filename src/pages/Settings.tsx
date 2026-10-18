@@ -22,6 +22,7 @@ import { useToast } from "../components/UI/Toast";
 // import { uploadAllMatches } from "../core/utilities/appAPI";
 import { exit } from "@tauri-apps/plugin-process";
 import { PreferredDataSources, ReleaseChannel } from "../types/appAPI";
+import { ClarionAPI } from "../core/constants";
 
 export type QueuePopType = 'Ai.Mi' | 'Generic';
 
@@ -95,7 +96,7 @@ export default function SettingsPage() {
         accLevel: u.masteryLevel,
         nameplate: {
           nameplateId: u.nameplateId,
-          nameplateUrl: `https://api.clarioncorp.net/assets/nameplate/${u.nameplateId}.webp`,
+          nameplateUrl: `https://${ClarionAPI}/assets/nameplate/${u.nameplateId}.webp`,
         },
       }));
     });
@@ -418,7 +419,6 @@ function SettingRow({ title, subtitle, children, vertical, stretch, disabled }: 
 }
 
 
-
 const PREVIEW_PLAYER: MatchPlayersTable = {
   username: 'Striker',
   playerId: 'preview',
@@ -446,5 +446,8 @@ const PREVIEW_PLAYER: MatchPlayersTable = {
   knockouts: null,
   smurfProbability: 'none',
   queueMates: [],
-  nameplate: null,
+  nameplate: {
+    nameplateId: 'NameplateData_HyperX',
+    nameplateUrl: `https://api.clarioncorp.net/assets/nameplate/NameplateData_HyperX.webp`
+  },
 };
