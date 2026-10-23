@@ -172,7 +172,7 @@ export default function SettingsPage() {
 
         <SettingRow
           title="Update Release Channel"
-          subtitle="Beta is the same pre-release cycle. Stable is the most tested version every few months."
+          subtitle="Stable is the recommended version. Beta updates more often, but is likely to have issues."
         >
           <div className="relative">
             <button
@@ -194,7 +194,7 @@ export default function SettingsPage() {
 
         <SettingRow
           title="Preferred Data Source"
-          subtitle="Where should we pull Players' Ranks from?"
+          subtitle="Where should we pull Players' ranks from?"
         >
           <div className="relative">
             <button
