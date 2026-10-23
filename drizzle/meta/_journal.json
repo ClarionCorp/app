@@ -309,6 +309,13 @@
       "when": 1792212316104,
       "tag": "0043_regular_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "6",
+      "when": 1792726194877,
+      "tag": "0044_old_salo",
+      "breakpoints": true
     }
   ]
 }

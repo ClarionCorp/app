@@ -20,6 +20,7 @@ export const appSettings = sqliteTable("appSettings", {
   openGameWithApp: integer("openGameWithApp", { mode: "boolean" }).notNull().default(false),
   releaseChannel: text("releaseChannel").$type<ReleaseChannel>().notNull().default('Stable'),
   nameplateTransparency: integer("nameplateTransparency").notNull().default(50),
+  useCustomCharArt: integer("useCustomCharArt", { mode: "boolean" }).notNull().default(true),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 

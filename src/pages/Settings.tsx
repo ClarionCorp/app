@@ -37,6 +37,7 @@ type Settings = {
   openGameWithApp: boolean;
   releaseChannel: ReleaseChannel;
   nameplateTransparency: number;
+  useCustomCharArt: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -50,6 +51,7 @@ const DEFAULT_SETTINGS: Settings = {
   openGameWithApp: false,
   releaseChannel: 'Stable',
   nameplateTransparency: 50,
+  useCustomCharArt: true,
 };
 
 export default function SettingsPage() {
@@ -82,7 +84,8 @@ export default function SettingsPage() {
         prefDataSource: s.prefDataSource ?? 'ClarionCorp',
         openGameWithApp: s.openGameWithApp,
         releaseChannel: s.releaseChannel,
-        nameplateTransparency: s.nameplateTransparency
+        nameplateTransparency: s.nameplateTransparency,
+        useCustomCharArt: s.useCustomCharArt,
       });
     });
     getUser().then(u => {
@@ -229,6 +232,16 @@ export default function SettingsPage() {
                 await stopRpc();
               }
             }}
+          />
+        </SettingRow>
+
+        <SettingRow
+          title="Use Custom Character Art"
+          subtitle="Disabling will revert character art/icons to their normal in-game version."
+        >
+          <Toggle
+            enabled={settings.useCustomCharArt}
+            onChange={v => update({ useCustomCharArt: v })}
           />
         </SettingRow>
 
