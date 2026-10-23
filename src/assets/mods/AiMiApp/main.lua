@@ -1,5 +1,5 @@
 local ModName = "AiMiApp"
-local ModVersion = "1.5.0"
+local ModVersion = "1.6.0"
 
 print(string.format("\n=== %s v%s Loaded ===\n", ModName, ModVersion))
 

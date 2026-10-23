@@ -400,6 +400,54 @@ function Module.Init(ModName, OUT_DIR)
         print(string.format("[%s] MatchPhaseChanged hook registered (game state + meta refetch)\n", ModName))
     end)
 
+    -- Cancelling a match never fires MatchPhaseChanged, so fake one landing on None.
+    -- Skipped if we're already out of game so repeat OnReps don't spam writes.
+    local function FakeIdlePhase(reason)
+        if CurrentPhaseGroup == "out_of_game" then return end
+        GameStateOld = GameStateNew
+        GameStateNew = "None"
+        GameStateTimestamp = os.time()
+        CurrentPhaseGroup = "out_of_game"
+        CurrentMmState = 1
+        CachedQueueName = nil
+        print(string.format("[%s] Match cancelled (%s), pushing None phase\n", ModName, reason))
+        WriteMeta(ModName, META_FILE)
+    end
+
+    -- Auto-cancel (disconnect/AFK). No client-side function for this exists,
+    -- so catch the replicated surrender info flipping to EMatchAutoCancelState.Activated.
+    -- This OnRep also fires for regular surrender votes, hence the state check.
+    pcall(function()
+        RegisterHook("/Script/Prometheus.PMGameState:OnRep_MatchSurrenderInfo",
+            function(self)
+                local ok, err = pcall(function()
+                    local gs = self:get()
+                    if gs.MatchSurrenderInfo.MatchAutoCancelState == 2 then
+                        FakeIdlePhase("auto cancel")
+                    end
+                end)
+                if not ok then print(string.format("[%s] OnRep_MatchSurrenderInfo ERROR: %s\n", ModName, tostring(err))) end
+            end
+        )
+        print(string.format("[%s] OnRep_MatchSurrenderInfo hook registered (auto cancel)\n", ModName))
+    end)
+
+    -- Custom lobby owner cancelled the match
+    pcall(function()
+        RegisterHook("/Script/Prometheus.PMGameState:OnRep_bCustomLobbyOwnerCancelMatchActivated",
+            function(self)
+                local ok, err = pcall(function()
+                    local gs = self:get()
+                    if gs.bCustomLobbyOwnerCancelMatchActivated then
+                        FakeIdlePhase("custom lobby owner cancel")
+                    end
+                end)
+                if not ok then print(string.format("[%s] OnRep_bCustomLobbyOwnerCancelMatchActivated ERROR: %s\n", ModName, tostring(err))) end
+            end
+        )
+        print(string.format("[%s] OnRep_bCustomLobbyOwnerCancelMatchActivated hook registered\n", ModName))
+    end)
+
     -- Capture once on mod load too (hooks won't fire for the current state).
     ExecuteWithDelay(2000, function()
         ExecuteInGameThread(function() pcall(function() WriteMeta(ModName, META_FILE) end) end)
