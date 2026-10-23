@@ -122,7 +122,7 @@ function App() {
       const user = await getUser();
       await updateGameState(data); // we are really just updating the queue object
 
-      if (previous?.queueState == 'Queued' && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
+      if ((previous?.queueState == 'Queued' || previous?.queueState == 'Idle') && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
         const settings = await getAppSettings();
         if (settings.notifyQueuePop) {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
