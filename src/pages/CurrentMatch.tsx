@@ -36,9 +36,13 @@ export default function CurrentMatchPage() {
   const [allTrainings, setTrainings] = useState<Awakenings[]>([]);
   const [blocked, setBlocked] = useState<boolean>(false);
   const [nameplateOpacity, setNameplateOpacity] = useState(50);
+  const [customImgs, setUseCustomImgs] = useState<boolean>(true);
 
   useEffect(() => {
-    getAppSettings().then(s => { if (s) setNameplateOpacity(s.nameplateTransparency); });
+    getAppSettings().then(s => {
+      if (s) setNameplateOpacity(s.nameplateTransparency);
+      if (s) setUseCustomImgs(s.useCustomCharArt);
+    });
   }, []);
 
   useEffect(() => {
@@ -203,8 +207,8 @@ export default function CurrentMatchPage() {
                   <div className="hidden lg:block w-px mx-2 self-stretch" />
 
                   <div className="hidden lg:block flex-1 min-w-0 space-y-3 pb-16">
-                    <IntermissionPredictions players={players} shouldObfuscatePlayers={shouldObfuscatePlayers} />
-                    <XPLeaderboard players={players} shouldObfuscatePlayers={shouldObfuscatePlayers} />
+                    <IntermissionPredictions players={players} shouldObfuscatePlayers={shouldObfuscatePlayers} useCustomArt={customImgs} />
+                    <XPLeaderboard players={players} shouldObfuscatePlayers={shouldObfuscatePlayers} useCustomArt={customImgs} />
                     <XPTimeline />
                     {myChar ? (
                       <>

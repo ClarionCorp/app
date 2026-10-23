@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import { MatchPlayersTable } from '../../types/database';
 import BasicPopover from '../UI/BasicPopover';
+import { getCharacterFromId } from '../../core/objects/characters';
 
 function ordinal(n: number) {
   const s = ['th', 'st', 'nd', 'rd'];
@@ -8,7 +9,7 @@ function ordinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-export function IntermissionPredictions({ players, shouldObfuscatePlayers }: { players: MatchPlayersTable[], shouldObfuscatePlayers: boolean }) {
+export function IntermissionPredictions({ players, shouldObfuscatePlayers, useCustomArt }: { players: MatchPlayersTable[], shouldObfuscatePlayers: boolean, useCustomArt: boolean }) {
   const myTeamNum = players.find(p => p.isMe)?.teamNum ?? 1;
 
   const byXpDesc = (a: MatchPlayersTable, b: MatchPlayersTable) => (b.gainedXp ?? 0) - (a.gainedXp ?? 0);
@@ -36,6 +37,8 @@ export function IntermissionPredictions({ players, shouldObfuscatePlayers }: { p
         <div className="relative w-full flex justify-between px-8">
           {slots.map((player, index) => {
             if (!player) return <div key={`dummy-${index}`} className="w-12 h-12 shrink-0 invisible" />;
+            const character = getCharacterFromId(player.charId);
+            const charArt = useCustomArt ? character?.images.custom_portrait : character?.images.portrait;
 
             const borderClass = player.isMe
               ? 'border-green-400'
@@ -49,11 +52,11 @@ export function IntermissionPredictions({ players, shouldObfuscatePlayers }: { p
                 displayText={`${shouldObfuscatePlayers ? '—' : player.username} will be picking ${ordinal(index + 1)}`}
               >
                 <div className={clsx('w-12 h-12 rounded-full overflow-hidden shrink-0 border-[3px] shadow-md', borderClass)}>
-                  {player.charId ? (
+                  {character ? (
                     <img
-                      src={`/characters/portrait/custom/${player.charId}.webp`}
+                      src={charArt}
                       alt={player.charName ?? ''}
-                      className="w-full h-full object-cover bg-surface-subtle"
+                      className="w-full h-full object-cover bg-surface-subtle object-top scale-120"
                     />
                   ) : (
                     <div className="w-full h-full bg-surface" />
