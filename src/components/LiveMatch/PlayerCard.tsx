@@ -87,7 +87,12 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
     : null;
   const peakRank = getRankFromLP(player.peakRating?.rating);
 
-  const hideUsername = !isAlly && !player.charId && (!match || !queue || queue === 'Ranked');
+  let hideUsername = true;
+  if (
+    isAlly ||
+    player.charId ||
+    (queue && queue !== 'Ranked')
+  ) { hideUsername = false; }
 
   function openUserOnCC(username: string) {
     if (hideUsername) {
