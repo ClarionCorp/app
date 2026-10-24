@@ -138,8 +138,7 @@ local function BuildRoster()
                     local okPing, ping = pcall(function() return ps:GetPingInMilliseconds() end)
                     pingMs = (okPing and ping) and math.floor(ping) or nil
                 end
-                local okLvls, lvlsGained = pcall(function() return ps:GetCharacterLevelsGainedSinceIntermission() end)
-                local levelsGained = okLvls and lvlsGained or nil
+                local levelsGained = ps.LeveledUpAmountSinceIntermission
                 local kos = identity.playerId ~= "" and (KoCounts[identity.playerId] or 0) or 0
                 return {
                     name = identity.name, team = identity.team, playerId = identity.playerId, role = identity.role,
@@ -234,8 +233,8 @@ function Module.Init(ModName, OUT_DIR)
                     if not ins or not ins:IsValid() then return end
                     local pid = fname(ins.PMPlayerId)
                     if pid == "" then return end
+                    -- Only count here. The next poll picks it up, keeping the rebuild + file write out of the KO frame.
                     KoCounts[pid] = (KoCounts[pid] or 0) + 1
-                    WriteRoster(ModName, PLAYERS_FILE)
                 end)
             end
         )
