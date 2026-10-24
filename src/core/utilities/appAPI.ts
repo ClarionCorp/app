@@ -36,7 +36,7 @@ export async function fetchOnlineCount(username: string, region: string | null, 
   });
   if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, region, version, rating, queueId, queueState }, null, 0)) };
   const data = await res.json() as POSTOnlinePlayersV2;
-  console.debug(`Receieved online players: ${JSON.stringify(data, null, 1)}`);
+  console.debug(`Receieved online players: ${JSON.stringify(data, null, 0)}`);
   return data;
 }
 
