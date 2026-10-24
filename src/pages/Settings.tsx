@@ -460,7 +460,7 @@ const PREVIEW_PLAYER: MatchPlayersTable = {
   smurfProbability: 'none',
   queueMates: [],
   nameplate: {
-    nameplateId: 'NameplateData_HyperX',
-    nameplateUrl: `https://api.clarioncorp.net/assets/nameplate/NameplateData_HyperX.webp`
+    nameplateId: 'NameplateData_OmegaStrikers',
+    nameplateUrl: `https://api.clarioncorp.net/assets/nameplate/NameplateData_OmegaStrikers.webp`
   },
 };

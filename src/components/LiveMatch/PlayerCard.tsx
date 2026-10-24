@@ -137,9 +137,9 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
         )}
 
         {/* Background nameplate (left side, fades out to the right) */}
-        {!hideUsername && player.nameplate?.nameplateUrl && (
-          <img
-            src={player.nameplate.nameplateUrl}
+        {!hideUsername && player.nameplate?.nameplateId && (
+          <img /* Tauri doesn't like trusting the returned URL, so just hardcode it. whatever. */
+            src={`https://api.clarioncorp.net/assets/nameplate/${player.nameplate.nameplateId}.webp`}
             alt=""
             aria-hidden
             className={`absolute inset-y-0 left-0 w-3/4 h-full object-cover brightness-30 pointer-events-none select-none`}
