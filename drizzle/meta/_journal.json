@@ -316,6 +316,13 @@
       "when": 1792726194877,
       "tag": "0044_old_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "6",
+      "when": 1792942980000,
+      "tag": "0045_aberrant_legion",
+      "breakpoints": true
     }
   ]
 }

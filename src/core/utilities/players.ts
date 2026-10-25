@@ -5,23 +5,25 @@ import { fetch } from "@tauri-apps/plugin-http";
 import { getAppSettings } from "../database/queries";
 import { AiMiAPI, ClarionAPI } from "../constants";
 import { fetchOdyPlayerStats, fetchRankQuery } from "./odyssey";
-import { Nameplate, PeakRating, Player } from "../../types/clarion";
+import { Player, PlayerSeason, Playstyle, SmurfConfidence } from "../../types/clarion";
 import { PairedPlayersV1 } from "../../types/appAPI";
 import { RankedQuery } from "../../types/odyssey";
-import { getSeasonFromDate } from "./clarion";
+import { Nameplate } from "../../types/database";
 
 // An obj containing what we need in order to fill the database
 type ReqPlayerStats = {
   rating: number, // if no rating, save as 0 so we don't recheck
-  favChar?: ProminentChar[],
-  bestChar?: ProminentChar[],
+  favChar?: ProminentChar,
+  bestChar?: ProminentChar,
   normWR: number,
   rankedWR: number,
   normGames: number,
   rankedGames: number,
   tags: string[],
   nameplate: Nameplate | null,
-  peakRating?: PeakRating,
+  peakRating?: PlayerSeason,
+  smurfProbability?: SmurfConfidence,
+  playstyle?: Playstyle,
 }
 
 export type ProminentChar = {
@@ -48,8 +50,9 @@ function getNameplate(ccp?: Player, odyp?: RankedQuery | null): Nameplate | null
   }
 }
 
-export async function fetchPlayerStats(username: string, playerId?: string): Promise<ReqPlayerStats> {
+export async function fetchPlayerStats(username: string, playerId?: string, gamemode?: 'Normal' | 'Ranked'): Promise<ReqPlayerStats> {
   const appSettings = await getAppSettings();
+  const mode = gamemode ?? 'Ranked';
 
   // defaults
   let requiredStats: ReqPlayerStats = {
@@ -64,48 +67,51 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
 
   try {
     if (appSettings.prefDataSource == 'ClarionCorp') {
-      const res = await fetch(`${AiMiAPI}/v1/player/${username}`, { method: 'GET' }); // IP-forwarded rate limiting
+      const res = await fetch(`${AiMiAPI}/v2/player/${username}?mode=${mode}`, { method: 'GET' }); // IP-forwarded rate limiting
       if (!res.ok) { throw new Error(`Could not fetch data for player '${username}' from CC datasource!`) };
 
       const data = await res.json() as Player;
-      const normStats = getNormStatsCC(data);
+      const latestRating = data.latestRatings[0];
+      const totalStats = combineCharacterStats(data);
 
       requiredStats = {
-        rating: data.ratings[0]?.rating ?? 0,
-        favChar: getProminentCharsCC(data, 'Favorite'),
-        bestChar: getProminentCharsCC(data, 'Best'),
-        normWR: normStats.wins / normStats.games,
-        normGames: normStats.games,
-        rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
-        rankedGames: data.ratings[0]?.games ?? 0,
-        tags: data.tags,
+        rating: data.latestRatings[0].rating ?? 0,
+        favChar: formatProminentChars(data, 'Favorite'),
+        bestChar: formatProminentChars(data, 'Best'),
+        tags: data.info.tags,
         nameplate: getNameplate(data),
-        peakRating: data.peak ? {
-          rating: data.peak.rating,
-          date: data.peak.createdAt,
-          season: (await getSeasonFromDate(data.peak.createdAt)).season
-        } : undefined
+        peakRating: data.seasons.reduce((max, s) => s.peakRating > max.peakRating ? s : max),
+        normWR: mode === 'Normal' && totalStats.games ? totalStats.wins / totalStats.games : 0,
+        normGames: mode === 'Normal' ? totalStats.games : 0,
+        rankedWR: mode === 'Ranked' && latestRating?.games ? latestRating.wins / latestRating.games : 0,
+        rankedGames: mode === 'Ranked' ? latestRating?.games ?? 0 : 0,
+        smurfProbability: data.smurfing.confidence,
+        playstyle: data.playStyle,
       }
     }
 
     // Should be 1:1 with the one above, but incase it ever isn't, they're separated here
     else if (appSettings.prefDataSource == 'Cached') {
-      const res = await fetch(`${ClarionAPI}/v2/cached/players/${username}`, { method: 'GET' });
+      const res = await fetch(`${ClarionAPI}/v3/players/${username}?cached=true&mode=${mode}`, { method: 'GET' });
       if (!res.ok) { throw new Error(`Could not fetch data for player '${username}' from CC cached datasource!`) };
 
       const data = await res.json() as Player;
-      const normStats = getNormStatsCC(data);
+      const latestRating = data.latestRatings[0];
+      const totalStats = combineCharacterStats(data);
 
       requiredStats = {
-        rating: data.ratings[0]?.rating ?? 0,
-        favChar: getProminentCharsCC(data, 'Favorite'),
-        bestChar: getProminentCharsCC(data, 'Best'),
-        normWR: normStats.wins / normStats.games,
-        normGames: normStats.games,
-        rankedWR: data.ratings[0]?.games ? data.ratings[0].wins / data.ratings[0].games : 0, // display 0% if no ranked rating
-        rankedGames: data.ratings[0]?.games ?? 0,
-        tags: data.tags,
+        rating: data.latestRatings[0].rating ?? 0,
+        favChar: formatProminentChars(data, 'Favorite'),
+        bestChar: formatProminentChars(data, 'Best'),
+        tags: data.info.tags,
         nameplate: getNameplate(data),
+        peakRating: data.seasons.reduce((max, s) => s.peakRating > max.peakRating ? s : max),
+        normWR: mode === 'Normal' && totalStats.games ? totalStats.wins / totalStats.games : 0,
+        normGames: mode === 'Normal' ? totalStats.games : 0,
+        rankedWR: mode === 'Ranked' && latestRating?.games ? latestRating.wins / latestRating.games : 0,
+        rankedGames: mode === 'Ranked' ? latestRating?.games ?? 0 : 0,
+        smurfProbability: data.smurfing.confidence,
+        playstyle: data.playStyle,
       }
     }
 
@@ -127,44 +133,25 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
         )
         .filter(e => e.games > 0); // skip zero-game role entries entirely
 
-      const queues = ['Normal', 'Ranked'] as const;
-      const inQueue = (ratingName: string, queue: typeof queues[number]) => (ratingName === 'RankedInitial' ? 'Ranked' : 'Normal') === queue;
+      // Only consider characters from the current mode
+      const candidates = flatCharStats.filter(e => (e.ratingName === 'RankedInitial' ? 'Ranked' : 'Normal') === mode);
+      const toProminentChar = (e: typeof candidates[number]): ProminentChar => ({
+        characterId: e.characterId,
+        queue: mode,
+        role: e.role,
+        games: e.games,
+        winrate: e.wins / e.games,
+      });
 
-      // Best winrate, per queue
-      const bestChars: ProminentChar[] = queues.reduce<ProminentChar[]>((entries, queue) => {
-        const candidates = flatCharStats.filter(e => inQueue(e.ratingName, queue));
-        if (candidates.length === 0) return entries;
+      // Best winrate
+      const bestChar = candidates.length > 0
+        ? toProminentChar(candidates.reduce((a, b) => (b.wins / b.games > a.wins / a.games ? b : a)))
+        : undefined;
 
-        const best = candidates
-          .map(e => ({ ...e, winrate: e.wins / e.games }))
-          .reduce((a, b) => (b.winrate > a.winrate ? b : a));
-
-        entries.push({
-          characterId: best.characterId,
-          queue,
-          role: best.role,
-          games: best.games,
-          winrate: best.winrate,
-        });
-        return entries;
-      }, []);
-
-      // Favorite (most games), per queue
-      const favChars: ProminentChar[] = queues.reduce<ProminentChar[]>((entries, queue) => {
-        const candidates = flatCharStats.filter(e => inQueue(e.ratingName, queue));
-        if (candidates.length === 0) return entries;
-
-        const favorite = candidates.reduce((a, b) => (b.games > a.games ? b : a));
-
-        entries.push({
-          characterId: favorite.characterId,
-          queue,
-          role: favorite.role,
-          games: favorite.games,
-          winrate: favorite.wins / favorite.games,
-        });
-        return entries;
-      }, []);
+      // Favorite (most games)
+      const favChar = candidates.length > 0
+        ? toProminentChar(candidates.reduce((a, b) => (b.games > a.games ? b : a)))
+        : undefined;
 
 
       // Player Stats after
@@ -202,8 +189,8 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
 
       requiredStats = {
         rating: rankQuery?.rating ?? 0,
-        favChar: favChars,
-        bestChar: bestChars,
+        favChar,
+        bestChar,
         normWR: normalTotals.wins / normalTotals.games,
         normGames: normalTotals.games,
         rankedWR: rankedTotals.wins / rankedTotals.games,
@@ -223,56 +210,47 @@ export async function fetchPlayerStats(username: string, playerId?: string): Pro
 }
 
 // Prominent Character mapping (CC only) - one entry per queue (Normal, Ranked)
-function getProminentCharsCC(data: Player, prominence: 'Favorite' | 'Best'): ProminentChar[] {
-  const queues = ['Normal', 'Ranked'] as const;
-
-  return queues.reduce<ProminentChar[]>((entries, queue) => {
-    const inQueue = data.characterRatings.filter(entry =>
-      (entry.gamemode === 'RankedInitial' ? 'Ranked' : 'Normal') === queue && entry.games > 0
-    );
-    if (inQueue.length === 0) return entries;
-
-    if (prominence == 'Favorite') {
-      const favorite = inQueue.reduce((a, b) => (b.games > a.games ? b : a));
-
-      entries.push({
-        characterId: favorite.character,
-        queue,
-        role: favorite.role,
-        games: favorite.games,
-        winrate: favorite.wins / favorite.games
-      });
-
-    } else {
-      const best = inQueue
-        .map(entry => ({ ...entry, winrate: entry.wins / entry.games }))
-        .reduce((a, b) => (b.winrate > a.winrate ? b : a));
-
-      entries.push({
-        characterId: best.character,
-        queue,
-        role: best.role,
-        games: best.games,
-        winrate: best.winrate
-      });
-    }
-
-    return entries;
-  }, []);
+function formatProminentChars(data: Player, prominence: 'Favorite' | 'Best'): ProminentChar {
+  if (prominence == 'Best') {
+    const best = data.accolades.bestCharacter;
+    const obj: ProminentChar = {
+      characterId: best.character,
+      queue: best.gamemode,
+      role: best.role,
+      games: best.games,
+      winrate: (best.wins / best.games)
+    };
+    return obj;
+  } else {
+    const favorite = data.accolades.favCharacter;
+    const obj: ProminentChar = {
+      characterId: favorite.character,
+      queue: favorite.gamemode,
+      role: favorite.role,
+      games: favorite.games,
+      winrate: (favorite.wins / favorite.games)
+    };
+    return obj;
+  }
 }
 
-// Merging and combining norms stats for each character (CC only)
-function getNormStatsCC(data: Player): { games: number, wins: number, losses: number } {
-  const normalInitial = data.characterRatings.filter(e => e.gamemode === 'NormalInitial');
-  const { games, wins, losses } = normalInitial.reduce(
-    (acc, e) => ({
-      games: acc.games + e.games,
-      wins: acc.wins + e.wins,
-      losses: acc.losses + e.losses,
-    }),
-    { games: 0, wins: 0, losses: 0 }
-  );
-  return { games, wins, losses };
+// Just combine each character's stats to get totals for the player
+// We could just get this from the rating, but not everyone plays ranked
+function combineCharacterStats(data: Player) {
+  const totals = { games: 0, wins: 0, losses: 0, scores: 0, assists: 0, saves: 0, knockouts: 0, mvp: 0 }
+
+  for (const s of data.characterStats) {
+    totals.games += s.games
+    totals.wins += s.wins
+    totals.losses += s.losses
+    totals.scores += s.scores
+    totals.assists += s.assists
+    totals.saves += s.saves
+    totals.knockouts += s.knockouts
+    totals.mvp += s.mvp
+  }
+
+  return totals
 }
 
 // AppAPI will infer duo/trio queues from recent matches

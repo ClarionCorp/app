@@ -90,12 +90,12 @@ export async function updatePlayers(data: PlayersJSON) {
         normWR: playerStats.normWR,
         rankedGames: playerStats.rankedGames,
         rankedWR: playerStats.rankedWR,
-        playstyle,
-        smurfProbability: smurf?.confidence,
+        playstyle: playerStats.playstyle, // doesn't work with Odyssey datasource
+        smurfProbability: playerStats.smurfProbability, // doesn't work with Odyssey datasource
         tags: playerStats.tags,
-        queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
         nameplate: playerStats.nameplate,
         peakRating: playerStats.peakRating,
+        queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
       }).where(eq(matchPlayers.username, localPlayer.username));
     } catch (e) {
       console.warn(`No rank data could be found for ${localPlayer.username}.`);
