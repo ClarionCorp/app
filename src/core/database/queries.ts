@@ -258,6 +258,13 @@ export async function setQueueState(queueState: QueueStates) {
     .where(eq(currentMatch.id, 1));
 }
 
+// Mainly used during App Init.tsx
+export async function softResetMatchTable() {
+  await db.update(currentMatch)
+    .set({ queueState: 'Idle', gameState: 'None', queuedAt: null })
+    .where(eq(currentMatch.id, 1));
+}
+
 export async function updateOnlineCache(jason: POSTOnlinePlayersV2) {
   const values = {
     total: jason.total,

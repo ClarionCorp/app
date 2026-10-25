@@ -9,7 +9,7 @@ import { dirname, homeDir, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
 import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion, ensureCurrentMatch, setGameState, setQueueState, resetPlayerTable } from "../core/database/queries";
+import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion, ensureCurrentMatch, resetPlayerTable, softResetMatchTable } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { version } from "../core/constants";
@@ -143,8 +143,7 @@ export default function InitializationPage() {
 
         // Purge players table as we'll just fetch a new one anyway
         await resetPlayerTable('App Start');
-        await setGameState('None');
-        await setQueueState('Idle');
+        await softResetMatchTable();
         
         // Open Game if told to, only if game isn't running already
         if (settings?.openGameWithApp === true) {
