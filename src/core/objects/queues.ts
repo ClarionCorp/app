@@ -13,6 +13,7 @@ export type QueueObject = {
   queueId: string
   queueName: string
   icon: Icon
+  class: 'Ranked' | 'Normal' // basically what stats to use
 }
 
 // Use the one in ody.ts for now
@@ -25,36 +26,43 @@ export const QUEUES: QueueObject[] = [
     queueId: 'queue:quickplay',
     queueName: 'Quick Play',
     icon: LightningIcon,
+    class: 'Normal',
   },
   {
     queueId: 'queue:ranked:3v3',
     queueName: 'Ranked',
     icon: TrophyIcon,
+    class: 'Ranked',
   },
   {
     queueId: 'queue:3v3',
     queueName: 'Normal',
     icon: UsersThreeIcon,
+    class: 'Normal',
   },
   {
     queueId: 'queue:coopvsai',
     queueName: 'Co-op vs AI',
     icon: RobotIcon,
+    class: 'Normal',
   },
   {
     queueId: 'queue:custom:NvM',
     queueName: 'Customs',
     icon: SlidersHorizontalIcon,
+    class: 'Ranked',
   },
   {
     queueId: 'queue:practice',
     queueName: 'Practice',
     icon: TargetIcon,
+    class: 'Normal',
   },
   {
     queueId: 'queue:none',
     queueName: 'Unknown',
     icon: QuestionIcon,
+    class: 'Ranked',
   },
 ]
 

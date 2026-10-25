@@ -13,8 +13,8 @@ import { Nameplate } from "../../types/database";
 // An obj containing what we need in order to fill the database
 type ReqPlayerStats = {
   rating: number, // if no rating, save as 0 so we don't recheck
-  favChar?: ProminentChar,
-  bestChar?: ProminentChar,
+  favChar?: ProminentChar[],
+  bestChar?: ProminentChar[],
   normWR: number,
   rankedWR: number,
   normGames: number,
@@ -143,15 +143,21 @@ export async function fetchPlayerStats(username: string, playerId?: string, game
         winrate: e.wins / e.games,
       });
 
-      // Best winrate
-      const bestChar = candidates.length > 0
-        ? toProminentChar(candidates.reduce((a, b) => (b.wins / b.games > a.wins / a.games ? b : a)))
-        : undefined;
+      // Best (highest winrate)
+      const bestChar = (['Forward', 'Goalie'] as const).flatMap(role => {
+        const pool = candidates.filter(c => c.role === role)
+        return pool.length > 0
+          ? [toProminentChar(pool.reduce((a, b) => (b.wins / b.games > a.wins / a.games ? b : a)))]
+          : []
+      })
 
       // Favorite (most games)
-      const favChar = candidates.length > 0
-        ? toProminentChar(candidates.reduce((a, b) => (b.games > a.games ? b : a)))
-        : undefined;
+      const favChar = (['Forward', 'Goalie'] as const).flatMap(role => {
+        const pool = candidates.filter(c => c.role === role)
+        return pool.length > 0
+          ? [toProminentChar(pool.reduce((a, b) => (b.games > a.games ? b : a)))]
+          : []
+      })
 
 
       // Player Stats after
@@ -209,28 +215,24 @@ export async function fetchPlayerStats(username: string, playerId?: string, game
   }
 }
 
-// Prominent Character mapping (CC only) - one entry per queue (Normal, Ranked)
-function formatProminentChars(data: Player, prominence: 'Favorite' | 'Best'): ProminentChar {
+// Prominent Character mapping (CC only) - one entry in the array for Forward and one for Goalie
+function formatProminentChars(data: Player, prominence: 'Favorite' | 'Best'): ProminentChar[] {
   if (prominence == 'Best') {
-    const best = data.accolades.bestCharacter;
-    const obj: ProminentChar = {
+    return data.accolades.bestCharacter.map((best): ProminentChar => ({
       characterId: best.character,
       queue: best.gamemode,
       role: best.role,
       games: best.games,
-      winrate: (best.wins / best.games)
-    };
-    return obj;
+      winrate: best.games ? best.wins / best.games : 0,
+    }))
   } else {
-    const favorite = data.accolades.favCharacter;
-    const obj: ProminentChar = {
-      characterId: favorite.character,
-      queue: favorite.gamemode,
-      role: favorite.role,
-      games: favorite.games,
-      winrate: (favorite.wins / favorite.games)
-    };
-    return obj;
+    return data.accolades.favCharacter.map((fav): ProminentChar => ({
+      characterId: fav.character,
+      queue: fav.gamemode,
+      role: fav.role,
+      games: fav.games,
+      winrate: fav.games ? fav.wins / fav.games : 0,
+    }))
   }
 }
 

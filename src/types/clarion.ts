@@ -57,8 +57,8 @@ export type Player = {
   characterStats: PlayerCharacterRating[],
   characterMasteries: [], // not setup yet
   accolades: {
-    bestCharacter: PlayerCharacterRating,
-    favCharacter: PlayerCharacterRating,
+    bestCharacter: PlayerCharacterRating[],
+    favCharacter: PlayerCharacterRating[],
   },
   teams: PlayerTeam[],
   playStyle: Playstyle,
@@ -130,8 +130,8 @@ export type RolePlaystyle = {
 }
 
 export type Playstyle = {
-  forward: PlaystyleStat,
-  goalie: PlaystyleStat,
+  forward: RolePlaystyle,
+  goalie: RolePlaystyle,
 }
 
 export type PlaystyleStat = {

@@ -24,6 +24,8 @@ const flags =  ['blockapp', 'eusl', 'bub', 'osas', 'euos'];
 
 export async function updatePlayers(data: PlayersJSON) {
   const currentUser = await getUser();
+  const match = await getCurrentMatch();
+  const mode = getQueueObjectFromID(match.queue).class;
 
   // Map data from Mod to fit our local database
   const incoming = data.players.filter(p => p.name !== 'Player').map(p => ({
@@ -80,7 +82,7 @@ export async function updatePlayers(data: PlayersJSON) {
     // fetch and set ratings and other stats (if empty)
     console.log(`Fetching statistical data for ${localPlayer.username}...`)
     try {
-      const playerStats = await fetchPlayerStats(localPlayer.username, localPlayer.playerId);
+      const playerStats = await fetchPlayerStats(localPlayer.username, localPlayer.playerId, mode);
       const inferredQueueMates = await getInferredQueueMates(localPlayer.username);
       await db.update(matchPlayers).set({
         rating: playerStats.rating, // will be 0 if not found

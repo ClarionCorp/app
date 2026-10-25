@@ -116,7 +116,7 @@ export default function PlayerProfile({
   }, [isOpen]);
 
   const rankInfo = getRankFromLP(player.rating);
-  const peakRankInfo = player.peakRating?.rating ? getRankFromLP(player.peakRating.rating) : null;
+  const peakRankInfo = player.peakRating?.peakRating ? getRankFromLP(player.peakRating.peakRating) : null;
   const roleKey = (player.role?.toLowerCase() ?? null) as 'forward' | 'goalie' | null;
   const playstyleType = roleKey ? player.playstyle?.[roleKey]?.type : undefined;
   const playstyleClass = playstyleType && playstyleType in PLAYSTYLE_CLASSES

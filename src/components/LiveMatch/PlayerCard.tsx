@@ -85,7 +85,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
   const playstyleClass = playstyleType && playstyleType in PLAYSTYLE_CLASSES
     ? PLAYSTYLE_CLASSES[playstyleType as keyof typeof PLAYSTYLE_CLASSES]
     : null;
-  const peakRank = getRankFromLP(player.peakRating?.rating);
+  const peakRank = getRankFromLP(player.peakRating?.peakRating);
 
   let hideUsername = true;
   if (
