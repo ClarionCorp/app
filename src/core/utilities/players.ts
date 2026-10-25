@@ -33,9 +33,9 @@ export type ProminentChar = {
 }
 
 function getNameplate(ccp?: Player, odyp?: RankedQuery | null): Nameplate | null {
-  if (ccp && ccp.nameplateId && ccp.assets?.nameplate) {
+  if (ccp && ccp.info.nameplateId && ccp.assets?.nameplate) {
     return {
-      nameplateId: ccp.nameplateId,
+      nameplateId: ccp.info.nameplateId,
       nameplateUrl: ccp.assets?.nameplate
     }
   } else if (odyp && odyp.nameplateId) {

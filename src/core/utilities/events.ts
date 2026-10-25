@@ -7,7 +7,6 @@ import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON, TimelineEventType } from "../../types/ue4ss";
 import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getLatestMatchHistory, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
-import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
@@ -82,8 +81,6 @@ export async function updatePlayers(data: PlayersJSON) {
     console.log(`Fetching statistical data for ${localPlayer.username}...`)
     try {
       const playerStats = await fetchPlayerStats(localPlayer.username, localPlayer.playerId);
-      const playstyle = await fetchPlayerPlayerstyle(localPlayer.username);
-      const smurf = await fetchPlayerSmurfEstimate(localPlayer.username);
       const inferredQueueMates = await getInferredQueueMates(localPlayer.username);
       await db.update(matchPlayers).set({
         rating: playerStats.rating, // will be 0 if not found
