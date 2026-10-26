@@ -34,6 +34,29 @@ export type ProminentChar = {
   winrate: number
 }
 
+type CombinedPlayerStats = {
+  ranked: {
+    games: number
+    wins: number
+    losses: number
+    scores: number
+    assists: number
+    saves: number
+    knockouts: number
+    mvp: number
+  },
+  normal: {
+    games: number
+    wins: number
+    losses: number
+    scores: number
+    assists: number
+    saves: number
+    knockouts: number
+    mvp: number
+  }
+}
+
 function getNameplate(ccp?: Player, odyp?: RankedQuery | null): Nameplate | null {
   if (ccp && ccp.info.nameplateId && ccp.assets?.nameplate) {
     return {
@@ -71,7 +94,6 @@ export async function fetchPlayerStats(username: string, playerId?: string, game
       if (!res.ok) { throw new Error(`Could not fetch data for player '${username}' from CC datasource!`) };
 
       const data = await res.json() as Player;
-      const latestRating = data.latestRatings[0];
       const totalStats = combineCharacterStats(data);
 
       requiredStats = {
@@ -81,10 +103,10 @@ export async function fetchPlayerStats(username: string, playerId?: string, game
         tags: data.info.tags,
         nameplate: getNameplate(data),
         peakRating: data.seasons.reduce((max, s) => s.peakRating > max.peakRating ? s : max),
-        normWR: mode === 'Normal' && totalStats.games ? totalStats.wins / totalStats.games : 0,
-        normGames: mode === 'Normal' ? totalStats.games : 0,
-        rankedWR: mode === 'Ranked' && latestRating?.games ? latestRating.wins / latestRating.games : 0,
-        rankedGames: mode === 'Ranked' ? latestRating?.games ?? 0 : 0,
+        normWR: totalStats.normal.wins / totalStats.normal.games,
+        normGames: totalStats.normal.games,
+        rankedWR: totalStats.ranked.games ? totalStats.ranked.wins / totalStats.ranked.games : 0,
+        rankedGames: totalStats.ranked.games,
         smurfProbability: data.smurfing.confidence,
         playstyle: data.playStyle,
       }
@@ -96,7 +118,6 @@ export async function fetchPlayerStats(username: string, playerId?: string, game
       if (!res.ok) { throw new Error(`Could not fetch data for player '${username}' from CC cached datasource!`) };
 
       const data = await res.json() as Player;
-      const latestRating = data.latestRatings[0];
       const totalStats = combineCharacterStats(data);
 
       requiredStats = {
@@ -106,10 +127,10 @@ export async function fetchPlayerStats(username: string, playerId?: string, game
         tags: data.info.tags,
         nameplate: getNameplate(data),
         peakRating: data.seasons.reduce((max, s) => s.peakRating > max.peakRating ? s : max),
-        normWR: mode === 'Normal' && totalStats.games ? totalStats.wins / totalStats.games : 0,
-        normGames: mode === 'Normal' ? totalStats.games : 0,
-        rankedWR: mode === 'Ranked' && latestRating?.games ? latestRating.wins / latestRating.games : 0,
-        rankedGames: mode === 'Ranked' ? latestRating?.games ?? 0 : 0,
+        normWR: totalStats.normal.wins / totalStats.normal.games,
+        normGames: totalStats.normal.games,
+        rankedWR: totalStats.ranked.games ? totalStats.ranked.wins / totalStats.ranked.games : 0,
+        rankedGames: totalStats.ranked.games,
         smurfProbability: data.smurfing.confidence,
         playstyle: data.playStyle,
       }
@@ -238,18 +259,20 @@ function formatProminentChars(data: Player, prominence: 'Favorite' | 'Best'): Pr
 
 // Just combine each character's stats to get totals for the player
 // We could just get this from the rating, but not everyone plays ranked
-function combineCharacterStats(data: Player) {
-  const totals = { games: 0, wins: 0, losses: 0, scores: 0, assists: 0, saves: 0, knockouts: 0, mvp: 0 }
+function combineCharacterStats(data: Player): CombinedPlayerStats {
+  const empty = () => ({ games: 0, wins: 0, losses: 0, scores: 0, assists: 0, saves: 0, knockouts: 0, mvp: 0 })
+  const totals: CombinedPlayerStats = { ranked: empty(), normal: empty() }
 
   for (const s of data.characterStats) {
-    totals.games += s.games
-    totals.wins += s.wins
-    totals.losses += s.losses
-    totals.scores += s.scores
-    totals.assists += s.assists
-    totals.saves += s.saves
-    totals.knockouts += s.knockouts
-    totals.mvp += s.mvp
+    const t = s.gamemode === 'Ranked' ? totals.ranked : totals.normal
+    t.games += s.games
+    t.wins += s.wins
+    t.losses += s.losses
+    t.scores += s.scores
+    t.assists += s.assists
+    t.saves += s.saves
+    t.knockouts += s.knockouts
+    t.mvp += s.mvp
   }
 
   return totals
