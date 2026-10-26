@@ -17,7 +17,7 @@ export type POSTOnlinePlayersV2 = {
   in_game: number,
   idling: number,
   seen: number,
-  in_your_queue: number,
+  in_your_queue?: number,
 }
 
 // GET /v2/online
