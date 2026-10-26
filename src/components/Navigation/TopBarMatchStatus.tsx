@@ -9,7 +9,7 @@ import { CurrentMatchTable, MatchPlayersTable } from '../../types/database';
 const queueStateLabels: Record<string, string> = {
   Queued: 'Searching',
   FoundMatch: 'Match Found',
-  StartingGame: 'Starting',
+  StartingGame: 'Starting Match',
 };
 
 export default function TopBarMatchStatus() {
@@ -82,7 +82,9 @@ export default function TopBarMatchStatus() {
       <span className="font-semibold text-char-secondary">{queueName}</span>
       <div className="flex items-center gap-1 text-xs">
         <span>{queueStateLabels[match.queueState ?? ''] ?? 'Queued'}</span>
-        <span className="opacity-60">{formatClock(queueSeconds)}</span>
+        {match.queuedAt && (
+          <span className="opacity-60">{formatClock(queueSeconds)}</span>
+        )}
       </div>
     </div>
   );

@@ -115,6 +115,7 @@ export async function updateGameState(data: MetaJSON): Promise<CurrentMatchTable
     queueState: data.queue.state,
     partySize: data.party_size,
     ...(data.queue.state == 'Queued' && { queuedAt: new Date() }),
+    ...(data.queue.state == 'StartingGame' && { queuedAt: null }),
   }
 
   const [row] = await db.insert(currentMatch).values(table).onConflictDoUpdate({
