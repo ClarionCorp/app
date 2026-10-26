@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { getRankFromLP, RankObject } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
@@ -29,22 +29,8 @@ function getRankBadgeText(rankInfo: RankObject, rating: number | null | undefine
   return `${rating % 100}% ${rankInfo.tier}`;
 }
 
-function RankBadge({ text, color }: { text: string, color: string }) {
+function RankBadge({ text, color, compactMode }: { text: string, color: string, compactMode?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [fontSize, setFontSize] = useState(12);
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    let size = 12;
-    el.style.fontSize = `${size}px`;
-    while (el.scrollWidth > el.clientWidth && size > 7) {
-      size -= 1;
-      el.style.fontSize = `${size}px`;
-    }
-    setFontSize(size);
-  }, [text]);
 
   return (
     <span
@@ -54,7 +40,7 @@ function RankBadge({ text, color }: { text: string, color: string }) {
         color,
         backgroundColor: `${color}1A`,
         border: `1px solid ${color}30`,
-        fontSize,
+        fontSize: compactMode ? 10 : 12,
       }}
     >
       {text}
@@ -63,7 +49,10 @@ function RankBadge({ text, color }: { text: string, color: string }) {
 }
 
 
-export function PlayerCard({ player, match, index, isAlly = false, isMvp = false, teammates = [], nameplateOpacity = 50 }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[], nameplateOpacity?: number }) {
+export function PlayerCard(
+  {player, match, index, isAlly = false, isMvp = false, teammates = [], nameplateOpacity = 50, compactMode, }:
+  { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[], nameplateOpacity?: number, compactMode?: boolean }
+) {
   const rankInfo = getRankFromLP(player.rating);
   const queueGroup = getQueueGroup(player, teammates);
   const { show: showDialogue } = useDialogue();
@@ -116,7 +105,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
       <PlayerProfile player={player} obfuscate={hideUsername}>
       <button
         onClick={() => openUserOnCC(player.username)}
-        className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
+        className={`relative w-full text-left bg-surface-subtle border rounded-xl ${compactMode ? 'px-2 py-1' : 'px-4 py-2'} transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
         {/* We need to make sure the game isn't in the setup phase */}
@@ -156,8 +145,8 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
               </div>
             ) : (
               <>
-                <RankIcon rating={player.rating} size="xm" />
-                <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} />
+                <RankIcon rating={player.rating} size={compactMode ? 'md' : 'xm'} />
+                <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} compactMode={compactMode} />
               </>
             )}
           </div>
@@ -259,7 +248,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
             </div>
 
             {/* Training icons */}
-            {player.trainings.length > 0 && (
+            {player.trainings.length > 0 && !compactMode && (
               <div className="flex items-center gap-1 pl-0.5">
                 {player.trainings.slice(0, 5).map(id => {
                   const training = TRAININGS[id];

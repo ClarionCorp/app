@@ -37,11 +37,15 @@ export default function CurrentMatchPage() {
   const [blocked, setBlocked] = useState<boolean>(false);
   const [nameplateOpacity, setNameplateOpacity] = useState(50);
   const [customImgs, setUseCustomImgs] = useState<boolean>(true);
+  const [compactMode, setCompactMode] = useState<boolean>(false);
 
   useEffect(() => {
     getAppSettings().then(s => {
-      if (s) setNameplateOpacity(s.nameplateTransparency);
-      if (s) setUseCustomImgs(s.useCustomCharArt);
+      if (s) {
+        setNameplateOpacity(s.nameplateTransparency);
+        setUseCustomImgs(s.useCustomCharArt);
+        setCompactMode(s.compactMode);
+      }
     });
   }, []);
 
@@ -164,7 +168,7 @@ export default function CurrentMatchPage() {
             >
               {!showOutOfGame && <>
                 <div className='mt-4'>
-                  <AvailableTrainings allTrainings={allTrainings} match={match} players={players} />
+                  <AvailableTrainings allTrainings={allTrainings} match={match} players={players} compactMode={compactMode} />
                 </div>
               </>
               }
@@ -184,7 +188,17 @@ export default function CurrentMatchPage() {
 
                       <div className="space-y-3">
                         {blueTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={index} isAlly isMvp={player.username === mvp?.username} teammates={blueTeam} nameplateOpacity={nameplateOpacity} />
+                          <PlayerCard
+                            key={player.username}
+                            player={player}
+                            match={match}
+                            index={index}
+                            isAlly
+                            isMvp={player.username === mvp?.username}
+                            teammates={blueTeam}
+                            nameplateOpacity={nameplateOpacity}
+                            compactMode={compactMode}
+                          />
                         ))}
                       </div>
 
@@ -196,7 +210,16 @@ export default function CurrentMatchPage() {
 
                       <div className="space-y-3">
                         {redTeam.map((player, index) => (
-                          <PlayerCard key={player.username} player={player} match={match} index={blueTeam.length + index} isMvp={player.username === mvp?.username} teammates={redTeam} nameplateOpacity={nameplateOpacity} />
+                          <PlayerCard
+                            key={player.username}
+                            player={player}
+                            match={match}
+                            index={blueTeam.length + index}
+                            isMvp={player.username === mvp?.username}
+                            teammates={redTeam}
+                            nameplateOpacity={nameplateOpacity}
+                            compactMode={compactMode}
+                          />
                         ))}
                       </div>
                     </>
@@ -209,7 +232,7 @@ export default function CurrentMatchPage() {
                   <div className="hidden lg:block flex-1 min-w-0 space-y-3 pb-16">
                     <IntermissionPredictions players={players} shouldObfuscatePlayers={shouldObfuscatePlayers} useCustomArt={customImgs} />
                     <XPLeaderboard players={players} shouldObfuscatePlayers={shouldObfuscatePlayers} useCustomArt={customImgs} />
-                    <XPTimeline />
+                    <XPTimeline compactMode={compactMode} />
                     {myChar ? (
                       <>
                         {myChar.pagination && (
