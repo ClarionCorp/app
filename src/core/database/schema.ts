@@ -21,6 +21,7 @@ export const appSettings = sqliteTable("appSettings", {
   releaseChannel: text("releaseChannel").$type<ReleaseChannel>().notNull().default('Stable'),
   nameplateTransparency: integer("nameplateTransparency").notNull().default(50),
   useCustomCharArt: integer("useCustomCharArt", { mode: "boolean" }).notNull().default(true),
+  compactMode: integer("compactMode", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 

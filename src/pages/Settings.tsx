@@ -38,6 +38,7 @@ type Settings = {
   releaseChannel: ReleaseChannel;
   nameplateTransparency: number;
   useCustomCharArt: boolean;
+  compactMode: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -52,6 +53,7 @@ const DEFAULT_SETTINGS: Settings = {
   releaseChannel: 'Stable',
   nameplateTransparency: 50,
   useCustomCharArt: true,
+  compactMode: false,
 };
 
 export default function SettingsPage() {
@@ -86,6 +88,7 @@ export default function SettingsPage() {
         releaseChannel: s.releaseChannel,
         nameplateTransparency: s.nameplateTransparency,
         useCustomCharArt: s.useCustomCharArt,
+        compactMode: s.compactMode,
       });
     });
     getUser().then(u => {
@@ -262,6 +265,16 @@ export default function SettingsPage() {
           <Toggle
             enabled={settings.exitOnGameClose}
             onChange={v => update({ exitOnGameClose: v })}
+          />
+        </SettingRow>
+
+        <SettingRow
+          title="Compact Mode"
+          subtitle="Better support for smaller windows by hiding less useful features."
+        >
+          <Toggle
+            enabled={settings.compactMode}
+            onChange={v => update({ compactMode: v })}
           />
         </SettingRow>
 
