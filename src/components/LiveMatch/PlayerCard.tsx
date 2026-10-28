@@ -161,7 +161,7 @@ export function PlayerCard(
                     ? <span className="inline-block h-4 w-24 rounded bg-surface-active animate-pulse align-middle" />
                     : player.username}
                 </span>
-                {player.tags.length > 0 && (
+                {player.tags.length > 0 && !hideUsername && (
                   <span className="flex items-center gap-1 shrink-0">
                     {player.tags.map(tag => (
                       <img

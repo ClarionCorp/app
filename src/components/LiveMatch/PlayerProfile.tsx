@@ -184,7 +184,7 @@ export default function PlayerProfile({
                       <span className="text-base font-semibold text-char truncate">{obfuscate ? '——' : player.username}</span>
                       {player.tags.length > 0 && (
                         <span className="flex items-center gap-1 shrink-0">
-                          {player.tags.map(tag => (
+                          {!obfuscate && player.tags.map(tag => (
                             <img
                               key={tag}
                               src={`/tags/${tag}.webp`}
