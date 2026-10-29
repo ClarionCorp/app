@@ -95,15 +95,20 @@ fn dispatch(app: &AppHandle, file: &str, kind: &str, content: String) {
 // Resolves the temp directory the game actually writes to.
 // On Windows, this is the normal system temp dir.
 // On Linux, the game writes into its Proton prefix's fake windows temp dir instead.
+// On macOS, the game writes into its CrossOver bottle's fake windows temp dir (see constants.ts crossover_temp).
 fn resolve_temp_dir() -> PathBuf {
     if cfg!(target_os = "windows") {
         return std::env::temp_dir().join("AiMiApp");
     }
 
+    let suffix = if cfg!(target_os = "macos") {
+        "Library/Application Support/CrossOver/Bottles/Omega Strikers/drive_c/users/crossover/AppData/Local/Temp/AiMiApp"
+    } else {
+        ".steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/Temp/AiMiApp"
+    };
+
     match std::env::var_os("HOME") {
-        Some(home) => PathBuf::from(home).join(
-            ".steam/steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/Temp/AiMiApp",
-        ),
+        Some(home) => PathBuf::from(home).join(suffix),
         None => {
             eprintln!("HOME environment variable not set, falling back to std::env::temp_dir()");
             std::env::temp_dir().join("AiMiApp")

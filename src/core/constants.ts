@@ -9,21 +9,28 @@ export const AiMiAPI = 'https://api.aimis.app';
 export const StatusUrl = 'https://status.blals.com';
 export const LocalWebServer = 'http://127.0.0.1:47822'; // app now hosts a local webserver for stuff like Overlay
 
-// Proton Paths
+// Proton Paths (Linux)
 export const proton_root = '.steam/steam/steamapps/compatdata/1869590/pfx/drive_c/'; // prefix
 export const proton_temp = `${proton_root}/users/steamuser/AppData/Local/Temp/`;
+
+// CrossOver Paths (MacOS)
+export const crossover_root = 'Library/Application Support/CrossOver/Bottles/Omega Strikers/drive_c';
+export const crossover_temp = `${crossover_root}/users/crossover/AppData/Local/Temp`
 
 // Default game install locations, used to auto-detect the game dir without prompting the user.
 export const windows_default_gamedir = 'C:/Program Files (x86)/Steam/steamapps/common/OmegaStrikers';
 export const linux_default_gamedir = '.steam/steam/steamapps/common/OmegaStrikers';
+export const mac_default_gamedir = `${crossover_root}/Program Files (x86)/Steam/steamapps/common/OmegaStrikers`;
 
 // Identity Path Suffix (after user home folder)
 export const windows_identity = 'AppData/Local/OmegaStrikers/identity.json';
 export const linux_identity = `${proton_root}/users/steamuser/AppData/Local/OmegaStrikers/identity.json`;
+export const mac_identity = `${crossover_root}/users/crossover/AppData/Local/OmegaStrikers/identity.json`;
 
 // Log File Path (after user home folder)
 export const windows_log = 'AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log';
 export const linux_log = `${proton_root}/users/steamuser/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log`;
+export const mac_log = `${crossover_root}/users/crossover/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log`;
 
 // Steam launch option needed on Linux/Proton so UE4SS's dwmapi.dll proxy actually gets loaded
 export const linux_launch_options = 'WINEDLLOVERRIDES="dwmapi=n,b" %command%';

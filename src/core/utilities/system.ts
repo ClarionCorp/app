@@ -2,7 +2,7 @@
 
 import { homeDir, join, tempDir } from "@tauri-apps/api/path";
 import { platform } from "@tauri-apps/plugin-os";
-import { linux_identity, linux_log, proton_temp, windows_identity, windows_log } from "../constants";
+import { crossover_temp, linux_identity, linux_log, mac_identity, mac_log, proton_temp, windows_identity, windows_log } from "../constants";
 import { exists } from "@tauri-apps/plugin-fs";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -28,7 +28,11 @@ export async function getHardwareInfo(): Promise<HardwareInfo> {
 export async function getIdentityPath(): Promise<string | null> {
   const home = await homeDir();
   const os = platform();
-  const fullIdentityPath = await join(home, os == 'windows' ? windows_identity : linux_identity);
+  let fullIdentityPath = await join(home, windows_identity);
+
+  if (os == 'linux') { fullIdentityPath = await join(home, linux_identity) }
+  else if (os == 'macos') { fullIdentityPath = await join(home, mac_identity) }
+
   const fileExists = await exists(fullIdentityPath);
   if (fileExists == true) { return fullIdentityPath }
   else { return null }; // cancel early if file doesn't exist here.
@@ -38,7 +42,11 @@ export async function getIdentityPath(): Promise<string | null> {
 export async function getLogPath(): Promise<string | null> {
   const home = await homeDir();
   const os = platform();
-  const fullLogPath = await join(home, os == 'windows' ? windows_log : linux_log);
+  let fullLogPath = await join(home, windows_log);
+
+  if (os == 'linux') { fullLogPath = await join(home, linux_log) }
+  else if (os == 'macos') { fullLogPath = await join(home, mac_log) }
+
   const fileExists = await exists(fullLogPath);
   if (fileExists == true) { return fullLogPath }
   else { return null }; // cancel early if file doesn't exist here.
@@ -50,7 +58,10 @@ export async function getTempDir(): Promise<string> {
   const os = platform();
   if (os == 'windows') {
     return await tempDir();
-  } else { // Not windows, return Proton path instead
+  } else if (os == 'macos') {
+    const home = await homeDir();
+    return await join(home, crossover_temp);
+  } else { // return proton/linux as default fallback
     const home = await homeDir();
     return await join(home, proton_temp);
   }
