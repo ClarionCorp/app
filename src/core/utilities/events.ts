@@ -171,7 +171,10 @@ export async function saveMatchToHistory(data: PostGameJSON) {
       getUser(),
       getMatchPlayers(),
     ]);
-    if (!match || !currentUser) return;
+    if (!match || !currentUser) {
+      console.error(`Either "currentMatch" or "currentUser" is empty! Cannot save recent match!`);
+      return;
+    };
 
     const players = mergeMatchPlayers(matchPlayers, data);
     const myPlayer = players.find(p => p.name === currentUser.username);

@@ -2,18 +2,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { AppContextType } from "../App";
-import { readIdentity } from "../core/init";
 import { startRpc, stopRpc, tryUpdateDiscordRPC } from "../core/utilities/discord";
 import { invoke } from "@tauri-apps/api/core";
 import { dirname, homeDir, join } from "@tauri-apps/api/path";
 import { exists } from "@tauri-apps/plugin-fs";
 import { open } from "@tauri-apps/plugin-dialog";
-import { fetchRankQuery, fetchSelfQuery } from "../core/utilities/odyssey";
-import { getAppSettings, upsertAppSettings, updateRating, upsertUser, updateRegion, ensureCurrentMatch, resetPlayerTable, softResetMatchTable } from "../core/database/queries";
+import { refreshCurrentUser } from "../core/utilities/odyssey";
+import { getAppSettings, upsertAppSettings, ensureCurrentMatch, resetPlayerTable, softResetMatchTable } from "../core/database/queries";
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { version } from "../core/constants";
-import { getLatestRegion } from "../core/bridgeListener";
 import { checkForUpdates } from "../core/utilities/appAPI";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -34,7 +32,6 @@ const steps: { id: StepId; label: string; pct: number }[] = [
 export default function InitializationPage() {
   const {
     navigate,
-    setOdyAuth,
     setConnectedStatus,
   } = useOutletContext<AppContextType>();
 
@@ -156,17 +153,7 @@ export default function InitializationPage() {
         // 3) Fetch account info from Odyssey
         goToStep("account");
         try {
-          const auth = await readIdentity();
-          setOdyAuth(auth);
-
-          const region = await getLatestRegion();
-          if (region) await updateRegion(region);
-          
-          const selfQuery = await fetchSelfQuery();
-          const rankQuery = await fetchRankQuery(selfQuery.playerId);
-          if (cancelled) return;
-          await upsertUser(selfQuery);
-          if (rankQuery) await updateRating(selfQuery.playerId, rankQuery.rating);
+          await refreshCurrentUser(false);
           setConnectedStatus(true);
         } catch (e) {
           console.warn('Failed to fetch account data, some features disabled.', e);

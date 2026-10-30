@@ -18,6 +18,7 @@ import { checkLocalPlayer, saveMatchToHistory, updateCustomLobby, updateGameStat
 import { sessionHeartbeat } from './core/utilities/sessions';
 import { fetchOnlineCount } from './core/utilities/appAPI';
 import { ThemePicker } from './components/UI/Theme/ThemePicker';
+import { refreshCurrentUser } from './core/utilities/odyssey';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -82,7 +83,6 @@ function App() {
       await updatePlayers(JSON.parse(payload.content!) as PlayersJSON);
       await pushOverlayState();
     }),
-    onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
     onCustomLobbyHeartbeat(async (payload) => { await updateCustomLobby(JSON.parse(payload.content!) as MetaJSON); }),
 
     onGameStateChange(async (payload) => {
@@ -148,6 +148,13 @@ function App() {
       await pushQueueState();
       await sessionHeartbeat();
       if (user) { await fetchOnlineCount(user.username, user.matchmakingRegion, version, data.queue.id, data.queue.state, user.rating) } // should always be set but whatever
+    }),
+    onMatchFinalize(async (payload) => {
+      // Make absolutely sure the user exists in the db before attempting to save
+      const user = getUser();
+      if (!user) { await refreshCurrentUser(true); };
+
+      await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON);
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
