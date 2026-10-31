@@ -1,7 +1,8 @@
 import { RankedQuery, SelfQuery, StatsQuery, UserQuery } from "../../types/odyssey";
+import { getLatestRegion } from "../bridgeListener";
 import { OdyAPI } from "../constants";
 import { db } from "../database/driver";
-import { getUser } from "../database/queries";
+import { getUser, updateRating, updateRegion, upsertUser } from "../database/queries";
 import { user } from "../database/schema";
 import { readIdentity } from "../init";
 
@@ -111,4 +112,17 @@ export async function refreshRating(): Promise<number | null> {
   if (!ranked) return null;
   await db.update(user).set({ rating: ranked.rating }).run();
   return ranked.rating;
+}
+
+export async function refreshCurrentUser(justUser: boolean) {
+  const selfQuery = await fetchSelfQuery();
+  await upsertUser(selfQuery);
+  
+  const region = await getLatestRegion();
+  if (region) await updateRegion(region);
+  
+  if (!justUser) {
+    const rankQuery = await fetchRankQuery(selfQuery.playerId);
+    if (rankQuery) await updateRating(selfQuery.playerId, rankQuery.rating);
+  }
 }

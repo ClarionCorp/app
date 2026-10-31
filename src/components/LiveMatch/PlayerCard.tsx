@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { getRankFromLP, RankObject } from '../../core/objects/ranks';
 import RankIcon from '../Rank';
@@ -29,22 +29,8 @@ function getRankBadgeText(rankInfo: RankObject, rating: number | null | undefine
   return `${rating % 100}% ${rankInfo.tier}`;
 }
 
-function RankBadge({ text, color }: { text: string, color: string }) {
+function RankBadge({ text, color, compactMode }: { text: string, color: string, compactMode?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [fontSize, setFontSize] = useState(12);
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    let size = 12;
-    el.style.fontSize = `${size}px`;
-    while (el.scrollWidth > el.clientWidth && size > 7) {
-      size -= 1;
-      el.style.fontSize = `${size}px`;
-    }
-    setFontSize(size);
-  }, [text]);
 
   return (
     <span
@@ -54,7 +40,7 @@ function RankBadge({ text, color }: { text: string, color: string }) {
         color,
         backgroundColor: `${color}1A`,
         border: `1px solid ${color}30`,
-        fontSize,
+        fontSize: compactMode ? 10 : 12,
       }}
     >
       {text}
@@ -63,7 +49,10 @@ function RankBadge({ text, color }: { text: string, color: string }) {
 }
 
 
-export function PlayerCard({ player, match, index, isAlly = false, isMvp = false, teammates = [] }: { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[] }) {
+export function PlayerCard(
+  {player, match, index, isAlly = false, isMvp = false, teammates = [], nameplateOpacity = 50, compactMode, }:
+  { player: MatchPlayersTable, match: CurrentMatchTable | undefined, index: number, isAlly?: boolean, isMvp?: boolean, teammates?: MatchPlayersTable[], nameplateOpacity?: number, compactMode?: boolean }
+) {
   const rankInfo = getRankFromLP(player.rating);
   const queueGroup = getQueueGroup(player, teammates);
   const { show: showDialogue } = useDialogue();
@@ -85,8 +74,14 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
   const playstyleClass = playstyleType && playstyleType in PLAYSTYLE_CLASSES
     ? PLAYSTYLE_CLASSES[playstyleType as keyof typeof PLAYSTYLE_CLASSES]
     : null;
+  const peakRank = getRankFromLP(player.peakRating?.peakRating);
 
-  const hideUsername = !isAlly && !!match && !player.charId && queue === 'Ranked';
+  let hideUsername = true;
+  if (
+    isAlly ||
+    player.charId ||
+    (queue && queue !== 'Ranked')
+  ) { hideUsername = false; }
 
   function openUserOnCC(username: string) {
     if (hideUsername) {
@@ -110,7 +105,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
       <PlayerProfile player={player} obfuscate={hideUsername}>
       <button
         onClick={() => openUserOnCC(player.username)}
-        className={`relative w-full text-left bg-surface-subtle border rounded-xl px-4 py-2 transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
+        className={`relative w-full text-left bg-surface-subtle border rounded-xl ${compactMode ? 'px-2 py-1' : 'px-4 py-2'} transition-colors cursor-pointer group shadow-xl overflow-hidden ${borderClass}`}
       >
         {/* Background character watermark */}
         {/* We need to make sure the game isn't in the setup phase */}
@@ -125,9 +120,20 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
             <div
               aria-hidden
               className="absolute inset-y-0 right-0 w-full pointer-events-none select-none"
-              style={{ background: 'linear-gradient(to right, var(--color-surface-subtle) 70%, transparent 90%)' }}
+              style={{ background: 'linear-gradient(to right, var(--color-surface-subtle) 60%, transparent 90%)' }}
             />
           </>
+        )}
+
+        {/* Background nameplate (left side, fades out to the right) */}
+        {!hideUsername && player.nameplate?.nameplateId && (
+          <img /* Tauri doesn't like trusting the returned URL, so just hardcode it. whatever. */
+            src={`https://api.clarioncorp.net/assets/nameplate/${player.nameplate.nameplateId}.webp`}
+            alt=""
+            aria-hidden
+            className={`absolute inset-y-0 left-0 w-3/4 h-full object-cover brightness-30 pointer-events-none select-none`}
+            style={{ maskImage: 'linear-gradient(to right, black 40%, transparent 100%)', opacity: nameplateOpacity / 100 }}
+          />
         )}
 
         <div className="relative flex items-center gap-3">
@@ -139,8 +145,8 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
               </div>
             ) : (
               <>
-                <RankIcon rating={player.rating} size="xm" />
-                <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} />
+                <RankIcon rating={player.rating} size={compactMode ? 'md' : 'xm'} />
+                <RankBadge text={getRankBadgeText(rankInfo, player.rating)} color={rankInfo.color} compactMode={compactMode} />
               </>
             )}
           </div>
@@ -155,7 +161,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
                     ? <span className="inline-block h-4 w-24 rounded bg-surface-active animate-pulse align-middle" />
                     : player.username}
                 </span>
-                {player.tags.length > 0 && (
+                {player.tags.length > 0 && !hideUsername && (
                   <span className="flex items-center gap-1 shrink-0">
                     {player.tags.map(tag => (
                       <img
@@ -169,6 +175,16 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
                   </span>
                 )}
               </span>
+
+              {player.peakRating != null && (
+                <span
+                  className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md border border-current/20 bg-current/5"
+                  style={{ color: peakRank.color }}
+                >
+                  <img src={peakRank.image} alt="" className="w-4 h-4 shrink-0" />
+                  Peak: S{player.peakRating.season}
+                </span>
+              )}
 
               {player.accLevel != null && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-md shrink-0 border border-current/20 bg-current/5 text-char-secondary">
@@ -219,7 +235,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
                 Winrate: <span className={
                   `font-medium
                   ${winrate == null ? 'text-char-subtle'
-                    : winrate >= 0.6 ? 'text-match-win'
+                    : winrate >= 0.6 ? 'text-success'
                     : winrate <= 0.4 ? 'text-match-loss'
                     : 'text-match-mid'}
                   `}>
@@ -232,7 +248,7 @@ export function PlayerCard({ player, match, index, isAlly = false, isMvp = false
             </div>
 
             {/* Training icons */}
-            {player.trainings.length > 0 && (
+            {player.trainings.length > 0 && !compactMode && (
               <div className="flex items-center gap-1 pl-0.5">
                 {player.trainings.slice(0, 5).map(id => {
                   const training = TRAININGS[id];

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getCurrentMatch, getMatchPlayers } from '../core/database/queries';
-import type { CurrentMatchTable, MatchPlayersTable } from '../types/database';
+import { getCurrentMatch, getMatchPlayers, getUser } from '../core/database/queries';
+import type { CurrentMatchTable, MatchPlayersTable, UserTable } from '../types/database';
 import { TRAININGS } from '../core/objects/trainings';
 import { ShieldIcon, SwordIcon } from '@phosphor-icons/react';
 import { getLatestRegion } from '../core/bridgeListener';
@@ -49,13 +49,14 @@ const dialoguePreviews: { label: string; config: DialogueConfig }[] = [
     },
   },
   {
-    label: 'Alert',
+    label: 'Ai.Mi',
     config: {
-      variant: 'danger',
-      message: "This variant is mostly unused, but it's here so whatever lol",
-      image: '/aimi/Free.png',
+      variant: 'aimi',
+      message: "This variant is used for whenever Ai.Mi is 'talking'. Like in the welcome screen.",
+      image: '/aimi/Custom_Welcome_1.webp',
       dismissible: false,
-      buttons: [{ label: "o7", dismisses: true }],
+      xlImage: true,
+      buttons: [{ label: "o7", variant: 'aimi', dismisses: true }],
     },
   },
 ];
@@ -100,6 +101,7 @@ export default function DebugPage() {
   const [region, setRegion] = useState<string | null>();
   const polling_rate = 2000;
   const { show: showDialogue } = useDialogue();
+  const [user, setUser] = useState<UserTable | null>();
 
   useEffect(() => {
     async function poll() {
@@ -116,6 +118,7 @@ export default function DebugPage() {
   useEffect(() => {
     async function fetchOnce() {
       setRegion(await getLatestRegion());
+      setUser(await getUser());
     }
 
     fetchOnce();
@@ -135,7 +138,8 @@ export default function DebugPage() {
           <p className="text-xs text-char-subtle mb-6">Polling every {polling_rate / 1000}s</p>
 
           <div className="bg-surface-subtle border border-background-border rounded-xl px-4">
-            <SectionHeader title="Match State" />
+            <SectionHeader title="Various Values" />
+            <DebugRow label="Username" value={user?.username} />
             <DebugRow label="Game State" value={match?.gameState} />
             <DebugRow label="Map" value={match?.map} />
             <DebugRow label="Queue" value={match?.queue} />
@@ -263,8 +267,13 @@ export default function DebugPage() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded bg-match-win shrink-0" />
-                <span className="text-xs text-match-win font-medium">98% Winrate</span>
+                <span className="text-xs text-match-win font-medium">Victory!</span>
                 <span className="text-xs text-char-subtle ml-auto font-mono">match-win</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-success shrink-0" />
+                <span className="text-xs text-success font-medium">98% Winrate</span>
+                <span className="text-xs text-char-subtle ml-auto font-mono">success</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded bg-match-mid shrink-0" />

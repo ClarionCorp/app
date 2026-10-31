@@ -1,9 +1,9 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer, TimelineEntry } from "../../types/ue4ss";
-import { QueueStates } from "../../types/database";
-import { Nameplate, PeakRating, Playstyle, SmurfConfidence } from "../../types/clarion";
-import { PreferredDataSources } from "../../types/appAPI";
+import { Nameplate, QueueStates } from "../../types/database";
+import { PreferredDataSources, ReleaseChannel } from "../../types/appAPI";
 import { ProminentChar } from "../utilities/players";
+import { PlayerSeason, Playstyle, SmurfConfidence } from "../../types/clarion";
 
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
@@ -18,6 +18,10 @@ export const appSettings = sqliteTable("appSettings", {
   sendMatchData: integer("sendMatchData", { mode: "boolean" }).notNull().default(false),
   prefDataSource: text("prefDataSource").$type<PreferredDataSources>().default('ClarionCorp'),
   openGameWithApp: integer("openGameWithApp", { mode: "boolean" }).notNull().default(false),
+  releaseChannel: text("releaseChannel").$type<ReleaseChannel>().notNull().default('Stable'),
+  nameplateTransparency: integer("nameplateTransparency").notNull().default(50),
+  useCustomCharArt: integer("useCustomCharArt", { mode: "boolean" }).notNull().default(true),
+  compactMode: integer("compactMode", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 
@@ -81,6 +85,7 @@ export const currentMatch = sqliteTable("currentMatch", {
   teamTwoSets: integer("teamTwoSets"),
 
   startedAt: integer("startedAt", { mode: "timestamp" }),
+  queuedAt: integer("queuedAt", { mode: "timestamp" }),
 });
 
 // Saves data sent from PlayerFinderMod (multi-row)
@@ -93,7 +98,7 @@ export const matchPlayers = sqliteTable("matchPlayers", {
   charName: text("charName"),
   charId: text("charId"),
   rating: integer("rating"),
-  peakRating: text("peakRating", { mode: "json" }).$type<PeakRating>(),
+  peakRating: text("peakRating", { mode: "json" }).$type<PlayerSeason>(),
   accLevel: integer("accLevel"),
   isMe: integer("isMe", { mode: "boolean" }).notNull().default(false), // might go unused
   xp: integer("xp").default(0),

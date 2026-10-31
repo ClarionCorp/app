@@ -1,6 +1,6 @@
-import { AuthTable, QueueStates, UserTable } from "../../types/database";
+import { AuthTable, UserTable } from "../../types/database";
 import { TimelineEntry } from "../../types/ue4ss";
-import { SelfQuery, StatsQuery } from "../../types/odyssey";
+import { SelfQuery } from "../../types/odyssey";
 import { db } from "./driver";
 import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby, gameSessions, onlinePlayers } from "./schema";
 import { desc, eq, inArray, sql } from "drizzle-orm";
@@ -174,68 +174,6 @@ export async function resetLocalTables() {
   await db.update(currentMatch).set({ trainings: [], timeline: [] });
 }
 
-// Only runs once upon loading players, so it should be fine to run this heavy function lol
-export async function calcAndSetPlayerStats(username: string, stats: StatsQuery | null, playerId: string | undefined) {
-  if (!stats) {
-    return db.update(matchPlayers)
-      .set({ favChar: [], bestChar: [], normWR: 0, rankedWR: 0, normGames: 0, rankedGames: 0 })
-      .where(eq(matchPlayers.username, username))
-      .returning();
-  }
-
-  const slots = [
-    { role: 'Forward', queue: 'Normal' },
-    { role: 'Forward', queue: 'Ranked' },
-    { role: 'Goalie', queue: 'Normal' },
-    { role: 'Goalie', queue: 'Ranked' },
-  ] as const;
-
-  const favChar: ProminentChar[] = [];
-  const bestChar: ProminentChar[] = [];
-
-  for (const { role, queue } of slots) {
-    const candidates = stats.characterStats
-      .filter(c => c.ratingName !== 'None' && (c.ratingName === 'RankedInitial' ? 'Ranked' : 'Normal') === queue)
-      .map(c => ({
-        characterId: c.characterId,
-        queue,
-        role,
-        games: c.roleStats[role].games,
-        winrate: c.roleStats[role].games > 0
-          ? c.roleStats[role].wins / c.roleStats[role].games
-          : 0,
-      }))
-      .filter(c => c.games > 0);
-
-    const byGames = candidates.reduce((best, c) => c.games > best.games ? c : best, candidates[0]);
-    const byWinrate = candidates.reduce((best, c) => c.winrate > best.winrate ? c : best, candidates[0]);
-
-    if (byGames) favChar.push(byGames);
-    if (byWinrate) bestChar.push(byWinrate);
-  }
-
-  const ranked = stats.playerStats.find(ps => ps.ratingName === 'RankedInitial');
-  const norm = stats.playerStats.find(ps => ps.ratingName === 'NormalInitial');
-
-  const rankedGames = ranked ? ranked.roleStats.Forward.games + ranked.roleStats.Goalie.games : 0;
-  const rankedWins = ranked ? ranked.roleStats.Forward.wins + ranked.roleStats.Goalie.wins : 0;
-  const normGames = norm ? norm.roleStats.Forward.games + norm.roleStats.Goalie.games : 0;
-  const normWins = norm ? norm.roleStats.Forward.wins + norm.roleStats.Goalie.wins : 0;
-
-  return db.update(matchPlayers)
-    .set({
-      playerId,
-      favChar,
-      bestChar,
-      normWR: normGames > 0 ? normWins / normGames : 0,
-      rankedWR: rankedGames > 0 ? rankedWins / rankedGames : 0,
-      normGames,
-      rankedGames,
-    })
-    .where(eq(matchPlayers.username, username))
-    .returning();
-}
-
 export async function appendTimelineEntry(entry: TimelineEntry) {
   await db.update(currentMatch)
     .set({ timeline: sql`json_insert(timeline, '$[#]', json(${JSON.stringify(entry)}))` })
@@ -246,15 +184,10 @@ export async function deleteCustomLobby() {
   await db.delete(customLobby).run();
 }
 
-export async function setGameState(gameState: string) {
+// Mainly used during App Init.tsx
+export async function softResetMatchTable() {
   await db.update(currentMatch)
-    .set({ gameState })
-    .where(eq(currentMatch.id, 1));
-}
-
-export async function setQueueState(queueState: QueueStates) {
-  await db.update(currentMatch)
-    .set({ queueState })
+    .set({ queueState: 'Idle', gameState: 'None', queuedAt: null })
     .where(eq(currentMatch.id, 1));
 }
 

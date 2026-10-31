@@ -12,7 +12,7 @@ const MY_COLOR = '#25cf0e';
 const ALLY_COLORS = ['#1387d4', '#261fed', '#16c4ad'];
 const ENEMY_COLORS = ['#fc0303', '#ed26a7', '#e83209'];
 
-export function XPTimeline() {
+export function XPTimeline({ compactMode }: { compactMode?: boolean }) {
   const [players, setPlayers] = useState<MatchPlayersTable[]>([]);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function XPTimeline() {
         Recent XP Trend
       </p>
 
-      <div className="max-h-48">
+      <div className={compactMode ? 'max-h-32' : 'max-h-48'}>
         <Line
           data={{
             labels,

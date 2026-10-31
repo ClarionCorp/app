@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getCharName, getQueueName } from '../../core/objects/ody'
 import { CheckIcon } from '@phosphor-icons/react'
@@ -10,6 +10,8 @@ import { getMapObjectFromID } from '../../core/objects/maps'
 import { MatchHistoryTable } from '../../types/database'
 import { Button } from '../UI/Button'
 import { TimelineModal } from './TimelineModal'
+import { getCharacterFromId } from '../../core/objects/characters'
+import { getAppSettings } from '../../core/database/queries'
 
 function formatRelativeTime(date: Date): string {
   const diff = (Date.now() - date.getTime()) / 1000
@@ -25,6 +27,13 @@ function formatRelativeTime(date: Date): string {
 export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistoryTable; myPlayerId: string | null }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [timelineModalOpen, setTimelineModalOpen] = useState(false)
+  const [customImgs, setUseCustomImgs] = useState<boolean>(true);
+  
+  useEffect(() => {
+    getAppSettings().then(s => {
+      if (s) setUseCustomImgs(s.useCustomCharArt);
+    });
+  }, []);
 
   const myPlayer = row.players.find(p => p.playerId === myPlayerId)
   if (!myPlayer) return null
@@ -62,6 +71,9 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
   const enemyPts = row.myTeam === 1 ? row.t2_pts : row.t1_pts;
   const mySets = row.myTeam === 1 ? row.t1_sets : row.t2_sets;
   const enemySets = row.myTeam === 1 ? row.t2_sets : row.t1_sets;
+  
+  const character = getCharacterFromId(myPlayer.characterId);
+  const charArt = customImgs ? character?.images.custom_portrait : character?.images.portrait;
 
   return (
     <div
@@ -98,8 +110,8 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
 
             {/* Character */}
             <img
-              src={`/characters/portrait/${myPlayer.characterId}.webp`}
-              alt={getCharName(myPlayer.characterId) ?? myPlayer.characterId}
+              src={charArt}
+              alt={character?.name ?? myPlayer.characterId}
               className="w-10 h-10 rounded object-cover shrink-0"
             />
 
@@ -182,15 +194,19 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
             <div className="px-4 py-2 bg-surface-raised/10 grid grid-cols-3 items-center text-xs">
               {/* Bans */}
               <div className="flex items-center gap-2">
-                {row.bans.map((id, index) => (
-                  <BasicPopover key={`${id}-${index}`} displayText={`Banned ${getCharName(id) ?? id}`}>
-                    <img
-                      src={`/characters/portrait/${id}.webp`}
-                      alt={getCharName(id) ?? id}
-                      className="w-8 h-8 rounded object-cover grayscale opacity-75"
-                    />
-                  </BasicPopover>
-                ))}
+                {row.bans.map((id, index) => {
+                  const character = getCharacterFromId(id);
+                  const charArt = customImgs ? character?.images.custom_portrait : character?.images.portrait;
+                  return (
+                    <BasicPopover key={`${id}-${index}`} displayText={`Banned ${getCharName(id) ?? id}`}>
+                      <img
+                        src={charArt}
+                        alt={getCharName(id) ?? id}
+                        className="w-8 h-8 rounded object-cover grayscale opacity-75"
+                      />
+                    </BasicPopover>
+                  )
+                })}
               </div>
 
               {/* Score */}
@@ -241,7 +257,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
                 {hasTimelineData && <Button variant="secondary-ghost" size="sm" onClick={() => setTimelineModalOpen(true)}>View Timeline</Button>}
               </div>
               <div className="space-y-1">
-                <TeamListing players={myTeamPlayers} myUsername={myUsername} />
+                <TeamListing players={myTeamPlayers} myUsername={myUsername} useCustomArt={customImgs} />
               </div>
             </div>
 
@@ -249,7 +265,7 @@ export default function IndividualMatch({ row, myPlayerId }: { row: MatchHistory
             <div className="px-4 py-3 space-y-2 border-t border-surface-border/50">
               <div className="text-xs font-semibold text-char-subtle mb-2">Enemy Team</div>
               <div className="space-y-1">
-                <TeamListing players={enemyTeamPlayers} myUsername={myUsername} />
+                <TeamListing players={enemyTeamPlayers} myUsername={myUsername} useCustomArt={customImgs} />
               </div>
             </div>
           </motion.div>

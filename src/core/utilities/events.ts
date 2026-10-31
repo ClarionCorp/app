@@ -7,7 +7,6 @@ import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON, TimelineEventType } from "../../types/ue4ss";
 import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getLatestMatchHistory, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
-import { fetchPlayerPlayerstyle, fetchPlayerSmurfEstimate } from "./clarion";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
@@ -17,6 +16,7 @@ import { getQueueObjectFromID } from "../objects/queues";
 import { fetchPlayerStats, getInferredQueueMates } from "./players";
 import { updateSession } from "./sessions";
 import { AiMiAPI } from "../constants";
+import { GOALIE_GEAR } from "../objects/trainings";
 import { POSTMatchHistoryPlayerV1, POSTMatchHistoryV1 } from "../../types/appAPI";
 
 const diffSeconds = (a: Date, b: Date) => Math.abs(b.getTime() - a.getTime()) / 1000;
@@ -24,6 +24,8 @@ const flags =  ['blockapp', 'eusl', 'bub', 'osas', 'euos'];
 
 export async function updatePlayers(data: PlayersJSON) {
   const currentUser = await getUser();
+  const match = await getCurrentMatch();
+  const mode = getQueueObjectFromID(match.queue).class;
 
   // Map data from Mod to fit our local database
   const incoming = data.players.filter(p => p.name !== 'Player').map(p => ({
@@ -57,15 +59,30 @@ export async function updatePlayers(data: PlayersJSON) {
     },
   }).returning();
 
+  // If there are 4+ players in the game, there should be at least 2 goalies.
+  // If a team has none, overwrite whoever is running goalie gear.
+  // This is a check because of edge-cases like extremely customized custom games.
+  if (players.length >= 4 && players.filter(p => p.role === 'Goalie').length < 2) {
+    for (const team of [1, 2]) {
+      const teamPlayers = players.filter(p => p.teamNum === team);
+      if (teamPlayers.some(p => p.role === 'Goalie')) continue;
+
+      const goalie = teamPlayers.find(p => p.trainings.some(t => GOALIE_GEAR.includes(t)));
+      if (!goalie) continue;
+
+      console.warn(`Team ${team} has no goalie, overriding ${goalie.username} to Goalie based on their gear.`);
+      goalie.role = 'Goalie';
+      await db.update(matchPlayers).set({ role: 'Goalie' }).where(eq(matchPlayers.username, goalie.username));
+    }
+  }
+
   // For any players who have no rating, run a bunch of one-time stuff.
   // Here, we grab their rating, playstyle, smurf rating, and basic stats.
   for (const localPlayer of players.filter(p => p.rating === null)) {
     // fetch and set ratings and other stats (if empty)
     console.log(`Fetching statistical data for ${localPlayer.username}...`)
     try {
-      const playerStats = await fetchPlayerStats(localPlayer.username, localPlayer.playerId);
-      const playstyle = await fetchPlayerPlayerstyle(localPlayer.username);
-      const smurf = await fetchPlayerSmurfEstimate(localPlayer.username);
+      const playerStats = await fetchPlayerStats(localPlayer.username, localPlayer.playerId, mode);
       const inferredQueueMates = await getInferredQueueMates(localPlayer.username);
       await db.update(matchPlayers).set({
         rating: playerStats.rating, // will be 0 if not found
@@ -75,12 +92,12 @@ export async function updatePlayers(data: PlayersJSON) {
         normWR: playerStats.normWR,
         rankedGames: playerStats.rankedGames,
         rankedWR: playerStats.rankedWR,
-        playstyle,
-        smurfProbability: smurf?.confidence,
+        playstyle: playerStats.playstyle, // doesn't work with Odyssey datasource
+        smurfProbability: playerStats.smurfProbability, // doesn't work with Odyssey datasource
         tags: playerStats.tags,
-        queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
         nameplate: playerStats.nameplate,
         peakRating: playerStats.peakRating,
+        queueMates: inferredQueueMates ? inferredQueueMates.queuemates : [],
       }).where(eq(matchPlayers.username, localPlayer.username));
     } catch (e) {
       console.warn(`No rank data could be found for ${localPlayer.username}.`);
@@ -97,6 +114,8 @@ export async function updateGameState(data: MetaJSON): Promise<CurrentMatchTable
     queue: data.queue.id,
     queueState: data.queue.state,
     partySize: data.party_size,
+    ...(data.queue.state == 'Queued' && { queuedAt: new Date() }),
+    ...(data.queue.state == 'StartingGame' && { queuedAt: null }),
   }
 
   const [row] = await db.insert(currentMatch).values(table).onConflictDoUpdate({
@@ -152,7 +171,10 @@ export async function saveMatchToHistory(data: PostGameJSON) {
       getUser(),
       getMatchPlayers(),
     ]);
-    if (!match || !currentUser) return;
+    if (!match || !currentUser) {
+      console.error(`Either "currentMatch" or "currentUser" is empty! Cannot save recent match!`);
+      return;
+    };
 
     const players = mergeMatchPlayers(matchPlayers, data);
     const myPlayer = players.find(p => p.name === currentUser.username);
@@ -339,4 +361,13 @@ export async function uploadLatestMatch() {
   } catch (e) {
     console.error(e);
   }
+}
+
+// False means they failed the check and the app should relaunch.
+export async function checkLocalPlayer(localPlayer: string): Promise<boolean> {
+  const currentUser = await getUser();
+  if (currentUser?.playerId !== localPlayer) {
+    console.warn(`Current PlayerID does not match App's PlayerID! (${currentUser?.playerId} -> ${localPlayer})`);
+    return false;
+  } else return true;
 }

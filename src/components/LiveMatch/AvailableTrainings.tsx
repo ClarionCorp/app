@@ -23,9 +23,10 @@ interface Props {
   allTrainings: Awakenings[];
   match: CurrentMatchTable | null | undefined;
   players: MatchPlayersTable[];
+  compactMode?: boolean;
 }
 
-function TrainingTile({ awakening, isTaken, isShown }: { awakening: Awakenings; isTaken: boolean; isShown: boolean }) {
+function TrainingTile({ awakening, isTaken, isShown, compactMode }: { awakening: Awakenings; isTaken: boolean; isShown: boolean; compactMode?: boolean }) {
   const [hovered, setHovered] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -50,7 +51,7 @@ function TrainingTile({ awakening, isTaken, isShown }: { awakening: Awakenings; 
       <img
         src={awakening.image}
         alt={awakening.name}
-        className={`w-10 h-10 rounded cursor-pointer transition-all ${isTaken || isShown ? 'grayscale brightness-50' : ''}`}
+        className={`${compactMode ? 'w-8 h-8' : 'w-10 h-10'} rounded cursor-pointer transition-all ${isTaken || isShown ? 'grayscale brightness-50' : ''}`}
       />
 
       <AnimatePresence>
@@ -84,7 +85,7 @@ function TrainingTile({ awakening, isTaken, isShown }: { awakening: Awakenings; 
   );
 }
 
-export function AvailableTrainings({ allTrainings, match, players }: Props) {
+export function AvailableTrainings({ allTrainings, match, players, compactMode }: Props) {
   const shownAwakeningIds = new Set(
     (match?.trainings ?? [])
       .map(id => training_to_awakening[id])
@@ -113,12 +114,12 @@ export function AvailableTrainings({ allTrainings, match, players }: Props) {
         </p>
         <div className="flex flex-wrap gap-0.5">
           {available.map(awakening => (
-            <TrainingTile key={awakening.id} awakening={awakening} isTaken={false} isShown={false} />
+            <TrainingTile key={awakening.id} awakening={awakening} isTaken={false} isShown={false} compactMode={compactMode} />
           ))}
         </div>
       </div>
 
-      {unavailable.length > 0 && (
+      {unavailable.length > 0 && !compactMode && (
         <div className="bg-surface-subtle border border-surface-border rounded-xl px-4 py-2 shadow-lg">
           <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
             Shown Awakenings

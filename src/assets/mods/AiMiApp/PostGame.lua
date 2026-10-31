@@ -181,14 +181,18 @@ function Module.Init(ModName, OUT_DIR)
         return false
     end
 
-    local function retry()
-        local ok, registered = pcall(tryRegisterHook)
-        if not ok then
-            print(string.format("[%s] MatchCompleted retry error: %s\n", ModName, tostring(registered)))
-        end
-        if not ok or not registered then
-            ExecuteWithDelay(30000, retry)
-        end
+    -- RegisterHook looks up the UFunction, so do it on the game thread rather than ExecuteWithDelay's async thread.
+    local retry
+    retry = function()
+        ExecuteInGameThread(function()
+            local ok, registered = pcall(tryRegisterHook)
+            if not ok then
+                print(string.format("[%s] MatchCompleted retry error: %s\n", ModName, tostring(registered)))
+            end
+            if not ok or not registered then
+                ExecuteWithDelay(30000, retry)
+            end
+        end)
     end
 
     local ok, registered = pcall(tryRegisterHook)

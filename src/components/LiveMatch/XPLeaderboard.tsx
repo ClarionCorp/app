@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { MatchPlayersTable } from '../../types/database';
+import { getCharacterFromId } from '../../core/objects/characters';
 
 const MY_COLOR = '#25cf0e';
 const ALLY_COLOR = '#3b82f6';
@@ -11,7 +12,7 @@ function getBarColor(player: MatchPlayersTable, myTeamNum: number | null) {
   return ENEMY_COLOR;
 }
 
-export function XPLeaderboard({ players, shouldObfuscatePlayers }: { players: MatchPlayersTable[], shouldObfuscatePlayers: boolean }) {
+export function XPLeaderboard({ players, shouldObfuscatePlayers, useCustomArt }: { players: MatchPlayersTable[], shouldObfuscatePlayers: boolean, useCustomArt: boolean }) {
   if (players.length === 0) {
     return (
       <div className="bg-surface-subtle border border-background-border rounded-xl p-4">
@@ -41,6 +42,9 @@ export function XPLeaderboard({ players, shouldObfuscatePlayers }: { players: Ma
           const pct = Math.max(4, (xp / maxXp) * 100);
           const color = getBarColor(player, myTeamNum);
 
+          const character = getCharacterFromId(player.charId);
+          const charArt = useCustomArt ? character?.images.custom_portrait : character?.images.portrait;
+
           return (
             <div key={player.username} className="flex items-center gap-2">
               <span className="w-3 shrink-0 text-xs font-semibold text-char-subtle text-right">
@@ -53,9 +57,9 @@ export function XPLeaderboard({ players, shouldObfuscatePlayers }: { players: Ma
               >
                 {player.charId ? (
                   <img
-                    src={`/characters/portrait/${player.charId}.webp`}
+                    src={charArt}
                     alt=""
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top scale-120"
                   />
                 ) : (
                   <div className="w-full h-full bg-surface" />

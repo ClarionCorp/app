@@ -1,4 +1,5 @@
 local Module = {}
+local Refs = require("Refs")
 
 -- Edits meta.json in place (evolving state, not a discrete event)
 local LastSnapshot = ""
@@ -104,13 +105,10 @@ local function ReadPlayer(playerUI)
 end
 
 -- PMGroupUIData is a long-lived client-session singleton.
--- Cache the ref instead of FindFirstOf on every call, only re-fetching once it goes invalid.
-local CachedGroupUI = nil
+-- Keep only its path (see Refs.lua), only searching with FindFirstOf once that stops resolving.
+local GroupUIRef = Refs.New("PMGroupUIData")
 local function GetGroupUI()
-    if not (CachedGroupUI and CachedGroupUI:IsValid()) then
-        CachedGroupUI = FindFirstOf("PMGroupUIData")
-    end
-    return CachedGroupUI
+    return GroupUIRef:Get(true)
 end
 
 -- We assume that slot 0 is the local player, needs more testing
@@ -147,9 +145,24 @@ end
 
 local LastPartySize, LastMaxPartySize, LastMembers = 1, 3, {}
 
+-- Escapes a value for use inside a JSON string literal (user-typed lobby names can contain anything)
+local JsonEscapes = { ['"'] = '\\"', ['\\'] = '\\\\', ['\b'] = '\\b', ['\f'] = '\\f', ['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t' }
+local function JsonEscape(s)
+    return (tostring(s):gsub('[%c"\\]', function(c)
+        return JsonEscapes[c] or string.format("\\u%04x", c:byte())
+    end))
+end
+
+-- Quoted JSON string, or null when nil
+local function JsonString(s)
+    return s ~= nil and ('"' .. JsonEscape(s) .. '"') or "null"
+end
+
 local function WriteMeta(ModName, META_FILE)
     local partySize, maxPartySize, members
-    if CurrentPhaseGroup == "out_of_game" then
+    -- Only re-read the party while Idle/Queued. FoundMatch/StartingGame fire during
+    -- the menu -> match transition, when the party UObjects may be getting torn down.
+    if CurrentPhaseGroup == "out_of_game" and (CurrentMmState == 1 or CurrentMmState == 2) then
         partySize, maxPartySize, members = ReadParty()
         LastPartySize, LastMaxPartySize, LastMembers = partySize, maxPartySize, members
     else
@@ -198,38 +211,38 @@ local function WriteMeta(ModName, META_FILE)
     LastGameStateKey = gameStateKey
     LastCustomLobbyKey = customLobbyKey
 
-    local localStr = localPlayerId and ('"' .. localPlayerId .. '"') or "null"
-    local queueNameStr = queueName and ('"' .. queueName .. '"') or "null"
+    local localStr = JsonString(localPlayerId)
+    local queueNameStr = JsonString(queueName)
     local queueJson = string.format(
-        '{"id":%s,"state":"%s","timestamp":%s}',
-        queueNameStr, mmStateName, QueueTimestamp and tostring(QueueTimestamp) or "null"
+        '{"id":%s,"state":%s,"timestamp":%s}',
+        queueNameStr, JsonString(mmStateName), QueueTimestamp and tostring(QueueTimestamp) or "null"
     )
 
     local memberParts = {}
     for _, m in ipairs(members) do
         table.insert(memberParts, string.format(
-            '    {"player_id":"%s","level":%d,"is_local":%s}',
-            m.player_id, m.level, tostring(m.is_local)
+            '    {"player_id":%s,"level":%d,"is_local":%s}',
+            JsonString(m.player_id), m.level, tostring(m.is_local)
         ))
     end
     local membersJson = (#memberParts > 0) and ("[\n" .. table.concat(memberParts, ",\n") .. "\n  ]") or "[]"
 
     -- old_phase/new_phase are nil until the first real MatchPhaseChanged (treat as 'None' until set properly)
     local gameStateJson = string.format(
-        '{"old_phase":"%s","new_phase":"%s","timestamp":%s}',
-        GameStateOld or "None", GameStateNew or "None", GameStateTimestamp and tostring(GameStateTimestamp) or "null"
+        '{"old_phase":%s,"new_phase":%s,"timestamp":%s}',
+        JsonString(GameStateOld or "None"), JsonString(GameStateNew or "None"), GameStateTimestamp and tostring(GameStateTimestamp) or "null"
     )
 
     local customLobbyJson = "null"
     if CurrentPhaseGroup ~= "in_game" and (CustomLobbyId or CustomLobbyName) then
         local regionParts = {}
         for _, r in ipairs(CustomLobbyRegions or {}) do
-            table.insert(regionParts, '"' .. r .. '"')
+            table.insert(regionParts, JsonString(r))
         end
         customLobbyJson = string.format(
             '{"lobby_name":%s,"lobby_id":%s,"is_private":%s,"regions":[%s],"member_count":%s,"lobby_size":%s}',
-            CustomLobbyName and ('"' .. CustomLobbyName .. '"') or "null",
-            CustomLobbyId and ('"' .. CustomLobbyId .. '"') or "null",
+            JsonString(CustomLobbyName),
+            JsonString(CustomLobbyId),
             CustomLobbyIsPrivate == nil and "null" or tostring(CustomLobbyIsPrivate),
             table.concat(regionParts, ","),
             CustomLobbyMemberCount == nil and "null" or tostring(CustomLobbyMemberCount),
@@ -238,8 +251,8 @@ local function WriteMeta(ModName, META_FILE)
     end
 
     local body = string.format(
-        '{\n  "last_changed": "%s",\n  "queue": %s,\n  "local_player": %s,\n  "party_size": %d,\n  "max_party_size": %d,\n  "party_members": %s,\n  "game_state": %s,\n  "custom_lobby": %s\n}\n',
-        lastChanged, queueJson, localStr, partySize, maxPartySize, membersJson, gameStateJson, customLobbyJson
+        '{\n  "last_changed": %s,\n  "queue": %s,\n  "local_player": %s,\n  "party_size": %d,\n  "max_party_size": %d,\n  "party_members": %s,\n  "game_state": %s,\n  "custom_lobby": %s\n}\n',
+        JsonString(lastChanged), queueJson, localStr, partySize, maxPartySize, membersJson, gameStateJson, customLobbyJson
     )
 
     local f = io.open(META_FILE, "w")
@@ -387,8 +400,58 @@ function Module.Init(ModName, OUT_DIR)
         print(string.format("[%s] MatchPhaseChanged hook registered (game state + meta refetch)\n", ModName))
     end)
 
+    -- Cancelling a match never fires MatchPhaseChanged, so fake one landing on None.
+    -- Skipped if we're already out of game so repeat OnReps don't spam writes.
+    local function FakeIdlePhase(reason)
+        if CurrentPhaseGroup == "out_of_game" then return end
+        GameStateOld = GameStateNew
+        GameStateNew = "None"
+        GameStateTimestamp = os.time()
+        CurrentPhaseGroup = "out_of_game"
+        CurrentMmState = 1
+        CachedQueueName = nil
+        print(string.format("[%s] Match cancelled (%s), pushing None phase\n", ModName, reason))
+        WriteMeta(ModName, META_FILE)
+    end
+
+    -- Auto-cancel (disconnect/AFK). No client-side function for this exists,
+    -- so catch the replicated surrender info flipping to EMatchAutoCancelState.Activated.
+    -- This OnRep also fires for regular surrender votes, hence the state check.
+    pcall(function()
+        RegisterHook("/Script/Prometheus.PMGameState:OnRep_MatchSurrenderInfo",
+            function(self)
+                local ok, err = pcall(function()
+                    local gs = self:get()
+                    if gs.MatchSurrenderInfo.MatchAutoCancelState == 2 then
+                        FakeIdlePhase("auto cancel")
+                    end
+                end)
+                if not ok then print(string.format("[%s] OnRep_MatchSurrenderInfo ERROR: %s\n", ModName, tostring(err))) end
+            end
+        )
+        print(string.format("[%s] OnRep_MatchSurrenderInfo hook registered (auto cancel)\n", ModName))
+    end)
+
+    -- Custom lobby owner cancelled the match
+    pcall(function()
+        RegisterHook("/Script/Prometheus.PMGameState:OnRep_bCustomLobbyOwnerCancelMatchActivated",
+            function(self)
+                local ok, err = pcall(function()
+                    local gs = self:get()
+                    if gs.bCustomLobbyOwnerCancelMatchActivated then
+                        FakeIdlePhase("custom lobby owner cancel")
+                    end
+                end)
+                if not ok then print(string.format("[%s] OnRep_bCustomLobbyOwnerCancelMatchActivated ERROR: %s\n", ModName, tostring(err))) end
+            end
+        )
+        print(string.format("[%s] OnRep_bCustomLobbyOwnerCancelMatchActivated hook registered\n", ModName))
+    end)
+
     -- Capture once on mod load too (hooks won't fire for the current state).
-    ExecuteWithDelay(2000, function() pcall(function() WriteMeta(ModName, META_FILE) end) end)
+    ExecuteWithDelay(2000, function()
+        ExecuteInGameThread(function() pcall(function() WriteMeta(ModName, META_FILE) end) end)
+    end)
 end
 
 return Module

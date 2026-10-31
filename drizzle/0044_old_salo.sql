@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `useCustomCharArt` integer DEFAULT true NOT NULL;

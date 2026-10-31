@@ -59,6 +59,14 @@ export async function onCustomLobbyHeartbeat(
   });
 }
 
+export async function onModHeartbeat(
+  handler: (payload: FileChangePayload) => void
+): Promise<UnlistenFn> {
+  return listen<FileChangePayload>('onModHeartbeat', (event) => {
+    handler(event.payload);
+  });
+}
+
 export async function isProcessRunning(name: string): Promise<boolean> {
   return invoke<boolean>('is_process_running', { name });
 }

@@ -63,11 +63,9 @@ export default function TopBar({ border = false }: TopBarProps) {
       const user = await getUser();
       const username = user?.username;
 
-      if (match && username) {
-        const jason = await fetchOnlineCount(username, user.matchmakingRegion, version, match.queue, match.queueState ?? 'Idle', user.rating);
-        await updateOnlineCache(jason);
-        console.debug(`Updated online cache!`);
-      }
+      const jason = await fetchOnlineCount(username ?? null, user?.matchmakingRegion ?? null, version, match.queue, match.queueState ?? 'Idle', user?.rating);
+      await updateOnlineCache(jason);
+      console.debug(`Updated online cache!`);
     }
 
     tick();
@@ -138,12 +136,12 @@ export default function TopBar({ border = false }: TopBarProps) {
             onClick={() => showDialogue({
               variant: 'info',
               image: '/aimi/Yapping.gif',
-              title: 'What does "Queued" mean?',
+              title: 'What does "App Queued" mean?',
               message: `I can only track the queue states of other Ai.Mi App users. So for your queue (${getQueueName(queue)}), there is ${queuing} player(s) in your region queuing right now.`,
               autoDismiss: 20000
             })}
           >
-            Queued: <span className="text-char-default brightness-75">{queuing}</span>
+            App Queued: <span className="text-char-default brightness-75">{queuing}</span>
           </button>
         )}
       </div>

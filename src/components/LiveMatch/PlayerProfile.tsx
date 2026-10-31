@@ -53,7 +53,7 @@ function pickChar(
 
 function winrateClass(winrate: number | null | undefined) {
   if (winrate == null) return 'text-char-subtle';
-  if (winrate >= 0.6) return 'text-match-win';
+  if (winrate >= 0.6) return 'text-success';
   if (winrate <= 0.4) return 'text-match-loss';
   return 'text-match-mid';
 }
@@ -116,7 +116,7 @@ export default function PlayerProfile({
   }, [isOpen]);
 
   const rankInfo = getRankFromLP(player.rating);
-  const peakRankInfo = player.peakRating?.rating ? getRankFromLP(player.peakRating.rating) : null;
+  const peakRankInfo = player.peakRating?.peakRating ? getRankFromLP(player.peakRating.peakRating) : null;
   const roleKey = (player.role?.toLowerCase() ?? null) as 'forward' | 'goalie' | null;
   const playstyleType = roleKey ? player.playstyle?.[roleKey]?.type : undefined;
   const playstyleClass = playstyleType && playstyleType in PLAYSTYLE_CLASSES
@@ -184,7 +184,7 @@ export default function PlayerProfile({
                       <span className="text-base font-semibold text-char truncate">{obfuscate ? '——' : player.username}</span>
                       {player.tags.length > 0 && (
                         <span className="flex items-center gap-1 shrink-0">
-                          {player.tags.map(tag => (
+                          {!obfuscate && player.tags.map(tag => (
                             <img
                               key={tag}
                               src={`/tags/${tag}.webp`}

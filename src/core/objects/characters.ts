@@ -27,6 +27,11 @@ export type Character = {
   name: string,
   abilities: Ability[],
   pagination?: boolean,
+  images: {
+    goalscore: string,
+    portrait: string,
+    custom_portrait: string,
+  }
 }
 
 export const characters: Character[] = [
@@ -66,7 +71,12 @@ export const characters: Character[] = [
         cooldown: 35,
         description: "Summon a turret that launches a firewall of technostatic in a fixed direction. Each bolt hits the first enemy struck."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_MagicalPlaymaker.webp',
+      portrait: '/characters/portrait/CD_MagicalPlaymaker.webp',
+      custom_portrait: '/characters/portrait/custom/CD_MagicalPlaymaker.webp'
+    }
   },
   {
     id: 'CD_ShieldUser',
@@ -104,7 +114,12 @@ export const characters: Character[] = [
         cooldown: 30.8,
         description: "Combine both shields and launch them forward. If they hit an enemy, they expand into a slow-moving, destructible barrier that can repeatedly hit enemies. Deals reduced damage after the first hit."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_ShieldUser.webp',
+      portrait: '/characters/portrait/CD_ShieldUser.webp',
+      custom_portrait: '/characters/portrait/custom/CD_ShieldUser.webp'
+    }
   },
   {
     id: 'CD_AngelicSupport',
@@ -142,7 +157,12 @@ export const characters: Character[] = [
         cooldown: 35,
         description: "Summon a celestial guardian that continuously heals nearby allies. The guardian rescues any ally that would be K.O.'d, transporting them to its location and restoring 60% of their Stagger bar."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_AngelicSupport.webp',
+      portrait: '/characters/portrait/CD_AngelicSupport.webp',
+      custom_portrait: '/characters/portrait/custom/CD_AngelicSupport.webp'
+    }
   },
   {
     id: 'CD_NimbleBlaster',
@@ -180,7 +200,12 @@ export const characters: Character[] = [
         cooldown: 27,
         description: "Launch a sticky bomb that hits and burns the first enemy struck for 2s, slowing and damaging them over time. The effect can spread to nearby enemies."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_NimbleBlaster.webp',
+      portrait: '/characters/portrait/CD_NimbleBlaster.webp',
+      custom_portrait: '/characters/portrait/custom/CD_NimbleBlaster.webp'
+    }
   },
   {
     id: 'CD_StalwartProtector',
@@ -218,7 +243,12 @@ export const characters: Character[] = [
         cooldown: 40,
         description: "Serve up an arc of tofu plates that hit enemies and leave impassable terrain where they end."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_StalwartProtector.webp',
+      portrait: '/characters/portrait/CD_StalwartProtector.webp',
+      custom_portrait: '/characters/portrait/custom/CD_StalwartProtector.webp'
+    }
   },
   {
     id: 'CD_EmpoweringEnchanter',
@@ -256,7 +286,12 @@ export const characters: Character[] = [
         cooldown: 20,
         description: "Conjure a growing maelstrom. On recast or after a few seconds, launch the maelstrom, hitting all enemies in its path. If released before full size, it has reduced range and deals LIGHT hits."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_EmpoweringEnchanter.webp',
+      portrait: '/characters/portrait/CD_EmpoweringEnchanter.webp',
+      custom_portrait: '/characters/portrait/custom/CD_EmpoweringEnchanter.webp'
+    }
   },
   {
     id: 'CD_TempoSniper',
@@ -294,7 +329,12 @@ export const characters: Character[] = [
         cooldown: 23,
         description: "Fire a volley of LIGHT crystal thorns in an arc."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_TempoSniper.webp',
+      portrait: '/characters/portrait/CD_TempoSniper.webp',
+      custom_portrait: '/characters/portrait/custom/CD_TempoSniper.webp'
+    }
   },
   {
     id: 'CD_GravityMage',
@@ -332,7 +372,12 @@ export const characters: Character[] = [
         cooldown: 30,
         description: "Conjure a gravity well at a target location, slowing and pulling enemies towards its center point. After 2.5s or upon recast, the well explodes, hitting enemies away."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_GravityMage.webp',
+      portrait: '/characters/portrait/CD_GravityMage.webp',
+      custom_portrait: '/characters/portrait/custom/CD_GravityMage.webp'
+    }
   },
   {
     id: 'CD_FlexibleBrawler',
@@ -370,7 +415,12 @@ export const characters: Character[] = [
         cooldown: 35,
         description: "Deal a flurry of light jabs in an arc, culminating in a devastating roundhouse kick."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_FlexibleBrawler.webp',
+      portrait: '/characters/portrait/CD_FlexibleBrawler.webp',
+      custom_portrait: '/characters/portrait/custom/CD_FlexibleBrawler.webp'
+    }
   },
   {
     id: 'CD_CleverSummoner',
@@ -408,7 +458,12 @@ export const characters: Character[] = [
         cooldown: 25,
         description: "Target an area and launch a massive blob cluster into the sky. After a delay the cluster splits, raining down blobs for each enemy in the target area, plus one at the center."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_CleverSummoner.webp',
+      portrait: '/characters/portrait/CD_CleverSummoner.webp',
+      custom_portrait: '/characters/portrait/custom/CD_CleverSummoner.webp'
+    }
   },
   {
     id: 'CD_SpeedySkirmisher',
@@ -446,7 +501,12 @@ export const characters: Character[] = [
         cooldown: 24,
         description: "Launch a blazing fireball that detonates on impact with an enemy or wall, hitting enemies away from the blast's center point."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_SpeedySkirmisher.webp',
+      portrait: '/characters/portrait/CD_SpeedySkirmisher.webp',
+      custom_portrait: '/characters/portrait/custom/CD_SpeedySkirmisher.webp'
+    }
   },
   {
     id: 'CD_UmbrellaUser',
@@ -525,7 +585,12 @@ export const characters: Character[] = [
         cooldown: 1,
         description: "Pop open or Retract the Umbrella, unlocking a different set of abilities per form."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_UmbrellaUser.webp',
+      portrait: '/characters/portrait/CD_UmbrellaUser.webp',
+      custom_portrait: '/characters/portrait/custom/CD_UmbrellaUser.webp'
+    }
   },
   {
     id: 'CD_ChaoticRocketeer',
@@ -563,7 +628,12 @@ export const characters: Character[] = [
         cooldown: 40,
         description: "Drop a bomb at a location, hitting surrounding enemies. Enemies at the center are hit much harder."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_ChaoticRocketeer.webp',
+      portrait: '/characters/portrait/CD_ChaoticRocketeer.webp',
+      custom_portrait: '/characters/portrait/custom/CD_ChaoticRocketeer.webp'
+    }
   },
   {
     id: 'CD_DrumOni',
@@ -601,7 +671,12 @@ export const characters: Character[] = [
         cooldown: 36,
         description: "Launch your drums towards enemies as a PROJECTILE. On hitting an enemy CREATE a trap that will let targets enter but will knock them back when they attempt to escape."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_DrumOni.webp',
+      portrait: '/characters/portrait/CD_DrumOni.webp',
+      custom_portrait: '/characters/portrait/custom/CD_DrumOni.webp'
+    }
   },
   {
     id: 'CD_Healer',
@@ -639,7 +714,12 @@ export const characters: Character[] = [
         cooldown: 45,
         description: "Become ELUSIVE and BLINK to a target location near yourself or an ally, restoring 40% of nearby allies' missing stagger on arrival. Within the next 3.25s, recast to BLINK back to your starting position."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_Healer.webp',
+      portrait: '/characters/portrait/CD_Healer.webp',
+      custom_portrait: '/characters/portrait/custom/CD_Healer.webp'
+    }
   },
   {
     id: 'CD_EDMOni',
@@ -677,7 +757,12 @@ export const characters: Character[] = [
         cooldown: 35,
         description: "After a delay, emit 5 sound pulses at surrounding enemies over 2.5s."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_EDMOni.webp',
+      portrait: '/characters/portrait/CD_EDMOni.webp',
+      custom_portrait: '/characters/portrait/custom/CD_EDMOni.webp'
+    }
   },
   {
     id: 'CD_WhipFighter',
@@ -715,7 +800,12 @@ export const characters: Character[] = [
         cooldown: 25,
         description: "Launch your chain's anchor, pulling the first enemy hit toward you. After an initial travel time the weapon expands and slows down dramatically, becoming much stronger."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_WhipFighter.webp',
+      portrait: '/characters/portrait/CD_WhipFighter.webp',
+      custom_portrait: '/characters/portrait/custom/CD_WhipFighter.webp'
+    }
   },
   {
     id: 'CD_ManipulatingMastermind',
@@ -753,7 +843,12 @@ export const characters: Character[] = [
         cooldown: 40,
         description: "Launch a shadow wave that banishes, slows, and damages enemies for 1.75s. Banished enemies cannot be targeted or interacted with."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_ManipulatingMastermind.webp',
+      portrait: '/characters/portrait/CD_ManipulatingMastermind.webp',
+      custom_portrait: '/characters/portrait/custom/CD_ManipulatingMastermind.webp'
+    }
   },
   {
     id: 'CD_RockOni',
@@ -791,7 +886,12 @@ export const characters: Character[] = [
         cooldown: 40,
         description: "Push-and-hold this ability to start rocking out, gaining 100% knockback resistance. Upon releasing the ability or after 2s, emit a shockwave that blasts enemies away from you. The wave increases in size and power for the first 1.25s it's charged."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_RockOni.webp',
+      portrait: '/characters/portrait/CD_RockOni.webp',
+      custom_portrait: '/characters/portrait/custom/CD_RockOni.webp'
+    }
   },
   {
     id: 'CD_HulkingBeast',
@@ -829,7 +929,12 @@ export const characters: Character[] = [
         cooldown: 45,
         description: "Hulk out for 3.5s, increasing your Size and upgrading your Strikes to hit harder and work against players."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_HulkingBeast.webp',
+      portrait: '/characters/portrait/CD_HulkingBeast.webp',
+      custom_portrait: '/characters/portrait/custom/CD_HulkingBeast.webp'
+    }
   },
   {
     id: 'CD_FlashySwordsman',
@@ -867,10 +972,15 @@ export const characters: Character[] = [
         cooldown: 36, // zentaro lore
         description: "Blink to a nearby location and become Elusive, repeatedly dealing LIGHT hits to enemies caught in the area. Afterwards, hit all nearby enemies away."
       }
-    ]
+    ],
+    images: {
+      goalscore: '/characters/goalscore/CD_FlashySwordsman.webp',
+      portrait: '/characters/portrait/CD_FlashySwordsman.webp',
+      custom_portrait: '/characters/portrait/custom/CD_FlashySwordsman.webp'
+    }
   }
 ]
 
-export function getCharacterFromId(id: string): Character | undefined {
+export function getCharacterFromId(id: string | null): Character | undefined {
   return characters.find(c => c.id === id);
 }

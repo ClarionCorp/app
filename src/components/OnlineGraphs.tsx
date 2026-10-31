@@ -18,7 +18,7 @@ function themeColor(cssVar: string, fallback: string): string {
   return value || fallback;
 }
 
-const REGION_ORDER: AppAPIRegion[] = ['Global', 'NorthAmerica', 'Europe', 'Oceania', 'SouthAmerica', 'Japan', 'Asia'];
+const REGION_ORDER: AppAPIRegion[] = ['Global', 'NorthAmerica', 'Europe', 'Asia', 'Oceania', 'SouthAmerica', 'Japan'];
 
 function formatTime(when: Date | string): string {
   return new Date(when).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });

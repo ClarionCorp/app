@@ -1,16 +1,19 @@
 // This refers to the Ai.Mi App API at https://api.aimis.app.
 
-import { OnlineHistoryV1, POSTOnlinePlayersV2, VersionCheck } from "../../types/appAPI";
+import { GETOnlinePlayersV2, OnlineHistoryV1, POSTOnlinePlayersV2, VersionCheck } from "../../types/appAPI";
 import { AiMiAPI, version } from "../constants";
+import { getAppSettings } from "../database/queries";
 
 export async function checkForUpdates(): Promise<VersionCheck> {
+  const appSettings = await getAppSettings();
   try {
-    const res = await fetch(`${AiMiAPI}/v1/update/check?currentVer=${version}&channel=beta`, {
+    const res = await fetch(`${AiMiAPI}/v1/update/check?currentVer=${version}&channel=${appSettings.releaseChannel.toLowerCase()}`, {
       method: 'GET',
       headers: { 'Accept': 'application/json' }
     });
 
     const data = await res.json() as VersionCheck;
+    if (!data.release) { throw new Error(`Couldn't find any releases for branch ${appSettings.releaseChannel.toUpperCase()}!`) };
     if (data.release?.author.id !== 89052946) { throw new Error("Release author ID doesn't match blals!") }; // I'll remove later but I'm paranoid rn lol
     if (data.updateAvailable) { console.log(`Update Available! (${version} ->${data.latest})`) }
     else { console.log(`App is up-to-date!`) };
@@ -24,17 +27,33 @@ export async function checkForUpdates(): Promise<VersionCheck> {
 }
 
 // Fetches total online + updates AppAPI with our queueState & ID.
-export async function fetchOnlineCount(username: string, region: string | null, version: string, queueId: string | null, queueState: string, rating?: number | null): Promise<POSTOnlinePlayersV2> {
+export async function fetchOnlineCount(username: string | null, region: string | null, version: string, queueId: string | null, queueState: string, rating?: number | null): Promise<POSTOnlinePlayersV2> {
   console.debug(`Fetching online player count...`);
-  const res = await fetch(`${AiMiAPI}/v2/online`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
-    body: JSON.stringify({ username, region, version, queueId, queueState, ...(rating != null && { rating }) }),
-  });
-  if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, region, version, rating, queueId, queueState }, null, 0)) };
-  const data = await res.json() as POSTOnlinePlayersV2;
-  console.debug(`Receieved online players: ${JSON.stringify(data, null, 1)}`);
-  return data;
+
+  if (!username) {
+    const res = await fetch(`${AiMiAPI}/v2/online`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
+    });
+    if (!res.ok) { console.warn(`Failed to send online status!`) };
+    const data = await res.json() as GETOnlinePlayersV2;
+
+    console.debug(`Receieved online players: ${JSON.stringify(data, null, 0)}`);
+    return data;
+  }
+  
+  else {
+    const res = await fetch(`${AiMiAPI}/v2/online`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
+      body: JSON.stringify({ username, region, version, queueId, queueState, ...(rating != null && { rating }) }),
+    });
+    if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, region, version, rating, queueId, queueState }, null, 0)) };
+    const data = await res.json() as POSTOnlinePlayersV2;
+    console.debug(`Receieved online players: ${JSON.stringify(data, null, 0)}`);
+    return data;
+  }
+  
 }
 
 export async function fetchOnlineGraphs(): Promise<OnlineHistoryV1> {

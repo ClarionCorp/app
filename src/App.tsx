@@ -8,17 +8,17 @@ import NavCorner from './components/Navigation/NavCorner';
 import { onMatchFinalize, onMatchUpdate, onPlayersUpdate, onGameStateChange, onCustomLobbyHeartbeat, onQueueChange, pushOverlayState, pushQueueState } from './core/bridgeListener';
 import { getUser, resetLocalTables, getAppSettings, appendTimelineEntry, getCurrentMatch, resetPlayerTable } from './core/database/queries';
 import { tryUpdateDiscordRPC } from './core/utilities/discord';
-import { fetchSelfQuery } from './core/utilities/odyssey';
 import { playAudio, selectRandomQueuePop } from './core/utilities/audio';
 import { QueuePopType } from './pages/Settings';
-import { exit, relaunch } from '@tauri-apps/plugin-process';
+import { exit } from '@tauri-apps/plugin-process';
 import { invoke } from '@tauri-apps/api/core';
-import { AiMiAPI, heartbeat_interval, version } from './core/constants';
-import { formatLiveMatchInfo } from './core/overlay';
+import { version } from './core/constants';
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON } from './types/ue4ss';
-import { saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
+import { checkLocalPlayer, saveMatchToHistory, updateCustomLobby, updateGameState, updatePlayers, updateScore } from './core/utilities/events';
 import { sessionHeartbeat } from './core/utilities/sessions';
 import { fetchOnlineCount } from './core/utilities/appAPI';
+import { ThemePicker } from './components/UI/Theme/ThemePicker';
+import { refreshCurrentUser } from './core/utilities/odyssey';
 
 export interface AppContextType {
   navigate: ReturnType<typeof useNavigate>;
@@ -33,6 +33,7 @@ export interface AppContextType {
 function App() {
   const [odyAuth, setOdyAuth] = useState<OdyAuth>();
   const [connectedToOdy, setConnectedStatus] = useState<boolean>(false);
+  const [themePickerOpen, setThemePickerOpen] = useState(false);
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -52,53 +53,10 @@ function App() {
         await playAudio(selectRandomQueuePop(setting.queuePopType as QueuePopType), setting.queuePopVol)
       };
       if (e.key === 'F9') navigate('/debug');
+      if (e.key === 'F4') setThemePickerOpen(true);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
-  // Identity heartbeat: Relaunch if the active Odyssey account changes
-  useEffect(() => {
-    let firstFire = true;
-    const id = setInterval(async () => {
-      if (firstFire) { firstFire = false; return; }
-      try {
-        console.log('Checking in with Odyssey for routine heartbeat...');
-        const [selfQuery, currentUser] = await Promise.all([fetchSelfQuery(), getUser()]);
-        if (!currentUser) return;
-        if (selfQuery.username !== currentUser.username || selfQuery.playerId !== currentUser.playerId) {
-          console.error('User identity mismatch detected, relaunching...');
-          await relaunch();
-        }
-      } catch {
-        // game may not be running, just skip silently
-      }
-    }, heartbeat_interval);
-    return () => clearInterval(id);
-  }, []);
-
-  // Periodic match data upload (every 30s) [only if allowed by settings]
-  useEffect(() => {
-    const uploadMatchData = async () => {
-      const settings = await getAppSettings();
-      if (settings.sendMatchData == false) { return };
-
-      const buildData = await formatLiveMatchInfo();
-      if (!buildData) { console.debug("Skipping live sync due to incomplete object data!"); return; }; // kinda spammy
-
-      const res = await fetch(`${AiMiAPI}/v1/overlay/sync`, {
-        method: 'POST',
-        headers: { "x-user-agent": "aimi-app", "Content-Type": "application/json" },
-        body: JSON.stringify(buildData),
-      });
-
-      const data = await res.json();
-      if (!res.ok) { console.warn(`Live Sync with AppAPI failed! (${res.status} ${res.statusText})`, data); return; };
-      // console.debug(`Successfully synced live match data with AppAPI.`); // turn off later, might get spammy lol
-      return;
-    };
-    const id = setInterval(uploadMatchData, 30_000);
-    return () => clearInterval(id);
   }, []);
 
   // Auto-close when game exits (if enabled in settings)
@@ -125,7 +83,6 @@ function App() {
       await updatePlayers(JSON.parse(payload.content!) as PlayersJSON);
       await pushOverlayState();
     }),
-    onMatchFinalize(async (payload) => { await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON); }),
     onCustomLobbyHeartbeat(async (payload) => { await updateCustomLobby(JSON.parse(payload.content!) as MetaJSON); }),
 
     onGameStateChange(async (payload) => {
@@ -165,7 +122,7 @@ function App() {
       const user = await getUser();
       await updateGameState(data); // we are really just updating the queue object
 
-      if (previous.queueState == 'Queued' && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
+      if ((previous?.queueState == 'Queued' || previous?.queueState == 'Idle') && (data.queue.state == 'FoundMatch' || data.queue.state == 'StartingGame')) {
         const settings = await getAppSettings();
         if (settings.notifyQueuePop) {
           await playAudio(selectRandomQueuePop(settings.queuePopType as QueuePopType), settings.queuePopVol);
@@ -177,11 +134,27 @@ function App() {
         await resetPlayerTable('Entered Queue');
       }
 
+      // Check local_player string against current active user.
+      if (data.local_player) {
+        const result = await checkLocalPlayer(data.local_player);
+        if (result == false) {
+          localStorage.setItem('reload_reason', JSON.stringify({ reason: 'ACCOUNT_CHANGE', acknowledged: false }));
+          navigate('/', { replace: true })
+        };
+      }
+
       await tryUpdateDiscordRPC();
       await pushOverlayState();
       await pushQueueState();
       await sessionHeartbeat();
       if (user) { await fetchOnlineCount(user.username, user.matchmakingRegion, version, data.queue.id, data.queue.state, user.rating) } // should always be set but whatever
+    }),
+    onMatchFinalize(async (payload) => {
+      // Make absolutely sure the user exists in the db before attempting to save
+      const user = getUser();
+      if (!user) { await refreshCurrentUser(true); };
+
+      await saveMatchToHistory(JSON.parse(payload.content!) as PostGameJSON);
     }),
   ]);
   return () => { unlistens.then((fns) => fns.forEach((fn) => fn())); };
@@ -205,6 +178,7 @@ function App() {
       </div>
  
       <GlobalButtons />
+      <ThemePicker open={themePickerOpen} onClose={() => setThemePickerOpen(false)} />
     </div>
   );
 }

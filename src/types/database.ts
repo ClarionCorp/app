@@ -10,3 +10,8 @@ export type GameSessionsTable = typeof gameSessions.$inferSelect;
 export type AppSettingsTable = typeof appSettings.$inferSelect;
 
 export type QueueStates = 'Unknown' | 'Idle' | 'Queued' | 'FoundMatch' | 'StartingGame' | 'InGame' | 'EMatchmakingStateV2_MAX';
+
+export type Nameplate = {
+  nameplateId: string,
+  nameplateUrl: string,
+}

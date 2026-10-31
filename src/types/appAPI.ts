@@ -17,7 +17,7 @@ export type POSTOnlinePlayersV2 = {
   in_game: number,
   idling: number,
   seen: number,
-  in_your_queue: number,
+  in_your_queue?: number,
 }
 
 // GET /v2/online
@@ -116,3 +116,6 @@ export type VersionCheck = {
 
 export type PreferredDataSources = 'ClarionCorp' | 'Cached' | 'Odyssey';
 export const PreferredDataSources = ['ClarionCorp', 'Cached', 'Odyssey'];
+
+export type ReleaseChannel = 'Stable' | 'Beta';
+export const ReleaseChannel = ['Stable', 'Beta'];

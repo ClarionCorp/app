@@ -5,11 +5,13 @@ import { is, Table } from "drizzle-orm";
 import { migrate, createDrizzleProxy, Database } from "tauri-plugin-libsql-api";
 import { appDataDir } from "@tauri-apps/api/path";
 import { mkdir } from "@tauri-apps/plugin-fs";
+import { dev_mode } from "../constants";
 
 const dataDir = await appDataDir();
 await mkdir(dataDir, { recursive: true });
+const targetDb = dev_mode ? 'devmode' : 'cosmicexpanse';
 
-await Database.load("sqlite:cosmicexpanse.db");
+await Database.load(`sqlite:${targetDb}.db`);
 
 // Vite inlines the SQL at build time
 const migrations = import.meta.glob<string>("../../../drizzle/*.sql", {
@@ -18,9 +20,9 @@ const migrations = import.meta.glob<string>("../../../drizzle/*.sql", {
   import: "default",
 });
 
-await migrate("sqlite:cosmicexpanse.db", migrations);
+await migrate(`sqlite:${targetDb}.db`, migrations);
 
-export const db = drizzle(createDrizzleProxy("sqlite:cosmicexpanse.db"), { schema });
+export const db = drizzle(createDrizzleProxy(`sqlite:${targetDb}.db`), { schema });
 
 export async function resetDatabase() {
   const tables = Object.values(schema).filter((t) => is(t, Table));

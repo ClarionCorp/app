@@ -1,61 +1,5 @@
 // Types from Upstream CC API
-export type Player = {
-  id: string,
-  username: string,
-  region: string,
-  logoId: string,
-  nameplateId: string,
-  emoticonId: string,
-  titleId: string,
-  title: string | null,
-  socialUrl: string,
-  discordId: string,
-  createdAt: Date,
-  tags: string[],
-  updatedAt: Date,
-  currentXp: number,
-  playerStatus: 'Online' | 'Offline' | 'InQueue' | 'InGame',
-  ratings: PlayerRating[],
-  // teams: // unused for now
-  characterRatings: PlayerCharacterRating[],
-  mastery: {
-    currentLevel: number,
-    currentLevelXp: number,
-    totalXp: number,
-    xpToNextLevel: number,
-  },
-  assets?: {
-    nameplate?: string, // url
-  },
-  peak?: PlayerRating
-}
-
-export type PlayerRating = {
-  playerId: string,
-  rating: number,
-  rank: number,
-  wins: number,
-  losses: number,
-  masteryLevel: number,
-  games: number,
-  createdAt: Date
-}
-
-export type PlayerCharacterRating = {
-  playerId: string,
-  character: string, // id
-  role: 'Forward' | 'Goalie',
-  games: number,
-  assists: number,
-  knockouts: number,
-  losses: number,
-  mvp: number,
-  saves: number,
-  scores: number,
-  wins: number,
-  gamemode: 'NormalInitial' | 'RankedInitial',
-  createdAt: Date,
-}
+import { OdyRegion } from "../core/objects/regions"
 
 export type Awakenings = {
   id: string, // awakening id, not training id
@@ -80,9 +24,119 @@ export type Maps = {
   all: Map[]
 }
 
-type RoleCategoryPS = {
+export type Season = {
+  season: number,
+  startDate: Date,
+  endDate: Date
+}
+
+export type Player = {
+  info: {
+    playerId: string,
+    username: string,
+    nameplateId: string | null,
+    emoticonId: string | null,
+    titleId: string | null,
+    title?: string | null,
+    region: OdyRegion,
+    tags: string[],
+    socialUrl: string | null,
+    discord: {
+      id: string,
+      overwritten: boolean,
+    } | null,
+  },
+  leveling: {
+    currentLevel: number,
+    currentLevelXp: number,
+    totalXp: number,
+    xpToNextLevel: number,
+  },
+  latestRatings: PlayerRating[], // latest first
+  seasons: PlayerSeason[], // latest first
+  characterStats: PlayerCharacterRating[],
+  characterMasteries: [], // not setup yet
+  accolades: {
+    bestCharacter: PlayerCharacterRating[],
+    favCharacter: PlayerCharacterRating[],
+  },
+  teams: PlayerTeam[],
+  playStyle: Playstyle,
+  smurfing: {
+    confidence: SmurfConfidence,
+    signals: {
+      youngAccount: boolean,
+      lowLevel: boolean,
+      abnormalWinrate: boolean,
+    }
+  },
+  assets?: {
+    nameplate?: string,
+  },
+  currentSeason: number,
+  createdAt: Date,
+  updatedAt: Date,
+}
+
+export type PlayerRating = {
+  rating: number,
+  ranking: {
+    global: number,
+    region: number,
+  },
+  region: OdyRegion,
+  games: number,
+  wins: number,
+  losses: number,
+  season: number,
+  createdAt: Date,
+}
+
+export type PlayerSeason = {
+  season: number,
+  peakRating: number,
+  finalRating: number,
+}
+
+export type PlayerCharacterRating = {
+  character: string,
+  role: 'Forward' | 'Goalie',
+  games: number,
+  wins: number,
+  losses: number,
+  scores: number,
+  assists: number,
+  saves: number,
+  knockouts: number,
+  mvp: number,
+  gamemode: 'Normal' | 'Ranked',
+  createdAt: Date
+}
+
+export type PlayerTeam = {
+  teamName: string,
+  teamTag: string,
+  series: string,
+  season: string,
+  logo: string,
+}
+
+export type RolePlaystyle = {
+  assists: PlaystyleStat,
+  knockouts: PlaystyleStat,
+  scores: PlaystyleStat,
+  saves: PlaystyleStat,
+  type: PlaystyleType
+}
+
+export type Playstyle = {
+  forward: RolePlaystyle,
+  goalie: RolePlaystyle,
+}
+
+export type PlaystyleStat = {
   multiplier: number,
-  avgPerGame: number | null
+  avgPerGame: number | null,
 }
 
 export type PlaystyleType = 
@@ -95,43 +149,4 @@ export type PlaystyleType =
   'Generic Forward'
 ;
 
-type RolePlaystyle = {
-  type?: PlaystyleType
-  assists: RoleCategoryPS
-  knockouts: RoleCategoryPS
-  scores: RoleCategoryPS
-  saves: RoleCategoryPS
-}
-
-export type Playstyle = {
-  forward: RolePlaystyle,
-  goalie: RolePlaystyle
-}
-
 export type SmurfConfidence = 'none' | 'low' | 'medium' | 'high';
-export type SmurfResult = {
-  username: string,
-  confidence: SmurfConfidence,
-  signals: {
-    youngAccount: boolean,
-    lowLevel: boolean,
-    abnormalWinrate: boolean,
-  }
-}
-
-export type Nameplate = {
-  nameplateId: string,
-  nameplateUrl: string,
-}
-
-export type PeakRating = {
-  rating: number,
-  season: number,
-  date: Date,
-}
-
-export type Season = {
-  season: number,
-  startDate: Date,
-  endDate: Date
-}

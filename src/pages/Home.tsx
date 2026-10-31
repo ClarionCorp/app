@@ -9,6 +9,7 @@ import { getAppSettings, getUser, upsertAppSettings } from "../core/database/que
 import { useDialogue } from "../components/UI/DialogueToast";
 import { AboutModal } from "../components/Navigation/AboutModal";
 import { OverlayModal } from "../components/Navigation/OverlayModal";
+import { ReloadReason } from "../types/storage";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -34,7 +35,7 @@ export default function HomePage() {
   const [gameRunning, setGameRunning] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [overlayOpen, setOverlayOpen] = useState(false);
-  const { showQueue } = useDialogue();
+  const { show: showDialogue, showQueue } = useDialogue();
 
   const QUICK_LINKS = [
     { key: "about", label: "About", icon: <InfoIcon size={20} weight="duotone" />, onClick: () => setAboutOpen(true) },
@@ -56,32 +57,56 @@ export default function HomePage() {
       await upsertAppSettings({ seenWelcome: true });
       showQueue([
         {
-          variant: 'info',
+          variant: 'aimi',
           title: `Hello, ${usernameText}! (1/3)`,
-          message: "Welcome to the new Ai.Mi App! I'm Ai.Mi, and I'll be your assistant while playing Omega Strikers.",
-          image: '/aimi/NOM.png',
-          buttons: [{ label: 'Okay!', dismisses: true }],
+          message: "Welcome to the new Ai.Mi App! I'm Ai.Mi, and I'll be your assistant while playing Corestrike.",
+          image: '/aimi/Custom_Welcome_1.webp',
+          xlImage: true,
+          buttons: [{ label: 'Okay!', variant: 'aimi', dismisses: true }],
         },
         {
-          variant: 'info',
+          variant: 'aimi',
           title: 'Need Help? (2/3)',
           message: "You can call me from any page at any time by pressing F6 (or Fn + F6) on your keyboard!",
-          image: '/aimi/Yapping.gif',
-          buttons: [{ label: 'Got it, thanks!', dismisses: true }],
+          image: '/aimi/Custom_Welcome_2.webp',
+          xlImage: true,
+          buttons: [{ label: 'Got it, thanks!', variant: 'aimi', dismisses: true }],
         },
         {
-          variant: 'info',
+          variant: 'aimi',
           title: 'Customization (3/3)',
           message: "One last thing before I go, I recommend heading to Settings to really make the app your own!",
-          image: '/aimi/Noted.gif',
+          image: '/aimi/Custom_Welcome_3.webp',
+          xlImage: true,
           buttons: [
-            { label: 'Open Settings', onClick: () => { navigate('/settings') }, dismisses: true },
-            { label: 'Close', dismisses: true },
+            { label: 'Open Settings', onClick: () => { navigate('/settings') }, variant: 'secondary', dismisses: true },
+            { label: 'Close', variant: 'surface', dismisses: true },
           ],
         }
       ]);
     };
     checkNewUser();
+  }, []);
+
+  useEffect(() => {
+    const rr = JSON.parse(localStorage.getItem('reload_reason') ?? '{}') as ReloadReason | null;
+    if (rr?.acknowledged) return;
+
+    switch (rr?.reason) {
+      case 'ACCOUNT_CHANGE':
+        showDialogue({
+          variant: 'info',
+          image: '/aimi/Custom_Welcome_3.webp',
+          title: 'App Reloaded!',
+          message: `It appears you changed account without restarting the app. I've gone ahead and done that for you now. Happy Striking!`,
+          xlImage: true,
+          autoDismiss: 10_000
+        });
+        localStorage.setItem('reload_reason', JSON.stringify({ ...rr, acknowledged: true }));
+        return;
+      default:
+        return;
+    }
   }, []);
 
   return (
@@ -97,24 +122,22 @@ export default function HomePage() {
 
       <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-3rem)] px-8 pb-28">
         <motion.div
-          className="mb-10 short:my-7 text-center"
+          className="relative mb-10 w-full max-w-2xl"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="relative flex flex-col items-center">
-            <img
-              src={'/aimi/Yapping.gif'}
-              className="w-40 aspect-square rounded-xl object-cover my-10 short:my-7"
-            />
-            <div className="text-center mb-5">
-              <p className="text-xs uppercase tracking-widest text-char-subtle mb-1">
-                Welcome back!
-              </p>
-              <h1 className="text-2xl font-extrabold tracking-tight text-char">
-                How can I <span className="text-char-accent">help</span>?
-              </h1>
-            </div>
+          <img
+            src={'/aimi/Custom_Greeting.webp'}
+            className="absolute z-0 -left-16 -bottom-36 w-96 aspect-square rounded-xl object-cover object-top brightness-90 antialiased"
+            style={{
+              maskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)',
+            }}
+          />
+          <div className="text-center py-32 translate-y-3 translate-x-7">
+            <h1 className="text-2xl font-extrabold tracking-tight text-char italic">
+              How can I <span className="text-char-accent">help</span>?
+            </h1>
           </div>
         </motion.div>
 
@@ -124,7 +147,7 @@ export default function HomePage() {
           initial="hidden"
           animate="show"
         >
-          <div className="grid grid-cols-2 gap-4 w-full">
+          <div className="relative z-10 grid grid-cols-2 gap-4 w-full">
             {NAV_ITEMS.map((item) => {
               const disabled = item.online && !gameRunning;
               return (
@@ -167,7 +190,7 @@ function NavButton({ item, disabled, onClick }: NavButtonProps) {
     <motion.button
       onClick={onClick}
       disabled={disabled}
-      className={`relative h-32 w-full rounded-2xl overflow-hidden border border-surface-border group focus:outline-none p-2 shadow-lg ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary cursor-pointer"}`}
+      className={`relative h-32 w-full rounded-2xl overflow-hidden border border-surface-border group focus:outline-none p-2 shadow-[0_0_12px_rgba(0,0,0,0.5)] ${disabled ? "opacity-40 cursor-not-allowed" : "hover:border-primary cursor-pointer"}`}
       whileHover={disabled ? {} : { scale: 1.03 }}
       whileTap={disabled ? {} : { scale: 0.97 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}

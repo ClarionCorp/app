@@ -1,6 +1,6 @@
 [package]
 name = "aimiapp"
-version = "2.0.0-pre9"
+version = "2.0.0"
 description = "An Omega Strikers companion app"
 authors = ["blals"]
 edition = "2021"
@@ -41,3 +41,4 @@ tokio-stream = { version = "0.1", features = ["sync"] }
 notify = "6"
 tauri-plugin-libsql = { version = "0.1.0", default-features = false, features = ["core"] }
 tauri-plugin-single-instance = "2"
+tauri-plugin-window-state = "2"

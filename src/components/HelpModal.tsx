@@ -37,6 +37,7 @@ interface HelpModalProps {
 }
 
 const keybinds = [
+  { keys: ['F4'], description: 'Open Theme Picker' },
   { keys: ['F6'], description: 'Open Help' },
   { keys: ['F8'], description: 'Preview Queue Pop SFX', debug: false },
   { keys: ['F9'], description: 'Open Debug Page', debug: true },
