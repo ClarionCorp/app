@@ -105,10 +105,15 @@ local function ReadPlayer(playerUI)
 end
 
 -- PMGroupUIData is a long-lived client-session singleton.
--- Keep only its path (see Refs.lua), only searching with FindFirstOf once that stops resolving.
+-- Keep only its path (see Refs.lua), grabbed as soon as it's constructed so the queue hook never searches for it.
 local GroupUIRef = Refs.New("PMGroupUIData")
+pcall(function()
+    NotifyOnNewObject("/Script/Prometheus.PMGroupUIData", function(obj)
+        GroupUIRef:Set(obj)
+    end)
+end)
 local function GetGroupUI()
-    return GroupUIRef:Get(true)
+    return GroupUIRef:Get()
 end
 
 -- We assume that slot 0 is the local player, needs more testing
@@ -450,7 +455,10 @@ function Module.Init(ModName, OUT_DIR)
 
     -- Capture once on mod load too (hooks won't fire for the current state).
     ExecuteWithDelay(2000, function()
-        ExecuteInGameThread(function() pcall(function() WriteMeta(ModName, META_FILE) end) end)
+        ExecuteInGameThread(function()
+            pcall(function() GroupUIRef:Get(true) end) -- only search if the mod loaded after PMGroupUIData was constructed
+            pcall(function() WriteMeta(ModName, META_FILE) end)
+        end)
     end)
 end
 

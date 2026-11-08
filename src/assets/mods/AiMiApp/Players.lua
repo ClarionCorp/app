@@ -8,7 +8,8 @@ local LastPings = {}
 local IdentityCache = {}
 
 -- Set when back at menus, so last match's roster isn't reported until the next PreGame.
-local RosterCleared = false
+-- Starts set too, so a fresh session never polls the menu's PlayerStates before its first match.
+local RosterCleared = true
 
 -- Per-match knockout counts, keyed by PMPlayerId string; reset on PreGame.
 local KoCounts = {}
