@@ -1,8 +1,9 @@
 // This refers to the Ai.Mi App API at https://api.aimis.app.
 
-import { GETOnlinePlayersV2, OnlineHistoryV1, POSTOnlinePlayersV2, VersionCheck } from "../../types/appAPI";
+import { GETOnlinePlayersV3, OnlineHistoryV3, OnlineObjectV3, VersionCheck } from "../../types/appAPI";
 import { AiMiAPI, version } from "../constants";
 import { getAppSettings } from "../database/queries";
+import { getRegionObjectFromOdyRegion, OdyRegion } from "../objects/regions";
 
 export async function checkForUpdates(): Promise<VersionCheck> {
   const appSettings = await getAppSettings();
@@ -26,42 +27,47 @@ export async function checkForUpdates(): Promise<VersionCheck> {
   }
 }
 
-// Fetches total online + updates AppAPI with our queueState & ID.
-export async function fetchOnlineCount(username: string | null, region: string | null, version: string, queueId: string | null, queueState: string, rating?: number | null): Promise<POSTOnlinePlayersV2> {
+// Fetches total online for your region + updates AppAPI with our queueState & ID.
+export async function fetchOnlineCount(username: string | null, region: OdyRegion | null, version: string, queueId: string | null, queueState: string, rating?: number | null): Promise<OnlineObjectV3> {
   console.debug(`Fetching online player count...`);
 
-  if (!username) {
-    const res = await fetch(`${AiMiAPI}/v2/online`, {
+  if (!username || !region) {
+    const res = await fetch(`${AiMiAPI}/v3/online`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
     });
     if (!res.ok) { console.warn(`Failed to send online status!`) };
-    const data = await res.json() as GETOnlinePlayersV2;
+    const data = await res.json() as GETOnlinePlayersV3;
+    const localRegionObj = getRegionObjectFromOdyRegion(region).apiRegion;
+    const localRegionData = data.regions[localRegionObj]
 
-    console.debug(`Receieved online players: ${JSON.stringify(data, null, 0)}`);
-    return data;
+    console.debug(`Receieved online players: ${JSON.stringify(localRegionData, null, 0)}`);
+    return localRegionData;
   }
   
   else {
-    const res = await fetch(`${AiMiAPI}/v2/online`, {
+    const res = await fetch(`${AiMiAPI}/v3/online`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
       body: JSON.stringify({ username, region, version, queueId, queueState, ...(rating != null && { rating }) }),
     });
     if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, region, version, rating, queueId, queueState }, null, 0)) };
-    const data = await res.json() as POSTOnlinePlayersV2;
-    console.debug(`Receieved online players: ${JSON.stringify(data, null, 0)}`);
-    return data;
+    const data = await res.json() as GETOnlinePlayersV3;
+
+    const localRegionObj = getRegionObjectFromOdyRegion(region).apiRegion;
+    const localRegionData = data.regions[localRegionObj]
+
+    console.debug(`Receieved online players: ${JSON.stringify(localRegionData, null, 0)}`);
+    return localRegionData;
   }
-  
 }
 
-export async function fetchOnlineGraphs(): Promise<OnlineHistoryV1> {
-  console.debug(`Fetching detailed online player count...`);
-  const res = await fetch(`${AiMiAPI}/v1/online/detailed`, {
+export async function fetchOnlineGraphs(): Promise<OnlineHistoryV3> {
+  console.debug(`Fetching online player history...`);
+  const res = await fetch(`${AiMiAPI}/v3/online/history`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
   });
-  if (!res.ok) { console.warn(`Failed to fetch detailed online history! (${res.status})`) };
-  return await res.json() as OnlineHistoryV1;
+  if (!res.ok) { console.warn(`Failed to fetch online history! (${res.status})`) };
+  return await res.json() as OnlineHistoryV3;
 }

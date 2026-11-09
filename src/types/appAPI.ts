@@ -3,51 +3,35 @@
 import { AppAPIRegion } from "../core/objects/regions"
 import { GithubRelease } from "./github"
 
-// /v1/online
-export type OnlinePlayersV1 = {
+// POST /v3/online
+// Just returns the same as GETOnlinePlayersV3
+
+// GET /v3/online
+export type GETOnlinePlayersV3 = {
+  regions: Record<AppAPIRegion, OnlineObjectV3>,
+};
+
+export type QueueCounts = {
+  queueId: string,
+  count: number,
+};
+
+export type OnlineObjectV3 = {
   total: number,
   in_game: number,
   idling: number,
+  queuing: number,
   seen: number,
-}
+  queues: QueueCounts[],
+};
 
-// POST /v2/online
-export type POSTOnlinePlayersV2 = {
-  total: number,
-  in_game: number,
-  idling: number,
-  seen: number,
-  in_your_queue?: number,
-}
+// /v3/online/history
+export type HistoryPoint = Omit<OnlineObjectV3, 'queues'> & { at: Date };
 
-// GET /v2/online
-export type GETOnlinePlayersV2 = {
-  total: number,
-  in_game: number,
-  idling: number,
-  seen: number,
-  queues: {
-    queueId: string,
-    count: number,
-  }[],
-}
+export type OnlineHistoryV3 = {
+  regions: Record<AppAPIRegion, HistoryPoint[]>,
+};
 
-
-// /v1/online/detailed
-export type OnlineHistoryV1 = {
-  counts: OnlinePlayersV1,
-  history: Record<AppAPIRegion, OnlineHistoryObjV1[]>
-}
-
-export type OnlineHistoryObjV1 = {
-  region: AppAPIRegion,
-  totalCount: number,
-  idleCount: number,
-  queueCount: number,
-  inGameCount: number,
-  seenCount: number,
-  createdAt: Date
-}
 
 // /v1/matches
 export type POSTMatchHistoryV1 = {

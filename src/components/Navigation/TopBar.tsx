@@ -9,6 +9,7 @@ import TopBarMatchStatus from './TopBarMatchStatus';
 import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES } from '../../core/objects/onlineStatus';
 import { useDialogue } from '../UI/DialogueToast';
 import { getQueueName } from '../../core/objects/ody';
+import { OdyRegion } from '../../core/objects/regions';
 // import { AppAPIRegion, getRegionObjectFromAppRegion, getServerObjectFromID } from '../../core/objects/regions';
 
 
@@ -63,7 +64,7 @@ export default function TopBar({ border = false }: TopBarProps) {
       const user = await getUser();
       const username = user?.username;
 
-      const jason = await fetchOnlineCount(username ?? null, user?.matchmakingRegion ?? null, version, match.queue, match.queueState ?? 'Idle', user?.rating);
+      const jason = await fetchOnlineCount(username ?? null, user?.matchmakingRegion as OdyRegion ?? null, version, match.queue, match.queueState ?? 'Idle', user?.rating);
       await updateOnlineCache(jason);
       console.debug(`Updated online cache!`);
     }
@@ -78,9 +79,10 @@ export default function TopBar({ border = false }: TopBarProps) {
     async function tick() {
       const match = await getCurrentMatch();
       const counts = await getOnlineCache();
+      if (!counts) return;
 
       const inQueue = match.queueState === 'Queued' || match.queueState === 'FoundMatch' || match.queueState === 'StartingGame';
-      setQueuing(inQueue ? counts.in_your_queue : null);
+      setQueuing(inQueue ? counts.queues.find((q) => q.queueId === match.queue)?.count ?? 0 : null);
       setOnline(counts.total);
       setQueue(match.queue ?? 'queue:none');
     }

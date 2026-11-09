@@ -66,7 +66,7 @@ export default function SetupPage() {
   }, [page]);
 
   const handleAccept = async () => {
-    await upsertAppSettings({ acceptedPrivacy: true });
+    await upsertAppSettings({ acceptedPrivacy: true, seenWelcome: true });
     navigate('/init', { replace: true });
   };
 

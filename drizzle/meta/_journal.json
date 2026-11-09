@@ -344,6 +344,13 @@
       "when": 1794188720158,
       "tag": "0048_sudden_manta",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "6",
+      "when": 1794193476346,
+      "tag": "0049_black_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }

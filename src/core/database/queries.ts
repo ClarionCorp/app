@@ -5,7 +5,7 @@ import { db } from "./driver";
 import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, customLobby, gameSessions, onlinePlayers } from "./schema";
 import { desc, eq, inArray, sql } from "drizzle-orm";
 import { ProminentChar } from "../utilities/players";
-import { POSTOnlinePlayersV2 } from "../../types/appAPI";
+import {  OnlineObjectV3 } from "../../types/appAPI";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -192,13 +192,13 @@ export async function softResetMatchTable() {
     .where(eq(currentMatch.id, 1));
 }
 
-export async function updateOnlineCache(jason: POSTOnlinePlayersV2) {
+export async function updateOnlineCache(jason: OnlineObjectV3) {
   const values = {
     total: jason.total,
     idling: jason.idling,
     in_game: jason.in_game,
     seen: jason.seen,
-    in_your_queue: jason.in_your_queue,
+    queues: jason.queues,
     lastUpdated: new Date(),
   };
 

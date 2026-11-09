@@ -5,9 +5,9 @@ import { Line } from 'react-chartjs-2';
 import { Chart, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js';
 import { XIcon } from '@phosphor-icons/react';
 import { fetchOnlineGraphs } from '../core/utilities/appAPI';
-import { OnlineHistoryObjV1, OnlineHistoryV1 } from '../types/appAPI';
 import { AppAPIRegion, getRegionObjectFromAPIRegion } from '../core/objects/regions';
 import { getOnlineStatusLevel, ONLINE_STATUS_CLASSES, ONLINE_STATUS_HEX } from '../core/objects/onlineStatus';
+import { HistoryPoint, OnlineHistoryV3 } from '../types/appAPI';
 
 Chart.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler);
 
@@ -26,19 +26,23 @@ function formatTime(when: Date | string): string {
 
 interface RegionGraphProps {
   region: AppAPIRegion;
-  points: OnlineHistoryObjV1[];
+  points: HistoryPoint[];
+}
+
+function sortByTime(points: HistoryPoint[]): HistoryPoint[] {
+  return [...points].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
 }
 
 function RegionGraph({ region, points }: RegionGraphProps) {
   const label = getRegionObjectFromAPIRegion(region).name;
-  const sorted = [...points].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const sorted = sortByTime(points);
   const latest = sorted[sorted.length - 1];
-  const level = getOnlineStatusLevel(region, latest?.totalCount ?? 0);
+  const level = getOnlineStatusLevel(region, latest?.total ?? 0);
   const lineColor = ONLINE_STATUS_HEX[level];
 
   // Carry the last known value forward to a synthetic "Now" point, so the line always reaches the right edge.
-  const labels = [...sorted.map(p => formatTime(p.createdAt)), 'Now'];
-  const values = [...sorted.map(p => p.totalCount), latest?.totalCount ?? 0];
+  const labels = [...sorted.map(p => formatTime(p.at)), 'Now'];
+  const values = [...sorted.map(p => p.total), latest?.total ?? 0];
 
   return (
     <div className="bg-surface-subtle border border-background-border rounded-xl p-4 w-full">
@@ -46,7 +50,7 @@ function RegionGraph({ region, points }: RegionGraphProps) {
         <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle">{label}</p>
         {latest && (
           <p className="text-xs text-char-subtle">
-            <span className={`font-medium ${ONLINE_STATUS_CLASSES[level]}`}>{latest.totalCount}</span> online
+            <span className={`font-medium ${ONLINE_STATUS_CLASSES[level]}`}>{latest.total}</span> online
           </p>
         )}
       </div>
@@ -151,7 +155,7 @@ interface OnlineGraphsProps {
 }
 
 export default function OnlineGraphs({ open, onClose }: OnlineGraphsProps) {
-  const [data, setData] = useState<OnlineHistoryV1 | null>(null);
+  const [data, setData] = useState<OnlineHistoryV3 | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -176,6 +180,9 @@ export default function OnlineGraphs({ open, onClose }: OnlineGraphsProps) {
     load();
     return () => { cancelled = true; };
   }, [open]);
+
+  const globalSorted = sortByTime(data?.regions.Global ?? []);
+  const globalLatest = globalSorted[globalSorted.length - 1];
 
   return createPortal(
     <AnimatePresence>
@@ -222,16 +229,16 @@ export default function OnlineGraphs({ open, onClose }: OnlineGraphsProps) {
               <div className="flex items-center justify-center min-h-32 text-sm text-char-subtle">Failed to load online history.</div>
             ) : (
               <>
-                {data && (
+                {globalLatest && (
                   <div className="flex items-center justify-center gap-10 py-2">
-                    <CounterStat value={data.counts.in_game} label="In Game" />
-                    <CounterStat value={data.counts.idling} label="Idling" />
-                    <CounterStat value={data.counts.seen} label="Seen" />
+                    <CounterStat value={globalLatest.in_game} label="In Game" />
+                    <CounterStat value={globalLatest.idling} label="Idling" />
+                    <CounterStat value={globalLatest.seen} label="Seen" />
                   </div>
                 )}
                 <div className="flex flex-col gap-4">
                   {REGION_ORDER.map(region => (
-                    <RegionGraph key={region} region={region} points={data?.history[region] ?? []} />
+                    <RegionGraph key={region} region={region} points={data?.regions[region] ?? []} />
                   ))}
                 </div>
               </>

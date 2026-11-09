@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { MatchPlayer, TimelineEntry } from "../../types/ue4ss";
 import { Nameplate, QueueStates } from "../../types/database";
-import { PreferredDataSources, ReleaseChannel } from "../../types/appAPI";
+import { PreferredDataSources, QueueCounts, ReleaseChannel } from "../../types/appAPI";
 import { ProminentChar } from "../utilities/players";
 import { PlayerSeason, Playstyle, SmurfConfidence } from "../../types/clarion";
 
@@ -180,7 +180,7 @@ export const onlinePlayers = sqliteTable("onlinePlayers", {
   in_game: integer("in_game").notNull().default(0),
   idling: integer("idling").notNull().default(0),
   seen: integer("seen").notNull().default(0),
-  in_your_queue: integer("in_your_queue"),
+  queues: text("queues", { mode: "json" }).$type<QueueCounts[]>().notNull().default([]),
 
   lastUpdated: integer("lastUpdated", { mode: "timestamp" }),
 });

@@ -5,7 +5,6 @@ import { InfoIcon, BroadcastIcon } from "@phosphor-icons/react";
 import { AppContextType } from "../App";
 import { isProcessRunning } from "../core/bridgeListener";
 import { NAV_ITEMS } from "../core/objects/navigation";
-import { getAppSettings, getUser, upsertAppSettings } from "../core/database/queries";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { AboutModal } from "../components/Navigation/AboutModal";
 import { OverlayModal } from "../components/Navigation/OverlayModal";
@@ -35,7 +34,7 @@ export default function HomePage() {
   const [gameRunning, setGameRunning] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [overlayOpen, setOverlayOpen] = useState(false);
-  const { show: showDialogue, showQueue } = useDialogue();
+  const { show: showDialogue } = useDialogue();
 
   const QUICK_LINKS = [
     { key: "about", label: "About", icon: <InfoIcon size={20} weight="duotone" />, onClick: () => setAboutOpen(true) },
@@ -44,48 +43,6 @@ export default function HomePage() {
 
   useEffect(() => {
     isProcessRunning('OmegaStrikers-Win64-Shipping.exe').then(setGameRunning);
-  }, []);
-  
-  // Welcome dialogue for new users
-  useEffect(() => {
-    const checkNewUser = async () => {
-      const settings = await getAppSettings();
-      if (!settings || settings.seenWelcome) return;
-      let usernameText = 'new user';
-      const user = await getUser();
-      if (user && user?.username) { usernameText = user.username};
-      await upsertAppSettings({ seenWelcome: true });
-      showQueue([
-        {
-          variant: 'aimi',
-          title: `Hello, ${usernameText}! (1/3)`,
-          message: "Welcome to the new Ai.Mi App! I'm Ai.Mi, and I'll be your assistant while playing Corestrike.",
-          image: '/aimi/Custom_Welcome_1.webp',
-          xlImage: true,
-          buttons: [{ label: 'Okay!', variant: 'aimi', dismisses: true }],
-        },
-        {
-          variant: 'aimi',
-          title: 'Need Help? (2/3)',
-          message: "You can call me from any page at any time by pressing F6 (or Fn + F6) on your keyboard!",
-          image: '/aimi/Custom_Welcome_2.webp',
-          xlImage: true,
-          buttons: [{ label: 'Got it, thanks!', variant: 'aimi', dismisses: true }],
-        },
-        {
-          variant: 'aimi',
-          title: 'Customization (3/3)',
-          message: "One last thing before I go, I recommend heading to Settings to really make the app your own!",
-          image: '/aimi/Custom_Welcome_3.webp',
-          xlImage: true,
-          buttons: [
-            { label: 'Open Settings', onClick: () => { navigate('/settings') }, variant: 'secondary', dismisses: true },
-            { label: 'Close', variant: 'surface', dismisses: true },
-          ],
-        }
-      ]);
-    };
-    checkNewUser();
   }, []);
 
   useEffect(() => {
