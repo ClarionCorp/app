@@ -65,6 +65,8 @@ export const auth = sqliteTable("auth", {
   odyRft: text("odyRft").notNull(),
   ccJwt: text("ccJwt"),
   appId: text("appId").notNull().$defaultFn(() => crypto.randomUUID()),
+  pat: text("pat"),
+  playerId: text("playerId"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 

@@ -12,21 +12,22 @@ import { getAppSettings, upsertAppSettings, ensureCurrentMatch, resetPlayerTable
 import { checkUE4SS } from "../core/utilities/ue4ss";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { version } from "../core/constants";
-import { checkForUpdates } from "../core/utilities/appAPI";
+import { checkForUpdates, requestPAT } from "../core/utilities/appAPI";
 import { useDialogue } from "../components/UI/DialogueToast";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { platform } from "@tauri-apps/plugin-os";
 import { linux_launch_options, windows_default_gamedir, linux_default_gamedir } from "../core/constants";
 import { checkStartNewSession } from "../core/utilities/sessions";
 
-type StepId = "ue4ss" | "startup" | "account" | "updates" | "discord";
+type StepId = "ue4ss" | "startup" | "account" | "auth" | "updates" | "discord";
 
 const steps: { id: StepId; label: string; pct: number }[] = [
   { id: "ue4ss", label: "Checking UE4SS...", pct: 5 },
   { id: "startup", label: "Starting background services...", pct: 30 },
-  { id: "account", label: "Fetching account info...", pct: 40 },
-  { id: "updates", label: "Checking for updates...", pct: 60 },
-  { id: "discord", label: "Connecting to Discord...", pct: 75 },
+  { id: "account", label: "Fetching account info...", pct: 35 },
+  { id: "auth", label: "Logging in to AppAPI...", pct: 65 },
+  { id: "updates", label: "Checking for updates...", pct: 80 },
+  { id: "discord", label: "Connecting to Discord...", pct: 90 },
 ];
 
 export default function InitializationPage() {
@@ -162,7 +163,12 @@ export default function InitializationPage() {
 
         await checkStartNewSession(); // moved to AFTER fetching info from Odyssey
 
-        // 4) Check for updates
+        // 4) Login to AppAPI
+        goToStep("auth");
+        const patStatus = await requestPAT();
+        if (!patStatus) { throw new Error(`Failed to request a valid PAT. Please make sure you have the game open.\nIf it's already open, check the console for details and let blals know.`) };
+
+        // 5) Check for updates
         goToStep("updates");
         const updateCheck = await checkForUpdates();
         if (updateCheck.updateAvailable) {
@@ -186,7 +192,7 @@ export default function InitializationPage() {
           });
         }
 
-        // 5) Connect to Discord RPC
+        // 6) Connect to Discord RPC
         goToStep("discord");
         await stopRpc();
         await startRpc();
@@ -345,7 +351,7 @@ export default function InitializationPage() {
 
       {error ? (
         <motion.div
-          className="flex flex-col items-center gap-3 w-80 text-center"
+          className="flex flex-col items-center gap-3 w-120 text-center"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}

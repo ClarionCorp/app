@@ -64,6 +64,7 @@ export default function TopBar({ border = false }: TopBarProps) {
       const username = user?.username;
 
       const jason = await fetchOnlineCount(username ?? null, user?.matchmakingRegion ?? null, version, match.queue, match.queueState ?? 'Idle', user?.rating);
+      if (!jason) return;
       await updateOnlineCache(jason);
       console.debug(`Updated online cache!`);
     }

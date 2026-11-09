@@ -6,7 +6,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "../database/driver";
 import { currentMatch, customLobby, matchPlayers } from "../database/schema";
 import { MatchJSON, MetaJSON, PlayersJSON, PostGameJSON, TimelineEventType } from "../../types/ue4ss";
-import { appendTimelineEntry, deleteCustomLobby, getCurrentMatch, getCustomLobby, getLatestMatchHistory, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
+import { appendTimelineEntry, deleteCustomLobby, getAuthTokens, getCurrentMatch, getCustomLobby, getLatestMatchHistory, getMatchPlayers, getUser, insertMatchHistory, updatePlayerRating } from "../database/queries";
 import { MatchPlayer } from "../../types/ue4ss";
 import { getLevelFromXP } from "../objects/levels";
 import { CurrentMatchTable, CustomLobbyTable, MatchPlayersTable } from "../../types/database";
@@ -348,10 +348,17 @@ export async function uploadLatestMatch() {
       playedAt: Math.floor(latestEntry.createdAt.getTime() / 1000),
     }
 
+    const auth = await getAuthTokens();
+
     const res = await fetch(`${AiMiAPI}/v1/matches`, {
       method: 'POST',
       body: JSON.stringify(formattedBody),
-      headers: { 'x-user-agent': 'aimi-app', 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-agent': 'aimi-app',
+        ...(auth?.pat ? { 'x-pat': auth.pat } : {}),
+        ...(auth?.playerId ? { 'x-playerid': auth.playerId } : {}),
+      },
     });
 
     const data = await res.json();

@@ -54,6 +54,7 @@ function App() {
       };
       if (e.key === 'F9') navigate('/debug');
       if (e.key === 'F4') setThemePickerOpen(true);
+      if (e.key === 'F1') navigate('/init');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
