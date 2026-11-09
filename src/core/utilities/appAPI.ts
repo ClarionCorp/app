@@ -34,13 +34,12 @@ export async function checkForUpdates(): Promise<VersionCheck> {
 // Fetches total online for your region + updates AppAPI with our queueState & ID.
 export async function fetchOnlineCount(username: string | null, region: OdyRegion | null, version: string, queueId: string | null, queueState: string, rating?: number | null): Promise<OnlineObjectV3 | null> {
   console.debug(`Fetching online player count...`);
-  const auth = await getAuthTokens();
-  if (!auth || !auth.pat || !auth.playerId) { console.error('Failed to fetch online player count! No valid PAT!'); return null; };
+  const validPAT = sessionStorage.getItem('isPATValid');
 
-  if (!username || !region) {
+  if (!username || !region || validPAT == 'false') {
     const res = await fetch(`${AiMiAPI}/v3/online`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app', 'x-pat': auth.pat, 'x-playerid': auth.playerId },
+      headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
     });
     if (!res.ok) { console.warn(`Failed to send online status!`) };
     const data = await res.json() as GETOnlinePlayersV3;
@@ -51,13 +50,10 @@ export async function fetchOnlineCount(username: string | null, region: OdyRegio
   }
   
   else {
-    const res = await fetch(`${AiMiAPI}/v3/online`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-user-agent': 'aimi-app' },
-      body: JSON.stringify({ username, region, version, queueId, queueState, ...(rating != null && { rating }) }),
-    });
-    if (!res.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, region, version, rating, queueId, queueState }, null, 0)) };
-    const data = await res.json() as GETOnlinePlayersV3;
+    const response = await fetchAppAPI('/v3/online', 'POST', JSON.stringify({ username, region, version, queueId, queueState, ...(rating != null && { rating }) }));
+    if (!response || !response.ok) { console.warn(`Failed to send online status!`, JSON.stringify({ username, region, version, rating, queueId, queueState }, null, 0)); return null; };
+
+    const data = await response.json() as GETOnlinePlayersV3;
 
     const localRegionObj = getRegionObjectFromOdyRegion(region).apiRegion;
     const localRegionData = data.regions[localRegionObj]
@@ -102,5 +98,46 @@ export async function requestPAT(): Promise<boolean> {
   } catch (e) {
     console.error(`Something went fatally wrong while requesting a PAT!`, e);
     return false;
+  }
+}
+
+// AppAPI Communication Proxy function
+// urlStub is everything after the const. e.g. "/v3/pat/request"
+// body should be a const object, not stringified JSON
+export async function fetchAppAPI(urlStub: string, method: 'GET' | 'POST' | 'PATCH' | 'DELETE', body?: string): Promise<Response | null> {
+  try {
+    const auth = await getAuthTokens();
+    const req = await fetch(`${AiMiAPI}${urlStub}`, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-agent': 'aimi-app',
+        ...(auth?.pat ? { 'x-pat': auth.pat } : {}),
+        ...(auth?.playerId ? { 'x-playerid': auth.playerId } : {}),
+      },
+      ...(body && { body })
+    });
+
+    const data = await req.json();
+    if (!req.ok) {
+      const loopBreaker = sessionStorage.getItem('AppAPI_LoopBreaker');
+      if (req.status == 401 && !loopBreaker) { // request new PAT and try again (if loopbreaker hasn't been tripped yet)
+        const patStatus = await requestPAT();
+        if (!patStatus) { throw new Error(`Request failed due to invalid PAT, and helper failed to request a new one. Cancelling request.`) };
+        const refetch = await fetchAppAPI(urlStub, method, body);
+        if (!refetch) { throw new Error(`Refetch request failed, despite having a valid PAT!`) };
+        return req;
+
+      } else {
+        throw new Error(`Received an incorrect response from AppAPI! ${JSON.stringify(data.error, null, 1)}`);
+      }
+    }
+
+    sessionStorage.setItem('AppAPI_LoopBreaker', 'false'); // set back to false on successful request
+    return req;
+  } catch (e) {
+    console.error(`Something went fatally wrong while fetching AppAPI!`, e);
+    sessionStorage.setItem('AppAPI_LoopBreaker', 'true');
+    return null;
   }
 }

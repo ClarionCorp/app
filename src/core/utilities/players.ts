@@ -3,12 +3,13 @@
 
 import { fetch } from "@tauri-apps/plugin-http";
 import { getAppSettings } from "../database/queries";
-import { AiMiAPI, ClarionAPI } from "../constants";
+import { ClarionAPI } from "../constants";
 import { fetchOdyPlayerStats, fetchRankQuery } from "./odyssey";
 import { Player, PlayerSeason, Playstyle, SmurfConfidence } from "../../types/clarion";
 import { PairedPlayersV1 } from "../../types/appAPI";
 import { RankedQuery } from "../../types/odyssey";
 import { Nameplate } from "../../types/database";
+import { fetchAppAPI } from "./appAPI";
 
 // An obj containing what we need in order to fill the database
 type ReqPlayerStats = {
@@ -90,10 +91,10 @@ export async function fetchPlayerStats(username: string, playerId?: string, game
 
   try {
     if (appSettings.prefDataSource == 'ClarionCorp') {
-      const res = await fetch(`${AiMiAPI}/v2/player/${username}?mode=${mode}`, { method: 'GET' }); // IP-forwarded rate limiting
-      if (!res.ok) { throw new Error(`Could not fetch data for player '${username}' from CC datasource!`) };
+      const response = await fetchAppAPI(`/v2/player/${username}?mode=${mode}`, 'GET');
+      if (!response || !response.ok) { throw new Error(`Could not fetch data for player '${username}' from CC datasource!`) };
 
-      const data = await res.json() as Player;
+      const data = await response.json() as Player;
       const totalStats = combineCharacterStats(data);
 
       requiredStats = {
@@ -279,23 +280,19 @@ function combineCharacterStats(data: Player): CombinedPlayerStats {
 }
 
 // AppAPI will infer duo/trio queues from recent matches
+// Might merge this with the v3/player fetch?
 export async function getInferredQueueMates(username: string): Promise<PairedPlayersV1 | null> {
   try {
-    const res = await fetch(`${AiMiAPI}/v1/player/${username}/teammates`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' }
-    });
+    const res = await fetchAppAPI(`/v1/player/${username}/teammates`, 'GET');
+    if (!res) { throw new Error(`Response came back null while searching for ${username}'s teammates!`) };
 
     const data = await res.json() as PairedPlayersV1;
 
-    // Not really an error, just drop and add to logfile
-    if (res.status == 404) {
-      console.debug(`No teammates could be found for ${username}: (${res.status})`);
-      return null;
-    } else if (!res.ok) { throw new Error(`${res.status}: ${res.statusText}`) }
+    // Not really an error, just drop silently
+    if (res.status == 404) { return null; }
+    else if (!res.ok) { throw new Error(`${res.status}: ${res.statusText}`) }
 
     return data;
-
   } catch (e) {
     console.error(`Failed to fetch teammates for ${username}!`, e);
     return null;
