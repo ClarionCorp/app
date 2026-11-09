@@ -54,7 +54,7 @@ function App() {
       };
       if (e.key === 'F9') navigate('/debug');
       if (e.key === 'F4') setThemePickerOpen(true);
-      if (e.key === 'F1') navigate('/init');
+      if (e.key === 'F1') navigate('/init'); // remove later lol
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -142,6 +142,13 @@ function App() {
           localStorage.setItem('reload_reason', JSON.stringify({ reason: 'ACCOUNT_CHANGE', acknowledged: false }));
           navigate('/', { replace: true })
         };
+      }
+
+      // Check if this session is limited, and force refresh if it is.
+      // (We're confirmed in game, so this SHOULD work and prevent any further issues)
+      const isPATValid = JSON.parse(sessionStorage.getItem('isPATValid') ?? '{}') as boolean | null;
+      if (isPATValid !== true) {
+        navigate('/', { replace: true })
       }
 
       await tryUpdateDiscordRPC();

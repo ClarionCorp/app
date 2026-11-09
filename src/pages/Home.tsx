@@ -66,6 +66,23 @@ export default function HomePage() {
     }
   }, []);
 
+  useEffect(() => {
+    const isPATValid = JSON.parse(sessionStorage.getItem('isPATValid') ?? '{}') as boolean | null;
+    if (isPATValid == false) {
+      showDialogue({
+        variant: 'error',
+        image: '/aimi/Shock.png',
+        title: 'Access Limited!',
+        message: `We were unable to validate this session with the API! The app will have very limited functionality until the app is restarted with the game open.`,
+        buttons: [
+          { label: 'Restart App', onClick: () => { sessionStorage.removeItem('isPATValid'); navigate('/'); }, variant: 'secondary', dismisses: true },
+          { label: 'Dismiss', onClick: () => { sessionStorage.removeItem('isPATValid'); }, variant: 'surface', dismisses: true },
+        ],
+        autoDismiss: 20_000,
+      });
+    };
+  }, []);
+
   return (
     <div className="relative min-h-[calc(100vh-3rem)]">
       <div

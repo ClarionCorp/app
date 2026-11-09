@@ -166,7 +166,12 @@ export default function InitializationPage() {
         // 4) Login to AppAPI
         goToStep("auth");
         const patStatus = await requestPAT();
-        if (!patStatus) { throw new Error(`Failed to request a valid PAT. Please make sure you have the game open.\nIf it's already open, check the console for details and let blals know.`) };
+        if (!patStatus) {
+          console.error(`Failed to request a valid PAT. Please make sure you have the game open.\nIf it's already open, check the console for details and let blals know.`);
+          sessionStorage.setItem('isPATValid', 'false');
+        } else {
+          sessionStorage.setItem('isPATValid', 'true');
+        }
 
         // 5) Check for updates
         goToStep("updates");
