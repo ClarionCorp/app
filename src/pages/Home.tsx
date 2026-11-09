@@ -1,7 +1,7 @@
 import { motion, type Variants } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { InfoIcon, BroadcastIcon } from "@phosphor-icons/react";
+import { InfoIcon, BroadcastIcon, WarningIcon } from "@phosphor-icons/react";
 import { AppContextType } from "../App";
 import { isProcessRunning } from "../core/bridgeListener";
 import { NAV_ITEMS } from "../core/objects/navigation";
@@ -129,6 +129,18 @@ export default function HomePage() {
           </motion.div>
         </motion.div>
       </div>
+
+      {sessionStorage.getItem('isPATValid') === 'false' && (
+        <motion.div
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-1.5 rounded-full border border-surface-border bg-surface-subtle text-char-subtle text-xs font-medium backdrop-blur-sm whitespace-nowrap"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut", delay: 0.5 }}
+        >
+          <WarningIcon size={14} weight="fill" className="text-tertiary" />
+          Your account could not be validated, some features may be temporarily limited.
+        </motion.div>
+      )}
 
       <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <OverlayModal open={overlayOpen} onClose={() => setOverlayOpen(false)} />
