@@ -37,7 +37,7 @@ function App() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const showSidebar = !['/', '/home', '/setup'].includes(location.pathname);
+  const showSidebar = !['/', '/init', '/home', '/setup'].includes(location.pathname);
   const [sidebarHovered, setSidebarHovered] = useState(false);
 
   // collapse back down if we navigate away while expanded, so it doesn't reappear pre-expanded later

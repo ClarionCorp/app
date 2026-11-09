@@ -22,6 +22,7 @@ export const appSettings = sqliteTable("appSettings", {
   nameplateTransparency: integer("nameplateTransparency").notNull().default(50),
   useCustomCharArt: integer("useCustomCharArt", { mode: "boolean" }).notNull().default(true),
   compactMode: integer("compactMode", { mode: "boolean" }).notNull().default(false),
+  acceptedPrivacy: integer("acceptedPrivacy", { mode: "boolean" }).notNull().default(false), // privacy policy, dictates seeing new startup
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 

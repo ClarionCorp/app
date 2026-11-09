@@ -1,0 +1,1 @@
+ALTER TABLE `appSettings` ADD `acceptedPrivacy` integer DEFAULT false NOT NULL;
