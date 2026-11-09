@@ -4,6 +4,7 @@ import { Nameplate, QueueStates } from "../../types/database";
 import { PreferredDataSources, QueueCounts, ReleaseChannel } from "../../types/appAPI";
 import { ProminentChar } from "../utilities/players";
 import { PlayerSeason, Playstyle, SmurfConfidence } from "../../types/clarion";
+import { OdyRegion } from "../objects/regions";
 
 // Only one row that stores basic app settings
 export const appSettings = sqliteTable("appSettings", {
@@ -48,7 +49,7 @@ export const user = sqliteTable("user", {
   playerStatus: text("player_status").notNull(),
   displayNameStatus: text("display_name_status").notNull(),
   lastDisplayNameChangeTimestamp: integer("last_display_name_change_timestamp", { mode: "timestamp" }),
-  matchmakingRegion: text("matchmaking_region").notNull(),
+  matchmakingRegion: text("matchmaking_region").$type<OdyRegion>().notNull(),
   gameLiftRegionUrls: text("gamelift_region_urls", { mode: "json" }).$type<{ region: string; url: string }[]>().notNull().default([]),
   discordId: text("discord_id"), // nullable, no connection = null
   rating: integer("rating"),

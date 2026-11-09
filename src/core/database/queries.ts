@@ -6,6 +6,7 @@ import { appSettings, auth, currentMatch, user, matchPlayers, matchHistory, cust
 import { desc, eq, inArray, sql } from "drizzle-orm";
 import { ProminentChar } from "../utilities/players";
 import {  OnlineObjectV3 } from "../../types/appAPI";
+import { OdyRegion } from "../objects/regions";
 
 // Just using a basic translation file since I am still new to Drizzle
 
@@ -120,6 +121,7 @@ export async function upsertUser(data: SelfQuery) {
         : entry.nameHistory;
       return tx.update(user).set({
         ...data,
+        matchmakingRegion: data.matchmakingRegion as OdyRegion,
         discordId: data.discordConnection?.discordId ?? null,
         lastDisplayNameChangeTimestamp,
         nameHistory,
@@ -130,6 +132,7 @@ export async function upsertUser(data: SelfQuery) {
     return tx.insert(user).values({
       ...data,
       tags: data.tags,
+      matchmakingRegion: data.matchmakingRegion as OdyRegion,
       gameLiftRegionUrls: data.gameLiftRegionUrls,
       discordId: data.discordConnection?.discordId ?? null,
       lastDisplayNameChangeTimestamp,
