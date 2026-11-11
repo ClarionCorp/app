@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion, type Transition } from 'framer-motion';
 import {
-  CopySimpleIcon,
   KeyboardIcon,
   BugIcon,
   ChatCircleDotsIcon,
@@ -10,6 +9,7 @@ import {
   CaretDownIcon,
   TerminalWindowIcon,
   LinuxLogoIcon,
+  FolderIcon,
 } from '@phosphor-icons/react';
 import { Dropdown, type DropdownItem } from './UI/Dropdown';
 import { Checkbox } from './UI/Checkbox';
@@ -20,6 +20,7 @@ import { getUser } from '../core/database/queries';
 import { useToast } from './UI/Toast';
 import { useDialogue } from './UI/DialogueToast';
 import { gatherSystemInfo, grabLatestAppLog } from '../core/utilities/reporting';
+import { openLogsFolder } from '../core/utilities/console';
 
 type View = 'home' | 'keybinds' | 'bug-report' | 'feedback';
 
@@ -33,7 +34,6 @@ interface HelpAction {
 interface HelpModalProps {
   open: boolean;
   onClose: () => void;
-  onCopyLogs: () => void;
 }
 
 const keybinds = [
@@ -59,7 +59,7 @@ const flavorImages: Record<View, string> = {
 
 const buttonTap: Transition = { duration: 0.06, ease: [0.16, 1, 0.3, 1] };
 
-export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
+export function HelpModal({ open, onClose }: HelpModalProps) {
   const [view, setView] = useState<View>('home');
   const [direction, setDirection] = useState(1);
   const [bugPage, setBugPage] = useState<string | null>(null);
@@ -201,7 +201,7 @@ export function HelpModal({ open, onClose, onCopyLogs }: HelpModalProps) {
 
   const actions: HelpAction[] = [
     { icon: <TerminalWindowIcon size={24} />, label: 'Show Console', onClick: () => simulateKey(['Ctrl', '`'])},
-    { icon: <CopySimpleIcon size={24} />, label: 'Copy Logs', onClick: onCopyLogs },
+    { icon: <FolderIcon size={24} />, label: 'Open Logs Folder', onClick: () => openLogsFolder() },
     { icon: <KeyboardIcon size={24} />, label: 'View Keybinds', navigateTo: 'keybinds' },
     { icon: <LinuxLogoIcon size={24} />, label: 'Copy Linux Launch Opts', onClick: copyLaunchOpts },
     { icon: <BugIcon size={24} />, label: 'Submit Bug Report', navigateTo: 'bug-report' },

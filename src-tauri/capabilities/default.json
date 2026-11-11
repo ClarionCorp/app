@@ -102,6 +102,12 @@
       "allow": [
         { "url": "steam://rungameid/1869590" }
       ]
+    },
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        { "path": "$APPDATA/logs" }
+      ]
     }
   ]
 }

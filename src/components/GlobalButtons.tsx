@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DebugConsole } from './DebugConsole';
 import { HelpModal } from './HelpModal';
-import { logger, formatLogEntry } from '../core/logger';
 
 export function GlobalButtons() {
   const [debugOpen, setDebugOpen] = useState(false);
@@ -16,13 +15,9 @@ export function GlobalButtons() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  function copyAllLogs() {
-    navigator.clipboard.writeText(logger.getEntries().map(formatLogEntry).join('\n'));
-  }
-
   return (
     <>
-      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} onCopyLogs={copyAllLogs} />
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
       <DebugConsole open={debugOpen} onOpenChange={setDebugOpen} />
 
       <div className="fixed bottom-0 right-0 z-100 flex items-center gap-2 m-3 pointer-events-none">
