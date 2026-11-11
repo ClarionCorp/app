@@ -1,77 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { CaretDownIcon, FireIcon, FolderOpenIcon, PaletteIcon } from "@phosphor-icons/react";
-import { open } from "@tauri-apps/plugin-dialog";
-import { dirname } from "@tauri-apps/api/path";
-import { getAppSettings, getUser, upsertAppSettings } from "../core/database/queries";
-import { PlayerCard } from "../components/LiveMatch/PlayerCard";
-import { MatchPlayersTable } from "../types/database";
-import { Toggle } from "../components/UI/Toggle";
-import { Slider } from "../components/UI/Slider";
-import { Button } from "../components/UI/Button";
-import { Input } from "../components/UI/Input";
-import { Dropdown } from "../components/UI/Dropdown";
-import { discordRpc, startRpc, stopRpc, DEFAULT_ACTIVITY } from "../core/utilities/discord";
-import { useTheme } from "../components/UI/Theme/ThemeProvider";
-import { ThemePicker } from "../components/UI/Theme/ThemePicker";
-import { resetDatabase } from "../core/database/driver";
-import { ConfirmModal } from "../components/UI/ConfirmModal";
-import { ProgressBar } from "../components/UI/ProgressBar";
-import { unInstallUE4SS } from "../core/utilities/ue4ss";
-import { useToast } from "../components/UI/Toast";
-// import { uploadAllMatches } from "../core/utilities/appAPI";
-import { exit } from "@tauri-apps/plugin-process";
-import { PreferredDataSources, ReleaseChannel } from "../types/appAPI";
-import { ClarionAPI } from "../core/constants";
+import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowSquareOutIcon,
+  BugIcon,
+  FireIcon,
+} from "@phosphor-icons/react";
+import { getAppSettings, upsertAppSettings } from "../core/database/queries";
+import { DEFAULT_SETTINGS, QueuePopType, SectionId, Settings, SettingsSections } from "../types/settings";
+import { AccountSettings } from "../components/Settings/Sections/Account";
+import { AppearanceSettings } from "../components/Settings/Sections/Appearance";
+import { QualityOfLifeSettings } from "../components/Settings/Sections/QualityOfLife";
+import { AdvancedSettings } from "../components/Settings/Sections/Advanced";
+import { DangerZoneSettings } from "../components/Settings/Sections/DangerZone";
 
-export type QueuePopType = 'Ai.Mi' | 'Generic';
+export type { QueuePopType };
 
-type Settings = {
-  gameDirectory: string | null;
-  drpcEnabled: boolean;
-  notifyQueuePop: boolean;
-  queuePopVol: number;
-  queuePopType: QueuePopType;
-  exitOnGameClose: boolean;
-  prefDataSource: PreferredDataSources;
-  openGameWithApp: boolean;
-  releaseChannel: ReleaseChannel;
-  nameplateTransparency: number;
-  useCustomCharArt: boolean;
-  compactMode: boolean;
-};
-
-const DEFAULT_SETTINGS: Settings = {
-  gameDirectory: null,
-  drpcEnabled: true,
-  notifyQueuePop: false,
-  queuePopVol: 50,
-  queuePopType: 'Ai.Mi',
-  exitOnGameClose: false,
-  prefDataSource: 'ClarionCorp',
-  openGameWithApp: false,
-  releaseChannel: 'Stable',
-  nameplateTransparency: 50,
-  useCustomCharArt: true,
-  compactMode: false,
-};
+const SAVE_DELAY_MS = 300;
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [resetModalOpen, setResetModalOpen] = useState(false);
-  const [uninstallModalOpen, setUninstallModalOpen] = useState(false);
-  const [uninstalling, setUninstalling] = useState(false);
-  const [uninstallProgress, setUninstallProgress] = useState<{ percent: number | null; message: string } | null>(null);
-  const [queuePopTypeOpen, setQueuePopTypeOpen] = useState(false);
-  const queuePopTypeTriggerRef = useRef<HTMLButtonElement>(null);
-  const [dataSourceOpen, setDataSourceOpen] = useState(false);
-  const dsTriggerRef = useRef<HTMLButtonElement>(null);
-  const [relChannelOpen, setrelChannelOpen] = useState(false);
-  const rcTriggerRef = useRef<HTMLButtonElement>(null);
-  const [themePickerOpen, setThemePickerOpen] = useState(false);
-  const [previewPlayer, setPreviewPlayer] = useState<MatchPlayersTable>(PREVIEW_PLAYER);
-  const { theme } = useTheme();
-  const { toast } = useToast();
+  const [active, setActive] = useState<SectionId>('account');
+  const pending = useRef<Partial<Settings>>({});
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getAppSettings().then(s => {
@@ -91,389 +43,118 @@ export default function SettingsPage() {
         compactMode: s.compactMode,
       });
     });
-    getUser().then(u => {
-      if (!u) return;
-      setPreviewPlayer(p => ({
-        ...p,
-        username: u.username,
-        playerId: u.playerId,
-        tags: u.tags,
-        rating: u.rating ?? p.rating,
-        accLevel: u.masteryLevel,
-        nameplate: {
-          nameplateId: u.nameplateId,
-          nameplateUrl: `https://${ClarionAPI}/assets/nameplate/${u.nameplateId}.webp`,
-        },
-      }));
-    });
+
+    // Persist anything still pending when leaving the page.
+    return () => flush();
   }, []);
 
-  const update = async (patch: Partial<Settings>) => {
-    setSettings(prev => ({ ...prev, ...patch }));
-    await upsertAppSettings(patch);
-  };
-
-  const handleUninstall = async () => {
-    if (!settings.gameDirectory) return;
-    setUninstallModalOpen(false);
-    setUninstalling(true);
-    setUninstallProgress({ percent: null, message: 'Starting...' });
-    try {
-      await unInstallUE4SS(settings.gameDirectory, (_stage, percent, message) => {
-        setUninstallProgress({ percent, message });
-      });
-      await exit(0);
-    } catch (e) {
-      toast(e instanceof Error ? e.message : 'Failed to uninstall UE4SS.', 'error');
+  const flush = () => {
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
     }
-    setUninstalling(false);
-    setUninstallProgress(null);
+    const patch = pending.current;
+    pending.current = {};
+    if (Object.keys(patch).length > 0) upsertAppSettings(patch);
   };
 
-  const handlePickDir = async () => {
-    const selected = await open({
-      filters: [{ name: 'Executable', extensions: ['exe'] }],
-      title: 'Select OmegaStrikers.exe',
-    });
-    if (!selected) return;
-    const dir = await dirname(selected as string);
-    await update({ gameDirectory: dir });
+  // Applies changes instantly and batches DB writes so sliders don't write on every tick.
+  const update = (patch: Partial<Settings>) => {
+    setSettings(prev => ({ ...prev, ...patch }));
+    pending.current = { ...pending.current, ...patch };
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(flush, SAVE_DELAY_MS);
   };
+
+  const activeLabel = active === 'danger' ? 'Danger Zone' : SettingsSections.find(s => s.id === active)?.label;
 
   return (
-    <>
     <motion.div
-      className="flex flex-col px-4 py-6"
+      className="flex gap-6 px-4 py-6"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
     >
-      <h1 className="text-base font-semibold text-char mb-4">Settings</h1>
+      <nav className="sticky top-6 self-start flex flex-col gap-1 w-56 shrink-0">
+        <span className="px-3 mb-1 text-xs font-semibold text-char-subtle uppercase tracking-wider">
+          Settings
+        </span>
 
-      <div className="flex flex-col divide-y divide-background-border">
-        <SettingRow
-          title="Game Directory"
-          subtitle="Path to your OmegaStrikers installation folder."
-          stretch
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <Input
-              readOnly
-              value={settings.gameDirectory ?? ''}
-              placeholder="Not set"
-              className="flex-1 min-w-0 w-85"
-              inputClassName="text-xs font-mono truncate"
-            />
-            <Button
-              variant="surface"
-              size="sm"
-              onClick={handlePickDir}
-              iconLeft={<FolderOpenIcon size={14} />}
-              className="h-9"
-            >
-              Browse
-            </Button>
-          </div>
-        </SettingRow>
-
-        <SettingRow
-          title="Update Release Channel"
-          subtitle="Stable is the recommended version. Beta updates more often, but is likely to have issues."
-        >
-          <div className="relative">
-            <button
-              ref={rcTriggerRef}
-              onClick={() => setrelChannelOpen(o => !o)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-surface-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer capitalize"
-            >
-              {settings.releaseChannel}
-              <CaretDownIcon size={12} className="opacity-60" />
-            </button>
-            <Dropdown
-              triggerRef={rcTriggerRef}
-              open={relChannelOpen}
-              onClose={() => setrelChannelOpen(false)}
-              items={ReleaseChannel.map(v => ({ label: v, onClick: () => update({ releaseChannel: v as ReleaseChannel }) }))}
-            />
-          </div>
-        </SettingRow>
-
-        <SettingRow
-          title="Preferred Data Source"
-          subtitle="Where should we pull Players' ranks from?"
-        >
-          <div className="relative">
-            <button
-              ref={dsTriggerRef}
-              onClick={() => setDataSourceOpen(o => !o)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-surface-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer capitalize"
-            >
-              {settings.prefDataSource}
-              <CaretDownIcon size={12} className="opacity-60" />
-            </button>
-            <Dropdown
-              triggerRef={dsTriggerRef}
-              open={dataSourceOpen}
-              onClose={() => setDataSourceOpen(false)}
-              items={PreferredDataSources.map(v => ({ label: v, onClick: () => update({ prefDataSource: v as PreferredDataSources }) }))}
-            />
-          </div>
-        </SettingRow>
-
-        <SettingRow
-          title="Discord Rich Presence"
-          subtitle="Show your current activity in Discord."
-        >
-          <Toggle
-            enabled={settings.drpcEnabled}
-            onChange={async v => {
-              await update({ drpcEnabled: v });
-              if (v) {
-                await startRpc();
-                await discordRpc?.updateActivity(DEFAULT_ACTIVITY);
-              } else {
-                await stopRpc();
-              }
-            }}
+        {SettingsSections.map(s => (
+          <SectionButton
+            key={s.id}
+            label={s.label}
+            icon={s.icon}
+            active={active === s.id}
+            onClick={() => setActive(s.id)}
           />
-        </SettingRow>
+        ))}
 
-        <SettingRow
-          title="Use Custom Character Art"
-          subtitle="Disabling will revert character art/icons to their normal in-game version."
-        >
-          <Toggle
-            enabled={settings.useCustomCharArt}
-            onChange={v => update({ useCustomCharArt: v })}
-          />
-        </SettingRow>
+        <div className="h-px bg-background-border my-2 mx-2" />
 
-        <SettingRow
-          title="Open Game with App"
-          subtitle="Automatically open Omega Strikers via Steam when the app is opened."
-        >
-          <Toggle
-            enabled={settings.openGameWithApp}
-            onChange={v => update({ openGameWithApp: v })}
-          />
-        </SettingRow>
+        <SectionButton
+          label="Debug"
+          icon={<BugIcon size={18} weight="duotone" />}
+          trailing={<ArrowSquareOutIcon size={14} className="opacity-60" />}
+          onClick={() => navigate('/debug')}
+        />
+        <SectionButton
+          label="Danger Zone"
+          icon={<FireIcon size={18} weight="duotone" />}
+          active={active === 'danger'}
+          danger
+          onClick={() => setActive('danger')}
+        />
+      </nav>
 
-        <SettingRow
-          title="Close on Game Exit"
-          subtitle="Automatically close the app when Omega Strikers is no longer running."
-        >
-          <Toggle
-            enabled={settings.exitOnGameClose}
-            onChange={v => update({ exitOnGameClose: v })}
-          />
-        </SettingRow>
+      <div className="flex-1 min-w-0">
+        <h1 className={`text-xl font-bold mb-4 ${active === 'danger' ? 'text-error' : 'text-char'}`}>
+          {activeLabel}
+        </h1>
+        <div className={`h-px mb-4 ${active === 'danger' ? 'bg-error/30' : 'bg-background-border'}`} />
 
-        <SettingRow
-          title="Compact Mode"
-          subtitle="Better support for smaller windows by hiding less useful features."
-        >
-          <Toggle
-            enabled={settings.compactMode}
-            onChange={v => update({ compactMode: v })}
-          />
-        </SettingRow>
-
-        <SettingRow
-          title="Theme"
-          subtitle={`Color theme for the app. Currently using ${theme} theme.`}
-        >
-          <Button
-            variant="surface"
-            size="sm"
-            onClick={() => setThemePickerOpen(true)}
-            iconLeft={<PaletteIcon size={14} />}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active}
+            initial={{ opacity: 0, x: 6 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -6 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           >
-            Change Theme
-          </Button>
-        </SettingRow>
-
-        <SettingRow
-          title="Queue Pop Notification"
-          subtitle="Play a sound when your queue pops."
-        >
-          <Toggle
-            enabled={settings.notifyQueuePop}
-            onChange={v => update({ notifyQueuePop: v })}
-          />
-        </SettingRow>
-
-        <SettingRow
-          title="Queue Pop Sound"
-          subtitle="The sound pack used for when your queue pops. Press F8 to test."
-          disabled={!settings.notifyQueuePop}
-        >
-          <div className="relative">
-            <button
-              ref={queuePopTypeTriggerRef}
-              onClick={() => setQueuePopTypeOpen(o => !o)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-surface-border text-sm text-char hover:bg-surface-raised transition-colors duration-100 cursor-pointer"
-            >
-              {settings.queuePopType}
-              <CaretDownIcon size={12} className="opacity-60" />
-            </button>
-            <Dropdown
-              triggerRef={queuePopTypeTriggerRef}
-              open={queuePopTypeOpen}
-              onClose={() => setQueuePopTypeOpen(false)}
-              items={[
-                { label: 'Ai.Mi', onClick: () => update({ queuePopType: 'Ai.Mi' }) },
-                { label: 'Generic', onClick: () => update({ queuePopType: 'Generic' }) },
-              ]}
-            />
-          </div>
-        </SettingRow>
-
-        <SettingRow
-          title="Queue Pop Volume"
-          subtitle="Volume level for the queue pop sound."
-          vertical
-          disabled={!settings.notifyQueuePop}
-        >
-          <Slider
-            min={0}
-            max={100}
-            value={settings.queuePopVol}
-            onChange={v => update({ queuePopVol: v })}
-            unit="%"
-            disabled={!settings.notifyQueuePop}
-          />
-        </SettingRow>
-
-        <SettingRow
-          title="Nameplate Transparency"
-          subtitle="Change the opacity of nameplates on Player Cards"
-          vertical
-        >
-          <div className="mb-3 pointer-events-none">
-            <PlayerCard
-              player={previewPlayer}
-              match={undefined}
-              index={0}
-              isAlly
-              nameplateOpacity={settings.nameplateTransparency}
-            />
-          </div>
-          <Slider
-            min={0}
-            max={100}
-            value={settings.nameplateTransparency}
-            onChange={v => update({ nameplateTransparency: v })}
-            unit="%"
-          />
-        </SettingRow>
-      </div>
-
-      {/* Danger Zone */}
-      <div className="mt-8">
-        <div className="flex items-center gap-2 mb-3">
-          <FireIcon size={16} className="text-error shrink-0" weight="duotone" />
-          <span className="text-xs font-semibold text-error uppercase tracking-wider">
-            Danger Zone
-          </span>
-          <div className="flex-1 h-px bg-error/30" />
-        </div>
-
-        <div className="flex flex-col divide-y divide-error/10 rounded-lg overflow-hidden">
-
-          <SettingRow
-            title="Reset Database"
-            subtitle="Wipes all local data. This cannot be undone."
-          >
-            <Button variant="danger" size="sm" onClick={() => setResetModalOpen(true)}>Reset</Button>
-          </SettingRow>
-
-          <SettingRow
-            title="Uninstall UE4SS"
-            subtitle="Removes UE4SS and companion mods from your game folder."
-            vertical={uninstalling}
-          >
-            {uninstalling
-              ? <ProgressBar percent={uninstallProgress?.percent ?? null} message={uninstallProgress?.message} />
-              : <Button variant="danger" size="sm" onClick={() => setUninstallModalOpen(true)}>Uninstall</Button>
-            }
-          </SettingRow>
-        </div>
+            {active === 'account' && <AccountSettings />}
+            {active === 'appearance' && <AppearanceSettings settings={settings} update={update} />}
+            {active === 'qol' && <QualityOfLifeSettings settings={settings} update={update} />}
+            {active === 'advanced' && <AdvancedSettings settings={settings} update={update} />}
+            {active === 'danger' && <DangerZoneSettings settings={settings} />}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </motion.div>
-
-    <ThemePicker open={themePickerOpen} onClose={() => setThemePickerOpen(false)} />
-
-    <ConfirmModal
-      open={uninstallModalOpen}
-      title="Uninstall UE4SS & Close App"
-      description="This will remove UE4SS and all companion mods from OS, then close the App. Are you sure?"
-      confirmLabel="Uninstall"
-      onConfirm={handleUninstall}
-      onCancel={() => setUninstallModalOpen(false)}
-    />
-    <ConfirmModal
-      open={resetModalOpen}
-      title="Reset Local Database"
-      description="This will wipe all local data (incl. match history) and cannot be undone. Are you sure?"
-      confirmLabel="Reset"
-      onConfirm={async () => { setResetModalOpen(false); await resetDatabase(); }}
-      onCancel={() => setResetModalOpen(false)}
-    />
-    </>
   );
 }
 
-interface SettingRowProps {
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
-  vertical?: boolean;
-  stretch?: boolean;
-  disabled?: boolean;
+interface SectionButtonProps {
+  label: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  active?: boolean;
+  danger?: boolean;
+  trailing?: React.ReactNode;
 }
 
-function SettingRow({ title, subtitle, children, vertical, stretch, disabled }: SettingRowProps) {
+function SectionButton({ label, icon, onClick, active, danger, trailing }: SectionButtonProps) {
+  const colors = danger
+    ? active ? 'bg-error/10 text-error' : 'text-error/80 hover:bg-error/10 hover:text-error'
+    : active ? 'bg-primary/10 text-primary' : 'text-char-subtle hover:bg-surface-overlay hover:text-char';
+
   return (
-    <div className={`flex gap-4 py-3.5 px-1 transition-opacity duration-200 ${vertical ? 'flex-col' : 'items-center justify-between'} ${disabled ? 'opacity-40 pointer-events-none' : ''}`}>
-      <div className="flex flex-col gap-0.5 min-w-0">
-        <span className="text-sm font-medium text-char">{title}</span>
-        <span className="text-xs text-char-subtle">{subtitle}</span>
-      </div>
-      <div className={vertical ? 'w-full' : stretch ? 'flex min-w-0 justify-end' : 'shrink-0'}>{children}</div>
-    </div>
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors cursor-pointer ${colors}`}
+    >
+      <span className="shrink-0">{icon}</span>
+      <span className="flex-1 truncate">{label}</span>
+      {trailing}
+    </button>
   );
 }
-
-
-const PREVIEW_PLAYER: MatchPlayersTable = {
-  username: 'Striker',
-  playerId: 'preview',
-  tags: [],
-  teamNum: 1,
-  role: 'Forward',
-  charName: null,
-  charId: null,
-  rating: 2350,
-  peakRating: null,
-  accLevel: 120,
-  isMe: true,
-  xp: 0,
-  gainedXp: 0,
-  xpGoals: [],
-  ping: 0,
-  trainings: [],
-  favChar: [],
-  bestChar: [],
-  normWR: 0.54,
-  rankedWR: 0.54,
-  normGames: 312,
-  rankedGames: 312,
-  playstyle: null,
-  knockouts: null,
-  smurfProbability: 'none',
-  queueMates: [],
-  nameplate: {
-    nameplateId: 'NameplateData_OmegaStrikers',
-    nameplateUrl: `https://api.clarioncorp.net/assets/nameplate/NameplateData_OmegaStrikers.webp`
-  },
-};

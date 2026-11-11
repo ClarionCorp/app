@@ -1,25 +1,49 @@
-import { GameControllerIcon, ListPlusIcon, TrendUpIcon } from "@phosphor-icons/react";
+import { PaletteIcon, SlidersHorizontalIcon, SparkleIcon, UserCircleIcon } from "@phosphor-icons/react/dist/ssr";
+import { PreferredDataSources, ReleaseChannel } from "./appAPI";
 
+export type QueuePopType = 'Ai.Mi' | 'Generic';
 
-export type TelemetryOption = 'game_stats' | 'play_state' | 'play_count';
+export type Settings = {
+  gameDirectory: string | null;
+  drpcEnabled: boolean;
+  notifyQueuePop: boolean;
+  queuePopVol: number;
+  queuePopType: QueuePopType;
+  exitOnGameClose: boolean;
+  prefDataSource: PreferredDataSources;
+  openGameWithApp: boolean;
+  releaseChannel: ReleaseChannel;
+  nameplateTransparency: number;
+  useCustomCharArt: boolean;
+  compactMode: boolean;
+};
 
-export const telemetryOptions: { value: TelemetryOption; label: string; description: string; icon: React.ReactNode }[] = [
-  {
-    value: 'game_stats',
-    label: 'Extra Game Stats',
-    description: 'Automatically send limited match history data to ClarionCorp.',
-    icon: <ListPlusIcon size={18} weight="duotone" />,
-  },
-  {
-    value: 'play_state',
-    label: 'Playing State',
-    description: 'Share current game state with Discord Rich Presence and your account on ClarionCorp.',
-    icon: <GameControllerIcon size={18} weight="duotone" />,
-  },
-  {
-    value: 'play_count',
-    label: 'Play Count',
-    description: 'Send an anonymous +1 to ClarionCorp for updating the online counter.',
-    icon: <TrendUpIcon size={18} weight="duotone" />,
-  },
+export const DEFAULT_SETTINGS: Settings = {
+  gameDirectory: null,
+  drpcEnabled: true,
+  notifyQueuePop: false,
+  queuePopVol: 50,
+  queuePopType: 'Ai.Mi',
+  exitOnGameClose: false,
+  prefDataSource: 'ClarionCorp',
+  openGameWithApp: false,
+  releaseChannel: 'Stable',
+  nameplateTransparency: 50,
+  useCustomCharArt: true,
+  compactMode: false,
+};
+
+export interface SettingsSectionProps {
+  settings: Settings;
+  update: (patch: Partial<Settings>) => void;
+}
+
+export type SectionId = 'account' | 'appearance' | 'qol' | 'advanced' | 'danger';
+
+// also dictates the order they show up
+export const SettingsSections: { id: SectionId; label: string; icon: React.ReactNode; danger?: boolean }[] = [
+  { id: 'appearance', label: 'Appearance', icon: <PaletteIcon size={18} weight="duotone" /> },
+  { id: 'qol', label: 'Quality of Life', icon: <SparkleIcon size={18} weight="duotone" /> },
+  { id: 'account', label: 'My Account', icon: <UserCircleIcon size={18} weight="duotone" /> },
+  { id: 'advanced', label: 'Advanced', icon: <SlidersHorizontalIcon size={18} weight="duotone" /> },
 ];
