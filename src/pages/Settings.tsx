@@ -20,7 +20,7 @@ const SAVE_DELAY_MS = 300;
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [active, setActive] = useState<SectionId>('account');
+  const [active, setActive] = useState<SectionId>('appearance');
   const pending = useRef<Partial<Settings>>({});
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
