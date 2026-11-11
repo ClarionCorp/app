@@ -127,7 +127,8 @@ export async function fetchAppAPI(urlStub: string, method: 'GET' | 'POST' | 'PAT
         const refetch = await fetchAppAPI(urlStub, method, body);
         if (!refetch) { throw new Error(`Refetch request failed, despite having a valid PAT!`) };
         return req;
-
+      } else if (req.status == 404) {
+        return req;
       } else {
         throw new Error(`Received an incorrect response from AppAPI! ${JSON.stringify(data.error, null, 1)}`);
       }

@@ -80,7 +80,7 @@ export async function updatePlayers(data: PlayersJSON) {
   // Here, we grab their rating, playstyle, smurf rating, and basic stats.
   for (const localPlayer of players.filter(p => p.rating === null)) {
     // fetch and set ratings and other stats (if empty)
-    console.log(`Fetching statistical data for ${localPlayer.username}...`)
+    console.log(`Fetching statistical data for ${localPlayer.playerId}...`)
     try {
       const playerStats = await fetchPlayerStats(localPlayer.username, localPlayer.playerId, mode);
       const inferredQueueMates = await getInferredQueueMates(localPlayer.username);

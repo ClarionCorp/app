@@ -286,11 +286,11 @@ export async function getInferredQueueMates(username: string): Promise<PairedPla
     const res = await fetchAppAPI(`/v1/player/${username}/teammates`, 'GET');
     if (!res) { throw new Error(`Response came back null while searching for ${username}'s teammates!`) };
 
-    const data = await res.json() as PairedPlayersV1;
-
     // Not really an error, just drop silently
     if (res.status == 404) { return null; }
     else if (!res.ok) { throw new Error(`${res.status}: ${res.statusText}`) }
+
+    const data = await res.json() as PairedPlayersV1;
 
     return data;
   } catch (e) {
