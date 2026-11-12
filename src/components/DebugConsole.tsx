@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type PointerEvent, type KeyboardEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logger, LogEntry, LogLevel, formatLogTime, formatLogEntry } from '../core/logger';
-import { BugIcon, XIcon, TrashIcon, CopySimpleIcon } from '@phosphor-icons/react';
+import { BugIcon, XIcon, TrashIcon, CopySimpleIcon, CaretRightIcon } from '@phosphor-icons/react';
+import { runConsoleCommand } from '../core/utilities/console';
 
 const LEVEL_TEXT: Record<LogLevel, string> = {
   debug: 'text-zinc-500',
@@ -20,6 +21,13 @@ const LEVEL_LABEL: Record<LogLevel, string> = {
 type Filter = LogLevel | 'all';
 const FILTERS: Filter[] = ['all', 'debug', 'info', 'warn', 'error'];
 
+const defaultConsoleHeight = 360;
+const minHeight = 160;
+
+function clampHeight(height: number) {
+  return Math.max(minHeight, Math.min(height, window.innerHeight - 80));
+}
+
 interface DebugConsoleProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,14 +36,27 @@ interface DebugConsoleProps {
 export function DebugConsole({ open, onOpenChange }: DebugConsoleProps) {
   const [entries, setEntries] = useState<LogEntry[]>([...logger.getEntries()]);
   const [filter, setFilter] = useState<Filter>('all');
+  const [height, setHeight] = useState(defaultConsoleHeight);
+  const [resizing, setResizing] = useState(false);
+  const [input, setInput] = useState('');
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => logger.subscribe(() => setEntries([...logger.getEntries()])), []);
 
   // Auto-scroll when open and new entries arrive
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'instant' });
-  }, [entries.length, open]);
+  }, [entries.length, open, height]);
+
+  // Keep the panel within the window when it shrinks
+  useEffect(() => {
+    const onResize = () => setHeight(h => clampHeight(h));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const filtered = filter === 'all' ? entries : entries.filter(e => e.level === filter);
 
@@ -46,17 +67,83 @@ export function DebugConsole({ open, onOpenChange }: DebugConsoleProps) {
     navigator.clipboard.writeText(entries.map(formatLogEntry).join('\n'));
   }
 
+  function onResizeStart(e: PointerEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setResizing(true);
+  }
+
+  function onResizeMove(e: PointerEvent<HTMLDivElement>) {
+    if (!resizing) return;
+    setHeight(clampHeight(window.innerHeight - e.clientY));
+  }
+
+  function onResizeEnd(e: PointerEvent<HTMLDivElement>) {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setResizing(false);
+  }
+
+  async function submitCommand() {
+    const command = input.trim();
+    if (!command) return;
+    setHistory(h => (h[h.length - 1] === command ? h : [...h, command]));
+    setHistoryIndex(null);
+    setInput('');
+    await runConsoleCommand(command);
+  }
+
+  function onInputKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitCommand();
+    } else if (e.key === 'ArrowUp') {
+      if (history.length === 0) return;
+      e.preventDefault();
+      const next = historyIndex === null ? history.length - 1 : Math.max(0, historyIndex - 1);
+      setHistoryIndex(next);
+      setInput(history[next]);
+    } else if (e.key === 'ArrowDown') {
+      if (historyIndex === null) return;
+      e.preventDefault();
+      const next = historyIndex + 1;
+      if (next >= history.length) {
+        setHistoryIndex(null);
+        setInput('');
+      } else {
+        setHistoryIndex(next);
+        setInput(history[next]);
+      }
+    }
+  }
+
   return (
     <div className="fixed bottom-0 right-0 z-200 flex flex-col items-end pointer-events-none">
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 240 }}
+            animate={{ opacity: 1, height }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="w-screen bg-zinc-950/95 backdrop-blur border border-zinc-800 border-b-0 rounded-tl-xl overflow-hidden flex flex-col pointer-events-auto"
+            transition={resizing ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
+            className={[
+              'relative w-screen bg-zinc-950/95 backdrop-blur border border-zinc-800 border-b-0 rounded-tl-xl overflow-hidden flex flex-col pointer-events-auto',
+              resizing ? 'select-none' : '',
+            ].join(' ')}
           >
+            {/* Resize handle */}
+            <div
+              onPointerDown={onResizeStart}
+              onPointerMove={onResizeMove}
+              onPointerUp={onResizeEnd}
+              onPointerCancel={onResizeEnd}
+              onDoubleClick={() => setHeight(clampHeight(defaultConsoleHeight))}
+              title="Drag to resize"
+              className={[
+                'absolute top-0 left-0 right-0 h-1.5 z-10 cursor-ns-resize transition-colors',
+                resizing ? 'bg-zinc-600/60' : 'hover:bg-zinc-700/60',
+              ].join(' ')}
+            />
+
             {/* Header */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-zinc-800 bg-zinc-900/60 shrink-0">
               <BugIcon size={13} className="text-zinc-500 shrink-0" />
@@ -128,6 +215,27 @@ export function DebugConsole({ open, onOpenChange }: DebugConsoleProps) {
                 </div>
               ))}
               <div ref={bottomRef} />
+            </div>
+
+            {/* Command line */}
+            <div
+              onClick={() => inputRef.current?.focus()}
+              className="flex items-center gap-1.5 px-3 py-1.5 border-t border-zinc-800 bg-zinc-900/60 shrink-0 cursor-text"
+            >
+              <CaretRightIcon size={11} weight="bold" className="text-zinc-600 shrink-0" />
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={e => {
+                  setInput(e.target.value);
+                  setHistoryIndex(null);
+                }}
+                onKeyDown={onInputKeyDown}
+                spellCheck={false}
+                autoComplete="off"
+                placeholder="Enter a command…"
+                className="flex-1 min-w-0 bg-transparent outline-none font-mono text-[11px] text-zinc-300 placeholder:text-zinc-700"
+              />
             </div>
           </motion.div>
         )}
