@@ -7,6 +7,7 @@ import { openPath } from "@tauri-apps/plugin-opener";
 export const validConsoleCommands: Record<string, string> = {
   HELP: `Shows a list of all valid console commands`,
   OPEN_LOGS_FOLDER: `Opens the app's logs folder in the system file manager`,
+  NAVIGATE: `Force navigate to a specific page in the app (Usage: 'NAVIGATE <slug>')`,
 };
 
 export async function openLogsFolder() {
@@ -20,8 +21,23 @@ export async function openLogsFolder() {
   }
 }
 
+export async function navCommand(args: string[]) {
+  try {
+    if (!args[0]) {
+      console.error(`No page slug provided! (Usage: 'NAVIGATE home')`);
+      return;
+    }
+    console.debug(`Forcing navigation to page ${args[0]}...`);
+    window.location.hash = `#/${args[0]}`;  // Updating the hash triggers a route change, though it WILL crash if page is invalid
+  } catch (e) {
+    console.error(`Failed to navigate to the specified page!`, e);
+    return;
+  }
+}
+
 export async function runConsoleCommand(command: string) {
-  const cmd = command.toUpperCase();
+  const [rawCmd, ...args] = command.trim().split(/\s+/);
+  const cmd = rawCmd.toUpperCase();
   switch (cmd) {
     case 'HELP':
       console.log('Valid console commands:');
@@ -31,6 +47,9 @@ export async function runConsoleCommand(command: string) {
       return;
     case 'OPEN_LOGS_FOLDER':
       await openLogsFolder();
+      return;
+    case 'NAVIGATE':
+      await navCommand(args);
       return;
     default:
       console.warn(`Invalid Command: ${cmd}`);
