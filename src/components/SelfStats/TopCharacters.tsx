@@ -15,14 +15,19 @@ export default function TopCharactersSection({ characters, customImgs }: { chara
             <div key={c.characterId} className="flex items-center gap-3 min-w-0">
               <img src={art} alt="" className="w-9 h-9 rounded object-cover shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="flex items-baseline justify-between gap-2 text-xs mb-1">
-                  <span className="font-semibold text-char truncate">{character?.name ?? getCharName(c.characterId) ?? c.characterId}</span>
-                  <span className="text-char-subtle tabular-nums shrink-0">{c.games} games · {wr}%</span>
+                <div className="flex items-baseline justify-between gap-2 mb-1">
+                  <span className="text-sm font-semibold text-char truncate">{character?.name ?? getCharName(c.characterId) ?? c.characterId}</span>
+                  <span className="text-xs text-char-subtle tabular-nums shrink-0">{wr}% WR</span>
                 </div>
                 <WinRateBar percent={wr} />
                 <p className="text-[10px] text-char-subtle mt-0.5">
                   {c.forwardGames} Forward · {c.goalieGames} Goalie
                 </p>
+              </div>
+
+              <div className="w-12 shrink-0 text-right">
+                <p className="text-xl font-bold text-char tabular-nums leading-none">{c.games}</p>
+                <p className="text-[10px] uppercase tracking-wider text-char-subtle">games</p>
               </div>
             </div>
           )

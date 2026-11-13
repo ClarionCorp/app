@@ -23,8 +23,10 @@ export type MapObject = {
   ccId: string
   mapName: string
   icon: Icon
+  iconImg: string,
   image: string | null
   description: ReactNode
+  category: 'Normal' | 'TTT' | 'Misc'
 }
 
 export function getMapObjectFromID(mapId: string | null | undefined): MapObject {
@@ -35,8 +37,10 @@ export function getMapObjectFromID(mapId: string | null | undefined): MapObject 
       ccId: '',
       mapName: 'Unknown',
       icon: QuestionIcon,
+      iconImg: '',
       image: null,
-      description: ''
+      description: '',
+      category: 'Misc',
     }
   }
   return target;
@@ -51,8 +55,10 @@ export function getMapObjectFromCCID(ccId: string | null | undefined): MapObject
       ccId: '',
       mapName: 'Unknown',
       icon: QuestionIcon,
+      iconImg: '',
       image: null,
-      description: ''
+      description: '',
+      category: 'Misc',
     }
   }
   return target;
@@ -64,6 +70,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_AhtenCity',
     mapName: 'Ahten City',
     icon: BuildingsIcon,
+    iconImg: '/maps/icons/AhtenCity.webp',
     image: `/maps/AhtenCity.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, trapezoid barrier right infront of the goalbox. <br />
@@ -73,13 +80,15 @@ export const MAPS: MapObject[] = [
       - Each time an <a className='text-match-ally'>orb</a> event is called, all <a className='text-match-mid'>6</a> <a className='text-match-ally'>orbs</a> respawn instead of the usual <a className='text-match-mid'>3</a>.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b> No data
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_AtlasLab',
     ccId: 'GTD_Lab',
     mapName: 'Atlas Lab',
     icon: HurricaneIcon,
+    iconImg: '/maps/icons/AtlasLab.webp',
     image: `/maps/AtlasLab.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two circular barriers to the sides of the goalbox. <br />
@@ -91,13 +100,15 @@ export const MAPS: MapObject[] = [
       <br />
       <b className='text-match-enemy'>Common Bans:</b><br />
       - <a className='text-match-enemy'>Vyce</a> and <a className='text-match-enemy'>Luna</a>'s <a className='bg-orange-300/40 px-1 rounded-sm'>SPECIAL</a> can be dangerous due to the limited space while the black hole is active<br />
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_ClarionCorp',
     ccId: 'GTD_ClarionCorpDefault',
     mapName: 'Clarion Test Chamber',
     icon: FlaskIcon,
+    iconImg: '/maps/icons/ClarionCorp.webp',
     image: `/maps/ClarionCorp.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Unfortunately the locks varies due to this map's <a className='text-match-ally'>gimmick</a>. <br />
@@ -106,13 +117,15 @@ export const MAPS: MapObject[] = [
       - Each round, a new variation of the map is randomly chosen.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b> No data
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_DigitalWorld',
     ccId: 'GTD_DigitalWorld',
     mapName: "Ai.Mi's App",
     icon: CircleIcon,
+    iconImg: '/maps/icons/AiMiApp.webp',
     image: `/maps/AiMiApp.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, pill-shaped barrier right infront of the goalbox. <br />
@@ -125,13 +138,15 @@ export const MAPS: MapObject[] = [
       <b className='text-match-enemy'>Common Bans:</b><br />
       - <a className='text-match-enemy'>Rasmus</a>'s <a className='bg-orange-300/40 px-1 rounded-sm'>SPECIAL</a> can pull players into the hole.<br />
       - <a className='text-match-enemy'>Juliette</a> and other instant brawlers can be particularly dangerous.<br />
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_Drums',
     ccId: 'GTD_Drums',
     mapName: 'Taiko Temple',
     icon: SpeakerHifiIcon,
+    iconImg: '/maps/icons/TaikoTemple.webp',
     image: `/maps/TaikoTemple.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two, arrow-shaped barriers spaced evenly infront of the goalbox. <br />
@@ -142,13 +157,15 @@ export const MAPS: MapObject[] = [
       - Affected <a className='text-match-mid'>objects</a> will be rebound at a speed <a className='text-match-enemy'>faster</a> than before.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b> No data
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_MusicStage',
     ccId: 'GTD_MusicStage',
     mapName: 'Demon Dais',
     icon: WaveformIcon,
+    iconImg: '/maps/icons/DemonDais.webp',
     image: `/maps/DemonDais.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> One circular lock in front of the goal. It has to be hit twice before breaking. <br />
@@ -160,13 +177,15 @@ export const MAPS: MapObject[] = [
       <br />
       <b className='text-match-enemy'>Common Bans:</b><br />
       - <a className='text-match-enemy'>Finii</a>'s <a className='bg-orange-300/40 px-1 rounded-sm'>SPECIAL</a> can be very controlling for a goalie, due to the circular lock.<br />
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_NightMarket',
     ccId: 'GTD_NightMarket',
     mapName: 'Night Market',
     icon: MoonIcon,
+    iconImg: '/maps/icons/NightMarket.webp',
     image: `/maps/NightMarket.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two rectangular barriers with a cutout, right infront of the goalbox. <br />
@@ -178,13 +197,15 @@ export const MAPS: MapObject[] = [
       - The barriers have a cutout on the edges, which it possible to hit both at the same time.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b> No data
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_Obscura',
     ccId: 'GTD_Obscura',
     mapName: 'Gates of Obscura',
     icon: EyeIcon,
+    iconImg: '/maps/icons/GatesOfObscura.webp',
     image: `/maps/GatesOfObscura.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two triangle halves right infront of the goalbox. <br />
@@ -196,13 +217,15 @@ export const MAPS: MapObject[] = [
       - <a className='text-match-enemy'>Luna</a> can use her <a className='bg-orange-300/40 px-1 rounded-sm'>SECONDARY</a> through them.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b> No data
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_OniVillage',
     ccId: 'GTD_OniVillage',
     mapName: 'Oni Village',
     icon: OnigiriIcon,
+    iconImg: '/maps/icons/OniVillage.webp',
     image: `/maps/OniVillage.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two parallelograms in the corners beside the goalbox. <br />
@@ -212,13 +235,15 @@ export const MAPS: MapObject[] = [
       - Speed strips on the top and bottom edges.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b> No data
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'GMD_SummerSplash',
     ccId: 'GTD_SummerSplash',
     mapName: "Inky's Splash Zone",
     icon: TrashIcon,
+    iconImg: '/maps/icons/InkysSplashZone.webp',
     image: `/maps/InkysSplashZone.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, corner barrier to the left of the goalbox. <br />
@@ -230,46 +255,57 @@ export const MAPS: MapObject[] = [
       - You can walk inside the stream freely if it was activated by your team.<br />
       <br />
       <b className='text-match-enemy'>Common Bans:</b> No data
-    </>
+    </>,
+    category: 'Normal'
   },
   {
     mapId: 'TutorialMap',
     ccId: 'GTD_Tutorial',
     mapName: 'Neo Origins',
     icon: CopyIcon,
+    iconImg: '/maps/icons/Tutorial.webp',
     image: `/maps/Tutorial.webp`,
-    description: ''
+    description: '',
+    category: 'Misc'
   },
   {
     mapId: 'GTD_BackToBackXL',
     ccId: 'GTD_BackToBackXL',
     mapName: 'Back To Back',
     icon: HurricaneIcon,
+    iconImg: '/maps/icons/BackToBack.webp',
     image: `/maps/BackToBack.webp`,
-    description: ''
+    description: '',
+    category: 'TTT'
   },
   {
     mapId: 'GTD_AboutFaceXL',
     ccId: 'GTD_AboutFaceXL',
     mapName: 'About Face',
     icon: ArrowUUpLeftIcon,
+    iconImg: '/maps/icons/AboutFace.webp',
     image: `/maps/AboutFace.webp`,
-    description: ''
+    description: '',
+    category: 'TTT'
   },
   {
     mapId: 'GTD_CornerGoalXL',
     ccId: 'GTD_CornerGoalXL',
     mapName: 'Corner Pocket',
     icon: FrameCornersIcon,
+    iconImg: '/maps/icons/CornerPocket.webp',
     image: `/maps/CornerGoal.webp`,
-    description: ''
+    description: '',
+    category: 'TTT'
   },
   {
     mapId: 'GTD_FlippedXL',
     ccId: 'GTD_FlippedXL',
     mapName: 'Map Flipped',
     icon: ArrowsClockwiseIcon,
+    iconImg: '/maps/icons/MapFlipped.webp',
     image: `/maps/Flipped.webp`,
-    description: ''
+    description: '',
+    category: 'TTT'
   },
 ]

@@ -11,7 +11,7 @@ import RankIcon from '../components/Rank'
 import { Dropdown } from '../components/UI/Dropdown'
 import { EmptyNote, Section, sectionVariants } from '../components/SelfStats/Cards'
 import OverviewSection from '../components/SelfStats/Overview'
-import RecentFormSection from '../components/SelfStats/RecentOutcomes'
+import RecentOutcomesSection from '../components/SelfStats/RecentOutcomes'
 import RatingTrendSection from '../components/SelfStats/RatingTrend'
 import RolesSection from '../components/SelfStats/Roles'
 import TopCharactersSection from '../components/SelfStats/TopCharacters'
@@ -204,10 +204,11 @@ export default function SelfStatsPage() {
         <Segmented options={['All', '30d', '7d'] as StatsTimeFilter[]} value={timeFilter} onChange={setTimeFilter} />
       </div>
 
+      {/* Overview + Outcomes */}
       {hasGames ? (
         <>
           <OverviewSection stats={stats} customImgs={customImgs} />
-          <RecentFormSection results={stats.recentForm} />
+          <RecentOutcomesSection results={stats.recentForm} />
         </>
       ) : (
         <Section title="Overview">
@@ -215,16 +216,18 @@ export default function SelfStatsPage() {
         </Section>
       )}
 
+      {/* Rating Chart */}
       <RatingTrendSection points={ratingHistory} />
 
+      {/* Top Characters + Maps + Roles + Teammates */}
       {hasGames && (
         <>
-          <RolesSection roles={stats.roles} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <TopCharactersSection characters={stats.characters} customImgs={customImgs} />
             <MapsSection maps={stats.maps} />
           </div>
           <TeammatesSection teammates={stats.teammates} />
+          <RolesSection roles={stats.roles} />
         </>
       )}
 
