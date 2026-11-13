@@ -207,7 +207,7 @@ export default function SelfStatsPage() {
 
       {hasGames ? (
         <>
-          <OverviewSection stats={stats} />
+          <OverviewSection stats={stats} customImgs={customImgs} />
           <RecentFormSection results={stats.recentForm} />
         </>
       ) : (

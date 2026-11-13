@@ -25,7 +25,7 @@ export function Section({
       className={clsx('bg-surface-subtle border border-background-border rounded-xl p-4 min-w-0', className)}
     >
       <div className="flex items-center justify-between gap-2 mb-3">
-        <h2 className="text-xs uppercase font-semibold tracking-widest text-char-subtle truncate">{title}</h2>
+        <h2 className="text-sm uppercase font-bold tracking-widest text-char-subtle truncate">{title}</h2>
         {action}
       </div>
       {children}

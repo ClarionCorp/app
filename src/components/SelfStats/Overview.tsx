@@ -1,7 +1,8 @@
-import { motion } from 'framer-motion'
-import { FireIcon, SnowflakeIcon } from '@phosphor-icons/react'
 import clsx from 'clsx'
+import { motion } from 'framer-motion'
 import { Section } from './Cards'
+import { getCharacterFromId } from '../../core/objects/characters'
+import { getMapObjectFromID } from '../../core/objects/maps'
 import { formatPlaytime, SelfStats, winRate } from '../../core/utilities/selfStats'
 
 function WinRateRing({ percent }: { percent: number }) {
@@ -47,48 +48,79 @@ function MiniStat({ label, value, sub }: { label: string; value: string | number
   )
 }
 
-export default function OverviewSection({ stats }: { stats: SelfStats }) {
+export default function OverviewSection({ stats, customImgs }: { stats: SelfStats; customImgs: boolean }) {
   const losses = stats.games - stats.wins
-  const streak = stats.currentStreak
-  const onWinStreak = streak?.won ?? false
+  const topChar = stats.characters[0]
+  const topCharObj = topChar ? getCharacterFromId(topChar.characterId) : undefined
+  const topMap = stats.maps[0]
+  const topMapObj = topMap ? getMapObjectFromID(topMap.mapId) : undefined
 
   return (
     <Section title="Overview">
-      <div className="flex items-center gap-4 min-w-0">
-        {/* Hero: win rate */}
-        <div className="flex flex-col items-center gap-2 shrink-0">
-          <WinRateRing percent={winRate(stats.wins, stats.games)} />
-          <p className="text-xs font-semibold tabular-nums">
-            <span className="text-match-win">{stats.wins}W</span>
-            <span className="text-char-subtle"> / </span>
-            <span className="text-match-loss">{losses}L</span>
-          </p>
+      <div className="flex flex-col lg:flex-row lg:items-center gap-4 min-w-0">
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+          {/* Hero: win rate */}
+          <div className="flex flex-col items-center gap-2 shrink-0">
+            <WinRateRing percent={winRate(stats.wins, stats.games)} />
+            <p className="text-xs font-semibold tabular-nums">
+              <span className="text-match-win">{stats.wins}W</span>
+              <span className="text-char-subtle"> / </span>
+              <span className="text-match-loss">{losses}L</span>
+            </p>
+          </div>
+
+          {/* Secondary stats */}
+          <div className="flex-1 min-w-0 grid grid-cols-2 divide-x divide-surface-border/50 [&>*:nth-child(-n+2)]:border-b [&>*:nth-child(-n+2)]:border-surface-border/50">
+            <MiniStat label="Matches" value={stats.games} />
+            <MiniStat label="MVP Rate" value={`${winRate(stats.mvps, stats.games)}%`} sub={`${stats.mvps} MVPs`} />
+            <MiniStat label="Time Played" value={formatPlaytime(stats.totalSeconds)} />
+            <MiniStat label="Avg Match" value={formatPlaytime(stats.totalSeconds / stats.games)} />
+          </div>
         </div>
 
-        {/* Secondary stats */}
-        <div className="flex-1 min-w-0 grid grid-cols-2 divide-x divide-surface-border/50 [&>*:nth-child(-n+2)]:border-b [&>*:nth-child(-n+2)]:border-surface-border/50">
-          <MiniStat label="Matches" value={stats.games} />
-          <MiniStat label="MVP Rate" value={`${winRate(stats.mvps, stats.games)}%`} sub={`${stats.mvps} MVPs`} />
-          <MiniStat label="Time Played" value={formatPlaytime(stats.totalSeconds)} />
-          <MiniStat label="Avg Match" value={formatPlaytime(stats.totalSeconds / stats.games)} />
+        {/* Most played: square portrait + 16:9 map, sized so both share a height */}
+        <div className="grid grid-cols-[1fr_1.778fr] gap-2 lg:flex lg:h-40 lg:shrink-0">
+          {/* Most played character */}
+          {topChar && (
+            <div className="relative rounded-lg overflow-hidden shadow-xl bg-surface/80 min-w-0 aspect-square lg:h-full">
+              <img
+                src={customImgs ? topCharObj?.images.custom_portrait : topCharObj?.images.portrait}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+              />
+              <div aria-hidden className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 35%, rgba(10,10,10,0.95) 85%)' }} />
+              <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-100 bg-black/40 rounded px-1.5 py-0.5">
+                Main
+              </span>
+              <div className="absolute inset-x-0 bottom-0 p-2.5 min-w-0">
+                <p className="text-sm font-bold text-zinc-100 truncate leading-tight">{topCharObj?.name ?? topChar.characterId}</p>
+                <p className="text-[10px] text-zinc-300 truncate tabular-nums">{topChar.games} games ({winRate(topChar.wins, topChar.games)}% WR)</p>
+              </div>
+            </div>
+          )}
+
+          {/* Most played map */}
+          {topMap && (
+            <div className="relative rounded-lg overflow-hidden shadow-xl bg-surface/80 min-w-0 aspect-video lg:h-full">
+              {topMapObj?.image && (
+                <img
+                  src={topMapObj.image}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none brightness-70"
+                />
+              )}
+              <div aria-hidden className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 35%, rgba(10,10,10,0.95) 85%)' }} />
+              <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-100 bg-black/40 rounded px-1.5 py-0.5">
+                Top Map
+              </span>
+              <div className="absolute inset-x-0 bottom-0 p-2.5 min-w-0">
+                <p className="text-sm font-bold text-zinc-100 truncate leading-tight">{topMapObj?.mapName ?? topMap.mapId}</p>
+                <p className="text-[10px] text-zinc-300 truncate tabular-nums">{topMap.games} games ({winRate(topMap.wins, topMap.games)}% WR)</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Streak banner */}
-      {streak && (
-        <div
-          className={clsx(
-            'mt-4 flex items-center justify-between gap-3 rounded-lg px-3 py-2',
-            onWinStreak ? 'bg-match-win/10' : 'bg-match-loss/10'
-          )}
-        >
-          <span className={clsx('flex items-center gap-2 text-sm font-semibold min-w-0', onWinStreak ? 'text-match-win' : 'text-match-loss')}>
-            {onWinStreak ? <FireIcon size={18} weight="fill" className="shrink-0" /> : <SnowflakeIcon size={18} weight="fill" className="shrink-0" />}
-            <span className="truncate">{streak.count} game {onWinStreak ? 'win' : 'loss'} streak</span>
-          </span>
-          <span className="text-xs text-char-subtle tabular-nums shrink-0">Best: {stats.bestWinStreak}W</span>
-        </div>
-      )}
     </Section>
   )
 }

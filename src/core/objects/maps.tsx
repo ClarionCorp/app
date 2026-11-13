@@ -64,7 +64,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_AhtenCity',
     mapName: 'Ahten City',
     icon: BuildingsIcon,
-    image: `/maps/GTD_AhtenCity.webp`,
+    image: `/maps/AhtenCity.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, trapezoid barrier right infront of the goalbox. <br />
       <br />
@@ -80,7 +80,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_Lab',
     mapName: 'Atlas Lab',
     icon: HurricaneIcon,
-    image: `/maps/GTD_Lab.webp`,
+    image: `/maps/AtlasLab.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two circular barriers to the sides of the goalbox. <br />
       <br />
@@ -98,7 +98,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_ClarionCorpDefault',
     mapName: 'Clarion Test Chamber',
     icon: FlaskIcon,
-    image: `/maps/GTD_ClarionCorpDefault.webp`,
+    image: `/maps/ClarionCorp.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Unfortunately the locks varies due to this map's <a className='text-match-ally'>gimmick</a>. <br />
       <br />
@@ -113,7 +113,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_DigitalWorld',
     mapName: "Ai.Mi's App",
     icon: CircleIcon,
-    image: `/maps/GTD_DigitalWorld.webp`,
+    image: `/maps/AiMiApp.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, pill-shaped barrier right infront of the goalbox. <br />
       <br />
@@ -132,7 +132,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_Drums',
     mapName: 'Taiko Temple',
     icon: SpeakerHifiIcon,
-    image: `/maps/GTD_Drums.webp`,
+    image: `/maps/TaikoTemple.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two, arrow-shaped barriers spaced evenly infront of the goalbox. <br />
       <br />
@@ -149,7 +149,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_MusicStage',
     mapName: 'Demon Dais',
     icon: WaveformIcon,
-    image: `/maps/GTD_MusicStage.webp`,
+    image: `/maps/DemonDais.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> One circular lock in front of the goal. It has to be hit twice before breaking. <br />
       <br />
@@ -167,7 +167,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_NightMarket',
     mapName: 'Night Market',
     icon: MoonIcon,
-    image: `/maps/GTD_NightMarket.webp`,
+    image: `/maps/NightMarket.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two rectangular barriers with a cutout, right infront of the goalbox. <br />
       <br />
@@ -185,7 +185,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_Obscura',
     mapName: 'Gates of Obscura',
     icon: EyeIcon,
-    image: `/maps/GTD_Obscura.webp`,
+    image: `/maps/GatesOfObscura.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two triangle halves right infront of the goalbox. <br />
       <br />
@@ -203,7 +203,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_OniVillage',
     mapName: 'Oni Village',
     icon: OnigiriIcon,
-    image: `/maps/GTD_OniVillage.webp`,
+    image: `/maps/OniVillage.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two parallelograms in the corners beside the goalbox. <br />
       <br />
@@ -219,7 +219,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_SummerSplash',
     mapName: "Inky's Splash Zone",
     icon: TrashIcon,
-    image: `/maps/GTD_SummerSplash.webp`,
+    image: `/maps/InkysSplashZone.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, corner barrier to the left of the goalbox. <br />
       <br />
@@ -237,7 +237,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_Tutorial',
     mapName: 'Neo Origins',
     icon: CopyIcon,
-    image: `/maps/GTD_Tutorial.webp`,
+    image: `/maps/Tutorial.webp`,
     description: ''
   },
   {
@@ -245,7 +245,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_BackToBackXL',
     mapName: 'Back To Back',
     icon: HurricaneIcon,
-    image: `/maps/GTD_BackToBackXL.webp`,
+    image: `/maps/BackToBack.webp`,
     description: ''
   },
   {
@@ -253,7 +253,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_AboutFaceXL',
     mapName: 'About Face',
     icon: ArrowUUpLeftIcon,
-    image: `/maps/GTD_AboutFaceXL.webp`,
+    image: `/maps/AboutFace.webp`,
     description: ''
   },
   {
@@ -261,7 +261,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_CornerGoalXL',
     mapName: 'Corner Pocket',
     icon: FrameCornersIcon,
-    image: `/maps/GTD_CornerGoalXL.webp`,
+    image: `/maps/CornerGoal.webp`,
     description: ''
   },
   {
@@ -269,7 +269,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_FlippedXL',
     mapName: 'Map Flipped',
     icon: ArrowsClockwiseIcon,
-    image: `/maps/GTD_FlippedXL.webp`,
+    image: `/maps/Flipped.webp`,
     description: ''
   },
 ]
