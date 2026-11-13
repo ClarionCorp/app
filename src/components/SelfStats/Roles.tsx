@@ -13,10 +13,10 @@ function themeColor(cssVar: string, fallback: string): string {
 
 type Role = keyof SelfStats['roles']
 
-// Clockwise from the top. Forward stats cluster at the top, goalie stats at the bottom, shared stats on the sides.
-// `multiplier` weights each per-game stat relative to Scores (1x), shared across both roles. Since the polygon is
-// stretched to its strongest stat, only the multipliers' ratios to each other matter. Fractions read as
-// "N of this stat is worth 1 score", e.g. 1 / 2500 means 2500 damage counts as much as 1 score.
+// Clockwise from the top. Forward stats cluster at the top, Goalie stats at the bottom, Shared stats on the sides.
+// "Multiplier" weights each per-game stat relative to Scores (1x), shared across both roles.
+// Since the polygon is stretched to its strongest stat, only the multipliers' ratios to each other matter.
+// Fractions read as "N of this stat is worth 1 score", (e.g. 1 / 2500 means 2500 damage counts as much as 1 score)
 const AXES: { label: string; key: keyof RoleTotals; multiplier: number; digits: number }[] = [
   { label: 'Scores', key: 'goals', multiplier: 1, digits: 1 },
   { label: 'Shots', key: 'shots', multiplier: 1 / 8, digits: 0 },

@@ -84,12 +84,12 @@ export default function OverviewSection({ stats, customImgs }: { stats: SelfStat
           {topChar && (
             <div className="relative rounded-lg overflow-hidden shadow-xl bg-surface/80 min-w-0 aspect-square lg:h-full">
               <img
-                src={customImgs ? topCharObj?.images.custom_portrait : topCharObj?.images.portrait}
+                src={customImgs ? topCharObj?.images.custom_portrait : topCharObj?.images.goalscore}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
               />
               <div aria-hidden className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 35%, rgba(10,10,10,0.95) 85%)' }} />
-              <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-100 bg-black/40 rounded px-1.5 py-0.5">
+              <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-100 bg-black/60 rounded px-1.5 py-0.5">
                 Main
               </span>
               <div className="absolute inset-x-0 bottom-0 p-2.5 min-w-0">
@@ -110,8 +110,8 @@ export default function OverviewSection({ stats, customImgs }: { stats: SelfStat
                 />
               )}
               <div aria-hidden className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 35%, rgba(10,10,10,0.95) 85%)' }} />
-              <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-100 bg-black/40 rounded px-1.5 py-0.5">
-                Top Map
+              <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-100 bg-black/60 rounded px-1.5 py-0.5">
+                Most Played
               </span>
               <div className="absolute inset-x-0 bottom-0 p-2.5 min-w-0">
                 <p className="text-sm font-bold text-zinc-100 truncate leading-tight">{topMapObj?.mapName ?? topMap.mapId}</p>
