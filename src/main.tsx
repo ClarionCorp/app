@@ -16,6 +16,7 @@ import DebugPage from './pages/DebugPage';
 import { ThemeProvider } from './components/UI/Theme/ThemeProvider';
 import CurrentMatchPage from './pages/CurrentMatch';
 import MatchHistoryPage from './pages/MatchHistory';
+import SelfStatsPage from './pages/SelfStats';
 import SettingsPage from './pages/Settings';
 
 const router = createHashRouter([
@@ -28,7 +29,7 @@ const router = createHashRouter([
       { path: "init",             element: <InitPage /> },
       { path: "home",             element: <HomePage /> },
       { path: "match",            element: <CurrentMatchPage /> },
-      { path: "cqm",              element: <ComingSoonPage /> },
+      { path: "me",               element: <SelfStatsPage /> },
       { path: "cgm",              element: <ComingSoonPage /> },
       { path: "mods",             element: <ComingSoonPage /> },
       { path: "settings",         element: <SettingsPage /> },

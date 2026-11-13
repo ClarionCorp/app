@@ -12,17 +12,16 @@ export const NAV_ITEMS = [
     image: "/backgrounds/Temple.webp"
   },
   {
+    label: "Personal Stats",
+    desc: "View advanced stats about your account",
+    slug: 'me',
+    image: "/backgrounds/MusicStage.webp",
+  },
+  {
     label: "Custom Games Manager",
     desc: "Tweak every aspect of Custom Games",
     slug: 'cgm',
     image: "/backgrounds/MusicShow.webp",
-    online: true,
-  },
-  {
-    label: "Queue Manager",
-    desc: "Queue into private game queues",
-    slug: 'cqm',
-    image: "/backgrounds/MusicStage.webp",
     online: true,
   },
   {
