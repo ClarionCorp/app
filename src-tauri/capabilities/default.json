@@ -48,6 +48,18 @@
       ]
     },
     {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-stat",
+      "allow": [
+        { "path": "**/steamapps/common/OmegaStrikers/OmegaStrikers/Binaries/Win64/**" }
+      ]
+    },
+    {
       "identifier": "fs:allow-write-file",
       "allow": [
         { "path": "$TEMP/**" },
