@@ -11,6 +11,7 @@ export const validConsoleCommands: Record<string, string> = {
   OPEN_LOGS_FOLDER: `Opens the app's logs folder in the system file manager`,
   NAVIGATE: `Force navigate to a specific page in the app (Usage: 'NAVIGATE <slug>')`,
   CHECK_FOR_DUMPS: `Print a list of recent crash dumps found in game folder`,
+  OPEN_UE4SS_FOLDER: `Open Win64 folder (where UE4SS is) for Mods or crash dumps`,
 };
 
 export async function openLogsFolder() {
@@ -64,6 +65,19 @@ async function listDumpFiles() {
   }
 }
 
+async function openUE4SSFolder() {
+  try {
+    const appSettings = await getAppSettings();
+    if (!appSettings.gameDirectory) { throw new Error('gameDirectory is not setup yet!') };
+    const win64 = await join(appSettings.gameDirectory, 'OmegaStrikers', 'Binaries', 'Win64');
+
+    console.debug(`Opening UE4SS folder at ${win64}`);
+    await openPath(win64);
+  } catch (e) {
+    console.error(`Failed to open UE4SS folder in system's file manager!`, e);
+  }
+}
+
 export async function runConsoleCommand(command: string) {
   const [rawCmd, ...args] = command.trim().split(/\s+/);
   const cmd = rawCmd.toUpperCase();
@@ -82,6 +96,9 @@ export async function runConsoleCommand(command: string) {
       return;
     case 'CHECK_FOR_DUMPS':
       await listDumpFiles();
+      return;
+    case 'OPEN_UE4SS_FOLDER':
+      await openUE4SSFolder();
       return;
     default:
       console.warn(`Invalid Command: ${cmd}`);
