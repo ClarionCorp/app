@@ -56,7 +56,7 @@ export default function OverviewSection({ stats, customImgs }: { stats: SelfStat
   const topMapObj = topMap ? getMapObjectFromID(topMap.mapId) : undefined
 
   return (
-    <Section title="Overview">
+    <Section>
       <div className="flex flex-col lg:flex-row lg:items-center gap-4 min-w-0">
         <div className="flex items-center gap-4 min-w-0 flex-1">
           {/* Hero: win rate */}

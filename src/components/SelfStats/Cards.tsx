@@ -14,7 +14,7 @@ export function Section({
   children,
   className,
 }: {
-  title: string
+  title?: string
   action?: ReactNode
   children: ReactNode
   className?: string
@@ -22,12 +22,14 @@ export function Section({
   return (
     <motion.section
       variants={sectionVariants}
-      className={clsx('bg-surface-subtle border border-background-border rounded-xl p-4 min-w-0', className)}
+      className={clsx('bg-surface-subtle rounded-xl p-4 min-w-0', className)}
     >
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <h2 className="text-sm uppercase font-bold tracking-widest text-char-subtle truncate">{title}</h2>
-        {action}
-      </div>
+      {title && (
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <h2 className="text-sm uppercase font-bold tracking-widest text-char-subtle truncate">{title}</h2>
+          {action}
+        </div>
+      )}
       {children}
     </motion.section>
   )

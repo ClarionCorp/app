@@ -11,7 +11,7 @@ import RankIcon from '../components/Rank'
 import { Dropdown } from '../components/UI/Dropdown'
 import { EmptyNote, Section, sectionVariants } from '../components/SelfStats/Cards'
 import OverviewSection from '../components/SelfStats/Overview'
-import RecentFormSection from '../components/SelfStats/RecentForm'
+import RecentFormSection from '../components/SelfStats/RecentOutcomes'
 import RatingTrendSection from '../components/SelfStats/RatingTrend'
 import RolesSection from '../components/SelfStats/Roles'
 import TopCharactersSection from '../components/SelfStats/TopCharacters'
@@ -202,7 +202,6 @@ export default function SelfStatsPage() {
       <div className="flex flex-wrap items-center gap-2">
         <Segmented options={['All', 'Ranked', 'Normal'] as StatsQueueFilter[]} value={queueFilter} onChange={setQueueFilter} />
         <Segmented options={['All', '30d', '7d'] as StatsTimeFilter[]} value={timeFilter} onChange={setTimeFilter} />
-        <span className="ml-auto text-[10px] text-char-subtle">From local match history</span>
       </div>
 
       {hasGames ? (

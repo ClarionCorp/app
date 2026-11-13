@@ -167,7 +167,7 @@ export function computeSelfStats(matches: MatchHistoryTable[]): SelfStats {
     totalSeconds,
     currentStreak,
     bestWinStreak,
-    recentForm: results.slice(0, 20),
+    recentForm: results.slice(0, 50),
     roles,
     characters: [...characters.values()].sort(byGames),
     maps: [...maps.values()].sort(byGames),
