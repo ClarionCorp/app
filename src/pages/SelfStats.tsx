@@ -4,7 +4,6 @@ import { CaretDownIcon, CheckIcon, UserSwitchIcon } from '@phosphor-icons/react'
 import clsx from 'clsx'
 import { getAppSettings, getMatchHistory, getUsers } from '../core/database/queries'
 import { MatchHistoryTable, UserTable } from '../types/database'
-import { PlayerSeason, Playstyle } from '../types/clarion'
 import { getRankFromLP } from '../core/objects/ranks'
 import { getRegionObjectFromOdyRegion } from '../core/objects/regions'
 import RankIcon from '../components/Rank'
@@ -17,14 +16,10 @@ import RolesSection from '../components/SelfStats/Roles'
 import TopCharactersSection from '../components/SelfStats/TopCharacters'
 import MapsSection from '../components/SelfStats/Maps'
 import TeammatesSection from '../components/SelfStats/Teammates'
-import PlaystyleSection from '../components/SelfStats/Playstyle'
-import SeasonHistorySection from '../components/SelfStats/SeasonHistory'
 import {
   computeSelfStats,
   fetchLeaderboardStanding,
-  fetchPlaystyle,
   fetchRatingHistory,
-  fetchSeasonHistory,
   filterMatches,
   LeaderboardStanding,
   RatingPoint,
@@ -97,8 +92,6 @@ export default function SelfStatsPage() {
 
   // API-backed (placeholders until endpoints exist)
   const [ratingHistory, setRatingHistory] = useState<RatingPoint[] | null>(null)
-  const [seasons, setSeasons] = useState<PlayerSeason[] | null>(null)
-  const [playstyle, setPlaystyle] = useState<Playstyle | null>(null)
   const [standing, setStanding] = useState<LeaderboardStanding | null>(null)
 
   useEffect(() => {
@@ -117,8 +110,6 @@ export default function SelfStatsPage() {
     if (!selectedUser) return
     const id = selectedUser.playerId
     fetchRatingHistory(id).then(setRatingHistory)
-    fetchSeasonHistory(id).then(setSeasons)
-    fetchPlaystyle(id).then(setPlaystyle)
     fetchLeaderboardStanding(id).then(setStanding)
   }, [selectedUser])
 
@@ -226,13 +217,10 @@ export default function SelfStatsPage() {
             <TopCharactersSection characters={stats.characters} customImgs={customImgs} />
             <MapsSection maps={stats.maps} />
           </div>
-          <TeammatesSection teammates={stats.teammates} />
           <RolesSection roles={stats.roles} />
+          <TeammatesSection teammates={stats.teammates} />
         </>
       )}
-
-      <PlaystyleSection playstyle={playstyle} />
-      <SeasonHistorySection seasons={seasons} />
     </motion.div>
   )
 }
