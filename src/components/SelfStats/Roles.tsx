@@ -86,15 +86,11 @@ function PlaystyleRadar({ totals, colorVar, fallback }: { totals: RoleTotals; co
   )
 }
 
-function RoleColumn({ role, totals, colorVar, fallback }: { role: Role; totals: RoleTotals; colorVar: string; fallback: string }) {
+function RoleSection({ role, totals, colorVar, fallback }: { role: Role; totals: RoleTotals; colorVar: string; fallback: string }) {
   const wr = winRate(totals.wins, totals.games)
 
   return (
-    <div className="flex-1 min-w-0 rounded-lg border border-surface-border bg-surface-raised/10 p-3">
-      <div className="flex items-baseline justify-between mb-1">
-        <span className="text-sm font-semibold text-char">{role}</span>
-        <span className="text-[10px] text-char-subtle">{totals.games} games</span>
-      </div>
+    <Section title={role} action={<span className="text-xs text-char-subtle tabular-nums">{totals.games} games</span>}>
       <div className="mb-2">
         <div className="flex justify-between text-[10px] text-char-subtle mb-1">
           <span>Win rate</span>
@@ -106,17 +102,15 @@ function RoleColumn({ role, totals, colorVar, fallback }: { role: Role; totals: 
       {totals.games > 0
         ? <PlaystyleRadar totals={totals} colorVar={colorVar} fallback={fallback} />
         : <EmptyNote>No {role} games for these filters.</EmptyNote>}
-    </div>
+    </Section>
   )
 }
 
 export default function RolesSection({ roles }: { roles: SelfStats['roles'] }) {
   return (
-    <Section title="Roles">
-      <div className="flex flex-col sm:flex-row gap-2">
-        <RoleColumn role="Forward" totals={roles.Forward} colorVar="--theme-primary" fallback="#7c5cff" />
-        <RoleColumn role="Goalie" totals={roles.Goalie} colorVar="--theme-secondary" fallback="#22d3ee" />
-      </div>
-    </Section>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <RoleSection role="Forward" totals={roles.Forward} colorVar="--theme-primary" fallback="#7c5cff" />
+      <RoleSection role="Goalie" totals={roles.Goalie} colorVar="--theme-secondary" fallback="#22d3ee" />
+    </div>
   )
 }
