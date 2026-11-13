@@ -18,9 +18,11 @@ import MapsSection from '../components/SelfStats/Maps'
 import TeammatesSection from '../components/SelfStats/Teammates'
 import {
   computeSelfStats,
-  fetchLeaderboardStanding,
-  fetchRatingHistory,
+  fetchSelfPlayer,
   filterMatches,
+  filterRatingHistory,
+  getGlobalStanding,
+  getRatingHistory,
   LeaderboardStanding,
   RatingPoint,
   StatsQueueFilter,
@@ -108,9 +110,16 @@ export default function SelfStatsPage() {
 
   useEffect(() => {
     if (!selectedUser) return
-    const id = selectedUser.playerId
-    fetchRatingHistory(id).then(setRatingHistory)
-    fetchLeaderboardStanding(id).then(setStanding)
+    let cancelled = false
+    setRatingHistory(null)
+    setStanding(null)
+
+    fetchSelfPlayer(selectedUser.username).then(player => {
+      if (cancelled || !player) return
+      setRatingHistory(getRatingHistory(player))
+      setStanding(getGlobalStanding(player))
+    })
+    return () => { cancelled = true }
   }, [selectedUser])
 
   const stats = useMemo(
@@ -181,11 +190,12 @@ export default function SelfStatsPage() {
               Mastery {selectedUser.masteryLevel} · {region.name}
             </p>
           </div>
-          <div className="shrink-0 text-right pb-1">
-            {/* TODO: Remove the hardcoded fallback once fetchLeaderboardStanding is wired up */}
-            <p className="text-4xl font-black text-char tabular-nums leading-none">#{standing?.rank ?? 56}</p>
-            <p className="text-sm font-bold text-char-subtle uppercase tracking-wider mt-1">{standing?.region ?? 'Global'}</p>
-          </div>
+          {standing && (
+            <div className="shrink-0 text-right pb-1">
+              <p className="text-4xl font-black text-char tabular-nums leading-none">#{standing.rank}</p>
+              <p className="text-sm font-bold text-char-subtle uppercase tracking-wider mt-1">{standing.region}</p>
+            </div>
+          )}
         </div>
       </motion.section>
 
@@ -208,7 +218,7 @@ export default function SelfStatsPage() {
       )}
 
       {/* Rating Chart */}
-      <RatingTrendSection points={ratingHistory} />
+      <RatingTrendSection points={ratingHistory && filterRatingHistory(ratingHistory, timeFilter)} />
 
       {/* Top Characters + Maps + Roles + Teammates */}
       {hasGames && (

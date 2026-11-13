@@ -118,7 +118,7 @@ export async function fetchAppAPI(urlStub: string, method: 'GET' | 'POST' | 'PAT
       ...(body && { body })
     });
 
-    const data = await req.json();
+    const data = await req.clone().json(); // clone so callers can still read the body
     if (!req.ok) {
       const loopBreaker = sessionStorage.getItem('AppAPI_LoopBreaker');
       if (req.status == 401 && !loopBreaker) { // request new PAT and try again (if loopbreaker hasn't been tripped yet)

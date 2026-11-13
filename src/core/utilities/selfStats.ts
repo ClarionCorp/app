@@ -1,6 +1,7 @@
 import { MatchHistoryTable } from "../../types/database";
 import { MatchPlayer } from "../../types/ue4ss";
-import { PlayerSeason, Playstyle } from "../../types/clarion";
+import { Player } from "../../types/clarion";
+import { fetchAppAPI } from "./appAPI";
 
 export type StatsQueueFilter = 'All' | 'Ranked' | 'Normal' | 'Customs'; // matches matchHistory.queue values
 export type StatsTimeFilter = 'All' | '30d' | '7d';
@@ -185,8 +186,7 @@ export function formatPlaytime(seconds: number) {
 }
 
 //
-// API placeholders
-// TODO: Wire these up to ClarionAPI once the endpoints exist. Returning null renders the placeholder state.
+// API
 //
 
 export type RatingPoint = {
@@ -196,22 +196,39 @@ export type RatingPoint = {
 
 export type LeaderboardStanding = {
   rank: number,
-  percentile: number,
   region: string,
 }
 
-export async function fetchRatingHistory(_playerId: string): Promise<RatingPoint[] | null> {
-  return null;
+// Returns null on any failure so the page can fall back to its placeholder states
+export async function fetchSelfPlayer(username: string, mode: 'Normal' | 'Ranked' = 'Ranked'): Promise<Player | null> {
+  try {
+    const response = await fetchAppAPI(`/v2/player/${username}?mode=${mode}`, 'GET');
+    if (!response || !response.ok) { throw new Error(`Could not fetch self stats from AppAPI Proxy!`) };
+
+    return await response.json() as Player;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }
 
-export async function fetchSeasonHistory(_playerId: string): Promise<PlayerSeason[] | null> {
-  return null;
+// Current season only, oldest first (latestRatings comes back latest first)
+export function getRatingHistory(player: Player): RatingPoint[] {
+  return player.latestRatings
+    .filter(r => r.season === player.currentSeason)
+    .map(r => ({ at: new Date(r.createdAt), rating: r.rating }))
+    .reverse();
 }
 
-export async function fetchPlaystyle(_playerId: string): Promise<Playstyle | null> {
-  return null;
+export function filterRatingHistory(points: RatingPoint[], time: StatsTimeFilter): RatingPoint[] {
+  const window = TIME_WINDOWS[time];
+  if (!window) return points;
+  const cutoff = Date.now() - window;
+  return points.filter(p => p.at.getTime() >= cutoff);
 }
 
-export async function fetchLeaderboardStanding(_playerId: string): Promise<LeaderboardStanding | null> {
-  return null;
+export function getGlobalStanding(player: Player): LeaderboardStanding | null {
+  const latest = player.latestRatings[0];
+  if (!latest?.ranking.global) return null;
+  return { rank: latest.ranking.global, region: 'Global' };
 }

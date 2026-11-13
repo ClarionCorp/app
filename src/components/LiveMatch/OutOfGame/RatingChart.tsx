@@ -29,6 +29,19 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
     );
   }
 
+  return (
+    <div className="bg-surface-subtle border border-surface-border rounded-xl p-4">
+      <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
+        Rating This Session
+      </p>
+      <RatingLine values={data} labels={data.map((_, i) => (i === 0 ? 'Start' : `Match ${i}`))} />
+    </div>
+  );
+}
+
+// Bare rank-colored rating line, shared with the Personal Stats page. Expects at least 2 values.
+export function RatingLine({ values, labels }: { values: number[]; labels: string[] }) {
+  const data = values;
   const minVal = Math.min(...data);
   const maxVal = Math.max(...data);
   const bottomLine = Math.floor(minVal / 100) * 100;
@@ -36,15 +49,10 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
   const lastColor = getRankFromLP(data[data.length - 1]).color;
 
   return (
-    <div className="bg-surface-subtle border border-surface-border rounded-xl p-4">
-      <p className="text-xs uppercase font-semibold tracking-widest text-char-subtle mb-3">
-        Rating This Session
-      </p>
-
       <div className="max-h-56">
         <Line
           data={{
-            labels: data.map((_, i) => (i === 0 ? 'Start' : `Match ${i}`)),
+            labels,
             datasets: [
               {
                 label: 'Rating',
@@ -52,7 +60,7 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
                 fill: true,
                 cubicInterpolationMode: 'monotone',
                 borderWidth: 2,
-                pointRadius: 6,
+                pointRadius: 4,
                 pointHitRadius: 15,
                 pointBackgroundColor: data.map(v => getRankFromLP(v).color),
                 pointBorderColor: data.map(v => getRankFromLP(v).color),
@@ -108,6 +116,5 @@ export function RatingChart({ session }: { session: GameSessionsTable | null }) 
           }}
         />
       </div>
-    </div>
   );
 }
