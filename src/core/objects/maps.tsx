@@ -16,7 +16,6 @@ import {
   TrashIcon,
   type Icon,
 } from '@phosphor-icons/react'
-import { ClarionAPI } from '../constants'
 import { ReactNode } from 'react'
 
 export type MapObject = {
@@ -65,7 +64,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_AhtenCity',
     mapName: 'Ahten City',
     icon: BuildingsIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_AhtenCity.webp`,
+    image: `/maps/GTD_AhtenCity.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, trapezoid barrier right infront of the goalbox. <br />
       <br />
@@ -81,7 +80,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_Lab',
     mapName: 'Atlas Lab',
     icon: HurricaneIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_Lab.webp`,
+    image: `/maps/GTD_Lab.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two circular barriers to the sides of the goalbox. <br />
       <br />
@@ -99,7 +98,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_ClarionCorpDefault',
     mapName: 'Clarion Test Chamber',
     icon: FlaskIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_ClarionCorpDefault.webp`,
+    image: `/maps/GTD_ClarionCorpDefault.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Unfortunately the locks varies due to this map's <a className='text-match-ally'>gimmick</a>. <br />
       <br />
@@ -114,7 +113,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_DigitalWorld',
     mapName: "Ai.Mi's App",
     icon: CircleIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_DigitalWorld.webp`,
+    image: `/maps/GTD_DigitalWorld.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, pill-shaped barrier right infront of the goalbox. <br />
       <br />
@@ -133,7 +132,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_Drums',
     mapName: 'Taiko Temple',
     icon: SpeakerHifiIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_Drums.webp`,
+    image: `/maps/GTD_Drums.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two, arrow-shaped barriers spaced evenly infront of the goalbox. <br />
       <br />
@@ -150,7 +149,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_MusicStage',
     mapName: 'Demon Dais',
     icon: WaveformIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_MusicStage.webp`,
+    image: `/maps/GTD_MusicStage.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> One circular lock in front of the goal. It has to be hit twice before breaking. <br />
       <br />
@@ -168,7 +167,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_NightMarket',
     mapName: 'Night Market',
     icon: MoonIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_NightMarket.webp`,
+    image: `/maps/GTD_NightMarket.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two rectangular barriers with a cutout, right infront of the goalbox. <br />
       <br />
@@ -186,7 +185,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_Obscura',
     mapName: 'Gates of Obscura',
     icon: EyeIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_Obscura.webp`,
+    image: `/maps/GTD_Obscura.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two triangle halves right infront of the goalbox. <br />
       <br />
@@ -204,7 +203,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_OniVillage',
     mapName: 'Oni Village',
     icon: OnigiriIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_OniVillage.webp`,
+    image: `/maps/GTD_OniVillage.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> Two parallelograms in the corners beside the goalbox. <br />
       <br />
@@ -220,7 +219,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_SummerSplash',
     mapName: "Inky's Splash Zone",
     icon: TrashIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_SummerSplash.webp`,
+    image: `/maps/GTD_SummerSplash.webp`,
     description: <>
       <b className='text-match-mid'>Locks:</b> A single, corner barrier to the left of the goalbox. <br />
       <br />
@@ -238,7 +237,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_Tutorial',
     mapName: 'Neo Origins',
     icon: CopyIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_Tutorial.webp`,
+    image: `/maps/GTD_Tutorial.webp`,
     description: ''
   },
   {
@@ -246,7 +245,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_BackToBackXL',
     mapName: 'Back To Back',
     icon: HurricaneIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_BackToBackXL.webp`,
+    image: `/maps/GTD_BackToBackXL.webp`,
     description: ''
   },
   {
@@ -254,7 +253,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_AboutFaceXL',
     mapName: 'About Face',
     icon: ArrowUUpLeftIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_AboutFaceXL.webp`,
+    image: `/maps/GTD_AboutFaceXL.webp`,
     description: ''
   },
   {
@@ -262,7 +261,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_CornerGoalXL',
     mapName: 'Corner Pocket',
     icon: FrameCornersIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_CornerGoalXL.webp`,
+    image: `/maps/GTD_CornerGoalXL.webp`,
     description: ''
   },
   {
@@ -270,7 +269,7 @@ export const MAPS: MapObject[] = [
     ccId: 'GTD_FlippedXL',
     mapName: 'Map Flipped',
     icon: ArrowsClockwiseIcon,
-    image: `${ClarionAPI}/assets/maps/GTD_FlippedXL.webp`,
+    image: `/maps/GTD_FlippedXL.webp`,
     description: ''
   },
 ]
