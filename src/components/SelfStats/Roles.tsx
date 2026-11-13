@@ -14,18 +14,18 @@ function themeColor(cssVar: string, fallback: string): string {
 type Role = keyof SelfStats['roles']
 
 // Clockwise from the top. Forward stats cluster at the top, goalie stats at the bottom, shared stats on the sides.
-// `reference` is a high-end per-game value (roughly pro level) that fills the axis to 100%. The same scale is used
-// for both roles so the polygon's size reflects actual output, and the shape shows where it comes from.
-// TODO: Tune these references against real data (or pull them from the API as percentiles).
-const AXES: { label: string; key: keyof RoleTotals; reference: number; digits: number }[] = [
-  { label: 'Scores', key: 'goals', reference: 10, digits: 1 },
-  { label: 'Shots', key: 'shots', reference: 80, digits: 0 },
-  { label: 'Damage', key: 'damage', reference: 25_000, digits: 0 },
-  { label: 'Redirects', key: 'redirects', reference: 300, digits: 0 },
-  { label: 'Saves', key: 'saves', reference: 150, digits: 0 },
-  { label: 'Orbs', key: 'orbs', reference: 40, digits: 1 },
-  { label: 'Assists', key: 'assists', reference: 5, digits: 1 },
-  { label: 'Knockouts', key: 'kos', reference: 8, digits: 1 },
+// `multiplier` weights each per-game stat relative to Scores (1x), shared across both roles. Since the polygon is
+// stretched to its strongest stat, only the multipliers' ratios to each other matter. Fractions read as
+// "N of this stat is worth 1 score", e.g. 1 / 2500 means 2500 damage counts as much as 1 score.
+const AXES: { label: string; key: keyof RoleTotals; multiplier: number; digits: number }[] = [
+  { label: 'Scores', key: 'goals', multiplier: 1, digits: 1 },
+  { label: 'Shots', key: 'shots', multiplier: 1 / 8, digits: 0 },
+  { label: 'Damage', key: 'damage', multiplier: 1 / 2500, digits: 0 },
+  { label: 'Redirects', key: 'redirects', multiplier: 1 / 30, digits: 0 },
+  { label: 'Saves', key: 'saves', multiplier: 1 / 15, digits: 0 },
+  { label: 'Orbs', key: 'orbs', multiplier: 1 / 4, digits: 1 },
+  { label: 'Assists', key: 'assists', multiplier: 2, digits: 1 },
+  { label: 'Knockouts', key: 'kos', multiplier: 1.25, digits: 1 },
 ]
 
 // Minimum radius (as % of the dial) for any point, so a 0 stat never sits dead center
@@ -37,7 +37,7 @@ function PlaystyleRadar({ totals, colorVar, fallback }: { totals: RoleTotals; co
   const labelColor = themeColor('--theme-char-subtle', '#a1a1aa')
 
   const averages = AXES.map(a => totals[a.key] / totals.games)
-  const ratios = AXES.map((a, i) => averages[i] / a.reference)
+  const ratios = AXES.map((a, i) => averages[i] * a.multiplier)
 
   // Stretch so the strongest stat reaches the edge, and keep a floor so near-zero stats
   // sit on an inner ring instead of collapsing into the center and breaking the shape.

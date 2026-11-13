@@ -191,7 +191,7 @@ export default function SelfStatsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <Segmented options={['All', 'Ranked', 'Normal'] as StatsQueueFilter[]} value={queueFilter} onChange={setQueueFilter} />
+        <Segmented options={['All', 'Ranked', 'Normal', 'Customs'] as StatsQueueFilter[]} value={queueFilter} onChange={setQueueFilter} />
         <Segmented options={['All', '30d', '7d'] as StatsTimeFilter[]} value={timeFilter} onChange={setTimeFilter} />
       </div>
 

@@ -1,9 +1,8 @@
 import { MatchHistoryTable } from "../../types/database";
 import { MatchPlayer } from "../../types/ue4ss";
 import { PlayerSeason, Playstyle } from "../../types/clarion";
-import { QUEUES } from "../objects/queues";
 
-export type StatsQueueFilter = 'All' | 'Ranked' | 'Normal';
+export type StatsQueueFilter = 'All' | 'Ranked' | 'Normal' | 'Customs'; // matches matchHistory.queue values
 export type StatsTimeFilter = 'All' | '30d' | '7d';
 
 export type RoleTotals = {
@@ -65,10 +64,6 @@ function emptyRole(): RoleTotals {
   return { games: 0, wins: 0, mvps: 0, goals: 0, assists: 0, saves: 0, kos: 0, damage: 0, shots: 0, orbs: 0, redirects: 0 };
 }
 
-function queueClass(queue: string) {
-  return QUEUES.find(q => q.queueId === queue || q.queueName === queue)?.class ?? null;
-}
-
 export function filterMatches(
   matches: MatchHistoryTable[],
   playerId: string | null,
@@ -80,7 +75,7 @@ export function filterMatches(
 
   return matches.filter(m => {
     if (playerId && m.playerId !== playerId) return false;
-    if (queue !== 'All' && queueClass(m.queue) !== queue) return false;
+    if (queue !== 'All' && m.queue !== queue) return false;
     if (cutoff && m.createdAt.getTime() < cutoff) return false;
     return true;
   });
